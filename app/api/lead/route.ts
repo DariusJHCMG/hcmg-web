@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY ?? "placeholder");
+}
 
 const LeadSchema = z.object({
   firstName: z.string().min(1),
@@ -89,6 +91,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Send confirmation + internal notification in parallel
+  const resend = getResend();
   await Promise.all([
     resend.emails.send({
       from: "Orange Key <noreply@getorangekey.com>",
