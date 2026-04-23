@@ -1,0 +1,15 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/estimate/route": "/api/estimate",
+  "/api/lead/route": "/api/lead",
+  "/robots.txt/route": "/robots.txt",
+  "/sitemap.xml/route": "/sitemap.xml",
+  "/contact/page": "/contact",
+  "/get-started/page": "/get-started",
+  "/page": "/",
+  "/licensing/page": "/licensing",
+  "/sms-policy/page": "/sms-policy",
+  "/seo/[slug]/page": "/seo/[slug]",
+  "/privacy/page": "/privacy",
+  "/terms/page": "/terms"
+}

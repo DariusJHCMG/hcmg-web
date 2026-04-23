@@ -1,0 +1,152 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { seoPages, STATE_COPY, LOAN_TYPE_FAQS } from "@/data/seo-pages";
+import { NavBar } from "@/components/ui/NavBar";
+import { Footer } from "@/components/ui/Footer";
+import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
+import { Calculator } from "@/components/sections/Calculator";
+import { Disclosure } from "@/components/ui/Disclosure";
+
+export const revalidate = 86400;
+
+export function generateStaticParams() {
+  return seoPages.map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const page = seoPages.find((p) => p.slug === slug);
+  if (!page) return {};
+  return {
+    title: `${page.loanType} in ${page.city}, ${page.state} | Orange Key · NMLS# 1918223`,
+    description: `Explore ${page.loanType.toLowerCase()} options for home buyers in ${page.city}, ${page.state}. Estimate your monthly payment. Harris Capital Mortgage Group · NMLS# 1918223 · Equal Housing Lender.`,
+    alternates: { canonical: `https://getorangekey.com/seo/${slug}` },
+    openGraph: {
+      title: `${page.loanType} in ${page.city}, ${page.state} | Orange Key`,
+      description: page.description,
+      url: `https://getorangekey.com/seo/${slug}`,
+    },
+  };
+}
+
+export default async function SeoPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const page = seoPages.find((p) => p.slug === slug);
+  if (!page) notFound();
+
+  const localCopy = STATE_COPY[page.state] ?? `Explore ${page.loanType.toLowerCase()} options in ${page.city}, ${page.state} with Harris Capital Mortgage Group.`;
+  const faqs = LOAN_TYPE_FAQS[page.loanType] ?? LOAN_TYPE_FAQS["Conventional Loan"];
+
+  const relatedPages = seoPages
+    .filter((p) => p.slug !== slug && (p.state === page.state || p.loanType === page.loanType))
+    .slice(0, 5);
+
+  const pageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: `${page.loanType} in ${page.city}, ${page.state}`,
+    description: page.description,
+    url: `https://getorangekey.com/seo/${slug}`,
+    provider: {
+      "@type": "MortgageLender",
+      name: "Harris Capital Mortgage Group, LLC",
+      alternateName: "Orange Key",
+      legalName: "Harris Capital Mortgage Group, LLC",
+    },
+  };
+
+  return (
+    <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pageSchema) }} />
+      <NavBar />
+
+      {/* Hero */}
+      <section className="section-pad bg-white" style={{ paddingBottom: 48 }}>
+        <div className="container-shell max-w-4xl">
+          <SectionEyebrow>{page.loanType}</SectionEyebrow>
+          <h1
+            className="mt-3 font-extrabold tracking-tight text-ink"
+            style={{ fontSize: "clamp(32px, 5vw, 56px)", lineHeight: 1.1 }}
+          >
+            {page.loanType} in {page.city}, {page.state}
+          </h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">{page.description}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/get-started" className="primary-button">
+              Get my free estimate →
+            </Link>
+            <Link href="/#calculator" className="secondary-button">
+              Try the calculator
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Calculator */}
+      <Calculator />
+
+      {/* Local context */}
+      <section className="section-pad bg-sand">
+        <div className="container-shell max-w-4xl">
+          <h2 className="mb-4 text-2xl font-extrabold text-ink">
+            Buying in {page.city}, {page.state}
+          </h2>
+          <p className="text-base leading-8 text-muted">{localCopy}</p>
+          <p className="mt-4 text-base leading-8 text-muted">
+            Harris Capital Mortgage Group (NMLS# 1918223) is licensed to serve buyers in {page.state}. Our loan officers understand the local market and will guide you through every step of the process.
+          </p>
+          <Disclosure variant="estimate" className="mt-6" />
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="section-pad bg-white">
+        <div className="container-shell grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+          <div>
+            <h2 className="mb-6 text-2xl font-extrabold text-ink">{page.loanType} — Common Questions</h2>
+            <div className="space-y-4">
+              {faqs.map((faq) => (
+                <div key={faq.q} className="rounded-2xl border border-line bg-white p-6">
+                  <h3 className="mb-3 font-bold text-ink">{faq.q}</h3>
+                  <p className="text-sm leading-7 text-muted">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Related */}
+          <aside>
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.16em] text-muted">Related Pages</h3>
+            <div className="space-y-3">
+              {relatedPages.map((r) => (
+                <Link
+                  key={r.slug}
+                  href={`/seo/${r.slug}`}
+                  className="block rounded-2xl border border-line bg-white px-5 py-4 text-sm font-semibold text-ink transition-all hover:border-brand hover:text-brand"
+                >
+                  {r.city}, {r.state} — {r.loanType}
+                </Link>
+              ))}
+            </div>
+
+            {/* CTA card */}
+            <div className="mt-6 overflow-hidden rounded-3xl" style={{ background: "var(--ok-gradient)" }}>
+              <div className="p-6">
+                <p className="mb-4 text-base font-bold text-white">Ready to see your numbers?</p>
+                <Link
+                  href="/get-started"
+                  className="block rounded-2xl bg-white px-5 py-3 text-center text-sm font-bold text-brand transition hover:scale-[1.02]"
+                >
+                  Get free estimate →
+                </Link>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <Footer />
+    </main>
+  );
+}

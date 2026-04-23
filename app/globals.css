@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --font-montserrat: "Montserrat", sans-serif;
+  --ok-orange: #FF7800;
+  --ok-orange-light: #FFAF00;
+  --ok-orange-dark: #E84F00;
+  --ok-ink: #1A2B42;
+  --ok-gradient: linear-gradient(135deg, #FFAF00 0%, #FF7800 45%, #E84F00 100%);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  @apply bg-white text-ink antialiased;
+  font-family: var(--font-montserrat), "Montserrat", sans-serif;
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.container-shell {
+  @apply mx-auto w-full max-w-7xl px-5 lg:px-8;
+}
+.section-pad { @apply py-20 lg:py-24; }
+
+/* ── Cards ───────────────────────────────────────────────── */
+.glass-card {
+  @apply rounded-3xl border border-line bg-white shadow-card;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.primary-button {
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl
+         bg-brand px-6 py-4 text-base font-semibold text-white
+         transition duration-200 hover:scale-[1.02] hover:bg-brand-dark
+         active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+}
+.secondary-button {
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl
+         border border-line bg-white px-6 py-4 text-base font-semibold text-ink
+         transition duration-200 hover:border-brand hover:text-brand
+         active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40;
+}
+.ghost-button {
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl
+         bg-transparent px-6 py-4 text-base font-semibold text-brand
+         transition duration-200 hover:bg-brand/5 active:scale-[0.98];
+}
+.outline-white-button {
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl
+         border border-white/60 bg-transparent px-6 py-4 text-base font-semibold text-white
+         transition duration-200 hover:bg-white/10 active:scale-[0.98];
+}
+
+/* ── Inputs ──────────────────────────────────────────────── */
+.input-base {
+  @apply h-14 w-full rounded-2xl border border-line bg-white px-4 text-base text-ink
+         outline-none transition duration-200
+         focus:border-brand focus:ring-4 focus:ring-brand/10
+         placeholder:text-muted/60;
+}
+
+/* ── Funnel ──────────────────────────────────────────────── */
+.funnel-option {
+  @apply w-full rounded-[22px] border-2 border-line bg-white px-5 py-5
+         text-left text-base font-semibold text-ink transition-all duration-200
+         hover:border-brand hover:bg-brand/5 hover:shadow-soft
+         active:scale-[0.98];
+}
+.funnel-option-selected {
+  @apply border-brand bg-brand/5 shadow-soft;
+}
+
+/* ── Range slider ─────────────────────────────────────────── */
+.range-brand {
+  @apply h-2 w-full cursor-pointer appearance-none rounded-full bg-line;
+}
+.range-brand::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  width: 22px;
+  border-radius: 9999px;
+  background: var(--ok-gradient);
+  border: 3px solid #fff;
+  box-shadow: 0 4px 14px rgba(255,120,0,0.35);
+  cursor: pointer;
+}
+.range-brand::-moz-range-thumb {
+  height: 22px;
+  width: 22px;
+  border-radius: 9999px;
+  background: #FF7800;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 14px rgba(255,120,0,0.35);
+}
+
+/* ── Mobile sticky CTA ───────────────────────────────────── */
+.mobile-sticky-cta {
+  @apply fixed inset-x-0 bottom-0 z-50 flex items-center gap-3
+         border-t border-line bg-white/95 px-4 py-3
+         shadow-[0_-10px_30px_rgba(26,43,66,0.08)] backdrop-blur;
+}
+.mobile-sticky-primary {
+  @apply inline-flex min-h-[52px] flex-1 items-center justify-center
+         rounded-2xl bg-brand px-4 py-3 text-sm font-semibold text-white;
+}
+.mobile-sticky-secondary {
+  @apply inline-flex min-h-[52px] items-center justify-center
+         rounded-2xl border border-line bg-white px-4 py-3 text-sm font-semibold text-ink;
+}
+
+/* ── Gradient text ───────────────────────────────────────── */
+.ok-gradient-text {
+  background: var(--ok-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ok-gradient-bg { background: var(--ok-gradient); }
+
+/* ── Animations ──────────────────────────────────────────── */
+.motion-prep { opacity: 0; transform: translateY(12px); }
+.motion-rise { animation: riseIn 680ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.motion-step-in { animation: stepIn 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.motion-pulse-soft { animation: pulseSoft 2.8s ease-in-out infinite; }
+.motion-delay-1 { animation-delay: 80ms; }
+.motion-delay-2 { animation-delay: 160ms; }
+.motion-delay-3 { animation-delay: 240ms; }
+.motion-delay-4 { animation-delay: 320ms; }
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+@keyframes pulseSoft {
+  0%, 100% { transform: scale(1);    box-shadow: 0 10px 30px rgba(255,120,0,0.10); }
+  50%       { transform: scale(1.01); box-shadow: 0 14px 40px rgba(255,120,0,0.18); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .motion-rise, .motion-step-in, .motion-pulse-soft { animation: none !important; }
+  .primary-button, .secondary-button, .glass-card { transition: none !important; }
+}
