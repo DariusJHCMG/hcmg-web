@@ -17,13 +17,13 @@ function ContactInfo() {
       </div>
       <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Phone</p>
-        <a href="tel:8884413930" className="text-sm font-semibold text-ink hover:text-brand transition-colors">
+        <a href="tel:8884413930" className="text-sm font-semibold text-ink hover:text-accent transition-colors">
           888-441-3930
         </a>
       </div>
       <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Email</p>
-        <a href="mailto:hello@getorangekey.com" className="text-sm font-semibold text-ink hover:text-brand transition-colors">
+        <a href="mailto:hello@getorangekey.com" className="text-sm font-semibold text-ink hover:text-accent transition-colors">
           hello@getorangekey.com
         </a>
       </div>
@@ -34,7 +34,7 @@ function ContactInfo() {
       <div className="rounded-2xl border border-line bg-sand p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted mb-2">NMLS# 1918223</p>
         <p className="text-xs leading-6 text-muted">
-          Harris Capital Mortgage Group, LLC dba Orange Key.<br />
+          Harris Capital Mortgage Group, LLC.<br />
           Equal Housing Lender.
         </p>
       </div>
@@ -80,7 +80,7 @@ export default function ContactPage() {
   }
 
   const inputClass =
-    "input-base w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink placeholder-muted/60 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 transition";
+    "input-base w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink placeholder-muted/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition";
   const labelClass = "mb-1.5 block text-xs font-semibold text-ink";
 
   return (
@@ -191,7 +191,7 @@ export default function ContactPage() {
                       type="checkbox"
                       checked={consent}
                       onChange={(e) => setConsent(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-brand"
+                      className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-accent"
                     />
                     <span className="text-xs leading-5 text-muted">
                       I agree to be contacted by Harris Capital Mortgage Group by phone, text, or email about my mortgage inquiry. Message and data rates may apply. Reply STOP to opt out of texts at any time.

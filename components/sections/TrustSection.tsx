@@ -43,7 +43,7 @@ export function TrustSection() {
         >
           <div className="ok-gradient-text mb-4 font-extrabold leading-none" style={{ fontSize: 72 }}>"</div>
           <blockquote className="max-w-4xl font-semibold leading-relaxed text-ink" style={{ fontSize: "clamp(22px, 3vw, 32px)" }}>
-            Orange Key gave me real numbers in under a minute. I finally understood what I could afford — and my loan officer at Harris Capital walked me through every detail from start to finish. Closed in 26 days.
+            HCMG gave me real numbers in under a minute. I finally understood what I could afford — and my loan officer walked me through every detail from start to finish. Closed in 26 days.
           </blockquote>
           <div className="mt-8 flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: "var(--ok-gradient)" }}>
@@ -52,7 +52,7 @@ export function TrustSection() {
             <div>
               <div className="font-bold text-ink">Marcus Webb</div>
               <div className="text-sm text-muted">First-time buyer · Dallas, TX</div>
-              <div className="mt-0.5 text-brand">★★★★★</div>
+              <div className="mt-0.5 text-accent">★★★★★</div>
             </div>
           </div>
         </motion.div>

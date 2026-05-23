@@ -1,7 +1,7 @@
 export const FAQS = [
   {
     q: "Does getting an estimate affect my credit score?",
-    a: "No. The Orange Key estimate is based entirely on information you provide — income range, price range, and credit band. We never run a credit inquiry of any kind during the estimate process. A hard credit pull only happens when you formally apply for a loan through a licensed loan officer.",
+    a: "No. The HCMG estimate is based entirely on information you provide — income range, price range, and credit band. We never run a credit inquiry of any kind during the estimate process. A hard credit pull only happens when you formally apply for a loan through a licensed loan officer.",
   },
   {
     q: "Is this a pre-approval?",
@@ -17,7 +17,7 @@ export const FAQS = [
   },
   {
     q: "What states are you licensed in?",
-    a: "Harris Capital Mortgage Group, LLC dba Orange Key (NMLS# 1918223) is currently licensed in Florida, Texas, Georgia, Nevada, Colorado, Virginia, Washington DC, and Maryland. Contact us to confirm availability in your specific state before applying.",
+    a: "Harris Capital Mortgage Group, LLC (NMLS# 1918223) is currently licensed in Florida, Texas, Georgia, Nevada, Colorado, Virginia, Washington DC, and Maryland. Contact us to confirm availability in your specific state before applying.",
   },
   {
     q: "How do I connect with a loan officer?",

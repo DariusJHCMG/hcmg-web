@@ -3,8 +3,8 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Orange Key · NMLS# 1918223",
-  description: "Privacy Policy for Orange Key / Harris Capital Mortgage Group, LLC. How we collect, use, and protect your information.",
+  title: "Privacy Policy — HCMG · NMLS# 1918223",
+  description: "Privacy Policy for Harris Capital Mortgage Group, LLC. How we collect, use, and protect your information.",
   alternates: { canonical: "https://getorangekey.com/privacy" },
 };
 
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
           <p className="mb-8 text-sm text-muted">Effective date: January 1, 2026 · Last updated: January 1, 2026</p>
 
           <H2>1. Introduction</H2>
-          <P>Harris Capital Mortgage Group, LLC dba Orange Key (NMLS# 1918223) ("Orange Key," "we," "us," or "our") operates getorangekey.com. This Privacy Policy explains how we collect, use, share, and protect your information when you use our website and services.</P>
+          <P>Harris Capital Mortgage Group, LLC (NMLS# 1918223) (&ldquo;HCMG,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) operates getorangekey.com. This Privacy Policy explains how we collect, use, share, and protect your information when you use our website and services.</P>
 
           <H2>2. Information We Collect</H2>
           <P>We may collect the following categories of information:</P>
@@ -39,19 +39,19 @@ export default function PrivacyPage() {
           <H2>3. How We Use Your Information</H2>
           <ul className="mb-4 list-disc pl-6 text-sm leading-7 text-muted">
             <li>Providing mortgage estimate services</li>
-            <li>Connecting you with licensed Harris Capital loan officers</li>
+            <li>Connecting you with licensed Harris Capital Mortgage Group loan officers</li>
             <li>Sending SMS and email communications if you have consented</li>
             <li>Improving our website and services</li>
             <li>Complying with legal obligations (RESPA, ECOA, GLBA, state mortgage regulations)</li>
           </ul>
 
           <H2>4. SMS Communications</H2>
-          <P>We may send you SMS messages if you provided your phone number and consented to receive texts. Message frequency varies. Message and data rates may apply. Reply STOP to opt out at any time. Reply HELP for assistance. We do not sell your phone number to third parties. See our <a href="/sms-policy" className="text-brand underline">SMS Policy</a> for full details.</P>
+          <P>We may send you SMS messages if you provided your phone number and consented to receive texts. Message frequency varies. Message and data rates may apply. Reply STOP to opt out at any time. Reply HELP for assistance. We do not sell your phone number to third parties. See our <a href="/sms-policy" className="text-accent underline">SMS Policy</a> for full details.</P>
 
           <H2>5. Data Sharing</H2>
           <P>We do not sell your personal information. We may share your information with:</P>
           <ul className="mb-4 list-disc pl-6 text-sm leading-7 text-muted">
-            <li>Harris Capital loan officers who will contact you regarding your inquiry</li>
+            <li>Harris Capital Mortgage Group loan officers who will contact you regarding your inquiry</li>
             <li>Service providers who assist in operating our website (under confidentiality agreements)</li>
             <li>Legal authorities when required by law</li>
           </ul>
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
           <H2>9. Contact</H2>
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
             Privacy inquiries: privacy@getorangekey.com<br />
-            Harris Capital Mortgage Group, LLC dba Orange Key<br />
+            Harris Capital Mortgage Group, LLC<br />
             455 E Eisenhower Pkwy, Suite 300, Ann Arbor, MI 48108
           </div>
         </div>

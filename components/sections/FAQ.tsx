@@ -20,7 +20,7 @@ export function FAQ() {
             <div
               key={i}
               className="overflow-hidden rounded-3xl border border-line bg-white transition-all duration-200"
-              style={{ borderLeft: open === i ? "4px solid #FF7800" : "4px solid transparent" }}
+              style={{ borderLeft: open === i ? "4px solid #F37021" : "4px solid transparent" }}
             >
               <button
                 className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"

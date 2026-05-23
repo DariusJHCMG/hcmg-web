@@ -3,8 +3,8 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "Licensing & Disclosures — Orange Key · NMLS# 1918223",
-  description: "State licensing information for Harris Capital Mortgage Group, LLC dba Orange Key. NMLS# 1918223. Equal Housing Lender.",
+  title: "Licensing & Disclosures — HCMG · NMLS# 1918223",
+  description: "State licensing information for Harris Capital Mortgage Group, LLC. NMLS# 1918223. Equal Housing Lender.",
   alternates: { canonical: "https://getorangekey.com/licensing" },
 };
 
@@ -37,7 +37,7 @@ export default function LicensingPage() {
 
           <H2>Company Information</H2>
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
-            <strong className="text-ink">Harris Capital Mortgage Group, LLC dba Orange Key</strong><br />
+            <strong className="text-ink">Harris Capital Mortgage Group, LLC</strong><br />
             NMLS# 1918223<br />
             455 E Eisenhower Pkwy, Suite 300<br />
             Ann Arbor, MI 48108<br />
@@ -51,7 +51,7 @@ export default function LicensingPage() {
               href="https://www.nmlsconsumeraccess.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-brand underline"
+              className="text-accent underline"
             >
               nmlsconsumeraccess.org
             </a>
@@ -103,7 +103,7 @@ export default function LicensingPage() {
 
           <H2>Regulatory Disclosures</H2>
           <P>
-            Orange Key provides informational mortgage estimates only. Nothing on this site constitutes a loan commitment, pre-approval, pre-qualification, or guarantee of any rate or term. Estimates are subject to change without notice and are based solely on the information you provide. Actual loan terms require a complete application, credit review, income and asset verification, property appraisal, and final underwriting approval.
+            HCMG provides informational mortgage estimates only. Nothing on this site constitutes a loan commitment, pre-approval, pre-qualification, or guarantee of any rate or term. Estimates are subject to change without notice and are based solely on the information you provide. Actual loan terms require a complete application, credit review, income and asset verification, property appraisal, and final underwriting approval.
           </P>
           <P>
             Interest rates and programs are subject to change daily. Annual Percentage Rate (APR) is based on the loan amount, loan term, origination fees, and other finance charges. Rate locks are available upon completion of a full loan application. All lending decisions are made in accordance with applicable federal and state laws, including the Equal Credit Opportunity Act (ECOA) and the Fair Housing Act.
@@ -112,13 +112,13 @@ export default function LicensingPage() {
           <H2>Privacy Notice</H2>
           <P>
             As a mortgage company, we are subject to the Gramm-Leach-Bliley Act (GLBA) and maintain appropriate safeguards for your nonpublic personal information. See our{" "}
-            <a href="/privacy" className="text-brand underline">Privacy Policy</a> for complete details.
+            <a href="/privacy" className="text-accent underline">Privacy Policy</a> for complete details.
           </P>
 
           <H2>Contact Regulatory Inquiries</H2>
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
             Licensing inquiries: legal@getorangekey.com<br />
-            Harris Capital Mortgage Group, LLC dba Orange Key<br />
+            Harris Capital Mortgage Group, LLC<br />
             NMLS# 1918223<br />
             455 E Eisenhower Pkwy, Suite 300, Ann Arbor, MI 48108
           </div>

@@ -11,26 +11,38 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: "Orange Key — Find Out What You Can Afford in 60 Seconds",
-    template: "%s | Orange Key",
+    default: "HCMG — Find Out What You Can Afford in 60 Seconds",
+    template: "%s | HCMG",
   },
   description:
-    "Fast, simple mortgage estimates. No hard credit check. FHA, VA, Conventional, and Refinance. Harris Capital Mortgage Group, LLC dba Orange Key · NMLS# 1918223 · Equal Housing Lender.",
+    "Fast, simple mortgage estimates. No hard credit check. FHA, VA, Conventional, and Refinance. Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender.",
   metadataBase: new URL("https://getorangekey.com"),
   openGraph: {
     type: "website",
     url: "https://getorangekey.com",
-    siteName: "Orange Key",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Orange Key — Fast mortgage estimates" }],
+    siteName: "HCMG — Harris Capital Mortgage Group",
+    title: "HCMG — Find Out What You Can Afford in 60 Seconds",
+    description:
+      "Fast, simple mortgage estimates. No hard credit check. FHA, VA, Conventional, and Refinance. Harris Capital Mortgage Group, LLC · NMLS# 1918223.",
+    images: [
+      {
+        url: "/hcmg-social-square.svg",
+        width: 1000,
+        height: 1000,
+        alt: "HCMG — Harris Capital Mortgage Group",
+      },
+    ],
   },
-  twitter: { card: "summary_large_image" },
-  icons: {
-    icon: "/brand/ok-favicon.svg",
-    apple: "/brand/ok-app-icon.svg",
+  twitter: {
+    card: "summary_large_image",
+    title: "HCMG — Find Out What You Can Afford in 60 Seconds",
+    description:
+      "Fast, simple mortgage estimates. No hard credit check. Harris Capital Mortgage Group · NMLS# 1918223.",
+    images: ["/hcmg-social-square.svg"],
   },
   keywords: [
     "mortgage estimate", "FHA loan", "VA loan", "conventional loan", "home buying",
-    "Harris Capital Mortgage", "NMLS 1918223", "Orange Key", "mortgage calculator",
+    "Harris Capital Mortgage Group", "HCMG", "NMLS 1918223", "mortgage calculator",
   ],
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
@@ -38,10 +50,10 @@ export const metadata: Metadata = {
 const schemaOrg = {
   "@context": "https://schema.org",
   "@type": "MortgageLender",
-  name: "Orange Key",
-  alternateName: "Harris Capital Mortgage Group, LLC",
+  name: "Harris Capital Mortgage Group, LLC",
+  alternateName: "HCMG",
   description:
-    "Fast mortgage estimates for home buyers across FL, TX, GA, NV, CO, VA, DC, and MD. Harris Capital Mortgage Group, LLC dba Orange Key · NMLS# 1918223.",
+    "Fast mortgage estimates for home buyers across FL, TX, GA, NV, CO, VA, DC, and MD. Harris Capital Mortgage Group, LLC · NMLS# 1918223.",
   url: "https://getorangekey.com",
   telephone: "+18884413930",
   email: "hello@getorangekey.com",

@@ -3,8 +3,8 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Orange Key",
-  description: "Terms of Service for Orange Key / Harris Capital Mortgage Group, LLC. NMLS# 1918223.",
+  title: "Terms of Service — HCMG",
+  description: "Terms of Service for Harris Capital Mortgage Group, LLC. NMLS# 1918223.",
   alternates: { canonical: "https://getorangekey.com/terms" },
 };
 
@@ -28,7 +28,7 @@ export default function TermsPage() {
           <P>By accessing or using getorangekey.com, you agree to be bound by these Terms of Service. If you do not agree, please do not use this website.</P>
 
           <H2>2. Description of Service</H2>
-          <P>Orange Key provides informational mortgage estimates and lead generation services. We are NOT a lender. All lending decisions are made by Harris Capital Mortgage Group, LLC (NMLS# 1918223) through a formal application process.</P>
+          <P>Harris Capital Mortgage Group, LLC (NMLS# 1918223) (&ldquo;HCMG,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) provides informational mortgage estimates and lead generation services through this website. All lending decisions are made by HCMG through a formal application process.</P>
 
           <H2>3. Eligibility</H2>
           <P>This service is intended for US residents seeking mortgage information. You must be at least 18 years old to use this service.</P>
@@ -40,13 +40,13 @@ export default function TermsPage() {
           <P>You agree not to use this website for any unlawful purpose, to submit false information, or to interfere with the operation of our services.</P>
 
           <H2>6. Disclaimers</H2>
-          <P>Orange Key provides informational estimates only. Nothing on this site is a loan approval, pre-qualification, commitment to lend, or guarantee of any rate or term. All estimates are based on the information you provide and general market conditions. Actual terms depend on a complete loan application, credit review, income verification, property appraisal, and other underwriting factors.</P>
+          <P>HCMG provides informational estimates only. Nothing on this site is a loan approval, pre-qualification, commitment to lend, or guarantee of any rate or term. All estimates are based on the information you provide and general market conditions. Actual terms depend on a complete loan application, credit review, income verification, property appraisal, and other underwriting factors.</P>
 
           <H2>7. Limitation of Liability</H2>
-          <P>To the maximum extent permitted by law, Orange Key and Harris Capital Mortgage Group, LLC shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of this website or our services.</P>
+          <P>To the maximum extent permitted by law, Harris Capital Mortgage Group, LLC shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of this website or our services.</P>
 
           <H2>8. Indemnification</H2>
-          <P>You agree to indemnify and hold harmless Orange Key, Harris Capital Mortgage Group, LLC, and their officers, employees, and agents from any claims arising from your use of this service or violation of these terms.</P>
+          <P>You agree to indemnify and hold harmless Harris Capital Mortgage Group, LLC and its officers, employees, and agents from any claims arising from your use of this service or violation of these terms.</P>
 
           <H2>9. Governing Law</H2>
           <P>These Terms are governed by the laws of the State of Michigan, without regard to conflict of law provisions.</P>

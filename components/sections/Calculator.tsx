@@ -62,7 +62,7 @@ export function Calculator() {
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-semibold text-ink">Down payment</span>
-                <span className="rounded-full border border-line px-3 py-1 text-sm font-semibold text-brand">{calc.downPaymentPercent}% = {formatCurrency(est.downPaymentAmount)}</span>
+                <span className="rounded-full border border-line px-3 py-1 text-sm font-semibold text-accent">{calc.downPaymentPercent}% = {formatCurrency(est.downPaymentAmount)}</span>
               </div>
               <input type="range" min={3} max={50} step={0.5} value={calc.downPaymentPercent} onChange={(e) => set("downPaymentPercent", Number(e.target.value))} className="range-brand" />
             </div>
@@ -77,7 +77,7 @@ export function Calculator() {
             </label>
 
             {/* Advanced toggle */}
-            <button type="button" onClick={() => setShowAdvanced((v) => !v)} className="text-sm font-semibold text-brand hover:underline">
+            <button type="button" onClick={() => setShowAdvanced((v) => !v)} className="text-sm font-semibold text-accent hover:underline">
               {showAdvanced ? "− Hide" : "+ Advanced"} options
             </button>
             {showAdvanced && (
@@ -91,7 +91,7 @@ export function Calculator() {
 
           {/* Output panel */}
           <div className="mt-8 rounded-3xl p-6" style={{ background: "#FFF3E6" }}>
-            <p className="mb-1 text-center text-xs font-semibold uppercase tracking-[0.16em] text-brand">Estimated total monthly payment</p>
+            <p className="mb-1 text-center text-xs font-semibold uppercase tracking-[0.16em] text-accent">Estimated total monthly payment</p>
             <p className="text-center font-extrabold tracking-tight text-ink" style={{ fontSize: 44 }}>
               {formatCurrency(Math.round(est.totalMonthlyPayment))}<span className="text-xl font-semibold text-muted">/mo</span>
             </p>
@@ -129,7 +129,7 @@ function RangeField({ label, display, value, min, max, step, onChange }: { label
     <div>
       <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-semibold text-ink">{label}</span>
-        <span className="rounded-full border border-line px-3 py-1 text-sm font-semibold text-brand">{display}</span>
+        <span className="rounded-full border border-line px-3 py-1 text-sm font-semibold text-accent">{display}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="range-brand" />
     </div>

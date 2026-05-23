@@ -50,7 +50,7 @@ const LOAN_PATH: Record<CreditBand, string> = {
 };
 
 const SMS_CONSENT_TEXT =
-  "By submitting this form, I agree to be contacted by Harris Capital Mortgage Group, LLC dba Orange Key (NMLS# 1918223) regarding my mortgage inquiry. I consent to receive calls, texts, and emails. Message and data rates may apply. Reply STOP to opt out of texts at any time.";
+  "By submitting this form, I agree to be contacted by Harris Capital Mortgage Group, LLC (NMLS# 1918223) regarding my mortgage inquiry. I consent to receive calls, texts, and emails. Message and data rates may apply. Reply STOP to opt out of texts at any time.";
 
 // ── Estimate calc ──────────────────────────────────────────
 function getEstimate(state: FunnelState) {
@@ -151,7 +151,7 @@ export function FunnelFlow() {
             {stepNum > 1 && (
               <button
                 onClick={() => back((stepNum - 1) as Step)}
-                className="text-xs font-semibold text-muted hover:text-brand"
+                className="text-xs font-semibold text-muted hover:text-accent"
               >
                 ← Back
               </button>
@@ -331,11 +331,11 @@ export function FunnelFlow() {
                     <input
                       type="checkbox" checked={state.smsConsent}
                       onChange={(e) => set("smsConsent", e.target.checked)}
-                      className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-line accent-brand"
+                      className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-line accent-accent"
                     />
                     <span className="text-xs leading-5 text-muted">
                       {SMS_CONSENT_TEXT}{" "}
-                      <Link href="/sms-policy" className="underline hover:text-brand">View our SMS Policy</Link>.
+                      <Link href="/sms-policy" className="underline hover:text-accent">View our SMS Policy</Link>.
                       {" "}* Required
                     </span>
                   </div>

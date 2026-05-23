@@ -4,7 +4,7 @@ import { Footer } from "@/components/ui/Footer";
 import { FunnelFlow } from "@/components/funnel/FunnelFlow";
 
 export const metadata: Metadata = {
-  title: "Get Your Mortgage Estimate — Orange Key",
+  title: "Get Your Mortgage Estimate — HCMG",
   description:
     "See what you can afford in 60 seconds. No hard credit check. FHA, VA, Conventional, and Refinance options. Harris Capital Mortgage Group · NMLS# 1918223.",
   alternates: { canonical: "https://getorangekey.com/get-started" },

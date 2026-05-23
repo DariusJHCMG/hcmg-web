@@ -21,7 +21,7 @@ export function FinalCTA() {
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/get-started"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand shadow-orange transition hover:scale-[1.02] hover:shadow-lg"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-accent shadow-orange transition hover:scale-[1.02] hover:shadow-lg"
             >
               See what I qualify for →
             </Link>
@@ -34,7 +34,7 @@ export function FinalCTA() {
           </div>
 
           <p className="mt-8 text-sm text-white/50">
-            NMLS# 1918223 · Equal Housing Lender · Harris Capital Mortgage Group, LLC dba Orange Key
+            NMLS# 1918223 · Equal Housing Lender · Harris Capital Mortgage Group, LLC
           </p>
         </div>
       </div>

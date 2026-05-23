@@ -3,8 +3,8 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "SMS Terms — Orange Key",
-  description: "SMS Terms and Conditions for Orange Key / Harris Capital Mortgage Group, LLC. NMLS# 1918223.",
+  title: "SMS Terms — HCMG",
+  description: "SMS Terms and Conditions for Harris Capital Mortgage Group, LLC. NMLS# 1918223.",
   alternates: { canonical: "https://getorangekey.com/sms-policy" },
 };
 
@@ -26,7 +26,7 @@ export default function SmsPolicy() {
 
           <H2>Program Description</H2>
           <P>
-            Harris Capital Mortgage Group, LLC dba Orange Key (NMLS# 1918223) sends SMS text messages to users who
+            Harris Capital Mortgage Group, LLC (NMLS# 1918223) sends SMS text messages to users who
             have provided their phone number and consented to receive texts regarding:
           </P>
           <ul className="mb-4 list-disc pl-6 text-sm leading-7 text-muted">
@@ -35,7 +35,7 @@ export default function SmsPolicy() {
             <li>Product announcements and rate alerts (if opted in)</li>
             <li>General account and application notifications</li>
           </ul>
-          <P><strong className="text-ink">Program Name:</strong> Orange Key Mortgage Alerts</P>
+          <P><strong className="text-ink">Program Name:</strong> HCMG Mortgage Alerts</P>
 
           <H2>Message Frequency</H2>
           <P>
@@ -70,12 +70,12 @@ export default function SmsPolicy() {
           <H2>Data Use and Privacy</H2>
           <P>
             Your phone number will never be sold or shared with third parties for their marketing purposes. See our{" "}
-            <a href="/privacy" className="text-brand underline">Privacy Policy</a> at getorangekey.com/privacy.
+            <a href="/privacy" className="text-accent underline">Privacy Policy</a> at getorangekey.com/privacy.
           </P>
 
           <H2>Supported Carriers</H2>
           <P>
-            AT&T, Verizon, T-Mobile, Sprint, US Cellular, Boost Mobile, and other major US carriers. Carrier is not
+            AT&amp;T, Verizon, T-Mobile, Sprint, US Cellular, Boost Mobile, and other major US carriers. Carrier is not
             liable for delayed or undelivered messages.
           </P>
 
@@ -86,7 +86,7 @@ export default function SmsPolicy() {
 
           <H2>Contact</H2>
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
-            <strong className="text-ink">Harris Capital Mortgage Group, LLC dba Orange Key</strong><br />
+            <strong className="text-ink">Harris Capital Mortgage Group, LLC</strong><br />
             NMLS# 1918223<br />
             455 E Eisenhower Pkwy, Suite 300<br />
             Ann Arbor, MI 48108<br />

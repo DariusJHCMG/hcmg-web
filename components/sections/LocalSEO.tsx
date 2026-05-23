@@ -26,7 +26,7 @@ export function LocalSEO() {
               <Link
                 key={city.slug}
                 href={`/seo/${city.slug}`}
-                className="rounded-2xl border border-line bg-white px-4 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:shadow-soft"
+                className="rounded-2xl border border-line bg-white px-4 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent hover:shadow-soft"
               >
                 <div className="text-sm font-bold text-ink">{city.city}</div>
                 <div className="mt-0.5 text-xs text-muted">{city.state} · {city.loanType}</div>
@@ -34,7 +34,7 @@ export function LocalSEO() {
             ))}
           </div>
           <div className="mt-4 text-right">
-            <Link href={`/seo/${featuredCities[0].slug}`} className="text-sm font-semibold text-brand hover:underline">
+            <Link href={`/seo/${featuredCities[0].slug}`} className="text-sm font-semibold text-accent hover:underline">
               View all 100 local pages →
             </Link>
           </div>

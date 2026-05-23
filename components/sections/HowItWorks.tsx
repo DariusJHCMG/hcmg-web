@@ -33,7 +33,7 @@ export function HowItWorks() {
               initial={{ opacity: 0, y: 24 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="rounded-3xl border border-line bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-brand/25 hover:shadow-soft"
+              className="rounded-3xl border border-line bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-accent/25 hover:shadow-soft"
             >
               <div
                 className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-extrabold text-white"

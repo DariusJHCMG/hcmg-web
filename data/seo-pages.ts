@@ -67,7 +67,7 @@ export const LOAN_TYPE_FAQS: Record<string, { q: string; a: string }[]> = {
   ],
   "First-Time Buyer": [
     { q: "What programs are available for first-time buyers?", a: "Programs vary by state but often include down payment assistance grants, below-market rate loans, and tax credits. Harris Capital's loan officers know the programs available in your market." },
-    { q: "What should I expect during the homebuying process?", a: "The typical process: pre-qualification → home search → offer → inspection → loan processing → appraisal → closing. Orange Key helps you understand your numbers before you start searching." },
+    { q: "What should I expect during the homebuying process?", a: "The typical process: pre-qualification → home search → offer → inspection → loan processing → appraisal → closing. HCMG helps you understand your numbers before you start searching." },
     { q: "How much should I save before buying?", a: "Aim for 3–5% for down payment, plus 2–3% for closing costs, plus 1–2% for move-in expenses and immediate repairs. Your loan officer will give you a precise cash-to-close estimate." },
   ],
 };

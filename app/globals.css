@@ -5,11 +5,12 @@
 :root {
   color-scheme: light;
   --font-montserrat: "Montserrat", sans-serif;
-  --ok-orange: #FF7800;
-  --ok-orange-light: #FFAF00;
-  --ok-orange-dark: #E84F00;
+  --ok-orange: #F37021;
+  --ok-orange-light: #FF9847;
+  --ok-orange-dark: #C45213;
   --ok-ink: #1A2B42;
-  --ok-gradient: linear-gradient(135deg, #FFAF00 0%, #FF7800 45%, #E84F00 100%);
+  --ok-navy: #142850;
+  --ok-gradient: linear-gradient(135deg, #FF9847 0%, #F37021 50%, #C45213 100%);
 }
 
 html { scroll-behavior: smooth; }
@@ -33,20 +34,20 @@ body {
 /* ── Buttons ─────────────────────────────────────────────── */
 .primary-button {
   @apply inline-flex items-center justify-center gap-2 rounded-2xl
-         bg-brand px-6 py-4 text-base font-semibold text-white
-         transition duration-200 hover:scale-[1.02] hover:bg-brand-dark
+         bg-accent px-6 py-4 text-base font-semibold text-white
+         transition duration-200 hover:scale-[1.02] hover:bg-accent-dark
          active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
 }
 .secondary-button {
   @apply inline-flex items-center justify-center gap-2 rounded-2xl
          border border-line bg-white px-6 py-4 text-base font-semibold text-ink
-         transition duration-200 hover:border-brand hover:text-brand
+         transition duration-200 hover:border-accent hover:text-accent
          active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40;
 }
 .ghost-button {
   @apply inline-flex items-center justify-center gap-2 rounded-2xl
-         bg-transparent px-6 py-4 text-base font-semibold text-brand
-         transition duration-200 hover:bg-brand/5 active:scale-[0.98];
+         bg-transparent px-6 py-4 text-base font-semibold text-accent
+         transition duration-200 hover:bg-accent/5 active:scale-[0.98];
 }
 .outline-white-button {
   @apply inline-flex items-center justify-center gap-2 rounded-2xl
@@ -58,7 +59,7 @@ body {
 .input-base {
   @apply h-14 w-full rounded-2xl border border-line bg-white px-4 text-base text-ink
          outline-none transition duration-200
-         focus:border-brand focus:ring-4 focus:ring-brand/10
+         focus:border-accent focus:ring-4 focus:ring-accent/10
          placeholder:text-muted/60;
 }
 
@@ -66,11 +67,11 @@ body {
 .funnel-option {
   @apply w-full rounded-[22px] border-2 border-line bg-white px-5 py-5
          text-left text-base font-semibold text-ink transition-all duration-200
-         hover:border-brand hover:bg-brand/5 hover:shadow-soft
+         hover:border-accent hover:bg-accent/5 hover:shadow-soft
          active:scale-[0.98];
 }
 .funnel-option-selected {
-  @apply border-brand bg-brand/5 shadow-soft;
+  @apply border-accent bg-accent/5 shadow-soft;
 }
 
 /* ── Range slider ─────────────────────────────────────────── */
@@ -85,16 +86,16 @@ body {
   border-radius: 9999px;
   background: var(--ok-gradient);
   border: 3px solid #fff;
-  box-shadow: 0 4px 14px rgba(255,120,0,0.35);
+  box-shadow: 0 4px 14px rgba(243,112,33,0.35);
   cursor: pointer;
 }
 .range-brand::-moz-range-thumb {
   height: 22px;
   width: 22px;
   border-radius: 9999px;
-  background: #FF7800;
+  background: #F37021;
   border: 3px solid #fff;
-  box-shadow: 0 4px 14px rgba(255,120,0,0.35);
+  box-shadow: 0 4px 14px rgba(243,112,33,0.35);
 }
 
 /* ── Mobile sticky CTA ───────────────────────────────────── */
@@ -105,7 +106,7 @@ body {
 }
 .mobile-sticky-primary {
   @apply inline-flex min-h-[52px] flex-1 items-center justify-center
-         rounded-2xl bg-brand px-4 py-3 text-sm font-semibold text-white;
+         rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white;
 }
 .mobile-sticky-secondary {
   @apply inline-flex min-h-[52px] items-center justify-center
@@ -140,8 +141,8 @@ body {
   to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
 @keyframes pulseSoft {
-  0%, 100% { transform: scale(1);    box-shadow: 0 10px 30px rgba(255,120,0,0.10); }
-  50%       { transform: scale(1.01); box-shadow: 0 14px 40px rgba(255,120,0,0.18); }
+  0%, 100% { transform: scale(1);    box-shadow: 0 10px 30px rgba(243,112,33,0.10); }
+  50%       { transform: scale(1.01); box-shadow: 0 14px 40px rgba(243,112,33,0.18); }
 }
 
 @media (prefers-reduced-motion: reduce) {

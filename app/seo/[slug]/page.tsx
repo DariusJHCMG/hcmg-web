@@ -19,13 +19,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const page = seoPages.find((p) => p.slug === slug);
   if (!page) return {};
   return {
-    title: `${page.loanType} in ${page.city}, ${page.state} | Orange Key · NMLS# 1918223`,
+    title: `${page.loanType} in ${page.city}, ${page.state} | HCMG · NMLS# 1918223`,
     description: `Explore ${page.loanType.toLowerCase()} options for home buyers in ${page.city}, ${page.state}. Estimate your monthly payment. Harris Capital Mortgage Group · NMLS# 1918223 · Equal Housing Lender.`,
     alternates: { canonical: `https://getorangekey.com/seo/${slug}` },
     openGraph: {
-      title: `${page.loanType} in ${page.city}, ${page.state} | Orange Key`,
+      title: `${page.loanType} in ${page.city}, ${page.state} | HCMG`,
       description: page.description,
       url: `https://getorangekey.com/seo/${slug}`,
+      images: ["/hcmg-social-square.svg"],
     },
   };
 }
@@ -51,7 +52,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
     provider: {
       "@type": "MortgageLender",
       name: "Harris Capital Mortgage Group, LLC",
-      alternateName: "Orange Key",
+      alternateName: "HCMG",
       legalName: "Harris Capital Mortgage Group, LLC",
     },
   };
@@ -123,7 +124,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
                 <Link
                   key={r.slug}
                   href={`/seo/${r.slug}`}
-                  className="block rounded-2xl border border-line bg-white px-5 py-4 text-sm font-semibold text-ink transition-all hover:border-brand hover:text-brand"
+                  className="block rounded-2xl border border-line bg-white px-5 py-4 text-sm font-semibold text-ink transition-all hover:border-accent hover:text-accent"
                 >
                   {r.city}, {r.state} — {r.loanType}
                 </Link>
@@ -136,7 +137,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
                 <p className="mb-4 text-base font-bold text-white">Ready to see your numbers?</p>
                 <Link
                   href="/get-started"
-                  className="block rounded-2xl bg-white px-5 py-3 text-center text-sm font-bold text-brand transition hover:scale-[1.02]"
+                  className="block rounded-2xl bg-white px-5 py-3 text-center text-sm font-bold text-accent transition hover:scale-[1.02]"
                 >
                   Get free estimate →
                 </Link>

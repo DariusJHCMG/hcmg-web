@@ -1,7 +1,7 @@
 const TEXTS = {
   estimate: "Estimates are for informational purposes only and are not a loan approval or commitment to lend. Rates and terms subject to credit approval and change without notice.",
   rate: "Rates shown are estimates only and are not a rate quote or commitment to lend. Actual rates depend on credit profile, loan amount, and property type.",
-  full: "Orange Key is a registered trade name of Harris Capital Mortgage Group, LLC dba Orange Key · NMLS# 1918223 · Equal Housing Lender · Not a commitment to lend.",
+  full: "Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender · Not a commitment to lend.",
 };
 
 interface DisclosureProps {

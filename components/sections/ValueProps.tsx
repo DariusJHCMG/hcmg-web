@@ -29,13 +29,13 @@ export function ValueProps() {
     <section ref={ref} className="section-pad bg-sand">
       <div className="container-shell">
         <div className="mx-auto max-w-2xl text-center">
-          <SectionEyebrow>Why Orange Key</SectionEyebrow>
+          <SectionEyebrow>Why HCMG</SectionEyebrow>
           <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink lg:text-5xl">
             The faster path to knowing your numbers
           </h2>
           <p className="mt-5 text-lg leading-8 text-muted">
             Most people spend weeks talking to lenders before understanding what they can actually afford.
-            Orange Key flips that. Know your numbers first.
+            HCMG flips that. Know your numbers first.
           </p>
         </div>
 
@@ -46,7 +46,7 @@ export function ValueProps() {
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.12 }}
-              className="glass-card p-8 transition-all duration-300 hover:-translate-y-1 hover:border-brand/30 hover:shadow-orange"
+              className="glass-card p-8 transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:shadow-orange"
             >
               <div
                 className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl text-2xl"
