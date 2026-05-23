@@ -57,21 +57,10 @@ export default function TeamPage() {
             Meet the team that gets you home.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">
-            HCMG isn&apos;t a faceless call center. Every loan at Harris Capital Mortgage Group is handled by
-            a small team of licensed professionals who know your file, answer their own phones, and explain
-            the parts of the process that other lenders skip past.
+            Every loan at Harris Capital Mortgage Group is handled by a small team of licensed professionals
+            who know your file, answer their own phones, and explain the parts of the process that other
+            lenders skip past.
           </p>
-        </div>
-      </section>
-
-      {/* Stats strip */}
-      <section className="bg-sand">
-        <div className="container-shell py-10">
-          <div className="grid gap-6 text-center sm:grid-cols-3">
-            <Stat value="20+" label="Years combined lending experience" />
-            <Stat value="8" label="States licensed to originate" />
-            <Stat value="100%" label="Client files handled by humans, not bots" />
-          </div>
         </div>
       </section>
 
@@ -163,17 +152,6 @@ export default function TeamPage() {
 
       <Footer />
     </main>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div>
-      <div className="ok-gradient-text font-extrabold leading-none" style={{ fontSize: 44 }}>
-        {value}
-      </div>
-      <div className="mt-2 text-sm font-medium text-muted">{label}</div>
-    </div>
   );
 }
 
