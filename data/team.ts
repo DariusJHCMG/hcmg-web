@@ -253,6 +253,54 @@ export const teamMembers: TeamMember[] = [
     longBio: LOAN_OFFICER_LONG_BIO("Tamara", "Tamara Hodges-Brown", "2465567", ["Las Vegas, NV"]),
     offices: ["Las Vegas, NV"],
   },
+
+  // ── Operations ─────────────────────────────────────────────────
+  // ▶ Placeholder slots — replace with real names/photos/bios.
+  {
+    slug: "ops-processor-placeholder",
+    name: "Senior Processor Name",
+    role: "Senior Loan Processor",
+    nmls: null,
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Keeps files moving through underwriting cleanly so borrowers close on time, every time.",
+    longBio: [
+      "Replace with paragraph one — operational background, what they bring to the HCMG process.",
+      "Replace with paragraph two — favorite kinds of files, common challenges they help borrowers solve.",
+      "Replace with paragraph three — personal note.",
+    ],
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "ops-underwriter-placeholder",
+    name: "Lead Underwriter Name",
+    role: "Lead Underwriter",
+    nmls: null,
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Reviews every loan with an eye toward getting to yes while protecting the borrower and the file.",
+    longBio: [
+      "Replace with paragraph one — underwriting background, where they trained.",
+      "Replace with paragraph two — file types they specialize in, what they look for.",
+      "Replace with paragraph three — personal note.",
+    ],
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "ops-director-placeholder",
+    name: "Operations Director Name",
+    role: "Director of Operations",
+    nmls: null,
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Runs the engine room — vendor management, compliance support, and the systems that keep HCMG efficient.",
+    longBio: [
+      "Replace with paragraph one — operational background, what they own at HCMG.",
+      "Replace with paragraph two — systems and processes they oversee.",
+      "Replace with paragraph three — personal note.",
+    ],
+    offices: ["Las Vegas, NV"],
+  },
 ];
 
 export function getTeamMemberBySlug(slug: string): TeamMember | undefined {
