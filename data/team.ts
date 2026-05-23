@@ -39,26 +39,26 @@ export const teamMembers: TeamMember[] = [
     slug: "lamont-harris-sr",
     name: "Lamont Harris Sr.",
     role: "Chief Executive Officer",
-    nmls: null,
+    nmls: "491049",
     photo: PLACEHOLDER_PHOTO,
     shortBio:
       "Leads strategy, vision, and direction for Harris Capital Mortgage Group.",
     longBio: [
-      "Lamont Harris Sr. serves as Chief Executive Officer of Harris Capital Mortgage Group, leading the company's overall strategy, growth, and vision.",
+      "Lamont Harris Sr. serves as Chief Executive Officer of Harris Capital Mortgage Group (NMLS# 491049), leading the company's overall strategy, growth, and vision. Based in Las Vegas with additional presence in Houston, he originates loans alongside his executive role.",
       "A fuller biography is on the way. To learn more about working with HCMG, reach our team through the contact page.",
     ],
-    offices: ["Las Vegas, NV"],
+    offices: ["Las Vegas, NV", "Houston, TX"],
   },
   {
     slug: "darius-james",
     name: "Darius James",
     role: "President",
-    nmls: null,
+    nmls: "1097168",
     photo: PLACEHOLDER_PHOTO,
     shortBio:
       "President of HCMG, leading the executive team and day-to-day operations of the company.",
     longBio: [
-      "Darius James serves as President at Harris Capital Mortgage Group, leading the executive team and overseeing the company's day-to-day operations.",
+      "Darius James serves as President at Harris Capital Mortgage Group (NMLS# 1097168), leading the executive team and overseeing the company's day-to-day operations.",
       "A fuller biography is on the way. To learn more about HCMG, reach our team through the contact page.",
     ],
     offices: ["Las Vegas, NV"],
@@ -208,17 +208,6 @@ export const teamMembers: TeamMember[] = [
       "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
     longBio: LOAN_OFFICER_LONG_BIO("LaTonya", "LaTonya Matrice Jordan-Odom", "1798502", ["Las Vegas, NV"]),
     offices: ["Las Vegas, NV"],
-  },
-  {
-    slug: "lamont-harris-jr",
-    name: "Lamont Daryl Harris Jr.",
-    role: "Loan Officer",
-    nmls: "491049",
-    photo: PLACEHOLDER_PHOTO,
-    shortBio:
-      "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas and Houston offices.",
-    longBio: LOAN_OFFICER_LONG_BIO("Lamont", "Lamont Daryl Harris Jr.", "491049", ["Las Vegas, NV", "Houston, TX"]),
-    offices: ["Las Vegas, NV", "Houston, TX"],
   },
   {
     slug: "liudmila-paliankova",
