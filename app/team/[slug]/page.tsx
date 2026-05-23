@@ -47,6 +47,8 @@ export default async function TeamMemberPage({
   if (!m) notFound();
 
   const others = teamMembers.filter((t) => t.slug !== slug).slice(0, 3);
+  const startUrl = `/get-started?lo=${slug}`;
+  const phoneDigits = m.phone?.replace(/[^0-9+]/g, "") ?? "";
 
   const personSchema = {
     "@context": "https://schema.org",
@@ -136,8 +138,67 @@ export default async function TeamMemberPage({
               </h1>
               <p className="mt-5 text-lg leading-8 text-muted">{m.shortBio}</p>
 
-              {/* Quick facts */}
-              <dl className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+              {/* Quick contact chips */}
+              {(m.phone || m.email || m.linkedin) && (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {m.phone && (
+                    <a
+                      href={`tel:${phoneDigits}`}
+                      className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                    >
+                      <span aria-hidden>📞</span> Call
+                    </a>
+                  )}
+                  {m.phone && (
+                    <a
+                      href={`sms:${phoneDigits}`}
+                      className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                    >
+                      <span aria-hidden>💬</span> Text
+                    </a>
+                  )}
+                  {m.email && (
+                    <a
+                      href={`mailto:${m.email}`}
+                      className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                    >
+                      <span aria-hidden>✉️</span> Email
+                    </a>
+                  )}
+                  {m.linkedin && (
+                    <a
+                      href={m.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                    >
+                      <span aria-hidden>in</span> LinkedIn
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Primary CTAs — vonkdigital-inspired */}
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                <Link
+                  href={startUrl}
+                  className="primary-button justify-center !py-4 text-center"
+                >
+                  Request a Quote with {firstName(m.name)} →
+                </Link>
+                <Link
+                  href={startUrl}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-brand bg-white px-6 py-4 text-base font-semibold text-brand transition hover:bg-brand hover:text-white"
+                >
+                  Apply Online
+                </Link>
+              </div>
+              <p className="mt-3 text-xs text-muted/70">
+                Your application routes directly to {firstName(m.name)} — no rotation, no call center.
+              </p>
+
+              {/* Quick facts — secondary info */}
+              <dl className="mt-8 grid gap-x-8 gap-y-4 border-t border-line pt-6 sm:grid-cols-2">
                 {m.yearsExperience !== undefined && (
                   <Fact label="Experience" value={`${m.yearsExperience}+ years in mortgage`} />
                 )}
@@ -148,26 +209,6 @@ export default async function TeamMemberPage({
                   <Fact label="Licensed in" value={m.licensedStates.join(" · ")} />
                 )}
                 {m.nmls && <Fact label="NMLS" value={`#${m.nmls}`} />}
-                {m.email && (
-                  <Fact
-                    label="Email"
-                    value={
-                      <a href={`mailto:${m.email}`} className="text-accent hover:underline">
-                        {m.email}
-                      </a>
-                    }
-                  />
-                )}
-                {m.phone && (
-                  <Fact
-                    label="Direct"
-                    value={
-                      <a href={`tel:${m.phone.replace(/[^0-9+]/g, "")}`} className="text-accent hover:underline">
-                        {m.phone}
-                      </a>
-                    }
-                  />
-                )}
               </dl>
 
               {m.speciality && m.speciality.length > 0 && (
@@ -187,15 +228,6 @@ export default async function TeamMemberPage({
                   </div>
                 </div>
               )}
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/get-started" className="primary-button">
-                  Start with {firstName(m.name)} →
-                </Link>
-                <Link href="/contact" className="secondary-button">
-                  Send a message
-                </Link>
-              </div>
             </div>
           </div>
         </div>
@@ -211,6 +243,36 @@ export default async function TeamMemberPage({
                 {para}
               </p>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Mid-page CTA strip — reinforce LO-specific funnel */}
+      <section className="bg-brand text-white">
+        <div className="container-shell max-w-4xl py-12 text-center">
+          <h2
+            className="font-extrabold tracking-tight"
+            style={{ fontSize: "clamp(24px, 3vw, 36px)", lineHeight: 1.15 }}
+          >
+            Ready to start with {firstName(m.name)}?
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-white/75">
+            See your buying power and estimated monthly payment in 60 seconds. No hard credit check. Your
+            answers route directly to {firstName(m.name)}&apos;s queue.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link
+              href={startUrl}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-accent px-7 py-3.5 text-base font-bold text-white transition hover:bg-accent-dark"
+            >
+              Request a Quote →
+            </Link>
+            <Link
+              href={startUrl}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white/70 bg-transparent px-7 py-3.5 text-base font-bold text-white transition hover:bg-white/10"
+            >
+              Apply Online
+            </Link>
           </div>
         </div>
       </section>
@@ -268,5 +330,5 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function firstName(full: string): string {
-  return full.split(/\s+/)[0];
+  return full.replace(/['"()]/g, "").split(/\s+/)[0];
 }

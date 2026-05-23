@@ -13,6 +13,10 @@ export interface LeadPayload {
   estimatedBuyingPowerHigh?: number;
   estimatedMonthlyPayment?: number;
   recommendedLoanType?: string;
+  // Loan-officer routing — when the lead originated from a per-LO page
+  loSlug?: string;
+  loName?: string;
+  loNmls?: string | null;
 }
 
 export async function submitLead(payload: LeadPayload): Promise<{ success: boolean; error?: string }> {

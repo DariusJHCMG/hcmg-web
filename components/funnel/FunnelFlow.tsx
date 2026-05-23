@@ -76,7 +76,13 @@ function getEstimate(state: FunnelState) {
 }
 
 // ── Main component ─────────────────────────────────────────
-export function FunnelFlow() {
+export interface FunnelLoContext {
+  slug: string;
+  name: string;
+  nmls: string | null;
+}
+
+export function FunnelFlow({ lo }: { lo?: FunnelLoContext } = {}) {
   const [step, setStep] = useState<Step>(1);
   const [dir, setDir] = useState<1 | -1>(1);
   const [state, setState] = useState<FunnelState>({
@@ -125,6 +131,9 @@ export function FunnelFlow() {
       estimatedBuyingPowerHigh: estimate.powerHigh,
       estimatedMonthlyPayment: estimate.monthly,
       recommendedLoanType: estimate.loanPath,
+      loSlug: lo?.slug,
+      loName: lo?.name,
+      loNmls: lo?.nmls,
     });
     setSubmitting(false);
     if (result.success) {
@@ -373,7 +382,9 @@ export function FunnelFlow() {
                 You're all set{state.firstName ? `, ${state.firstName}` : ""}!
               </h2>
               <p className="mb-8 text-base leading-7 text-muted">
-                A licensed loan officer from Harris Capital will reach out within one business day to discuss your options and walk you through next steps.
+                {lo
+                  ? `${lo.name} will reach out within one business day to discuss your options and walk you through next steps.`
+                  : "A licensed loan officer from Harris Capital Mortgage Group will reach out within one business day to discuss your options and walk you through next steps."}
               </p>
 
               <div className="mb-8 space-y-3 text-left">

@@ -8,7 +8,7 @@ function getResend() {
 
 const LeadSchema = z.object({
   firstName: z.string().min(1),
-  lastName: z.string().min(1),
+  lastName: z.string().min(1).optional(),
   email: z.string().email(),
   phone: z.string().min(7),
   smsConsent: z.boolean(),
@@ -18,9 +18,13 @@ const LeadSchema = z.object({
   creditRange: z.string().optional(),
   incomeRange: z.string().optional(),
   notes: z.string().optional(),
+  // LO routing — present when the lead originated on a per-LO profile page
+  loSlug: z.string().optional(),
+  loName: z.string().optional(),
+  loNmls: z.string().nullable().optional(),
 });
 
-const confirmationHtml = (firstName: string) => `
+const confirmationHtml = (firstName: string, loName?: string) => `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" /></head>
@@ -38,7 +42,9 @@ const confirmationHtml = (firstName: string) => `
           <td style="padding:40px;">
             <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#1A2B42;">Hi ${firstName} 👋</p>
             <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#5A6B7E;">
-              Thanks for reaching out — we&apos;ve received your mortgage inquiry and a licensed loan officer will be in touch within one business day.
+              Thanks for reaching out — we&apos;ve received your mortgage inquiry${
+                loName ? ` and routed it directly to ${loName}` : " and a licensed loan officer"
+              } will be in touch within one business day.
             </p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#5A6B7E;">
               In the meantime, you can use our free mortgage calculator to explore your payment options:
@@ -49,7 +55,7 @@ const confirmationHtml = (firstName: string) => `
             <hr style="margin:32px 0;border:none;border-top:1px solid #f0f0f0;" />
             <p style="margin:0;font-size:12px;line-height:1.7;color:#9AABB8;">
               This message was sent because you submitted a mortgage inquiry at getorangekey.com.
-              Harris Capital Mortgage Group, LLC · NMLS# 1918223 · 455 E Eisenhower Pkwy, Suite 300, Ann Arbor, MI 48108.
+              Harris Capital Mortgage Group, LLC · NMLS# 1918223.
               Equal Housing Lender.
             </p>
           </td>
@@ -75,6 +81,8 @@ export async function POST(request: NextRequest) {
   }
 
   const lead = parsed.data;
+  const lastName = lead.lastName ?? "";
+  const fullName = `${lead.firstName}${lastName ? ` ${lastName}` : ""}`.trim();
 
   // Fire-and-forget: send to Porchy Flight Deck CRM
   const flightDeckUrl = process.env.FLIGHT_DECK_LEADS_URL;
@@ -86,23 +94,33 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${flightDeckKey}`,
       },
-      body: JSON.stringify({ ...lead, source_app: "orange-key-web" }),
+      body: JSON.stringify({
+        ...lead,
+        source_app: "orange-key-web",
+        assigned_lo_slug: lead.loSlug ?? null,
+        assigned_lo_name: lead.loName ?? null,
+        assigned_lo_nmls: lead.loNmls ?? null,
+      }),
     }).catch(() => {});
   }
 
   // Send confirmation + internal notification in parallel
   const resend = getResend();
+  const internalSubject = lead.loName
+    ? `New lead for ${lead.loName}: ${fullName || lead.email}`
+    : `New lead: ${fullName || lead.email}`;
+
   await Promise.all([
     resend.emails.send({
       from: "HCMG <noreply@getorangekey.com>",
       to: lead.email,
-      subject: "Your HCMG estimate is ready",
-      html: confirmationHtml(lead.firstName),
+      subject: lead.loName ? `Your HCMG estimate — routed to ${lead.loName}` : "Your HCMG estimate is ready",
+      html: confirmationHtml(lead.firstName, lead.loName),
     }),
     resend.emails.send({
       from: "HCMG Leads <noreply@getorangekey.com>",
       to: "leads@getorangekey.com",
-      subject: `New lead: ${lead.firstName} ${lead.lastName}`,
+      subject: internalSubject,
       html: `<pre style="font-family:monospace;font-size:13px;">${JSON.stringify(lead, null, 2)}</pre>`,
     }),
   ]);
