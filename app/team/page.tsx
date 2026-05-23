@@ -3,6 +3,7 @@ import Link from "next/link";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
+import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { teamMembers, getTeamGroupedByRole } from "@/data/team";
 
 export const metadata: Metadata = {
@@ -84,12 +85,11 @@ export default function TeamPage() {
                     href={`/team/${m.slug}`}
                     className="group block overflow-hidden rounded-3xl border border-line bg-white shadow-soft transition-all hover:-translate-y-1 hover:border-accent hover:shadow-card"
                   >
-                    <div className="relative aspect-square w-full overflow-hidden bg-brand">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={m.photo}
-                        alt={`${m.name}, ${m.role}`}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    <div className="relative w-full overflow-hidden">
+                      <TeamPhoto
+                        photo={m.photo}
+                        name={m.name}
+                        className="h-full w-full transition-transform duration-500 group-hover:scale-[1.03]"
                       />
                       {m.nmls && (
                         <span className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-ink backdrop-blur">

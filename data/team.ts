@@ -1,23 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════
 // HCMG team roster
 //
-// ▶ Replace the placeholder entries below with real team data once
-//   names, photos, NMLS numbers, and bios are available.
+// Loan-officer NMLS numbers + office locations were pulled from
+// the company's NMLS Consumer Access listing (Harris Capital
+// Mortgage Group LLC, NMLS# 1918223).
 //
-// Per-member fields:
-//   slug          unique URL-safe identifier (e.g. "jane-doe")
-//   name          full name as it should appear publicly
-//   role          short job title shown under the name
-//   nmls          NMLS individual license number (or null if N/A)
-//   photo         path to /public photo (square crop preferred)
-//   shortBio      one-sentence summary used on grid cards + meta
-//   longBio       array of paragraphs for the per-member page
-//   email         optional contact email
-//   phone         optional direct phone, formatted for display
-//   linkedin      optional LinkedIn profile URL
-//   yearsExperience  optional, drives the experience badge
-//   licensedStates   optional array of US state abbreviations
-//   speciality    optional list of focus areas (e.g. ["VA loans", "First-time buyers"])
+// Bios for each person are still placeholders — replace longBio
+// arrays once real biographical copy is approved.
 // ═══════════════════════════════════════════════════════════════════
 
 export type TeamMember = {
@@ -34,111 +23,246 @@ export type TeamMember = {
   yearsExperience?: number;
   licensedStates?: string[];
   speciality?: string[];
+  offices?: string[];
 };
 
-// Generic team-card placeholder (initials-only SVG, navy bg).
-// Replace per-member photo paths with real images once available.
 const PLACEHOLDER_PHOTO = "/team/placeholder.svg";
 
+const LOAN_OFFICER_LONG_BIO = (firstName: string, name: string, nmls: string, offices: string[]): string[] => [
+  `${name} is a licensed mortgage loan originator (NMLS# ${nmls}) at Harris Capital Mortgage Group, serving clients from HCMG's ${offices.join(" and ")} office${offices.length > 1 ? "s" : ""}.`,
+  `More about ${firstName}'s background and approach is on the way. To connect, start with a free mortgage estimate or reach out through our contact page — we'll route you to the right HCMG loan officer for your scenario.`,
+];
+
 export const teamMembers: TeamMember[] = [
+  // ── Leadership ────────────────────────────────────────────────
   {
-    slug: "founder-placeholder",
-    name: "Founder Name",
-    role: "Founder & Chief Executive Officer",
-    nmls: "0000000",
+    slug: "lamont-harris-sr",
+    name: "Lamont Harris Sr.",
+    role: "Chief Executive Officer",
+    nmls: null,
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Founded HCMG with the mission of bringing transparent, honest mortgage advice to every buyer.",
+      "Leads strategy, vision, and direction for Harris Capital Mortgage Group.",
     longBio: [
-      "Replace this paragraph with the founder's career background — where they started in mortgage lending, the path that led to founding HCMG, and what they're trying to build here.",
-      "A second paragraph can describe their philosophy on lending, what they value in client relationships, and the kind of borrower they personally enjoy working with.",
-      "A third short paragraph can be personal — where they live, what they do outside of work, any community involvement worth highlighting.",
+      "Lamont Harris Sr. serves as Chief Executive Officer of Harris Capital Mortgage Group, leading the company's overall strategy, growth, and vision.",
+      "A fuller biography is on the way. To learn more about working with HCMG, reach our team through the contact page.",
     ],
-    yearsExperience: 20,
-    licensedStates: ["FL", "TX", "GA", "NV", "CO", "VA", "DC", "MD"],
-    speciality: ["Jumbo loans", "Investment property", "Self-employed borrowers"],
+    offices: ["Las Vegas, NV"],
   },
   {
-    slug: "loan-officer-1",
-    name: "Senior Loan Officer Name",
-    role: "Senior Loan Officer",
-    nmls: "0000001",
+    slug: "darius-james",
+    name: "Darius James",
+    role: "President",
+    nmls: null,
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Specializes in first-time buyer programs and helping clients build a clear path from pre-approval to closing.",
+      "President of HCMG, leading the executive team and day-to-day operations of the company.",
     longBio: [
-      "Replace with bio paragraph one — how they got into lending, where they're licensed, what they care about in the work.",
-      "Paragraph two — typical client profile, signature scenarios they handle well, what borrowers tell them about working together.",
-      "Paragraph three — personal note, location, hobbies, languages spoken, certifications.",
+      "Darius James serves as President at Harris Capital Mortgage Group, leading the executive team and overseeing the company's day-to-day operations.",
+      "A fuller biography is on the way. To learn more about HCMG, reach our team through the contact page.",
     ],
-    yearsExperience: 8,
-    licensedStates: ["FL", "GA", "TX"],
-    speciality: ["First-time buyers", "FHA", "VA loans"],
+    offices: ["Las Vegas, NV"],
   },
   {
-    slug: "loan-officer-2",
-    name: "Loan Officer Name",
+    slug: "mesia-crews",
+    name: 'Jamesia "Mesia" Crews',
+    role: "Executive Vice President of Originations",
+    nmls: null,
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Heads HCMG's loan origination organization, leading the company's loan officers and origination strategy.",
+    longBio: [
+      "Jamesia \"Mesia\" Crews serves as Executive Vice President of Originations at Harris Capital Mortgage Group, leading the company's loan-officer team and origination strategy.",
+      "A fuller biography is on the way. To learn more, reach our team through the contact page.",
+    ],
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "aysha-randall",
+    name: "Aysha Randall",
+    role: "Chief Compliance Officer",
+    nmls: "2341853",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Owns compliance, licensing, and regulatory operations across every state HCMG serves.",
+    longBio: [
+      "Aysha Randall serves as Chief Compliance Officer at Harris Capital Mortgage Group (NMLS# 2341853), responsible for compliance, licensing, and regulatory operations across every state where HCMG originates loans.",
+      "A fuller biography is on the way. To learn more, reach our team through the contact page.",
+    ],
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "ranada-harris",
+    name: "Ranada Harris",
+    role: "Chief Operating Officer",
+    nmls: null,
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Oversees operations across processing, underwriting, and closing at HCMG.",
+    longBio: [
+      "Ranada Harris serves as Chief Operating Officer at Harris Capital Mortgage Group, leading operations across processing, underwriting, and closing.",
+      "A fuller biography is on the way. To learn more, reach our team through the contact page.",
+    ],
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "adam-demarco",
+    name: "Adam DeMarco",
+    role: "National Director of Sales and Marketing",
+    nmls: "2749110",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Leads sales and marketing strategy nationwide for HCMG.",
+    longBio: [
+      "Adam DeMarco serves as National Director of Sales and Marketing at Harris Capital Mortgage Group (NMLS# 2749110), leading the company's sales organization and marketing strategy nationwide.",
+      "A fuller biography is on the way. To learn more, reach our team through the contact page.",
+    ],
+    offices: ["Las Vegas, NV"],
+  },
+
+  // ── Loan Officers ────────────────────────────────────────────
+  {
+    slug: "cason-knight",
+    name: "Cason Thomas Knight",
     role: "Loan Officer",
-    nmls: "0000002",
+    nmls: "2234863",
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Focuses on refinance strategy and helping homeowners time the market for maximum savings.",
-    longBio: [
-      "Replace with paragraph one.",
-      "Replace with paragraph two — niche expertise, what kinds of files they get excited about.",
-      "Replace with paragraph three — personal background, why HCMG.",
-    ],
-    yearsExperience: 5,
-    licensedStates: ["TX", "CO", "NV"],
-    speciality: ["Rate-and-term refinance", "Cash-out refinance"],
+      "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
+    longBio: LOAN_OFFICER_LONG_BIO("Cason", "Cason Thomas Knight", "2234863", ["Houston, TX", "Las Vegas, NV"]),
+    offices: ["Houston, TX", "Las Vegas, NV"],
   },
   {
-    slug: "processor-placeholder",
-    name: "Senior Processor Name",
-    role: "Senior Loan Processor",
-    nmls: null,
+    slug: "don-earl",
+    name: "Don Ray Earl",
+    role: "Loan Officer",
+    nmls: "896069",
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Keeps files moving through underwriting cleanly so borrowers close on time, every time.",
-    longBio: [
-      "Replace with paragraph one — operational background, what they bring to the process.",
-      "Replace with paragraph two — favorite kinds of files, common challenges they help borrowers solve.",
-      "Replace with paragraph three — personal note.",
-    ],
-    yearsExperience: 12,
-    speciality: ["Complex income files", "Investment property processing"],
+      "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas and San Diego offices.",
+    longBio: LOAN_OFFICER_LONG_BIO("Don", "Don Ray Earl", "896069", ["Las Vegas, NV", "San Diego, CA"]),
+    offices: ["Las Vegas, NV", "San Diego, CA"],
   },
   {
-    slug: "underwriter-placeholder",
-    name: "Lead Underwriter Name",
-    role: "Lead Underwriter",
-    nmls: null,
+    slug: "glenda-medina",
+    name: "Glenda Adesmiler Medina",
+    role: "Loan Officer",
+    nmls: "2247461",
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Reviews every loan with an eye toward getting to yes while protecting the borrower and the file.",
-    longBio: [
-      "Replace with paragraph one.",
-      "Replace with paragraph two.",
-      "Replace with paragraph three.",
-    ],
-    yearsExperience: 15,
-    speciality: ["Conventional", "Jumbo", "Non-QM"],
+      "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
+    longBio: LOAN_OFFICER_LONG_BIO("Glenda", "Glenda Adesmiler Medina", "2247461", ["Las Vegas, NV"]),
+    offices: ["Las Vegas, NV"],
   },
   {
-    slug: "ops-placeholder",
-    name: "Operations Lead Name",
-    role: "Director of Operations",
-    nmls: null,
+    slug: "james-sadowski",
+    name: "James Carl Sadowski Jr",
+    role: "Loan Officer",
+    nmls: "2711950",
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Runs the engine room — vendor management, compliance, and the systems that keep HCMG efficient.",
-    longBio: [
-      "Replace with paragraph one.",
-      "Replace with paragraph two.",
-      "Replace with paragraph three.",
-    ],
-    yearsExperience: 10,
-    speciality: ["Compliance", "Lender vendor management"],
+      "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
+    longBio: LOAN_OFFICER_LONG_BIO("James", "James Carl Sadowski Jr", "2711950", ["Las Vegas, NV"]),
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "james-pasquale",
+    name: "James Michael Pasquale",
+    role: "Loan Officer",
+    nmls: "2410580",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
+    longBio: LOAN_OFFICER_LONG_BIO("James", "James Michael Pasquale", "2410580", ["Houston, TX", "Las Vegas, NV"]),
+    offices: ["Houston, TX", "Las Vegas, NV"],
+  },
+  {
+    slug: "jason-kelly",
+    name: "Jason Matthew Kelly",
+    role: "Loan Officer",
+    nmls: "2000016",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
+    longBio: LOAN_OFFICER_LONG_BIO("Jason", "Jason Matthew Kelly", "2000016", ["Houston, TX", "Las Vegas, NV"]),
+    offices: ["Houston, TX", "Las Vegas, NV"],
+  },
+  {
+    slug: "jimmy-castillo",
+    name: "Jimmy Flores Castillo",
+    role: "Loan Officer",
+    nmls: "2140847",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
+    longBio: LOAN_OFFICER_LONG_BIO("Jimmy", "Jimmy Flores Castillo", "2140847", ["Houston, TX", "Las Vegas, NV"]),
+    offices: ["Houston, TX", "Las Vegas, NV"],
+  },
+  {
+    slug: "latonya-jordan-odom",
+    name: "LaTonya Matrice Jordan-Odom",
+    role: "Loan Officer",
+    nmls: "1798502",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
+    longBio: LOAN_OFFICER_LONG_BIO("LaTonya", "LaTonya Matrice Jordan-Odom", "1798502", ["Las Vegas, NV"]),
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "lamont-harris-jr",
+    name: "Lamont Daryl Harris Jr.",
+    role: "Loan Officer",
+    nmls: "491049",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas and Houston offices.",
+    longBio: LOAN_OFFICER_LONG_BIO("Lamont", "Lamont Daryl Harris Jr.", "491049", ["Las Vegas, NV", "Houston, TX"]),
+    offices: ["Las Vegas, NV", "Houston, TX"],
+  },
+  {
+    slug: "liudmila-paliankova",
+    name: "Liudmila Paliankova",
+    role: "Loan Officer",
+    nmls: "1979184",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
+    longBio: LOAN_OFFICER_LONG_BIO("Liudmila", "Liudmila Paliankova", "1979184", ["Las Vegas, NV"]),
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "philbert-wilson",
+    name: "Philbert Wilson",
+    role: "Loan Officer",
+    nmls: "1053787",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
+    longBio: LOAN_OFFICER_LONG_BIO("Philbert", "Philbert Wilson", "1053787", ["Houston, TX", "Las Vegas, NV"]),
+    offices: ["Houston, TX", "Las Vegas, NV"],
+  },
+  {
+    slug: "rafael-espinoza",
+    name: "Rafael Espinoza",
+    role: "Loan Officer",
+    nmls: "2083843",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
+    longBio: LOAN_OFFICER_LONG_BIO("Rafael", "Rafael Espinoza", "2083843", ["Las Vegas, NV"]),
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "tamara-hodges-brown",
+    name: "Tamara Hodges-Brown",
+    role: "Loan Officer",
+    nmls: "2465567",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
+    longBio: LOAN_OFFICER_LONG_BIO("Tamara", "Tamara Hodges-Brown", "2465567", ["Las Vegas, NV"]),
+    offices: ["Las Vegas, NV"],
   },
 ];
 
@@ -161,7 +285,14 @@ export function getTeamGroupedByRole(): { role: string; members: TeamMember[] }[
 
 function inferGroup(role: string): string {
   const r = role.toLowerCase();
-  if (r.includes("founder") || r.includes("ceo") || r.includes("president") || r.includes("chief"))
+  if (
+    r.includes("founder") ||
+    r.includes("ceo") ||
+    r.includes("chief executive") ||
+    r.includes("president") ||
+    r.includes("chief") ||
+    r.includes("national director")
+  )
     return "Leadership";
   if (r.includes("loan officer") || r.includes("loan originator") || r.includes("branch manager"))
     return "Loan Officers";

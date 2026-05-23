@@ -4,6 +4,7 @@ import Link from "next/link";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
+import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { teamMembers, getTeamMemberBySlug } from "@/data/team";
 
 export const revalidate = 86400;
@@ -116,13 +117,7 @@ export default async function TeamMemberPage({
           <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.4fr]">
             {/* Photo */}
             <div className="relative overflow-hidden rounded-3xl border border-line shadow-card">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={m.photo}
-                alt={`${m.name}, ${m.role}`}
-                className="block w-full"
-                style={{ aspectRatio: "1 / 1", objectFit: "cover" }}
-              />
+              <TeamPhoto photo={m.photo} name={m.name} />
               {m.nmls && (
                 <div className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-ink backdrop-blur">
                   NMLS# {m.nmls}
@@ -145,6 +140,9 @@ export default async function TeamMemberPage({
               <dl className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
                 {m.yearsExperience !== undefined && (
                   <Fact label="Experience" value={`${m.yearsExperience}+ years in mortgage`} />
+                )}
+                {m.offices && m.offices.length > 0 && (
+                  <Fact label={m.offices.length > 1 ? "Offices" : "Office"} value={m.offices.join(" · ")} />
                 )}
                 {m.licensedStates && m.licensedStates.length > 0 && (
                   <Fact label="Licensed in" value={m.licensedStates.join(" · ")} />
@@ -229,9 +227,8 @@ export default async function TeamMemberPage({
                   href={`/team/${o.slug}`}
                   className="group block overflow-hidden rounded-2xl border border-line bg-white transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-soft"
                 >
-                  <div className="aspect-square w-full overflow-hidden bg-brand">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={o.photo} alt={`${o.name}, ${o.role}`} className="h-full w-full object-cover" />
+                  <div className="w-full overflow-hidden">
+                    <TeamPhoto photo={o.photo} name={o.name} />
                   </div>
                   <div className="p-5">
                     <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
