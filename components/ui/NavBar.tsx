@@ -33,7 +33,7 @@ export function NavBar() {
     >
       <div className="container-shell flex h-[76px] items-center justify-between">
         <Link href="/" className="flex-shrink-0" aria-label="HCMG home">
-          <OrangeKeyLogo variant="primary-light" size={36} />
+          <OrangeKeyLogo variant="primary-light" size={64} />
         </Link>
 
         {/* Desktop nav */}
