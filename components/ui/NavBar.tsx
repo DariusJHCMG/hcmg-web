@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { label: "Buy", href: "/#calculator" },
   { label: "Refinance", href: "/get-started" },
   { label: "Calculators", href: "/#calculator" },
+  { label: "Glossary", href: "/glossary" },
   { label: "FAQ", href: "/#faq" },
 ];
 
@@ -31,9 +32,9 @@ export function NavBar() {
         boxShadow: scrolled ? "0 1px 24px rgba(26,43,66,0.08)" : "none",
       }}
     >
-      <div className="container-shell flex h-[76px] items-center justify-between">
+      <div className="container-shell flex h-[96px] items-center justify-between">
         <Link href="/" className="flex-shrink-0" aria-label="HCMG home">
-          <OrangeKeyLogo variant="primary-light" size={64} />
+          <OrangeKeyLogo variant="primary-light" size={68} />
         </Link>
 
         {/* Desktop nav */}

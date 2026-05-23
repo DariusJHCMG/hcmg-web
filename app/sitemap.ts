@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { seoPages } from "@/data/seo-pages";
+import { glossaryTerms } from "@/data/glossary";
 
 const BASE = "https://getorangekey.com";
 
@@ -8,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/`, changeFrequency: "monthly", priority: 1.0, lastModified: new Date() },
     { url: `${BASE}/get-started`, changeFrequency: "monthly", priority: 0.9, lastModified: new Date() },
     { url: `${BASE}/contact`, changeFrequency: "monthly", priority: 0.8, lastModified: new Date() },
+    { url: `${BASE}/glossary`, changeFrequency: "monthly", priority: 0.8, lastModified: new Date() },
     { url: `${BASE}/privacy`, changeFrequency: "monthly", priority: 0.5, lastModified: new Date() },
     { url: `${BASE}/terms`, changeFrequency: "monthly", priority: 0.5, lastModified: new Date() },
     { url: `${BASE}/sms-policy`, changeFrequency: "monthly", priority: 0.4, lastModified: new Date() },
@@ -21,5 +23,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(),
   }));
 
-  return [...staticRoutes, ...seoRoutes];
+  const glossaryRoutes: MetadataRoute.Sitemap = glossaryTerms.map((t) => ({
+    url: `${BASE}/glossary/${t.slug}`,
+    changeFrequency: "monthly",
+    priority: 0.6,
+    lastModified: new Date(),
+  }));
+
+  return [...staticRoutes, ...seoRoutes, ...glossaryRoutes];
 }

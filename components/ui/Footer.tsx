@@ -8,6 +8,7 @@ const COMPANY_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 const RESOURCE_LINKS = [
+  { label: "Mortgage Glossary", href: "/glossary" },
   { label: "Local Markets", href: "/seo/orlando-fl-fha-loan" },
   { label: "FAQ", href: "/#faq" },
   { label: "About HCMG", href: "/contact" },
@@ -25,7 +26,7 @@ export function Footer() {
       {/* Main grid */}
       <div className="container-shell grid gap-10 py-14 md:grid-cols-4">
         <div>
-          <OrangeKeyLogo variant="primary-light" size={56} className="mb-4" />
+          <OrangeKeyLogo variant="full-light" size={88} className="mb-4" />
           <p className="mb-4 text-sm leading-6 text-muted">
             Fast path to home-ready. Instant mortgage estimates — no hard credit check, no commitment.
           </p>

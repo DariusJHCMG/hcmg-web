@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-type LogoVariant = "primary-light" | "primary-dark" | "mark" | "on-orange";
+type LogoVariant = "primary-light" | "primary-dark" | "mark" | "on-orange" | "full-light";
 
 interface OrangeKeyLogoProps {
   variant?: LogoVariant;
@@ -8,9 +8,10 @@ interface OrangeKeyLogoProps {
 }
 
 const SOURCES: Record<LogoVariant, { src: string; ratio: number }> = {
-  "primary-light": { src: "/hcmg-logo-on-light.svg", ratio: 800 / 380 },
-  "primary-dark": { src: "/hcmg-logo-on-dark.svg", ratio: 800 / 380 },
-  "on-orange": { src: "/hcmg-logo-on-dark.svg", ratio: 800 / 380 },
+  "primary-light": { src: "/hcmg-wordmark-on-light.svg", ratio: 320 / 90 },
+  "primary-dark": { src: "/hcmg-wordmark-on-dark.svg", ratio: 320 / 90 },
+  "on-orange": { src: "/hcmg-wordmark-on-dark.svg", ratio: 320 / 90 },
+  "full-light": { src: "/hcmg-logo-on-light.svg", ratio: 800 / 380 },
   mark: { src: "/hcmg-favicon.svg", ratio: 1 },
 };
 
