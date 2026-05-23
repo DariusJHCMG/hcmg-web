@@ -5,6 +5,10 @@
 // the company's NMLS Consumer Access listing (Harris Capital
 // Mortgage Group LLC, NMLS# 1918223).
 //
+// ⚠ Contact fields (phone, email) below are FILLER for visual
+//   preview only. Replace with real direct lines / inboxes before
+//   making the site public.
+//
 // Bios for each person are still placeholders — replace longBio
 // arrays once real biographical copy is approved.
 // ═══════════════════════════════════════════════════════════════════
@@ -30,7 +34,7 @@ const PLACEHOLDER_PHOTO = "/team/placeholder.svg";
 
 const LOAN_OFFICER_LONG_BIO = (firstName: string, name: string, nmls: string, offices: string[]): string[] => [
   `${name} is a licensed mortgage loan originator (NMLS# ${nmls}) at Harris Capital Mortgage Group, serving clients from HCMG's ${offices.join(" and ")} office${offices.length > 1 ? "s" : ""}.`,
-  `More about ${firstName}'s background and approach is on the way. To connect, start with a free mortgage estimate or reach out through our contact page — we'll route you to the right HCMG loan officer for your scenario.`,
+  `More about ${firstName}'s background and approach is on the way. To connect, start the estimate flow directly on this page or reach out through the contact chips above — the lead will route directly to ${firstName}.`,
 ];
 
 export const teamMembers: TeamMember[] = [
@@ -47,6 +51,8 @@ export const teamMembers: TeamMember[] = [
       "Lamont Harris Sr. serves as Chief Executive Officer of Harris Capital Mortgage Group (NMLS# 491049), leading the company's overall strategy, growth, and vision. Based in Las Vegas with additional presence in Houston, he originates loans alongside his executive role.",
       "A fuller biography is on the way. To learn more about working with HCMG, reach our team through the contact page.",
     ],
+    phone: "(702) 555-0101",
+    email: "lamont@hcmg.com",
     offices: ["Las Vegas, NV", "Houston, TX"],
   },
   {
@@ -61,6 +67,8 @@ export const teamMembers: TeamMember[] = [
       "Darius James serves as President at Harris Capital Mortgage Group (NMLS# 1097168), leading the executive team and overseeing the company's day-to-day operations.",
       "A fuller biography is on the way. To learn more about HCMG, reach our team through the contact page.",
     ],
+    phone: "(702) 555-0102",
+    email: "darius@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -75,6 +83,8 @@ export const teamMembers: TeamMember[] = [
       "Jamesia \"Mesia\" Crews serves as Executive Vice President of Originations at Harris Capital Mortgage Group, leading the company's loan-officer team and origination strategy.",
       "A fuller biography is on the way. To learn more, reach our team through the contact page.",
     ],
+    phone: "(702) 555-0103",
+    email: "mesia@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -89,6 +99,8 @@ export const teamMembers: TeamMember[] = [
       "Aysha Randall serves as Chief Compliance Officer at Harris Capital Mortgage Group (NMLS# 2341853), responsible for compliance, licensing, and regulatory operations across every state where HCMG originates loans.",
       "A fuller biography is on the way. To learn more, reach our team through the contact page.",
     ],
+    phone: "(702) 555-0104",
+    email: "aysha@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -103,6 +115,8 @@ export const teamMembers: TeamMember[] = [
       "Ranada Harris serves as Chief Operating Officer at Harris Capital Mortgage Group, leading operations across processing, underwriting, and closing.",
       "A fuller biography is on the way. To learn more, reach our team through the contact page.",
     ],
+    phone: "(702) 555-0105",
+    email: "ranada@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -117,6 +131,8 @@ export const teamMembers: TeamMember[] = [
       "Adam DeMarco serves as National Director of Sales and Marketing at Harris Capital Mortgage Group (NMLS# 2749110), leading the company's sales organization and marketing strategy nationwide.",
       "A fuller biography is on the way. To learn more, reach our team through the contact page.",
     ],
+    phone: "(702) 555-0106",
+    email: "adam@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
 
@@ -130,6 +146,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
     longBio: LOAN_OFFICER_LONG_BIO("Cason", "Cason Thomas Knight", "2234863", ["Houston, TX", "Las Vegas, NV"]),
+    phone: "(702) 555-0201",
+    email: "cason@hcmg.com",
     offices: ["Houston, TX", "Las Vegas, NV"],
   },
   {
@@ -141,6 +159,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas and San Diego offices.",
     longBio: LOAN_OFFICER_LONG_BIO("Don", "Don Ray Earl", "896069", ["Las Vegas, NV", "San Diego, CA"]),
+    phone: "(702) 555-0202",
+    email: "don@hcmg.com",
     offices: ["Las Vegas, NV", "San Diego, CA"],
   },
   {
@@ -152,6 +172,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
     longBio: LOAN_OFFICER_LONG_BIO("Glenda", "Glenda Adesmiler Medina", "2247461", ["Las Vegas, NV"]),
+    phone: "(702) 555-0203",
+    email: "glenda@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -163,6 +185,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
     longBio: LOAN_OFFICER_LONG_BIO("James", "James Carl Sadowski Jr", "2711950", ["Las Vegas, NV"]),
+    phone: "(702) 555-0204",
+    email: "james.sadowski@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -174,6 +198,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
     longBio: LOAN_OFFICER_LONG_BIO("James", "James Michael Pasquale", "2410580", ["Houston, TX", "Las Vegas, NV"]),
+    phone: "(702) 555-0205",
+    email: "james.pasquale@hcmg.com",
     offices: ["Houston, TX", "Las Vegas, NV"],
   },
   {
@@ -185,6 +211,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
     longBio: LOAN_OFFICER_LONG_BIO("Jason", "Jason Matthew Kelly", "2000016", ["Houston, TX", "Las Vegas, NV"]),
+    phone: "(702) 555-0206",
+    email: "jason@hcmg.com",
     offices: ["Houston, TX", "Las Vegas, NV"],
   },
   {
@@ -196,6 +224,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
     longBio: LOAN_OFFICER_LONG_BIO("Jimmy", "Jimmy Flores Castillo", "2140847", ["Houston, TX", "Las Vegas, NV"]),
+    phone: "(702) 555-0207",
+    email: "jimmy@hcmg.com",
     offices: ["Houston, TX", "Las Vegas, NV"],
   },
   {
@@ -207,6 +237,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
     longBio: LOAN_OFFICER_LONG_BIO("LaTonya", "LaTonya Matrice Jordan-Odom", "1798502", ["Las Vegas, NV"]),
+    phone: "(702) 555-0208",
+    email: "latonya@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -218,6 +250,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
     longBio: LOAN_OFFICER_LONG_BIO("Liudmila", "Liudmila Paliankova", "1979184", ["Las Vegas, NV"]),
+    phone: "(702) 555-0209",
+    email: "liudmila@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -229,6 +263,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Houston and Las Vegas offices.",
     longBio: LOAN_OFFICER_LONG_BIO("Philbert", "Philbert Wilson", "1053787", ["Houston, TX", "Las Vegas, NV"]),
+    phone: "(702) 555-0210",
+    email: "philbert@hcmg.com",
     offices: ["Houston, TX", "Las Vegas, NV"],
   },
   {
@@ -240,6 +276,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
     longBio: LOAN_OFFICER_LONG_BIO("Rafael", "Rafael Espinoza", "2083843", ["Las Vegas, NV"]),
+    phone: "(702) 555-0211",
+    email: "rafael@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -251,6 +289,8 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Licensed mortgage loan originator at HCMG, serving clients from our Las Vegas office.",
     longBio: LOAN_OFFICER_LONG_BIO("Tamara", "Tamara Hodges-Brown", "2465567", ["Las Vegas, NV"]),
+    phone: "(702) 555-0212",
+    email: "tamara@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
 

@@ -5,6 +5,7 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
+import { FunnelFlow } from "@/components/funnel/FunnelFlow";
 import { teamMembers, getTeamMemberBySlug } from "@/data/team";
 
 export const revalidate = 86400;
@@ -47,8 +48,8 @@ export default async function TeamMemberPage({
   if (!m) notFound();
 
   const others = teamMembers.filter((t) => t.slug !== slug).slice(0, 3);
-  const startUrl = `/get-started?lo=${slug}`;
   const phoneDigits = m.phone?.replace(/[^0-9+]/g, "") ?? "";
+  const funnelLo = { slug: m.slug, name: m.name, nmls: m.nmls };
 
   const personSchema = {
     "@context": "https://schema.org",
@@ -178,20 +179,20 @@ export default async function TeamMemberPage({
                 </div>
               )}
 
-              {/* Primary CTAs — vonkdigital-inspired */}
+              {/* Primary CTAs — anchor to the embedded funnel below */}
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                <Link
-                  href={startUrl}
+                <a
+                  href="#funnel"
                   className="primary-button justify-center !py-4 text-center"
                 >
                   Request a Quote with {firstName(m.name)} →
-                </Link>
-                <Link
-                  href={startUrl}
+                </a>
+                <a
+                  href="#funnel"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-brand bg-white px-6 py-4 text-base font-semibold text-brand transition hover:bg-brand hover:text-white"
                 >
                   Apply Online
-                </Link>
+                </a>
               </div>
               <p className="mt-3 text-xs text-muted/70">
                 Your application routes directly to {firstName(m.name)} — no rotation, no call center.
@@ -233,47 +234,39 @@ export default async function TeamMemberPage({
         </div>
       </section>
 
-      {/* Long bio */}
-      <section className="bg-white pb-20">
-        <div className="container-shell max-w-3xl">
-          <div className="border-t border-line pt-12">
-            <h2 className="mb-6 text-2xl font-extrabold text-ink">About {firstName(m.name)}</h2>
-            {m.longBio.map((para, i) => (
-              <p key={i} className="mb-5 text-base leading-8 text-ink/85">
-                {para}
-              </p>
-            ))}
+      {/* Embedded funnel — leads route directly to this LO */}
+      <section id="funnel" className="section-pad bg-sand scroll-mt-24">
+        <div className="container-shell">
+          <div className="mx-auto mb-10 max-w-xl text-center">
+            <div className="ok-gradient-text mb-3 text-xs font-bold uppercase tracking-[0.2em]">
+              Start with {firstName(m.name)}
+            </div>
+            <h2
+              className="font-extrabold tracking-tight text-ink"
+              style={{ fontSize: "clamp(28px, 4vw, 44px)", lineHeight: 1.1 }}
+            >
+              See what you can afford in 60 seconds.
+            </h2>
+            <p className="mt-3 text-base text-muted">
+              Purchase or refinance · No hard credit check · No commitment
+            </p>
+            <p className="mt-2 text-xs text-muted/70">
+              Your answers route directly to {firstName(m.name)} — no rotation, no call center.
+            </p>
           </div>
+          <FunnelFlow lo={funnelLo} />
         </div>
       </section>
 
-      {/* Mid-page CTA strip — reinforce LO-specific funnel */}
-      <section className="bg-brand text-white">
-        <div className="container-shell max-w-4xl py-12 text-center">
-          <h2
-            className="font-extrabold tracking-tight"
-            style={{ fontSize: "clamp(24px, 3vw, 36px)", lineHeight: 1.15 }}
-          >
-            Ready to start with {firstName(m.name)}?
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-white/75">
-            See your buying power and estimated monthly payment in 60 seconds. No hard credit check. Your
-            answers route directly to {firstName(m.name)}&apos;s queue.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link
-              href={startUrl}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-accent px-7 py-3.5 text-base font-bold text-white transition hover:bg-accent-dark"
-            >
-              Request a Quote →
-            </Link>
-            <Link
-              href={startUrl}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white/70 bg-transparent px-7 py-3.5 text-base font-bold text-white transition hover:bg-white/10"
-            >
-              Apply Online
-            </Link>
-          </div>
+      {/* Long bio */}
+      <section className="bg-white py-20">
+        <div className="container-shell max-w-3xl">
+          <h2 className="mb-6 text-2xl font-extrabold text-ink">About {firstName(m.name)}</h2>
+          {m.longBio.map((para, i) => (
+            <p key={i} className="mb-5 text-base leading-8 text-ink/85">
+              {para}
+            </p>
+          ))}
         </div>
       </section>
 
