@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 90" preserveAspectRatio="xMidYMid meet" role="img" aria-label="HCMG — Harris Capital Mortgage Group">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 90" preserveAspectRatio="xMidYMid meet" role="img" aria-label="HCMG — Harris Capital Mortgage Group">
   <title>HCMG — Harris Capital Mortgage Group</title>
   <text x="6" y="74"
         font-family="'Geist', 'Geist Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -7,5 +7,5 @@
         font-size="86"
         fill="#FFFFFF"
         letter-spacing="2">HCMG</text>
-  <rect x="262" y="56" width="16" height="16" fill="#F37021"/>
+  <rect x="312" y="56" width="18" height="18" fill="#F37021"/>
 </svg>
