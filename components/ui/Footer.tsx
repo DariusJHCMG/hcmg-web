@@ -8,6 +8,7 @@ const COMPANY_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 const RESOURCE_LINKS = [
+  { label: "Meet the Team", href: "/team" },
   { label: "Mortgage Glossary", href: "/glossary" },
   { label: "Local Markets", href: "/seo/orlando-fl-fha-loan" },
   { label: "FAQ", href: "/#faq" },

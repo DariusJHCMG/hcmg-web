@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="HCMG team member placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f3a6b"/>
+      <stop offset="100%" stop-color="#142850"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="200" cy="155" r="55" fill="#F37021" opacity="0.95"/>
+  <path d="M105 360 C 105 280, 295 280, 295 360 L 295 400 L 105 400 Z" fill="#F37021" opacity="0.95"/>
+  <rect x="20" y="20" width="22" height="22" fill="#F37021"/>
+</svg>

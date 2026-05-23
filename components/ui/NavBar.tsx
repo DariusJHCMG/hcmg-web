@@ -7,7 +7,7 @@ import { OrangeKeyLogo } from "./OrangeKeyLogo";
 const NAV_LINKS = [
   { label: "Buy", href: "/#calculator" },
   { label: "Refinance", href: "/get-started" },
-  { label: "Calculators", href: "/#calculator" },
+  { label: "Our Team", href: "/team" },
   { label: "Glossary", href: "/glossary" },
   { label: "FAQ", href: "/#faq" },
 ];
