@@ -4,6 +4,8 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { RecruitingForm } from "@/components/recruiting/RecruitingForm";
+import { TeamVideos } from "@/components/recruiting/TeamVideos";
+import { teamVideos } from "@/data/team-videos";
 
 export const metadata: Metadata = {
   title: "Join HCMG — Loan Officer Careers at Harris Capital Mortgage Group",
@@ -217,6 +219,23 @@ export default function JoinPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── Hear From the Team — video testimonials ────────────── */}
+      <section className="bg-sand section-pad">
+        <div className="container-shell max-w-6xl">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <SectionEyebrow>Hear From the Team</SectionEyebrow>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink lg:text-5xl">
+              Real stories from real HCMG loan officers.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-muted">
+              What it&apos;s actually like to build a mortgage business at HCMG — straight from the people
+              doing it.
+            </p>
+          </div>
+          <TeamVideos videos={teamVideos} />
         </div>
       </section>
 
