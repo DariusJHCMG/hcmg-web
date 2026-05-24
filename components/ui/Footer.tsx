@@ -10,7 +10,7 @@ const COMPANY_LINKS = [
 const RESOURCE_LINKS = [
   { label: "Meet the Team", href: "/team" },
   { label: "Mortgage Glossary", href: "/glossary" },
-  { label: "Loan Officer Careers", href: "/join" },
+  { label: "Careers at HCMG", href: "/careers" },
   { label: "Local Markets", href: "/seo/orlando-fl-fha-loan" },
   { label: "FAQ", href: "/#faq" },
   { label: "About HCMG", href: "/contact" },

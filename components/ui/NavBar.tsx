@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { label: "Refinance", href: "/get-started" },
   { label: "Our Team", href: "/team" },
   { label: "Glossary", href: "/glossary" },
-  { label: "Join HCMG", href: "/join" },
+  { label: "Join HCMG", href: "/careers" },
 ];
 
 export function NavBar() {
