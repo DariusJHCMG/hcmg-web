@@ -14,7 +14,7 @@ import type { TeamVideo } from "@/data/team-videos";
  */
 export function TeamVideos({ videos }: { videos: TeamVideo[] }) {
   return (
-    <div className="grid gap-6 sm:grid-cols-2">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {videos.map((v) => (
         <VideoCard key={v.slug} video={v} />
       ))}
@@ -22,23 +22,37 @@ export function TeamVideos({ videos }: { videos: TeamVideo[] }) {
   );
 }
 
+function aspectClass(aspect: TeamVideo["aspect"]): string {
+  switch (aspect) {
+    case "landscape":
+      return "aspect-video";
+    case "square":
+      return "aspect-square";
+    case "portrait":
+    default:
+      return "aspect-[9/16]";
+  }
+}
+
 function VideoCard({ video }: { video: TeamVideo }) {
   const [playing, setPlaying] = useState(false);
   const embedUrl = video.videoUrl ? normalizeVideoUrl(video.videoUrl) : null;
   const isMp4 = embedUrl ? /\.(mp4|webm|ogv)(\?|$)/i.test(embedUrl) : false;
   const poster = video.videoUrl ? getPosterUrl(video.videoUrl) : null;
+  const aspect = aspectClass(video.aspect);
 
   return (
     <div className="overflow-hidden rounded-3xl border border-line bg-white shadow-soft">
       {/* Player area */}
       {playing && embedUrl ? (
-        <div className="relative aspect-video w-full bg-black">
+        <div className={`relative w-full bg-black ${aspect}`}>
           {isMp4 ? (
             <video
               src={embedUrl}
               controls
               autoPlay
-              className="absolute inset-0 h-full w-full"
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover"
               aria-label={`${video.speaker}: ${video.title}`}
             />
           ) : (
@@ -61,7 +75,7 @@ function VideoCard({ video }: { video: TeamVideo }) {
               ? `Play video: ${video.speaker} on ${video.title}`
               : `${video.speaker}'s video coming soon`
           }
-          className={`group relative block aspect-video w-full overflow-hidden bg-brand ${
+          className={`group relative block w-full overflow-hidden bg-brand ${aspect} ${
             embedUrl ? "cursor-pointer" : "cursor-default"
           }`}
         >

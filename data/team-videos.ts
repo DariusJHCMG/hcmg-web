@@ -21,6 +21,12 @@ export type TeamVideo = {
   title: string;
   description: string;
   videoUrl: string | null;
+  /**
+   * Display aspect ratio for the card. Defaults to "portrait" since
+   * most team-shot social-style videos are 9:16. Use "landscape" for
+   * 16:9 traditional YouTube uploads, or "square" for 1:1 clips.
+   */
+  aspect?: "portrait" | "landscape" | "square";
 };
 
 export const teamVideos: TeamVideo[] = [
@@ -31,6 +37,7 @@ export const teamVideos: TeamVideo[] = [
     description:
       "Tamara on what it took to break into mortgage and how HCMG's structure made it possible.",
     videoUrl: "https://youtu.be/Xrv546SAlso",
+    aspect: "portrait",
   },
   {
     slug: "theresa",
@@ -39,6 +46,7 @@ export const teamVideos: TeamVideo[] = [
     description:
       "Theresa explains the moment she knew HCMG was the right home for her book of business.",
     videoUrl: "https://youtu.be/0bj1WImYgEk",
+    aspect: "portrait",
   },
   {
     slug: "jarod",
@@ -47,6 +55,7 @@ export const teamVideos: TeamVideo[] = [
     description:
       "Jarod on the operating values that show up in every file, every call, every closing.",
     videoUrl: "/videos/jarod-core-values.mp4",
+    aspect: "portrait",
   },
   {
     slug: "clark",
@@ -55,5 +64,6 @@ export const teamVideos: TeamVideo[] = [
     description:
       "Clark's path into mortgage — and what new originators get at HCMG that they wouldn't get anywhere else.",
     videoUrl: "/videos/clark-getting-into-mortgage.mp4",
+    aspect: "portrait",
   },
 ];
