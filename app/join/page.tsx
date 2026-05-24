@@ -3,7 +3,6 @@ import Link from "next/link";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
-import { PricingEnginePreview } from "@/components/recruiting/PricingEnginePreview";
 import { RecruitingForm } from "@/components/recruiting/RecruitingForm";
 
 export const metadata: Metadata = {
@@ -167,8 +166,8 @@ export default function JoinPage() {
                 <a href="#apply" className="primary-button !text-base !px-7 !py-4">
                   Apply to Join →
                 </a>
-                <a href="#pricing-engine" className="secondary-button !text-base !px-7 !py-4">
-                  See Our Pricing Tools
+                <a href="#why-join" className="secondary-button !text-base !px-7 !py-4">
+                  Why HCMG
                 </a>
               </div>
 
@@ -190,27 +189,8 @@ export default function JoinPage() {
         </div>
       </section>
 
-      {/* ── Pricing Engine Preview ─────────────────────────────── */}
-      <section id="pricing-engine" className="bg-sand section-pad scroll-mt-28">
-        <div className="container-shell max-w-6xl">
-          <div className="mx-auto mb-12 max-w-3xl text-center">
-            <SectionEyebrow>Pricing Engine Preview</SectionEyebrow>
-            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink lg:text-5xl">
-              The pricing tool you&apos;ll quote with — built around your numbers.
-            </h2>
-            <p className="mt-5 text-base leading-7 text-muted lg:text-lg">
-              See your net commission and BPS the moment you change a scenario. Compare lenders side-by-side
-              without leaving the screen. This is a sample preview — your live engine has access to every
-              partnered investor and your real comp plan.
-            </p>
-          </div>
-
-          <PricingEnginePreview />
-        </div>
-      </section>
-
       {/* ── Why Join ───────────────────────────────────────────── */}
-      <section className="bg-white section-pad">
+      <section id="why-join" className="bg-white section-pad scroll-mt-28">
         <div className="container-shell max-w-6xl">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <SectionEyebrow>Why HCMG</SectionEyebrow>
