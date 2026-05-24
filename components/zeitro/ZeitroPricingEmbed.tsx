@@ -47,7 +47,7 @@ export default function ZeitroPricingEmbed() {
   return (
     <div className="relative w-full">
       <div
-        id="zeitro-tools-container"
+        id="zeitro-todayrates-container"
         ref={containerRef}
         className="min-h-[640px] w-full overflow-hidden rounded-2xl border border-line bg-white"
       />
@@ -75,7 +75,7 @@ export default function ZeitroPricingEmbed() {
 
       <Script
         id="hcmg-pricing-engine"
-        src="https://app.zeitro.com/api/zeitrotag.js?customerid=harriscapitalmortgage&loid=&pageid=tools"
+        src="https://app.zeitro.com/api/zeitrotag.js?customerid=harriscapitalmortgage&loid=&pageid=todayrates"
         strategy="afterInteractive"
         onError={() => setStatus("unavailable")}
       />
