@@ -30,7 +30,7 @@ export const teamVideos: TeamVideo[] = [
     title: "Getting Into the Mortgage Industry",
     description:
       "Tamara on what it took to break into mortgage and how HCMG's structure made it possible.",
-    videoUrl: null,
+    videoUrl: "https://youtu.be/Xrv546SAlso",
   },
   {
     slug: "theresa",
@@ -38,7 +38,7 @@ export const teamVideos: TeamVideo[] = [
     title: "Why HCMG",
     description:
       "Theresa explains the moment she knew HCMG was the right home for her book of business.",
-    videoUrl: null,
+    videoUrl: "https://youtu.be/0bj1WImYgEk",
   },
   {
     slug: "jarod",
