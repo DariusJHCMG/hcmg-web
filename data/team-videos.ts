@@ -46,7 +46,7 @@ export const teamVideos: TeamVideo[] = [
     title: "HCMG Core Values",
     description:
       "Jarod on the operating values that show up in every file, every call, every closing.",
-    videoUrl: null,
+    videoUrl: "/videos/jarod-core-values.mp4",
   },
   {
     slug: "clark",
@@ -54,6 +54,6 @@ export const teamVideos: TeamVideo[] = [
     title: "Getting Into the Mortgage Industry",
     description:
       "Clark's path into mortgage — and what new originators get at HCMG that they wouldn't get anywhere else.",
-    videoUrl: null,
+    videoUrl: "/videos/clark-getting-into-mortgage.mp4",
   },
 ];
