@@ -5,7 +5,6 @@ import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { PricingEnginePreview } from "@/components/recruiting/PricingEnginePreview";
 import { RecruitingForm } from "@/components/recruiting/RecruitingForm";
-import ZeitroCalculatorEmbed from "@/components/zeitro/ZeitroCalculatorEmbed";
 
 export const metadata: Metadata = {
   title: "Join HCMG — Loan Officer Careers at Harris Capital Mortgage Group",
@@ -264,23 +263,6 @@ export default function JoinPage() {
             Share Platform pays $595 per loan closed by referred originators for the lifetime of their and
             your employment at HCMG. Subject to plan terms and changes. Not an offer or commitment.
           </p>
-        </div>
-      </section>
-
-      {/* ── Mortgage Calculator (Zeitro embed) ─────────────────── */}
-      <section className="bg-white section-pad">
-        <div className="container-shell max-w-5xl">
-          <div className="mx-auto mb-10 max-w-2xl text-center">
-            <SectionEyebrow>Try the Mortgage Calculator</SectionEyebrow>
-            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
-              The same calculator your borrowers will use.
-            </h2>
-            <p className="mt-4 text-base leading-7 text-muted">
-              Live, embedded directly. Plug in a scenario, see the math, then imagine handing this to every
-              one of your borrowers on day one.
-            </p>
-          </div>
-          <ZeitroCalculatorEmbed />
         </div>
       </section>
 

@@ -1,23 +1,27 @@
 "use client";
 
-import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Loads the HCMG pricing engine via the white-labeled vendor embed.
- * The vendor (Zeitro) script injects an iframe into the container div.
+ * Loads the HCMG live pricing widget into a contained area of the page.
  *
- * Visible UI copy is intentionally white-labeled — no vendor name appears
- * to the visitor. If the iframe never populates we show a neutral fallback
- * so visitors don't stare at empty space.
+ * The vendor (Zeitro) loader looks for an HTML element with id="zeitrotag"
+ * via `getElementById` and injects an iframe adjacent to it. We can't use
+ * `next/script` for this because it places scripts in <head>, which would
+ * cause the iframe to appear in the wrong DOM location. Instead we
+ * dynamically create the script element inside our own container so the
+ * iframe lands exactly where we want it.
+ *
+ * IMPORTANT: only one of these embeds can render per page — the loader
+ * uses a fixed element id and multiple instances would collide.
  */
-export default function ZeitroPricingEmbed() {
-  const [status, setStatus] = useState<"loading" | "ready" | "unavailable">("loading");
-  const containerRef = useRef<HTMLDivElement | null>(null);
+const SCRIPT_SRC =
+  "https://app.zeitro.com/api/zeitrotag.js?customerid=harriscapitalmortgage&loid=&pageid=todayrates";
 
-  // Observe the container — if any child element appears, we know the
-  // Zeitro script populated it and we can flip to "ready". If nothing
-  // shows up after ~10s, mark it unavailable.
+export default function ZeitroPricingEmbed() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "unavailable">("loading");
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -31,23 +35,36 @@ export default function ZeitroPricingEmbed() {
       clearTimeout(timeoutId);
     };
 
+    // Watch for an iframe to be inserted anywhere under our container.
     const observer = new MutationObserver(() => {
-      if (container.children.length > 0) finish("ready");
+      if (container.querySelector("iframe")) finish("ready");
     });
     observer.observe(container, { childList: true, subtree: true });
 
-    const timeoutId = window.setTimeout(() => finish("unavailable"), 10000);
+    // Inject the loader script inside our container so the iframe lands here.
+    const script = document.createElement("script");
+    script.id = "zeitrotag";
+    script.src = SCRIPT_SRC;
+    script.async = true;
+    script.onerror = () => finish("unavailable");
+    container.appendChild(script);
+
+    const timeoutId = window.setTimeout(() => finish("unavailable"), 12000);
 
     return () => {
       observer.disconnect();
       clearTimeout(timeoutId);
+      try {
+        script.remove();
+      } catch {
+        /* ignore */
+      }
     };
   }, []);
 
   return (
     <div className="relative w-full">
       <div
-        id="zeitro-todayrates-container"
         ref={containerRef}
         className="min-h-[640px] w-full overflow-hidden rounded-2xl border border-line bg-white"
       />
@@ -72,13 +89,6 @@ export default function ZeitroPricingEmbed() {
           </div>
         </div>
       )}
-
-      <Script
-        id="hcmg-pricing-engine"
-        src="https://app.zeitro.com/api/zeitrotag.js?customerid=harriscapitalmortgage&loid=&pageid=todayrates"
-        strategy="afterInteractive"
-        onError={() => setStatus("unavailable")}
-      />
     </div>
   );
 }
