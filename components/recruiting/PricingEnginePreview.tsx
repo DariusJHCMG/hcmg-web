@@ -63,10 +63,10 @@ export function PricingEnginePreview() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-              HCMG Pricing Engine · Powered by Zeitro
+              HCMG Pricing Engine
             </div>
             <div className="mt-0.5 text-sm font-bold text-white">
-              Real-time lender rates + comp grid, same tool your borrowers see
+              Lender rates, your comp grid, and net commission in one screen
             </div>
           </div>
           {hydrated && unlockedNmls && (
@@ -104,9 +104,9 @@ export function PricingEnginePreview() {
         )}
 
         <p className="mt-4 text-[11px] leading-relaxed text-muted/70">
-          Live pricing via Zeitro. Rates, pricing, compensation, and investor availability vary by scenario,
-          credit profile, property, state, and approval. Not a commitment to lend. Harris Capital Mortgage
-          Group, LLC · NMLS# 1918223 · Equal Housing Lender.
+          Pricing illustrations for licensed loan officers only. Rates, pricing, compensation, and investor
+          availability vary by scenario, credit profile, property, state, and approval. Not a commitment to
+          lend. Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender.
         </p>
       </div>
 
@@ -149,10 +149,10 @@ function NmlsGate({ onUnlock }: { onUnlock: (nmls: string) => void }) {
               />
             </svg>
           </div>
-          <h3 className="text-xl font-extrabold text-ink sm:text-2xl">Unlock the live pricing engine.</h3>
+          <h3 className="text-xl font-extrabold text-ink sm:text-2xl">Unlock the pricing engine.</h3>
           <p className="mt-2 text-sm leading-6 text-muted">
-            Enter your NMLS ID to load HCMG&apos;s live Zeitro pricing engine — real lender rates, your comp
-            grid, and net commission at every tier.
+            Enter your NMLS ID to load HCMG&apos;s pricing engine — lender rates, your comp grid, and net
+            commission at every tier.
           </p>
         </div>
 

@@ -4,13 +4,12 @@ import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Embeds Zeitro's pricing engine via the same `zeitrotag.js` loader we use
- * for the calculator. The Zeitro script injects an iframe into the
- * container div below.
+ * Loads the HCMG pricing engine via the white-labeled vendor embed.
+ * The vendor (Zeitro) script injects an iframe into the container div.
  *
- * If the iframe never populates (Zeitro hasn't enabled `pageid=pricing`
- * for this customer account, or requires LO login), we show a fallback
- * message after a short timeout so visitors don't stare at empty space.
+ * Visible UI copy is intentionally white-labeled — no vendor name appears
+ * to the visitor. If the iframe never populates we show a neutral fallback
+ * so visitors don't stare at empty space.
  */
 export default function ZeitroPricingEmbed() {
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable">("loading");
@@ -48,7 +47,7 @@ export default function ZeitroPricingEmbed() {
   return (
     <div className="relative w-full">
       <div
-        id="zeitro-pricing-container"
+        id="zeitro-tools-container"
         ref={containerRef}
         className="min-h-[640px] w-full overflow-hidden rounded-2xl border border-line bg-white"
       />
@@ -65,22 +64,18 @@ export default function ZeitroPricingEmbed() {
       {status === "unavailable" && (
         <div className="absolute inset-0 flex items-center justify-center bg-sand/95 px-6">
           <div className="max-w-md text-center">
-            <h4 className="text-base font-bold text-ink">Live pricing engine isn&apos;t reachable right now.</h4>
+            <h4 className="text-base font-bold text-ink">Pricing engine is temporarily unavailable.</h4>
             <p className="mt-2 text-sm leading-6 text-muted">
-              The Zeitro pricing widget didn&apos;t load — either it isn&apos;t enabled for public preview on
-              your account, or you&apos;ll need API credentials to embed it directly.
-            </p>
-            <p className="mt-3 text-xs text-muted/70">
-              To enable: contact your Zeitro account rep and request public-preview embedding (or API access)
-              for customer ID <code className="rounded bg-white px-1.5 py-0.5 font-mono">harriscapitalmortgage</code>.
+              We couldn&apos;t load the live engine just now. Please refresh the page or try again in a
+              moment — if it keeps failing, our team is already on it.
             </p>
           </div>
         </div>
       )}
 
       <Script
-        id="zeitro-pricing"
-        src="https://app.zeitro.com/api/zeitrotag.js?customerid=harriscapitalmortgage&loid=&pageid=pricing"
+        id="hcmg-pricing-engine"
+        src="https://app.zeitro.com/api/zeitrotag.js?customerid=harriscapitalmortgage&loid=&pageid=tools"
         strategy="afterInteractive"
         onError={() => setStatus("unavailable")}
       />
