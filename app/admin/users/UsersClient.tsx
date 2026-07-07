@@ -195,12 +195,18 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
 
   async function toggleActive(u: Profile) {
     const next = !u.is_active;
-    await fetch(`/api/admin/users/${u.id}`, {
+    const res = await fetch(`/api/admin/users/${u.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ is_active: next }),
     });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      setMsg({ type: "err", text: `Failed to ${next ? "activate" : "deactivate"} ${u.full_name}: ${(json as {error?: string}).error ?? res.status}` });
+      return;
+    }
     setUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, is_active: next } : x));
+    setMsg({ type: "ok", text: `${u.full_name} ${next ? "activated" : "deactivated"}.` });
   }
 
   const los     = users.filter((u) => u.role === "loan_officer");
@@ -209,6 +215,14 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
 
   return (
     <div className="space-y-6">
+      {/* Global status banner */}
+      {msg && (
+        <div className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold ${msg.type === "ok" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+          <span>{msg.text}</span>
+          <button onClick={() => setMsg(null)} className="ml-4 text-xs opacity-60 hover:opacity-100">✕</button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>

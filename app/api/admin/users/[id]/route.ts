@@ -41,34 +41,40 @@ export async function PATCH(
   const sb = createServiceClient();
   const updates = parsed.data;
 
+  // Fetch current profile BEFORE update so we always have lo_slug + full_name
+  const { data: current } = await sb
+    .from("profiles")
+    .select("lo_slug, full_name, is_active")
+    .eq("id", id)
+    .single();
+  const currentSlug = current?.lo_slug ?? null;
+
   // ── Update profile ────────────────────────────────────────────
   const { error } = await sb.from("profiles").update(updates).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // ── Sync funnel_link when deactivating ────────────────────────
-  if (updates.is_active === false) {
-    // Disable their funnel link so /go/[slug] returns 404
-    await sb.from("funnel_links").update({ is_active: false })
-      .eq("lo_slug", (await sb.from("profiles").select("lo_slug").eq("id", id).single()).data?.lo_slug ?? "");
+  // ── Sync funnel_link is_active ────────────────────────────────
+  if (updates.is_active !== undefined && currentSlug) {
+    await sb.from("funnel_links")
+      .update({ is_active: updates.is_active })
+      .eq("lo_slug", currentSlug);
 
-    logAudit("user.deactivated", { user_id: id }, caller.id, caller.email);
+    if (updates.is_active === false) {
+      logAudit("user.deactivated", { user_id: id }, caller.id, caller.email);
+    }
   }
 
-  if (updates.is_active === true) {
-    await sb.from("funnel_links").update({ is_active: true })
-      .eq("lo_slug", (await sb.from("profiles").select("lo_slug").eq("id", id).single()).data?.lo_slug ?? "");
-  }
-
-  // ── Sync funnel_link URL if lo_slug changed ───────────────────
-  if (updates.lo_slug !== undefined) {
+  // ── Sync funnel_link URL/name if lo_slug or full_name changed ─
+  if (updates.lo_slug !== undefined || updates.full_name !== undefined) {
     const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
-    const { data: prof } = await sb.from("profiles").select("full_name, lo_slug").eq("id", id).single();
-    if (prof?.lo_slug) {
+    const newSlug = updates.lo_slug ?? currentSlug;
+    const newName = updates.full_name ?? current?.full_name ?? "";
+    if (newSlug) {
       await sb.from("funnel_links").upsert({
-        lo_slug:   prof.lo_slug,
-        lo_name:   prof.full_name ?? updates.full_name ?? "",
-        url:       `${SITE}/go/${prof.lo_slug}`,
-        is_active: true,
+        lo_slug:   newSlug,
+        lo_name:   newName,
+        url:       `${SITE}/go/${newSlug}`,
+        is_active: updates.is_active ?? current?.is_active ?? true,
         clicks:    0,
       }, { onConflict: "lo_slug" });
     }
