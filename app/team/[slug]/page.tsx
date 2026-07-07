@@ -7,68 +7,186 @@ import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { FunnelFlow } from "@/components/funnel/FunnelFlow";
 import { createServiceClient } from "@/lib/supabase";
+import { teamMembers, getTeamMemberBySlug } from "@/data/team";
 import type { Profile } from "@/lib/database.types";
 
 export const revalidate = 60;
 
-// Fetch a single profile by lo_slug or UUID
-async function getProfile(slug: string): Promise<Profile | null> {
-  const sb = createServiceClient();
-  // Try lo_slug first (most common), then fall back to UUID
-  const { data: bySlug } = await sb
-    .from("profiles")
-    .select("*")
-    .eq("lo_slug", slug)
-    .eq("is_active", true)
-    .single();
-  if (bySlug) return bySlug as Profile;
+// ── Normalised shape ─────────────────────────────────────────────────
 
-  const { data: byId } = await sb
-    .from("profiles")
-    .select("*")
-    .eq("id", slug)
-    .eq("is_active", true)
-    .single();
-  return (byId ?? null) as Profile | null;
+interface MemberDetail {
+  id: string;
+  slug: string;
+  full_name: string;
+  title: string;
+  nmls: string | null;
+  email: string | null;
+  phone: string | null;
+  linkedin: string | null;
+  avatar_url: string | null;
+  short_bio: string | null;
+  offices: string[] | null;
+  licensed_states: string[] | null;
+  long_bio: string[] | null;   // only from static fallback
 }
 
-async function getOthers(excludeId: string): Promise<Profile[]> {
-  const sb = createServiceClient();
-  const { data } = await sb
-    .from("profiles")
-    .select("id, full_name, title, role, lo_slug, avatar_url, short_bio")
-    .eq("is_active", true)
-    .eq("show_on_website", true)
-    .neq("id", excludeId)
-    .limit(3);
-  return (data ?? []) as Profile[];
+// ── Supabase fetch ────────────────────────────────────────────────────
+
+async function getProfileFromSupabase(slug: string): Promise<MemberDetail | null> {
+  try {
+    const sb = createServiceClient();
+    // Try lo_slug first, then UUID
+    const { data: bySlug } = await sb
+      .from("profiles")
+      .select("*")
+      .eq("lo_slug", slug)
+      .eq("is_active", true)
+      .single();
+    const raw = (bySlug ?? null) as Profile | null;
+
+    if (!raw) {
+      const { data: byId } = await sb
+        .from("profiles")
+        .select("*")
+        .eq("id", slug)
+        .eq("is_active", true)
+        .single();
+      if (!byId) return null;
+      return profileToDetail(byId as Profile);
+    }
+    return profileToDetail(raw);
+  } catch {
+    return null;
+  }
 }
 
-// generateStaticParams — build pages for all active LOs at deploy time
+function profileToDetail(p: Profile): MemberDetail {
+  return {
+    id:              p.id,
+    slug:            p.lo_slug ?? p.id,
+    full_name:       p.full_name,
+    title:           p.title ?? p.role.replace("_", " "),
+    nmls:            p.nmls ?? null,
+    email:           p.email ?? null,
+    phone:           p.phone ?? null,
+    linkedin:        p.linkedin ?? null,
+    avatar_url:      p.avatar_url ?? null,
+    short_bio:       p.short_bio ?? null,
+    offices:         p.offices ?? null,
+    licensed_states: p.licensed_states ?? null,
+    long_bio:        null,
+  };
+}
+
+// ── Static fallback ───────────────────────────────────────────────────
+
+function getStaticMember(slug: string): MemberDetail | null {
+  const m = getTeamMemberBySlug(slug);
+  if (!m) return null;
+  return {
+    id:              m.slug,
+    slug:            m.slug,
+    full_name:       m.name,
+    title:           m.role,
+    nmls:            m.nmls,
+    email:           m.email ?? null,
+    phone:           m.phone ?? null,
+    linkedin:        m.linkedin ?? null,
+    avatar_url:      m.photo !== "/team/placeholder.svg" ? m.photo : null,
+    short_bio:       m.shortBio,
+    offices:         m.offices ?? null,
+    licensed_states: m.licensedStates ?? null,
+    long_bio:        m.longBio,
+  };
+}
+
+async function getMember(slug: string): Promise<MemberDetail | null> {
+  const fromDB = await getProfileFromSupabase(slug);
+  if (fromDB) return fromDB;
+  return getStaticMember(slug);
+}
+
+// ── Other team members (sidebar) ─────────────────────────────────────
+
+interface OtherMember {
+  id: string;
+  slug: string;
+  full_name: string;
+  title: string;
+  avatar_url: string | null;
+}
+
+async function getOthers(excludeSlug: string): Promise<OtherMember[]> {
+  try {
+    const sb = createServiceClient();
+    const { data } = await sb
+      .from("profiles")
+      .select("id, full_name, title, role, lo_slug, avatar_url, show_on_website")
+      .eq("is_active", true)
+      .limit(10);
+    type Row = { id: string; full_name: string; title: string | null; role: string; lo_slug: string | null; avatar_url: string | null; show_on_website: boolean };
+    const visible = ((data ?? []) as Row[]).filter((p) => p.show_on_website === true);
+    if (visible.length === 0) throw new Error("no supabase data");
+    return visible
+      .filter((p) => (p.lo_slug ?? p.id) !== excludeSlug)
+      .slice(0, 3)
+      .map((p) => ({
+        id:         p.id,
+        slug:       p.lo_slug ?? p.id,
+        full_name:  p.full_name,
+        title:      p.title ?? p.role.replace("_", " "),
+        avatar_url: p.avatar_url ?? null,
+      }));
+  } catch {
+    // Fall back to static
+    return teamMembers
+      .filter((m) => m.slug !== excludeSlug)
+      .slice(0, 3)
+      .map((m) => ({
+        id:         m.slug,
+        slug:       m.slug,
+        full_name:  m.name,
+        title:      m.role,
+        avatar_url: m.photo !== "/team/placeholder.svg" ? m.photo : null,
+      }));
+  }
+}
+
+// ── generateStaticParams — build all slugs at deploy time ─────────────
+
 export async function generateStaticParams() {
-  const sb = createServiceClient();
-  const { data } = await sb
-    .from("profiles")
-    .select("id, lo_slug")
-    .eq("is_active", true);
-  return (data ?? []).map((p: { id: string; lo_slug: string | null }) => ({
-    slug: p.lo_slug ?? p.id,
-  }));
+  // Start with static slugs (always available)
+  const staticSlugs = teamMembers.map((m) => ({ slug: m.slug }));
+  try {
+    const sb = createServiceClient();
+    const { data } = await sb.from("profiles").select("id, lo_slug").eq("is_active", true);
+    const dbSlugs  = (data ?? []).map((p: { id: string; lo_slug: string | null }) => ({
+      slug: p.lo_slug ?? p.id,
+    }));
+    // Merge, dedup
+    const all = [...staticSlugs, ...dbSlugs];
+    const seen = new Set<string>();
+    return all.filter((s) => { if (seen.has(s.slug)) return false; seen.add(s.slug); return true; });
+  } catch {
+    return staticSlugs;
+  }
 }
+
+// ── Metadata ──────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const m = await getProfile(slug);
+  const m = await getMember(slug);
   if (!m) return {};
   const title = m.nmls
-    ? `${m.full_name}, ${m.title ?? m.role}, NMLS# ${m.nmls} | HCMG`
-    : `${m.full_name}, ${m.title ?? m.role} | HCMG`;
+    ? `${m.full_name}, ${m.title}, NMLS# ${m.nmls} | HCMG`
+    : `${m.full_name}, ${m.title} | HCMG`;
   return {
     title,
     description: m.short_bio ?? `${m.full_name} at Harris Capital Mortgage Group.`,
     alternates: { canonical: `https://getorangekey.com/team/${slug}` },
     openGraph: {
-      title: `${m.full_name}, ${m.title ?? m.role}`,
+      title: `${m.full_name}, ${m.title}`,
       description: m.short_bio ?? "",
       url: `https://getorangekey.com/team/${slug}`,
       images: [m.avatar_url ?? "/team/placeholder.svg"],
@@ -76,20 +194,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
+// ── Page ──────────────────────────────────────────────────────────────
+
 export default async function TeamMemberPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const m = await getProfile(slug);
+  const m = await getMember(slug);
   if (!m) notFound();
 
-  const others     = await getOthers(m.id);
+  const others      = await getOthers(m.slug);
   const phoneDigits = m.phone?.replace(/[^0-9+]/g, "") ?? "";
-  const funnelLo    = { slug: m.lo_slug ?? m.id, name: m.full_name, nmls: m.nmls };
+  const funnelLo    = { slug: m.slug, name: m.full_name, nmls: m.nmls };
 
   const personSchema = {
     "@context": "https://schema.org",
     "@type": "Person",
     name: m.full_name,
-    jobTitle: m.title ?? m.role,
+    jobTitle: m.title,
     url: `https://getorangekey.com/team/${slug}`,
     worksFor: { "@type": "Organization", name: "Harris Capital Mortgage Group, LLC", url: "https://getorangekey.com" },
     ...(m.email    ? { email: m.email } : {}),
@@ -138,7 +258,7 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ slu
 
             {/* Info */}
             <div>
-              <SectionEyebrow>{m.title ?? m.role.replace("_", " ")}</SectionEyebrow>
+              <SectionEyebrow>{m.title}</SectionEyebrow>
               <h1 className="mt-3 font-extrabold tracking-tight text-ink" style={{ fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1.05 }}>
                 {m.full_name}
               </h1>
@@ -197,6 +317,15 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ slu
               </dl>
             </div>
           </div>
+
+          {/* Long bio paragraphs (static only, until replaced with Supabase rich text) */}
+          {m.long_bio && m.long_bio.length > 0 && (
+            <div className="mt-12 max-w-3xl space-y-4">
+              {m.long_bio.map((para, i) => (
+                <p key={i} className="text-base leading-8 text-muted">{para}</p>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -223,12 +352,12 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ slu
             <h2 className="mb-8 text-2xl font-extrabold text-ink">More of the HCMG team</h2>
             <div className="grid gap-6 sm:grid-cols-3">
               {others.map((o) => (
-                <Link key={o.id} href={`/team/${o.lo_slug ?? o.id}`}
+                <Link key={o.id} href={`/team/${o.slug}`}
                   className="group block overflow-hidden rounded-2xl border border-line bg-white transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-soft">
                   <TeamPhoto photo={o.avatar_url ?? "/team/placeholder.svg"} name={o.full_name} />
                   <div className="p-5">
                     <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
-                      {o.title ?? o.role.replace("_", " ")}
+                      {o.title}
                     </div>
                     <div className="mt-1.5 font-bold text-ink group-hover:text-accent transition-colors">
                       {o.full_name}

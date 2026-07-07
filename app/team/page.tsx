@@ -5,9 +5,10 @@ import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { createServiceClient } from "@/lib/supabase";
+import { teamMembers, getTeamGroupedByRole } from "@/data/team";
 import type { Profile } from "@/lib/database.types";
 
-export const revalidate = 60; // revalidate every 60s so admin changes go live quickly
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Meet the HCMG Team, Loan Officers, Processors & Leadership | Harris Capital Mortgage Group",
@@ -22,47 +23,125 @@ export const metadata: Metadata = {
   },
 };
 
-async function getTeam(): Promise<Profile[]> {
-  const sb = createServiceClient();
-  const { data } = await sb
-    .from("profiles")
-    .select("*")
-    .eq("is_active", true)
-    .eq("show_on_website", true)
-    .order("full_name");
-  return (data ?? []) as Profile[];
+// ── Normalised shape used by both data sources ───────────────────────
+
+interface DisplayMember {
+  id: string;           // uuid or slug (for fallback)
+  slug: string;         // URL segment
+  full_name: string;
+  title: string;
+  nmls: string | null;
+  avatar_url: string | null;
+  short_bio: string | null;
 }
 
-function groupByRole(members: Profile[]): { role: string; members: Profile[] }[] {
-  const leadership = members.filter((m) =>
-    ["admin", "developer"].includes(m.role) ||
-    (m.title && /(founder|ceo|president|chief|director|officer)/i.test(m.title))
-  );
-  const los = members.filter((m) => m.role === "loan_officer");
-  const ops = members.filter((m) =>
-    !leadership.includes(m) && !los.includes(m)
-  );
-  const groups = [];
-  if (leadership.length) groups.push({ role: "Leadership", members: leadership });
-  if (los.length)        groups.push({ role: "Loan Officers", members: los });
-  if (ops.length)        groups.push({ role: "Operations", members: ops });
-  return groups;
+interface DisplayGroup {
+  role: string;
+  members: DisplayMember[];
 }
+
+// ── Data fetching ─────────────────────────────────────────────────────
+
+async function getTeamFromSupabase(): Promise<DisplayMember[] | null> {
+  try {
+    const sb = createServiceClient();
+    const { data, error } = await sb
+      .from("profiles")
+      .select("id, full_name, title, role, lo_slug, nmls, avatar_url, short_bio, show_on_website, is_active")
+      .eq("is_active", true)
+      .order("full_name");
+    if (error || !data || data.length === 0) return null;
+
+    // Only use Supabase data if at least one profile has show_on_website = true
+    // (column may not exist yet before patch 004 is run)
+    type Row = { id: string; full_name: string; title: string | null; role: string; lo_slug: string | null; nmls: string | null; avatar_url: string | null; short_bio: string | null; show_on_website: boolean };
+    const rows = (data as Row[]);
+    const visible = rows.filter((p) => p.show_on_website === true);
+    if (visible.length === 0) return null;
+
+    return visible.map((p) => ({
+      id:         p.id,
+      slug:       p.lo_slug ?? p.id,
+      full_name:  p.full_name,
+      title:      p.title ?? p.role.replace("_", " "),
+      nmls:       p.nmls ?? null,
+      avatar_url: p.avatar_url ?? null,
+      short_bio:  p.short_bio ?? null,
+    }));
+  } catch {
+    return null;
+  }
+}
+
+function getTeamFromStatic(): { groups: DisplayGroup[]; allMembers: DisplayMember[] } {
+  const groups = getTeamGroupedByRole().map((g) => ({
+    role: g.role,
+    members: g.members.map((m) => ({
+      id:         m.slug,
+      slug:       m.slug,
+      full_name:  m.name,
+      title:      m.role,
+      nmls:       m.nmls,
+      avatar_url: m.photo !== "/team/placeholder.svg" ? m.photo : null,
+      short_bio:  m.shortBio,
+    })),
+  }));
+  return {
+    groups,
+    allMembers: groups.flatMap((g) => g.members),
+  };
+}
+
+function groupSupabaseMembers(members: DisplayMember[]): DisplayGroup[] {
+  // Simple grouping: leadership titles, loan_officer role word, rest = operations
+  const leadership: DisplayMember[] = [];
+  const los: DisplayMember[] = [];
+  const ops: DisplayMember[] = [];
+  for (const m of members) {
+    const t = m.title.toLowerCase();
+    if (/(founder|ceo|chief|president|director|officer\b)/.test(t) && !t.includes("loan officer")) {
+      leadership.push(m);
+    } else if (t.includes("loan officer") || t.includes("loan originator")) {
+      los.push(m);
+    } else {
+      ops.push(m);
+    }
+  }
+  const result: DisplayGroup[] = [];
+  if (leadership.length) result.push({ role: "Leadership", members: leadership });
+  if (los.length)        result.push({ role: "Loan Officers", members: los });
+  if (ops.length)        result.push({ role: "Operations", members: ops });
+  return result;
+}
+
+// ── Page ──────────────────────────────────────────────────────────────
 
 export default async function TeamPage() {
-  const members = await getTeam();
-  const groups  = groupByRole(members);
+  const supabaseMembers = await getTeamFromSupabase();
+
+  let groups: DisplayGroup[];
+  let allMembers: DisplayMember[];
+
+  if (supabaseMembers && supabaseMembers.length > 0) {
+    groups     = groupSupabaseMembers(supabaseMembers);
+    allMembers = supabaseMembers;
+  } else {
+    // Supabase not ready yet — use static data/team.ts
+    const fallback = getTeamFromStatic();
+    groups     = fallback.groups;
+    allMembers = fallback.allMembers;
+  }
 
   const teamSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Harris Capital Mortgage Group, LLC",
     url: "https://getorangekey.com",
-    employee: members.map((m) => ({
+    employee: allMembers.map((m) => ({
       "@type": "Person",
       name: m.full_name,
-      jobTitle: m.title ?? m.role,
-      url: `https://getorangekey.com/team/${m.lo_slug ?? m.id}`,
+      jobTitle: m.title,
+      url: `https://getorangekey.com/team/${m.slug}`,
       ...(m.nmls ? { identifier: { "@type": "PropertyValue", propertyID: "NMLS", value: m.nmls } } : {}),
     })),
   };
@@ -99,46 +178,43 @@ export default async function TeamPage() {
                 <p className="mt-3 text-base leading-7 text-muted">{groupBlurb(group.role)}</p>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {group.members.map((m) => {
-                  const slug = m.lo_slug ?? m.id;
-                  return (
-                    <Link
-                      key={m.id}
-                      href={`/team/${slug}`}
-                      className="group block overflow-hidden rounded-3xl border border-line bg-white shadow-soft transition-all hover:-translate-y-1 hover:border-accent hover:shadow-card"
-                    >
-                      <div className="relative w-full overflow-hidden">
-                        <TeamPhoto photo={m.avatar_url ?? "/team/placeholder.svg"} name={m.full_name}
-                          className="h-full w-full transition-transform duration-500 group-hover:scale-[1.03]" />
-                        {m.nmls && (
-                          <span className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-ink backdrop-blur">
-                            NMLS# {m.nmls}
-                          </span>
-                        )}
+                {group.members.map((m) => (
+                  <Link
+                    key={m.id}
+                    href={`/team/${m.slug}`}
+                    className="group block overflow-hidden rounded-3xl border border-line bg-white shadow-soft transition-all hover:-translate-y-1 hover:border-accent hover:shadow-card"
+                  >
+                    <div className="relative w-full overflow-hidden">
+                      <TeamPhoto
+                        photo={m.avatar_url ?? "/team/placeholder.svg"}
+                        name={m.full_name}
+                        className="h-full w-full transition-transform duration-500 group-hover:scale-[1.03]"
+                      />
+                      {m.nmls && (
+                        <span className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-ink backdrop-blur">
+                          NMLS# {m.nmls}
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-6">
+                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+                        {m.title}
                       </div>
-                      <div className="p-6">
-                        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
-                          {m.title ?? m.role.replace("_", " ")}
-                        </div>
-                        <div className="mt-2 text-xl font-extrabold text-ink group-hover:text-accent transition-colors">
-                          {m.full_name}
-                        </div>
-                        {m.short_bio && (
-                          <p className="mt-3 text-sm leading-6 text-muted">{m.short_bio}</p>
-                        )}
-                        <div className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent">
-                          View profile <span aria-hidden>→</span>
-                        </div>
+                      <div className="mt-2 text-xl font-extrabold text-ink group-hover:text-accent transition-colors">
+                        {m.full_name}
                       </div>
-                    </Link>
-                  );
-                })}
+                      {m.short_bio && (
+                        <p className="mt-3 text-sm leading-6 text-muted">{m.short_bio}</p>
+                      )}
+                      <div className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent">
+                        View profile <span aria-hidden>→</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           ))}
-          {members.length === 0 && (
-            <p className="text-center text-muted py-20">Team profiles coming soon.</p>
-          )}
         </div>
       </section>
 
