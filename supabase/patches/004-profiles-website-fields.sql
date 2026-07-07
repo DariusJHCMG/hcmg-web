@@ -1,7 +1,5 @@
--- ═══════════════════════════════════════════════════════════════════
--- HCMG Portal — Extend profiles table for public website team pages
--- Run in: Supabase Dashboard → SQL Editor → New Query
--- ═══════════════════════════════════════════════════════════════════
+-- HCMG Portal - Extend profiles table for public website team pages
+-- Run in: Supabase Dashboard > SQL Editor > New Query
 
 alter table public.profiles
   add column if not exists title           text,          -- public job title, e.g. "Loan Officer"

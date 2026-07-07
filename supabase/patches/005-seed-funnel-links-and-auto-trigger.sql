@@ -1,18 +1,13 @@
--- ═══════════════════════════════════════════════════════════════════
--- HCMG Portal — Patch 005
+-- HCMG Portal - Patch 005
 -- 1. Seed funnel_links for all existing LO profiles that have lo_slug
--- 2. Backfill notify_email on profiles where it is null (→ login email)
--- 3. Add DB-level trigger: auto-create/update funnel_link whenever a
---    profile's lo_slug is set or changed (so admin-portal creates are
---    always in sync even if the API upsert step fails)
--- 4. Add DB-level trigger: disable funnel_link when profile.is_active
---    goes false, re-enable when it goes true
+-- 2. Backfill notify_email on profiles where it is null (= login email)
+-- 3. DB trigger: auto-create/update funnel_link on profile lo_slug change
+-- 4. DB trigger: disable funnel_link when profile.is_active goes false
 --
--- Run in: Supabase Dashboard → SQL Editor → New Query
+-- Run in: Supabase Dashboard > SQL Editor > New Query
 -- Safe to run multiple times (all statements are idempotent).
--- ═══════════════════════════════════════════════════════════════════
 
--- ── 1. Seed funnel_links for existing LO profiles ─────────────────
+-- 1. Seed funnel_links for existing LO profiles
 insert into public.funnel_links (lo_slug, lo_name, url, is_active, clicks)
 select
   p.lo_slug,
@@ -28,12 +23,12 @@ on conflict (lo_slug) do update
       url       = excluded.url,
       is_active = excluded.is_active;
 
--- ── 2. Backfill notify_email where null ───────────────────────────
+-- 2. Backfill notify_email where null
 update public.profiles
 set notify_email = email
 where notify_email is null;
 
--- ── 3. Auto-manage funnel_link on profile lo_slug change ──────────
+-- 3. Auto-manage funnel_link on profile lo_slug / is_active change
 create or replace function public.sync_funnel_link()
 returns trigger language plpgsql security definer as $$
 declare
@@ -74,7 +69,7 @@ create trigger profiles_sync_funnel_link
   for each row
   execute procedure public.sync_funnel_link();
 
--- Also fire on INSERT in case the API upsert doesn't happen
+-- Also fire on INSERT so new users get funnel_link automatically
 create or replace function public.sync_funnel_link_on_insert()
 returns trigger language plpgsql security definer as $$
 declare
@@ -104,11 +99,9 @@ create trigger profiles_insert_funnel_link
   for each row
   execute procedure public.sync_funnel_link_on_insert();
 
--- ── 4. Verify seed results ─────────────────────────────────────────
--- Run this SELECT to confirm all LO profiles now have a funnel_link:
---
---   select p.full_name, p.lo_slug, p.is_active, fl.url, fl.is_active as link_active
---   from public.profiles p
---   left join public.funnel_links fl on fl.lo_slug = p.lo_slug
---   where p.lo_slug is not null
---   order by p.full_name;
+-- 4. Verify: run this SELECT after to confirm all LOs have a funnel_link
+-- select p.full_name, p.lo_slug, p.is_active, fl.url, fl.is_active as link_active
+-- from public.profiles p
+-- left join public.funnel_links fl on fl.lo_slug = p.lo_slug
+-- where p.lo_slug is not null
+-- order by p.full_name;
