@@ -25,6 +25,11 @@ export interface LeadPayload {
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
+  // Session intelligence
+  sessionId?:  string;
+  entryPage?:  string;
+  referrer?:   string;
+  device?:     string;
 }
 
 export async function submitLead(payload: LeadPayload): Promise<{ success: boolean; error?: string }> {

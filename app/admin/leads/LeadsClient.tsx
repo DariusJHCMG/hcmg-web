@@ -2,14 +2,10 @@
 
 import { useState } from "react";
 import type { Lead, LeadStatus } from "@/lib/database.types";
+import { LeadIntelPanel } from "@/components/portal/LeadIntelPanel";
 
-const STATUS_COLORS: Record<string, string> = {
-  new:       "bg-blue-50 text-blue-700",
-  contacted: "bg-yellow-50 text-yellow-700",
-  qualified: "bg-purple-50 text-purple-700",
-  closed:    "bg-green-50 text-green-700",
-  lost:      "bg-red-50 text-red-600",
-};
+const POSTHOG_PROJECT_ID = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_ID;
+
 const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed", "lost"];
 
 export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
@@ -17,7 +13,6 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   const [search, setSearch]             = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">("");
   const [sourceFilter, setSourceFilter] = useState("");
-  const [expanded, setExpanded]         = useState<string | null>(null);
 
   async function updateStatus(id: string, status: LeadStatus) {
     await fetch(`/api/admin/leads/${id}`, {
@@ -112,62 +107,12 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               {filtered.length === 0 && (
                 <tr><td colSpan={8} className="px-6 py-10 text-center text-sm text-muted/60">No leads found.</td></tr>
               )}
-              {filtered.map((lead, i) => (
-                <>
-                  <tr
-                    key={lead.id}
-                    className={`cursor-pointer transition-colors ${i % 2 === 0 ? "bg-white" : "bg-sand/40"} hover:bg-accent/5`}
-                    onClick={() => setExpanded(expanded === lead.id ? null : lead.id)}
-                  >
-                    <td className="px-5 py-3 font-semibold text-ink">
-                      {lead.first_name} {lead.last_name ?? ""}
-                    </td>
-                    <td className="px-5 py-3 text-muted">
-                      <div>{lead.email}</div>
-                      <div className="text-xs">{lead.phone}</div>
-                    </td>
-                    <td className="px-5 py-3 text-muted">{lead.source}</td>
-                    <td className="px-5 py-3 text-muted">{lead.lo_name ?? "—"}</td>
-                    <td className="px-5 py-3 text-muted">{lead.goal ?? "—"}</td>
-                    <td className="px-5 py-3">
-                      <select
-                        value={lead.status}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => updateStatus(lead.id, e.target.value as LeadStatus)}
-                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold cursor-pointer border-none outline-none ${STATUS_COLORS[lead.status]}`}
-                      >
-                        {ALL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </td>
-                    <td className="px-5 py-3 text-muted text-xs">
-                      {new Date(lead.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-5 py-3 text-muted text-xs">{expanded === lead.id ? "▲" : "▼"}</td>
-                  </tr>
-                  {expanded === lead.id && (
-                    <tr key={`${lead.id}-detail`} className="bg-accent/5">
-                      <td colSpan={8} className="px-6 py-4">
-                        <div className="grid gap-4 sm:grid-cols-3 text-xs text-muted">
-                          <div><span className="font-semibold text-ink">Price Range:</span> {lead.price_range ?? "—"}</div>
-                          <div><span className="font-semibold text-ink">Credit Range:</span> {lead.credit_range ?? "—"}</div>
-                          <div><span className="font-semibold text-ink">Income Range:</span> {lead.income_range ?? "—"}</div>
-                          <div><span className="font-semibold text-ink">Loan Type:</span> {lead.recommended_loan_type ?? "—"}</div>
-                          <div><span className="font-semibold text-ink">SMS Consent:</span> {lead.sms_consent ? "Yes" : "No"}</div>
-                          <div><span className="font-semibold text-ink">LO NMLS:</span> {lead.lo_nmls ?? "—"}</div>
-                          <div><span className="font-semibold text-ink">UTM Source:</span> {lead.utm_source ?? "—"}</div>
-                          <div><span className="font-semibold text-ink">UTM Medium:</span> {lead.utm_medium ?? "—"}</div>
-                          <div><span className="font-semibold text-ink">UTM Campaign:</span> {lead.utm_campaign ?? "—"}</div>
-                          {(lead.utm_content || lead.utm_term) && (
-                            <div><span className="font-semibold text-ink">UTM Content/Term:</span> {[lead.utm_content, lead.utm_term].filter(Boolean).join(" / ")}</div>
-                          )}
-                          {lead.notes && (
-                            <div className="sm:col-span-3"><span className="font-semibold text-ink">Notes:</span> {lead.notes}</div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </>
+              {filtered.map((lead) => (
+                <LeadIntelPanel
+                  key={lead.id}
+                  lead={lead}
+                  posthogProjectId={POSTHOG_PROJECT_ID}
+                />
               ))}
             </tbody>
           </table>

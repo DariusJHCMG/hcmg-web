@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { UtmCapture } from "@/components/ui/UtmCapture";
+import { Tracker } from "@/components/ui/Tracker";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <UtmCapture />
+        <Tracker />
         {children}
       </body>
     </html>

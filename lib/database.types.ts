@@ -44,8 +44,23 @@ export interface Lead {
   utm_campaign: string | null;
   utm_content: string | null;
   utm_term: string | null;
+  // Session intelligence
+  session_id: string | null;
+  entry_page: string | null;
+  referrer:   string | null;
+  device:     string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface LeadEvent {
+  id:         string;
+  session_id: string;
+  event_type: "page_view" | "funnel_step" | "cta_click" | "calculator_use";
+  pathname:   string | null;
+  data:       Record<string, unknown> | null;
+  ts:         string;
+  created_at: string;
 }
 
 export interface FunnelLink {

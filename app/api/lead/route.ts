@@ -31,6 +31,11 @@ const LeadSchema = z.object({
   utmCampaign: z.string().optional(),
   utmContent:  z.string().optional(),
   utmTerm:     z.string().optional(),
+  // Session intelligence
+  sessionId:   z.string().optional(),
+  entryPage:   z.string().optional(),
+  referrer:    z.string().optional(),
+  device:      z.string().optional(),
 });
 
 const confirmationHtml = (firstName: string, loName?: string) => `
@@ -162,6 +167,10 @@ export async function POST(request: NextRequest) {
     utm_campaign: lead.utmCampaign ?? null,
     utm_content:  lead.utmContent  ?? null,
     utm_term:     lead.utmTerm     ?? null,
+    session_id:   lead.sessionId   ?? null,
+    entry_page:   lead.entryPage   ?? null,
+    referrer:     lead.referrer    ?? null,
+    device:       lead.device      ?? null,
   }).select("id").single();
 
   // Log to audit

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { calculateMortgageEstimate, formatCurrency } from "@/lib/calculators";
@@ -8,6 +8,8 @@ import { Disclosure } from "@/components/ui/Disclosure";
 import { formatPhone } from "@/lib/format";
 import { submitLead, utmsToPayload } from "@/lib/lead";
 import { getStoredUtms } from "@/lib/utm";
+import { getSessionMeta, trackFunnelStep } from "@/lib/tracker";
+import { identifyLead, getPostHog } from "@/lib/posthog";
 
 // ── Types ──────────────────────────────────────────────────
 type Goal = "buy" | "refinance" | "compare";
@@ -98,8 +100,17 @@ export function FunnelFlow({ lo }: { lo?: FunnelLoContext } = {}) {
   const stepNum = typeof step === "number" ? step : 6;
   const progress = Math.min((stepNum / 6) * 100, 100);
 
+  const stepStartRef = React.useRef<number>(Date.now());
+
   function go(n: Step, d: 1 | -1 = 1) { setDir(d); setStep(n); }
-  function next(n: Step) { go(n, 1); }
+  function next(n: Step, choiceLabel?: string) {
+    const duration = Date.now() - stepStartRef.current;
+    stepStartRef.current = Date.now();
+    if (typeof step === "number" && choiceLabel) {
+      trackFunnelStep(step, choiceLabel, duration);
+    }
+    go(n, 1);
+  }
   function back(n: Step) { go(n, -1); }
   function set<K extends keyof FunnelState>(k: K, v: FunnelState[K]) { setState((s) => ({ ...s, [k]: v })); }
 
@@ -117,6 +128,7 @@ export function FunnelFlow({ lo }: { lo?: FunnelLoContext } = {}) {
     if (!validate()) return;
     setSubmitting(true);
     setSubmitError("");
+    const meta = getSessionMeta();
     const result = await submitLead({
       firstName: state.firstName.trim(),
       email: state.email.trim(),
@@ -136,7 +148,30 @@ export function FunnelFlow({ lo }: { lo?: FunnelLoContext } = {}) {
       loName: lo?.name,
       loNmls: lo?.nmls,
       ...utmsToPayload(getStoredUtms()),
+      sessionId: meta.sessionId,
+      entryPage: meta.entryPage,
+      referrer:  meta.referrer,
+      device:    meta.device,
     });
+
+    if (result.success) {
+      // Identify the lead in PostHog so session replay is linked to them
+      identifyLead(meta.sessionId, {
+        email:     state.email.trim(),
+        name:      state.firstName.trim(),
+        loSlug:    lo?.slug,
+        loName:    lo?.name,
+        utmSource: getStoredUtms().utm_source,
+      });
+      getPostHog().capture("lead_submitted", {
+        goal:       state.goal,
+        price_band: state.priceBand,
+        credit_band: state.creditBand,
+        lo_slug:    lo?.slug,
+        utm_source: getStoredUtms().utm_source,
+      });
+    }
+
     setSubmitting(false);
     if (result.success) {
       go("success", 1);
