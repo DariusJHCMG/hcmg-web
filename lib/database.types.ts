@@ -38,6 +38,12 @@ export interface Lead {
   estimated_monthly_payment: number | null;
   recommended_loan_type: string | null;
   ip_address: string | null;
+  // UTM attribution
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
   created_at: string;
   updated_at: string;
 }

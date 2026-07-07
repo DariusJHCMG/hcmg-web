@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { OrangeKeyLogo } from "./OrangeKeyLogo";
 import { TopBanner } from "./TopBanner";
+import { UtmLink } from "./UtmLink";
 
 const NAV_LINKS = [
   { label: "Buy", href: "/#calculator" },
@@ -59,9 +60,9 @@ export function NavBar() {
           <Link href="/contact" className="secondary-button !py-2.5 !px-5 !text-sm">
             Contact
           </Link>
-          <Link href="/get-started" className="primary-button !py-2.5 !px-5 !text-sm">
+          <UtmLink href="/get-started" className="primary-button !py-2.5 !px-5 !text-sm">
             See what I qualify for
-          </Link>
+          </UtmLink>
         </div>
 
         {/* Mobile hamburger */}
@@ -100,9 +101,9 @@ export function NavBar() {
             <Link href="/contact" className="secondary-button justify-center" onClick={() => setMenuOpen(false)}>
               Contact
             </Link>
-            <Link href="/get-started" className="primary-button justify-center" onClick={() => setMenuOpen(false)}>
+            <UtmLink href="/get-started" className="primary-button justify-center" onClick={() => setMenuOpen(false)}>
               See what I qualify for
-            </Link>
+            </UtmLink>
           </div>
         </div>
       )}

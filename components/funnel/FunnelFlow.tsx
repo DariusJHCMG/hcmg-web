@@ -6,7 +6,8 @@ import Link from "next/link";
 import { calculateMortgageEstimate, formatCurrency } from "@/lib/calculators";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { formatPhone } from "@/lib/format";
-import { submitLead } from "@/lib/lead";
+import { submitLead, utmsToPayload } from "@/lib/lead";
+import { getStoredUtms } from "@/lib/utm";
 
 // ── Types ──────────────────────────────────────────────────
 type Goal = "buy" | "refinance" | "compare";
@@ -134,6 +135,7 @@ export function FunnelFlow({ lo }: { lo?: FunnelLoContext } = {}) {
       loSlug: lo?.slug,
       loName: lo?.name,
       loNmls: lo?.nmls,
+      ...utmsToPayload(getStoredUtms()),
     });
     setSubmitting(false);
     if (result.success) {

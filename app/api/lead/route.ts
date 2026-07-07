@@ -25,6 +25,12 @@ const LeadSchema = z.object({
   loSlug: z.string().optional(),
   loName: z.string().optional(),
   loNmls: z.string().nullable().optional(),
+  // UTM attribution
+  utmSource:   z.string().optional(),
+  utmMedium:   z.string().optional(),
+  utmCampaign: z.string().optional(),
+  utmContent:  z.string().optional(),
+  utmTerm:     z.string().optional(),
 });
 
 const confirmationHtml = (firstName: string, loName?: string) => `
@@ -151,6 +157,11 @@ export async function POST(request: NextRequest) {
     lo_nmls:      lead.loNmls ?? null,
     status:       "new",
     ip_address:   ip,
+    utm_source:   lead.utmSource   ?? null,
+    utm_medium:   lead.utmMedium   ?? null,
+    utm_campaign: lead.utmCampaign ?? null,
+    utm_content:  lead.utmContent  ?? null,
+    utm_term:     lead.utmTerm     ?? null,
   }).select("id").single();
 
   // Log to audit

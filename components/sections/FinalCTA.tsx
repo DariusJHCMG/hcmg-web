@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { UtmLink } from "@/components/ui/UtmLink";
 
 export function FinalCTA() {
   return (
@@ -19,12 +22,12 @@ export function FinalCTA() {
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
+            <UtmLink
               href="/get-started"
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-accent shadow-orange transition hover:scale-[1.02] hover:shadow-lg"
             >
               See what I qualify for →
-            </Link>
+            </UtmLink>
             <Link
               href="/contact"
               className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white/50 bg-transparent px-8 py-4 text-base font-semibold text-white transition hover:bg-white/10"

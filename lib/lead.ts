@@ -1,3 +1,5 @@
+import type { UtmParams } from "./utm";
+
 export interface LeadPayload {
   firstName: string;
   email: string;
@@ -17,6 +19,12 @@ export interface LeadPayload {
   loSlug?: string;
   loName?: string;
   loNmls?: string | null;
+  // UTM attribution
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
 }
 
 export async function submitLead(payload: LeadPayload): Promise<{ success: boolean; error?: string }> {
@@ -34,4 +42,15 @@ export async function submitLead(payload: LeadPayload): Promise<{ success: boole
   } catch {
     return { success: false, error: "Network error. Please try again." };
   }
+}
+
+/** Build a LeadPayload UTM block from stored session UTMs. */
+export function utmsToPayload(utms: UtmParams): Pick<LeadPayload, "utmSource" | "utmMedium" | "utmCampaign" | "utmContent" | "utmTerm"> {
+  return {
+    utmSource:   utms.utm_source,
+    utmMedium:   utms.utm_medium,
+    utmCampaign: utms.utm_campaign,
+    utmContent:  utms.utm_content,
+    utmTerm:     utms.utm_term,
+  };
 }

@@ -29,7 +29,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   }
 
   function exportCSV() {
-    const cols: (keyof Lead)[] = ["first_name","last_name","email","phone","source","lo_name","status","goal","price_range","credit_range","created_at"];
+    const cols: (keyof Lead)[] = ["first_name","last_name","email","phone","source","lo_name","status","goal","price_range","credit_range","utm_source","utm_medium","utm_campaign","created_at"];
     const rows = [cols.join(","), ...filtered.map((l) => cols.map((c) => `"${String(l[c] ?? "").replace(/"/g, '""')}"`).join(","))];
     const blob = new Blob([rows.join("\n")], { type: "text/csv" });
     const url  = URL.createObjectURL(blob);
@@ -154,6 +154,12 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                           <div><span className="font-semibold text-ink">Loan Type:</span> {lead.recommended_loan_type ?? "—"}</div>
                           <div><span className="font-semibold text-ink">SMS Consent:</span> {lead.sms_consent ? "Yes" : "No"}</div>
                           <div><span className="font-semibold text-ink">LO NMLS:</span> {lead.lo_nmls ?? "—"}</div>
+                          <div><span className="font-semibold text-ink">UTM Source:</span> {lead.utm_source ?? "—"}</div>
+                          <div><span className="font-semibold text-ink">UTM Medium:</span> {lead.utm_medium ?? "—"}</div>
+                          <div><span className="font-semibold text-ink">UTM Campaign:</span> {lead.utm_campaign ?? "—"}</div>
+                          {(lead.utm_content || lead.utm_term) && (
+                            <div><span className="font-semibold text-ink">UTM Content/Term:</span> {[lead.utm_content, lead.utm_term].filter(Boolean).join(" / ")}</div>
+                          )}
                           {lead.notes && (
                             <div className="sm:col-span-3"><span className="font-semibold text-ink">Notes:</span> {lead.notes}</div>
                           )}

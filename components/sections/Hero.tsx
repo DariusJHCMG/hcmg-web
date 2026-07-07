@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { formatCurrency } from "@/lib/calculators";
+import { UtmLink } from "@/components/ui/UtmLink";
 
 const TRUST_ITEMS = [
   { icon: "🔒", label: "No hard credit check" },
@@ -66,9 +67,9 @@ export function Hero() {
 
           {/* CTAs */}
           <div className={`mt-8 flex flex-wrap gap-3 ${entered ? "motion-rise motion-delay-4" : "motion-prep"}`}>
-            <Link href="/get-started" className="primary-button !text-base !px-7 !py-4">
+            <UtmLink href="/get-started" className="primary-button !text-base !px-7 !py-4">
               See what I qualify for →
-            </Link>
+            </UtmLink>
             <a href="#calculator" className="secondary-button !text-base !px-7 !py-4">
               Try the calculator
             </a>
@@ -136,9 +137,9 @@ export function Hero() {
               </p>
 
               {/* CTA */}
-              <Link href="/get-started" className="primary-button w-full justify-center !py-3.5">
+              <UtmLink href="/get-started" className="primary-button w-full justify-center !py-3.5">
                 Get my actual estimate →
-              </Link>
+              </UtmLink>
             </div>
           </div>
         </motion.div>
