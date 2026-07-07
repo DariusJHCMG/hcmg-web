@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
 
 export default function LoginPage() {
@@ -13,7 +13,6 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "";
 
@@ -36,8 +35,8 @@ function LoginForm() {
         .from("profiles").select("role").eq("id", data.user.id).single();
 
       const dest = next || (profile?.role === "loan_officer" ? "/portal" : "/admin");
-      router.push(dest);
-      router.refresh();
+      // Hard redirect — forces full page reload so server middleware sees the session cookie
+      window.location.href = dest;
     } catch {
       setError("Unexpected error. Please try again.");
       setLoading(false);
