@@ -4,6 +4,7 @@ import { Footer } from "@/components/ui/Footer";
 import { FunnelFlow } from "@/components/funnel/FunnelFlow";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { getTeamMemberBySlug } from "@/data/team";
+import { createServiceClient } from "@/lib/supabase";
 
 export const metadata: Metadata = {
   title: "Get Your Mortgage Estimate, HCMG",
@@ -13,13 +14,52 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+interface LoContext {
+  slug: string;
+  name: string;
+  nmls: string | null;
+  role: string;
+  photo: string | null;
+}
+
+// Resolve LO: try Supabase profiles first, fall back to data/team.ts
+async function resolveLo(loSlug: string): Promise<LoContext | null> {
+  try {
+    const sb = createServiceClient();
+    const { data } = await sb
+      .from("profiles")
+      .select("lo_slug, full_name, nmls, title, role, avatar_url")
+      .eq("lo_slug", loSlug)
+      .eq("is_active", true)
+      .single();
+    if (data) {
+      return {
+        slug:  data.lo_slug,
+        name:  data.full_name,
+        nmls:  data.nmls ?? null,
+        role:  data.title ?? data.role.replace("_", " "),
+        photo: data.avatar_url ?? null,
+      };
+    }
+  } catch { /* fall through */ }
+
+  // Fall back to static team data (covers pre-seeded LOs until patch 004 is run)
+  const m = getTeamMemberBySlug(loSlug);
+  if (m) {
+    return { slug: m.slug, name: m.name, nmls: m.nmls, role: m.role, photo: m.photo };
+  }
+  return null;
+}
+
+export const dynamic = "force-dynamic";
+
 export default async function GetStartedPage({
   searchParams,
 }: {
   searchParams: Promise<{ lo?: string }>;
 }) {
   const { lo: loSlug } = await searchParams;
-  const lo = loSlug ? getTeamMemberBySlug(loSlug) : undefined;
+  const lo = loSlug ? await resolveLo(loSlug) : null;
   const funnelLo = lo
     ? { slug: lo.slug, name: lo.name, nmls: lo.nmls }
     : undefined;
@@ -34,7 +74,12 @@ export default async function GetStartedPage({
             <div className="mx-auto mb-10 max-w-xl">
               <div className="flex items-center gap-4 rounded-3xl border border-line bg-white p-4 shadow-soft sm:p-5">
                 <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl">
-                  <TeamPhoto photo={lo.photo} name={lo.name} aspect="1 / 1" className="h-full w-full" />
+                  <TeamPhoto
+                    photo={lo.photo ?? "/team/placeholder.svg"}
+                    name={lo.name}
+                    aspect="1 / 1"
+                    className="h-full w-full"
+                  />
                 </div>
                 <div className="min-w-0">
                   <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
