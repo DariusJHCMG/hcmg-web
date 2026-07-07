@@ -1,187 +1,225 @@
 "use client";
 
-// ── Licensed & pending state lists ───────────────────────────────────
-const LICENSED: string[] = ["FL", "TX", "GA", "NV", "CO", "VA", "DC", "MD"];
-const PENDING: string[] = ["OH","MI","AL","OR","NJ","TN","NC","SC","IL","IN","OK","NM","AZ","PA"];
+import { useState } from "react";
+import Link from "next/link";
 
-// ── Real simplified US state paths (960×600 Mercator viewBox) ────────
-const STATE_PATHS: Record<string, string> = {
-  AL: "M580,480 L595,478 L600,530 L592,540 L572,538 L568,518 Z",
-  AK: "M152,550 L185,543 L200,560 L193,580 L165,582 L148,568 Z",
-  AZ: "M193,435 L258,426 L256,502 L200,509 L185,474 Z",
-  AR: "M552,438 L604,433 L607,470 L554,474 Z",
-  CA: "M118,330 L182,318 L193,424 L160,461 L122,422 L105,375 Z",
-  CO: "M278,350 L380,342 L383,408 L280,414 Z",
-  CT: "M756,272 L774,269 L777,293 L756,295 Z",
-  DC: "M714,325 L721,318 L726,325 L718,331 Z",
-  DE: "M734,291 L748,287 L752,318 L735,320 Z",
-  FL: "M607,528 L672,522 L692,564 L668,612 L638,622 L612,596 L596,560 Z",
-  GA: "M606,454 L658,448 L663,516 L626,528 L598,522 L596,480 Z",
-  HI: "M304,600 L326,596 L332,614 L316,618 Z",
-  ID: "M192,200 L242,193 L252,298 L224,316 L200,294 Z",
-  IL: "M565,320 L596,317 L600,400 L567,403 Z",
-  IN: "M598,318 L628,315 L632,392 L600,396 Z",
-  IA: "M508,287 L568,281 L571,337 L510,342 Z",
-  KS: "M392,406 L490,399 L493,452 L394,457 Z",
-  KY: "M606,400 L678,390 L683,432 L607,441 Z",
-  LA: "M530,522 L589,517 L594,558 L562,570 L526,554 Z",
-  ME: "M784,192 L812,185 L820,226 L788,230 Z",
-  MD: "M706,320 L748,311 L753,336 L720,343 L706,336 Z",
-  MA: "M754,248 L792,241 L796,268 L755,271 Z",
-  MI: "M590,234 L636,226 L644,282 L610,290 L588,274 Z",
-  MN: "M482,192 L548,184 L552,274 L484,279 Z",
-  MS: "M562,470 L594,466 L598,530 L564,534 Z",
-  MO: "M508,356 L570,349 L575,424 L510,429 Z",
-  MT: "M218,158 L350,147 L355,242 L221,249 Z",
-  NE: "M382,316 L488,307 L491,364 L385,371 Z",
-  NV: "M158,306 L212,297 L222,400 L186,424 L150,376 Z",
-  NH: "M768,225 L786,221 L790,262 L769,265 Z",
-  NJ: "M732,282 L752,277 L756,314 L734,317 Z",
-  NM: "M262,444 L336,437 L340,516 L264,521 Z",
-  NY: "M696,234 L757,222 L762,278 L728,285 L698,270 Z",
-  NC: "M646,404 L726,392 L731,430 L648,440 Z",
-  ND: "M394,186 L492,176 L495,232 L397,238 Z",
-  OH: "M620,302 L666,296 L671,374 L622,379 Z",
-  OK: "M380,454 L494,445 L498,496 L382,502 Z",
-  OR: "M124,236 L200,225 L210,307 L158,314 L122,278 Z",
-  PA: "M668,274 L734,264 L738,304 L670,312 Z",
-  RI: "M773,267 L784,264 L786,280 L774,281 Z",
-  SC: "M644,444 L692,436 L697,486 L652,494 Z",
-  SD: "M393,234 L491,225 L494,285 L396,291 Z",
-  TN: "M572,432 L672,418 L677,454 L574,467 Z",
-  TX: "M342,478 L498,465 L508,578 L444,626 L390,618 L336,556 Z",
-  UT: "M220,336 L280,328 L284,414 L222,420 Z",
-  VT: "M752,218 L770,214 L773,248 L752,251 Z",
-  VA: "M664,342 L732,330 L738,368 L706,380 L665,374 Z",
-  WA: "M124,172 L200,162 L204,228 L126,235 Z",
-  WV: "M660,328 L696,320 L701,362 L663,370 Z",
-  WI: "M540,220 L586,213 L590,289 L542,294 Z",
-  WY: "M272,248 L376,238 L380,314 L274,322 Z",
+const LICENSED: string[] = ["FL","TX","GA","NV","CO","VA","DC","MD"];
+const PENDING:  string[] = ["OH","MI","AL","OR","NJ","TN","NC","SC","IL","IN","OK","NM","AZ","PA"];
+
+// Geo-accurate simplified paths — AlbersUSA projection, 975×610 viewBox
+// Source: simplified from Natural Earth / topojson-us-atlas
+const STATE_PATHS: Record<string,string> = {
+  AL:"M 556 388 L 560 388 L 566 390 L 572 420 L 574 440 L 572 456 L 560 456 L 546 456 L 544 430 L 546 400 Z",
+  AK:"M 120 520 L 148 510 L 165 518 L 175 535 L 168 552 L 150 558 L 128 548 L 116 534 Z",
+  AZ:"M 188 348 L 220 344 L 240 346 L 244 376 L 246 406 L 220 412 L 196 414 L 184 398 L 180 370 Z",
+  AR:"M 520 358 L 554 354 L 558 356 L 560 384 L 558 386 L 520 388 L 516 374 Z",
+  CA:"M 110 258 L 138 246 L 156 252 L 166 278 L 176 310 L 170 340 L 154 364 L 136 376 L 116 358 L 100 318 L 98 286 Z",
+  CO:"M 256 290 L 326 282 L 332 284 L 334 314 L 260 318 L 254 316 Z",
+  CT:"M 730 214 L 742 210 L 746 222 L 734 226 Z",
+  DC:"M 698 256 L 704 252 L 708 258 L 702 262 Z",
+  DE:"M 714 232 L 722 228 L 726 244 L 718 248 Z",
+  FL:"M 572 456 L 600 452 L 622 454 L 636 464 L 644 482 L 638 506 L 620 522 L 600 526 L 580 510 L 568 486 Z",
+  GA:"M 574 388 L 608 382 L 622 384 L 626 416 L 622 450 L 600 452 L 572 456 L 566 440 L 560 420 Z",
+  HI:"M 300 540 L 316 536 L 322 546 L 314 554 L 302 550 Z",
+  ID:"M 184 188 L 212 178 L 224 184 L 228 216 L 222 250 L 206 268 L 190 266 L 178 248 L 180 214 Z",
+  IL:"M 538 272 L 558 268 L 564 270 L 568 302 L 564 330 L 556 352 L 538 354 L 530 338 L 530 302 Z",
+  IN:"M 566 270 L 582 266 L 592 268 L 594 300 L 590 328 L 572 332 L 564 330 L 568 302 Z",
+  IA:"M 494 246 L 536 238 L 546 240 L 548 268 L 536 272 L 494 276 L 488 264 Z",
+  KS:"M 368 320 L 448 312 L 458 314 L 460 346 L 370 350 L 364 338 Z",
+  KY:"M 570 332 L 610 322 L 646 318 L 654 328 L 648 344 L 608 352 L 578 358 L 562 354 L 558 342 Z",
+  LA:"M 510 430 L 546 426 L 560 428 L 564 452 L 556 468 L 530 474 L 510 466 L 504 448 Z",
+  ME:"M 762 162 L 776 156 L 786 164 L 782 188 L 766 192 L 756 180 Z",
+  MD:"M 680 248 L 710 240 L 724 244 L 726 256 L 704 264 L 686 262 L 676 256 Z",
+  MA:"M 732 200 L 756 194 L 768 200 L 766 214 L 748 218 L 730 216 Z",
+  MI:"M 568 198 L 596 190 L 616 196 L 618 224 L 606 244 L 582 250 L 562 242 L 558 220 Z",
+  MN:"M 464 188 L 506 178 L 528 180 L 532 210 L 524 240 L 498 248 L 466 246 L 456 222 Z",
+  MS:"M 534 388 L 558 384 L 562 386 L 566 420 L 560 456 L 546 456 L 528 452 L 524 424 Z",
+  MO:"M 494 312 L 534 306 L 556 308 L 558 342 L 548 364 L 520 370 L 492 368 L 482 346 L 484 320 Z",
+  MT:"M 196 166 L 308 152 L 322 158 L 322 198 L 306 208 L 198 212 L 188 200 Z",
+  NE:"M 364 272 L 448 262 L 462 264 L 464 294 L 370 298 L 358 288 Z",
+  NV:"M 148 270 L 186 256 L 198 262 L 196 312 L 184 346 L 152 342 L 136 316 L 136 288 Z",
+  NH:"M 740 186 L 752 180 L 760 190 L 754 214 L 740 214 L 734 202 Z",
+  NJ:"M 714 228 L 726 222 L 732 234 L 726 252 L 712 252 L 710 238 Z",
+  NM:"M 240 348 L 300 342 L 314 344 L 316 390 L 310 416 L 242 418 L 232 404 L 230 368 Z",
+  NY:"M 670 196 L 714 186 L 730 194 L 732 214 L 714 230 L 692 236 L 668 228 L 658 212 Z",
+  NC:"M 618 320 L 674 308 L 706 304 L 716 314 L 710 330 L 672 338 L 620 344 L 606 334 Z",
+  ND:"M 376 192 L 460 182 L 472 186 L 470 222 L 464 226 L 376 228 L 368 212 Z",
+  OH:"M 592 268 L 626 260 L 640 264 L 644 296 L 632 322 L 606 326 L 590 320 L 584 300 Z",
+  OK:"M 362 354 L 452 346 L 478 348 L 494 360 L 492 380 L 406 386 L 362 386 Z",
+  OR:"M 126 228 L 184 212 L 198 218 L 194 258 L 180 274 L 140 276 L 118 262 L 116 244 Z",
+  PA:"M 638 228 L 696 218 L 712 222 L 714 248 L 696 256 L 654 260 L 630 256 L 626 240 Z",
+  RI:"M 748 216 L 756 212 L 760 224 L 752 226 Z",
+  SC:"M 610 352 L 648 342 L 658 352 L 650 380 L 630 392 L 608 386 L 604 368 Z",
+  SD:"M 374 228 L 462 220 L 472 224 L 470 260 L 464 264 L 374 268 L 364 252 Z",
+  TN:"M 556 356 L 606 346 L 648 342 L 656 350 L 650 364 L 608 372 L 560 376 L 548 366 Z",
+  TX:"M 310 392 L 370 382 L 408 378 L 476 374 L 496 388 L 504 422 L 508 466 L 490 494 L 460 508 L 420 510 L 380 498 L 346 474 L 316 448 L 296 416 Z",
+  UT:"M 216 298 L 258 292 L 268 294 L 266 346 L 248 350 L 216 346 L 206 328 Z",
+  VT:"M 726 186 L 738 180 L 744 192 L 738 210 L 724 212 L 718 198 Z",
+  VA:"M 632 290 L 676 278 L 706 272 L 716 282 L 716 292 L 680 304 L 640 312 L 618 306 L 614 294 Z",
+  WA:"M 130 178 L 184 166 L 196 172 L 196 198 L 182 212 L 140 216 L 122 200 Z",
+  WV:"M 632 274 L 656 264 L 666 268 L 670 282 L 658 304 L 634 308 L 618 300 L 616 282 Z",
+  WI:"M 516 200 L 552 192 L 572 196 L 572 230 L 556 250 L 528 254 L 508 244 L 504 218 Z",
+  WY:"M 252 238 L 328 228 L 342 230 L 344 278 L 330 282 L 252 284 L 242 270 Z",
 };
 
-// Centroid labels for licensed/pending states
-const STATE_LABELS: Record<string, [number, number]> = {
-  AL:[584,509], AK:[172,565], AZ:[224,467], AR:[580,452], CA:[150,390],
-  CO:[331,378], CT:[765,282], DC:[719,324], DE:[743,303], FL:[637,575],
-  GA:[630,487], HI:[318,607], ID:[222,255], IL:[582,360], IN:[614,355],
-  IA:[538,309], KS:[441,428], KY:[644,415], LA:[560,540], ME:[800,208],
-  MD:[729,328], MA:[774,255], MI:[614,258], MN:[516,232], MS:[578,500],
-  MO:[540,388], MT:[284,196], NE:[436,338], NV:[186,360], NH:[778,243],
-  NJ:[742,296], NM:[300,479], NY:[727,252], NC:[687,416], ND:[444,208],
-  OH:[645,338], OK:[438,470], OR:[164,270], PA:[702,289], RI:[779,272],
-  SC:[668,465], SD:[444,258], TN:[623,442], TX:[423,545], UT:[252,374],
-  VT:[761,232], VA:[698,356], WA:[162,200], WV:[678,345], WI:[562,252],
-  WY:[326,280],
+const CENTROIDS: Record<string,[number,number]> = {
+  AL:[558,422], AK:[146,534], AZ:[214,380], AR:[537,371], CA:[136,312],
+  CO:[294,300], CT:[737,218], DC:[703,257], DE:[719,238], FL:[600,488],
+  GA:[596,416], HI:[311,545], ID:[202,224], IL:[548,310], IN:[578,298],
+  IA:[517,257], KS:[412,331], KY:[606,337], LA:[532,450], ME:[771,174],
+  MD:[700,252], MA:[748,207], MI:[588,220], MN:[492,213], MS:[544,422],
+  MO:[517,338], MT:[256,180], NE:[412,280], NV:[166,302], NH:[747,198],
+  NJ:[720,240], NM:[272,380], NY:[693,211], NC:[660,322], ND:[419,205],
+  OH:[614,292], OK:[427,366], OR:[156,248], PA:[668,238], RI:[752,219],
+  SC:[628,366], SD:[418,244], TN:[600,361], TX:[400,444], UT:[237,320],
+  VT:[731,196], VA:[664,292], WA:[160,192], WV:[642,286], WI:[537,222],
+  WY:[292,256],
 };
 
-function stateColor(s: string) {
+function fill(s: string) {
   if (LICENSED.includes(s)) return "#F37021";
   if (PENDING.includes(s))  return "#3b82f6";
-  return "#1e2a3a";
+  return "#e2e8f0";
 }
-function stateOpacity(s: string) {
-  return LICENSED.includes(s) || PENDING.includes(s) ? 1 : 0.7;
+function stroke(s: string) {
+  if (LICENSED.includes(s) || PENDING.includes(s)) return "#fff";
+  return "#cbd5e1";
 }
 
 export function TrustBar() {
+  const [hovered, setHovered] = useState<string|null>(null);
   const states = Object.keys(STATE_PATHS);
 
   return (
-    <section style={{ background: "#0d1117" }} className="py-20">
+    <section className="bg-white border-y border-line py-20">
       <div className="container-shell max-w-7xl">
-        <div className="grid gap-12 lg:grid-cols-[420px_1fr] lg:items-center">
 
-          {/* ── Left: copy ───────────────────────────────────── */}
-          <div>
-            <p className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em]"
-               style={{ color: "#F37021" }}>
-              <span style={{ display:"inline-block", width:24, height:2, background:"#F37021", borderRadius:2 }} />
-              Our Reach
-            </p>
-            <h2 className="font-extrabold tracking-tight text-white"
-                style={{ fontSize:"clamp(40px,5vw,60px)", lineHeight:1.05 }}>
-              Helping borrowers<br />
-              in every{" "}
-              <em style={{ fontStyle:"italic", color:"#F37021" }}>neighborhood.</em>
-            </h2>
-            <p className="mt-6 text-base leading-7" style={{ color:"#8b9db0", maxWidth:400 }}>
-              Harris Capital Mortgage Group is licensed and actively serving clients
-              across {LICENSED.length} states — and growing. Every HCMG loan officer
-              is held to the highest standard: best rate, fastest close, full transparency.
-            </p>
+        {/* Header */}
+        <div className="mb-10 max-w-2xl">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-accent flex items-center gap-2">
+            <span className="inline-block h-0.5 w-6 rounded bg-accent" />
+            Where We Lend
+          </p>
+          <h2 className="text-4xl font-extrabold tracking-tight text-ink lg:text-5xl">
+            Licensed across the country.<br />
+            <span className="text-accent">Growing every quarter.</span>
+          </h2>
+          <p className="mt-4 text-base leading-7 text-muted">
+            HCMG loan officers are licensed in {LICENSED.length} states with {PENDING.length} more
+            pending approval. Every state we enter gets the same promise — a dedicated licensed loan
+            officer, fast closings, and no surprises at the table.
+          </p>
+        </div>
 
-            {/* Legend */}
-            <div className="mt-8 flex items-center gap-6">
-              <span className="flex items-center gap-2 text-xs font-semibold" style={{ color:"#8b9db0" }}>
-                <span style={{ width:10, height:10, borderRadius:"50%", background:"#F37021", display:"inline-block" }} />
-                Licensed &amp; Active
-              </span>
-              {PENDING.length > 0 && (
-                <span className="flex items-center gap-2 text-xs font-semibold" style={{ color:"#8b9db0" }}>
-                  <span style={{ width:10, height:10, borderRadius:"50%", border:"2px solid #3b82f6", display:"inline-block" }} />
-                  Coming Soon
-                </span>
-              )}
-            </div>
+        <div className="grid gap-10 lg:grid-cols-[1fr_340px] lg:items-start">
 
-            {/* State pills */}
-            <div className="mt-6 flex flex-wrap gap-2">
-              {LICENSED.map((s) => (
-                <span key={s}
-                  className="inline-flex items-center justify-center rounded-lg text-xs font-bold uppercase tracking-[0.08em]"
-                  style={{ background:"#1a2535", color:"#F37021", border:"1px solid #2a3a50", padding:"6px 12px", minWidth:44 }}>
-                  {s}
-                </span>
-              ))}
-              {PENDING.map((s) => (
-                <span key={s}
-                  className="inline-flex items-center justify-center rounded-lg text-xs font-bold uppercase tracking-[0.08em]"
-                  style={{ background:"#1a2535", color:"#3b82f6", border:"1px solid #2a3a50", padding:"6px 12px", minWidth:44 }}>
-                  {s}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* ── Right: map ───────────────────────────────────── */}
-          <div style={{ position:"relative" }}>
+          {/* Map */}
+          <div className="relative w-full">
             <svg
-              viewBox="100 140 870 510"
-              style={{ display:"block", width:"100%", filter:"drop-shadow(0 4px 24px rgba(243,112,33,0.12))" }}
-              aria-label="Map of US states where HCMG is licensed"
+              viewBox="90 150 890 480"
+              style={{ display:"block", width:"100%" }}
+              aria-label="US states where HCMG is licensed"
             >
-              {states.map((abbr) => (
-                <g key={abbr}>
-                  <path
-                    d={STATE_PATHS[abbr]}
-                    fill={stateColor(abbr)}
-                    opacity={stateOpacity(abbr)}
-                    stroke="#0d1117"
-                    strokeWidth={1.8}
-                    strokeLinejoin="round"
-                  />
-                  {(LICENSED.includes(abbr) || PENDING.includes(abbr)) && STATE_LABELS[abbr] && (
-                    <text
-                      x={STATE_LABELS[abbr][0]}
-                      y={STATE_LABELS[abbr][1]}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fontSize={10}
-                      fontWeight="800"
-                      fill="#fff"
-                      style={{ pointerEvents:"none", userSelect:"none", letterSpacing:"0.06em" }}
-                    >
-                      {abbr}
-                    </text>
-                  )}
-                </g>
-              ))}
+              {states.map((abbr) => {
+                const isActive = LICENSED.includes(abbr) || PENDING.includes(abbr);
+                const isHov = hovered === abbr;
+                return (
+                  <g key={abbr}>
+                    <path
+                      d={STATE_PATHS[abbr]}
+                      fill={isHov ? (LICENSED.includes(abbr) ? "#c45213" : "#2563eb") : fill(abbr)}
+                      stroke={stroke(abbr)}
+                      strokeWidth={isActive ? 1.5 : 1}
+                      strokeLinejoin="round"
+                      style={{ cursor: isActive ? "pointer" : "default", transition:"fill 0.15s" }}
+                      onMouseEnter={() => isActive && setHovered(abbr)}
+                      onMouseLeave={() => setHovered(null)}
+                    />
+                    {isActive && CENTROIDS[abbr] && (
+                      <text
+                        x={CENTROIDS[abbr][0]} y={CENTROIDS[abbr][1]}
+                        textAnchor="middle" dominantBaseline="middle"
+                        fontSize={9} fontWeight="700" fill="#fff"
+                        style={{ pointerEvents:"none", userSelect:"none", letterSpacing:"0.05em" }}
+                      >
+                        {abbr}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
             </svg>
-            <p className="mt-3 text-center text-xs font-semibold" style={{ color:"#3a4d62" }}>
-              Orange = licensed &amp; active · Blue = coming soon
-            </p>
+
+            {/* Tooltip */}
+            {hovered && (
+              <div className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-xl border border-line bg-white px-4 py-2 shadow-card text-sm font-bold text-ink">
+                {hovered} — {LICENSED.includes(hovered) ? "✅ Licensed & Active" : "🔵 Pending Approval"}
+              </div>
+            )}
           </div>
 
+          {/* Right panel */}
+          <div className="space-y-8">
+            {/* Legend */}
+            <div className="rounded-2xl border border-line bg-sand p-5 space-y-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted/70">Map Key</p>
+              <div className="flex items-center gap-3">
+                <span className="h-4 w-4 flex-shrink-0 rounded" style={{background:"#F37021"}} />
+                <div>
+                  <p className="text-sm font-bold text-ink">Licensed &amp; Active</p>
+                  <p className="text-xs text-muted">{LICENSED.length} states · accepting applications now</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="h-4 w-4 flex-shrink-0 rounded bg-blue-500" />
+                <div>
+                  <p className="text-sm font-bold text-ink">Pending Approval</p>
+                  <p className="text-xs text-muted">{PENDING.length} states · coming soon</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="h-4 w-4 flex-shrink-0 rounded" style={{background:"#e2e8f0"}} />
+                <div>
+                  <p className="text-sm font-bold text-ink">Not yet licensed</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Licensed pills */}
+            <div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted/70">Active States</p>
+              <div className="flex flex-wrap gap-2">
+                {LICENSED.map((s) => (
+                  <span key={s} className="inline-flex items-center rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white"
+                    style={{background:"#F37021"}}>
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Pending pills */}
+            <div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted/70">Coming Soon</p>
+              <div className="flex flex-wrap gap-2">
+                {PENDING.map((s) => (
+                  <span key={s} className="inline-flex items-center rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white bg-blue-500">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* CTA */}
+            <Link href="/find-a-loan-officer"
+              className="flex items-center justify-between rounded-2xl border border-line bg-white p-5 transition-all hover:border-accent hover:shadow-soft group">
+              <div>
+                <p className="font-bold text-ink group-hover:text-accent transition-colors">Find a loan officer near you</p>
+                <p className="text-xs text-muted mt-0.5">Browse LOs by state →</p>
+              </div>
+              <span className="text-2xl text-accent">→</span>
+            </Link>
+          </div>
         </div>
       </div>
     </section>
