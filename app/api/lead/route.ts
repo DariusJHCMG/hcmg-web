@@ -4,8 +4,9 @@ import { Resend } from "resend";
 import { createServiceClient } from "@/lib/supabase";
 import { logAudit, getProfileBySlug } from "@/lib/auth";
 
+const RESEND_KEY = process.env.RESEND_API_KEY;
 function getResend() {
-  return new Resend(process.env.RESEND_API_KEY ?? "placeholder");
+  return RESEND_KEY ? new Resend(RESEND_KEY) : null;
 }
 
 const LeadSchema = z.object({
@@ -184,40 +185,42 @@ export async function POST(request: NextRequest) {
     loNotifyEmail = loProfile?.notify_email ?? loProfile?.email ?? null;
   }
 
-  // ── 4. Send emails ────────────────────────────────────────
+  // ── 4. Send emails (skipped if RESEND_API_KEY not set) ───
   const resend = getResend();
-  const internalSubject = lead.loName
-    ? `New lead for ${lead.loName}: ${fullName || lead.email}`
-    : `New lead: ${fullName || lead.email}`;
+  if (resend) {
+    const internalSubject = lead.loName
+      ? `New lead for ${lead.loName}: ${fullName || lead.email}`
+      : `New lead: ${fullName || lead.email}`;
 
-  const emailJobs = [
-    resend.emails.send({
-      from: "HCMG <noreply@getorangekey.com>",
-      to: lead.email,
-      subject: lead.loName ? `Your HCMG estimate, routed to ${lead.loName}` : "Your HCMG estimate is ready",
-      html: confirmationHtml(lead.firstName, lead.loName),
-    }),
-    resend.emails.send({
-      from: "HCMG Leads <noreply@getorangekey.com>",
-      to: "leads@getorangekey.com",
-      subject: internalSubject,
-      html: `<pre style="font-family:monospace;font-size:13px;">${JSON.stringify(lead, null, 2)}</pre>`,
-    }),
-  ];
-
-  // Instant LO notification
-  if (loNotifyEmail && lead.loName) {
-    emailJobs.push(
+    const emailJobs = [
       resend.emails.send({
-        from: "HCMG Leads <noreply@getorangekey.com>",
-        to: loNotifyEmail,
-        subject: `🔔 New lead: ${fullName || lead.email}`,
-        html: loNotificationHtml(lead, lead.loName),
-      })
-    );
-  }
+        from: "HCMG <noreply@harriscapitalmortgage.com>",
+        to: lead.email,
+        subject: lead.loName ? `Your HCMG estimate, routed to ${lead.loName}` : "Your HCMG estimate is ready",
+        html: confirmationHtml(lead.firstName, lead.loName),
+      }),
+      resend.emails.send({
+        from: "HCMG Leads <noreply@harriscapitalmortgage.com>",
+        to: "info@hcmgloans.com",
+        subject: internalSubject,
+        html: `<pre style="font-family:monospace;font-size:13px;">${JSON.stringify(lead, null, 2)}</pre>`,
+      }),
+    ];
 
-  await Promise.all(emailJobs);
+    // Instant LO notification
+    if (loNotifyEmail && lead.loName) {
+      emailJobs.push(
+        resend.emails.send({
+          from: "HCMG Leads <noreply@harriscapitalmortgage.com>",
+          to: loNotifyEmail,
+          subject: `New lead: ${fullName || lead.email}`,
+          html: loNotificationHtml(lead, lead.loName),
+        })
+      );
+    }
+
+    await Promise.all(emailJobs).catch(() => {}); // don't fail the lead save if email fails
+  }
 
   return NextResponse.json({ ok: true });
 }
