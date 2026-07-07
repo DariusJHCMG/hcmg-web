@@ -12,6 +12,13 @@ export interface Profile {
   notify_email: string | null;
   avatar_url: string | null;
   is_active: boolean;
+  // Public website fields
+  title: string | null;
+  short_bio: string | null;
+  offices: string[] | null;
+  linkedin: string | null;
+  licensed_states: string[] | null;
+  show_on_website: boolean;
   created_at: string;
   updated_at: string;
 }

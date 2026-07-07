@@ -9,9 +9,7 @@ import { OrangeKeyLogo } from "@/components/ui/OrangeKeyLogo";
 const NAV = [
   { label: "Dashboard",   href: "/admin",          icon: "⊞" },
   { label: "Leads",       href: "/admin/leads",     icon: "✉" },
-  { label: "Team",        href: "/admin/team",      icon: "👥" },
-  { label: "Funnels",     href: "/admin/funnels",   icon: "⟶" },
-  { label: "Users",       href: "/admin/users",     icon: "🔑" },
+  { label: "Users",       href: "/admin/users",     icon: "👥" },
   { label: "Audit Log",   href: "/admin/audit",     icon: "📋" },
   { label: "Dev Tools",   href: "/admin/dev",       icon: "⚙" },
 ];

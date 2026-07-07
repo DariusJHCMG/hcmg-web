@@ -12,10 +12,13 @@ const CreateUserSchema = z.object({
   nmls:         z.string().optional(),
   phone:        z.string().optional(),
   notify_email: z.string().email().optional().or(z.literal("")),
+  title:        z.string().optional(),
+  short_bio:    z.string().optional(),
+  offices:      z.array(z.string()).optional(),
+  linkedin:     z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
-  // Auth check
   const caller = await getCurrentProfile();
   if (!caller || !isAdmin(caller)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -30,31 +33,44 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid payload", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { email, password, full_name, role, lo_slug, nmls, phone, notify_email } = parsed.data;
+  const { email, password, full_name, role, lo_slug, nmls, phone, notify_email, title, short_bio, offices, linkedin } = parsed.data;
 
   const sb = createServiceClient();
 
-  // Create auth user — pass all metadata so the DB trigger auto-fills the profile
+  // ── 1. Create auth user ───────────────────────────────────────
   const { data: authData, error: authError } = await sb.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
-    user_metadata: {
-      full_name,
-      role,
-      lo_slug:      lo_slug      || "",
-      nmls:         nmls         || "",
-      notify_email: notify_email || "",
-    },
+    user_metadata: { full_name, role, lo_slug: lo_slug || "", nmls: nmls || "", notify_email: notify_email || "" },
   });
 
   if (authError || !authData.user) {
     return NextResponse.json({ error: authError?.message ?? "Failed to create user" }, { status: 400 });
   }
 
-  // Update phone (not in trigger, set separately)
-  if (phone) {
-    await sb.from("profiles").update({ phone }).eq("id", authData.user.id);
+  // ── 2. Update extra profile fields not covered by the trigger ─
+  const extraFields: Record<string, unknown> = {};
+  if (phone)       extraFields.phone      = phone;
+  if (title)       extraFields.title      = title;
+  if (short_bio)   extraFields.short_bio  = short_bio;
+  if (offices)     extraFields.offices    = offices;
+  if (linkedin)    extraFields.linkedin   = linkedin;
+
+  if (Object.keys(extraFields).length > 0) {
+    await sb.from("profiles").update(extraFields).eq("id", authData.user.id);
+  }
+
+  // ── 3. Create funnel_link if LO slug provided ─────────────────
+  if (lo_slug) {
+    const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
+    await sb.from("funnel_links").upsert({
+      lo_slug,
+      lo_name:   full_name,
+      url:       `${SITE}/go/${lo_slug}`,
+      is_active: true,
+      clicks:    0,
+    }, { onConflict: "lo_slug" });
   }
 
   await logAudit("user.created", { email, role, lo_slug }, caller.id, caller.email);
