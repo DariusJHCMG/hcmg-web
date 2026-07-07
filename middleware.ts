@@ -44,25 +44,7 @@ export async function middleware(request: NextRequest) {
 
   // Logged in + trying to access login → redirect to their dashboard
   if (isLoginRoute && user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    const dest = profile?.role === "loan_officer" ? "/portal" : "/admin";
-    return NextResponse.redirect(new URL(dest, request.url));
-  }
-
-  // Loan officer trying to access admin → redirect to portal
-  if (isAdminRoute && user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    if (profile?.role === "loan_officer") {
-      return NextResponse.redirect(new URL("/portal", request.url));
-    }
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
 
   return response;

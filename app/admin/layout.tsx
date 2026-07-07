@@ -5,7 +5,10 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const profile = await getCurrentProfile();
-  if (!profile || !isAdmin(profile)) redirect("/login");
+
+  // If no profile, sign them out cleanly rather than redirect loop
+  if (!profile) redirect("/api/admin/signout");
+  if (!isAdmin(profile)) redirect("/portal");
 
   return (
     <div className="flex min-h-screen bg-sand">

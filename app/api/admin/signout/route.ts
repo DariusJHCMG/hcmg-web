@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   await supabase.auth.signOut();
-  return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"));
+  // Use request URL as base so it works on any domain (Vercel preview, custom domain, localhost)
+  return NextResponse.redirect(new URL("/login", request.url));
 }
