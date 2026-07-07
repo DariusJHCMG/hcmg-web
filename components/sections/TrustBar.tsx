@@ -2,7 +2,7 @@
 
 // ── Licensed & pending state lists ───────────────────────────────────
 const LICENSED: string[] = ["FL", "TX", "GA", "NV", "CO", "VA", "DC", "MD"];
-const PENDING:  string[]  = [];
+const PENDING: string[] = ["OH","MI","AL","OR","NJ","TN","NC","SC","IL","IN","OK","NM","AZ","PA"];
 
 // ── Real simplified US state paths (960×600 Mercator viewBox) ────────
 const STATE_PATHS: Record<string, string> = {
