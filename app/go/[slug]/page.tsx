@@ -15,13 +15,13 @@ export default async function FunnelRedirect({ params, searchParams }: Props) {
   const sb = createServiceClient();
 
   // Validate slug is active
-  const { data: link } = await sb
+  const { data: link, error } = await sb
     .from("funnel_links")
     .select("lo_slug, clicks, is_active")
     .eq("lo_slug", slug)
     .single();
 
-  if (!link || !link.is_active) notFound();
+  if (error || !link || !link.is_active) notFound();
 
   // Increment click counter (best-effort, fire-and-forget)
   void sb
@@ -30,15 +30,16 @@ export default async function FunnelRedirect({ params, searchParams }: Props) {
     .eq("lo_slug", slug);
 
   // Build destination — get-started page with LO context + UTM passthrough
-  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
-  const dest = new URL(`${SITE}/get-started`);
-  dest.searchParams.set("lo", slug);
-
+  // Avoid new URL() constructor — build string directly to prevent crashes
+  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/+$/, "");
+  
   const UTM = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
-  for (const p of UTM) {
-    const v = query[p];
-    if (v) dest.searchParams.set(p, Array.isArray(v) ? v[0] : v);
-  }
+  const utmParams = UTM
+    .map(p => { const v = query[p]; return v ? `${p}=${encodeURIComponent(Array.isArray(v) ? v[0] : v)}` : null; })
+    .filter(Boolean)
+    .join("&");
 
-  redirect(dest.toString());
+  const dest = `${SITE}/get-started?lo=${encodeURIComponent(slug)}${utmParams ? `&${utmParams}` : ""}`;
+
+  redirect(dest);
 }

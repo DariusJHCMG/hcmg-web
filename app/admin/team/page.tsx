@@ -69,8 +69,9 @@ function Section({ title, members }: { title: string; members: Profile[] }) {
                 <p>
                   Funnel:{" "}
                   <a
-                    href={`/go/${m.lo_slug}`}
+                    href={`https://hcmg-web.vercel.app/go/${m.lo_slug}`}
                     target="_blank"
+                    rel="noopener noreferrer"
                     className="text-accent underline hover:opacity-80"
                   >
                     /go/{m.lo_slug}
