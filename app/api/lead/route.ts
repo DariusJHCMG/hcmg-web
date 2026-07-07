@@ -98,7 +98,7 @@ const loNotificationHtml = (lead: ReturnType<typeof LeadSchema.parse>, loName: s
               <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Price Range</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.priceRange ?? "—"}</td></tr>
               <tr><td style="padding:8px 0;color:#9AABB8;">Credit Range</td><td style="padding:8px 0;color:#1A2B42;">${lead.creditRange ?? "—"}</td></tr>
             </table>
-            <a href="https://getorangekey.com/portal" style="display:inline-block;margin-top:28px;background:#F37021;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;">
+            <a href="https://hcmg-web.vercel.app/portal" style="display:inline-block;margin-top:28px;background:#F37021;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;">
               View in my portal →
             </a>
             <hr style="margin:32px 0;border:none;border-top:1px solid #f0f0f0;" />
