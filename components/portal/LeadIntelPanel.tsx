@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { Lead, LeadEvent } from "@/lib/database.types";
+import { SessionReplay } from "./SessionReplay";
 
 // ── Helpers ───────────────────────────────────────────────────────
 
@@ -73,10 +74,9 @@ function AttrBadge({ icon, label, value }: { icon: string; label: string; value:
 
 interface Props {
   lead: Lead;
-  posthogProjectId?: string; // NEXT_PUBLIC_POSTHOG_PROJECT_ID env — used to build replay link
 }
 
-export function LeadIntelPanel({ lead, posthogProjectId }: Props) {
+export function LeadIntelPanel({ lead }: Props) {
   const [open, setOpen]       = useState(false);
   const [events, setEvents]   = useState<LeadEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -102,11 +102,6 @@ export function LeadIntelPanel({ lead, posthogProjectId }: Props) {
   const ctaClicks    = events.filter((e) => e.event_type === "cta_click");
 
   const hasUtm = lead.utm_source || lead.utm_medium || lead.utm_campaign;
-
-  // PostHog session replay deep-link (person search by session_id)
-  const phReplayUrl = lead.session_id && posthogProjectId
-    ? `https://us.posthog.com/project/${posthogProjectId}/replay?filter=session_id%3D${encodeURIComponent(lead.session_id)}`
-    : null;
 
   return (
     <>
@@ -187,15 +182,13 @@ export function LeadIntelPanel({ lead, posthogProjectId }: Props) {
                     {lead.entry_page ? `entered via ${lead.entry_page}` : "entry page not tracked"}
                   </p>
                 </div>
-                {phReplayUrl && (
-                  <a
-                    href={phReplayUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                {lead.session_id && (
+                  <button
+                    onClick={() => setTab("replay")}
                     className="inline-flex items-center gap-2 rounded-xl bg-[#f37021] px-4 py-2 text-xs font-bold text-white transition hover:opacity-90"
                   >
-                    ▶ Watch Session Replay
-                  </a>
+                    ▶ Watch Replay
+                  </button>
                 )}
               </div>
 
@@ -334,35 +327,19 @@ export function LeadIntelPanel({ lead, posthogProjectId }: Props) {
 
                     {/* SESSION REPLAY TAB */}
                     {tab === "replay" && (
-                      <div className="p-6 text-center">
-                        {phReplayUrl ? (
-                          <>
-                            <p className="text-sm text-[#8b949e] mb-6 max-w-md mx-auto">
-                              A pixel-accurate recording of exactly what this visitor did on the site — every scroll, click, and page navigation — before they submitted.
-                            </p>
-                            <a
-                              href={phReplayUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-3 rounded-2xl bg-[#f37021] px-8 py-4 text-sm font-bold text-white transition hover:opacity-90"
-                            >
-                              <span className="text-lg">▶</span>
-                              Open Session Replay in PostHog
-                            </a>
-                            <p className="mt-4 text-[11px] text-[#8b949e]">
-                              Opens PostHog dashboard in a new tab. Session ID: <code className="text-[#f37021]">{lead.session_id?.slice(0, 12)}…</code>
-                            </p>
-                          </>
+                      <div className="p-4">
+                        {lead.session_id ? (
+                          <SessionReplay
+                            leadId={lead.id}
+                            leadName={`${lead.first_name}${lead.last_name ? ` ${lead.last_name}` : ""}`}
+                          />
                         ) : (
-                          <div className="py-4">
-                            <p className="text-sm text-[#8b949e] mb-3">
-                              {!lead.session_id
-                                ? "This lead submitted before session tracking was active."
-                                : "PostHog project ID not configured."}
-                            </p>
-                            <p className="text-[11px] text-[#8b949e]/60">
-                              Add <code className="text-[#f37021]">NEXT_PUBLIC_POSTHOG_KEY</code> and{" "}
-                              <code className="text-[#f37021]">NEXT_PUBLIC_POSTHOG_PROJECT_ID</code> to your Vercel env vars to enable session replay.
+                          <div className="flex flex-col items-center py-10 gap-3 text-center">
+                            <p className="text-2xl">🎬</p>
+                            <p className="text-sm font-semibold text-white">No session tracked</p>
+                            <p className="text-xs text-[#8b949e] max-w-xs">
+                              This lead submitted before session tracking was active.
+                              All new leads are tracked automatically.
                             </p>
                           </div>
                         )}

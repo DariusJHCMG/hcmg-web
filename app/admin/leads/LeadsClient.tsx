@@ -4,8 +4,6 @@ import { useState } from "react";
 import type { Lead, LeadStatus } from "@/lib/database.types";
 import { LeadIntelPanel } from "@/components/portal/LeadIntelPanel";
 
-const POSTHOG_PROJECT_ID = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_ID;
-
 const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed", "lost"];
 
 export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
@@ -108,11 +106,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 <tr><td colSpan={8} className="px-6 py-10 text-center text-sm text-muted/60">No leads found.</td></tr>
               )}
               {filtered.map((lead) => (
-                <LeadIntelPanel
-                  key={lead.id}
-                  lead={lead}
-                  posthogProjectId={POSTHOG_PROJECT_ID}
-                />
+                <LeadIntelPanel key={lead.id} lead={lead} />
               ))}
             </tbody>
           </table>

@@ -5,8 +5,6 @@ import { CopyButton } from "@/components/ui/CopyButton";
 import { LeadIntelPanel } from "@/components/portal/LeadIntelPanel";
 import type { Lead } from "@/lib/database.types";
 
-const POSTHOG_PROJECT_ID = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_ID;
-
 async function getMyLeads(loSlug: string): Promise<Lead[]> {
   const sb = createServiceClient();
   const { data } = await sb
@@ -130,11 +128,7 @@ export default async function PortalPage() {
               </thead>
               <tbody>
                 {leads.map((lead) => (
-                  <LeadIntelPanel
-                    key={lead.id}
-                    lead={lead}
-                    posthogProjectId={POSTHOG_PROJECT_ID}
-                  />
+                  <LeadIntelPanel key={lead.id} lead={lead} />
                 ))}
               </tbody>
             </table>
