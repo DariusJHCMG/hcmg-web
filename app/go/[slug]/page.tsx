@@ -30,7 +30,7 @@ export default async function FunnelRedirect({ params, searchParams }: Props) {
     .eq("lo_slug", slug);
 
   // Build destination — get-started page with LO context + UTM passthrough
-  const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://getorangekey.com";
+  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
   const dest = new URL(`${SITE}/get-started`);
   dest.searchParams.set("lo", slug);
 

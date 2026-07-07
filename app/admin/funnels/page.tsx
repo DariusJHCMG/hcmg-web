@@ -12,7 +12,7 @@ async function getFunnelLinks(): Promise<FunnelLink[]> {
 
 export default async function FunnelsPage() {
   const links = await getFunnelLinks();
-  const baseUrl = "https://getorangekey.com";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://hcmg-web.vercel.app";
 
   return (
     <div className="space-y-6">
