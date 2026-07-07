@@ -16,6 +16,7 @@ interface Props {
   licensedStates: string[];
   pendingStates: string[];
   stateNames: Record<string,string>;
+  initialState?: string | null;
 }
 
 // Real centroids computed from us-atlas/states-albers-10m.json (975×610 Albers USA)
@@ -33,18 +34,20 @@ const CENTROIDS: Record<string,[number,number]> = {
   WY:[306,194],
 };
 
-export function FindLOClient({ teamMembers, licensedStates, pendingStates, stateNames }: Props) {
-  const [selected, setSelected] = useState<string | null>(null);
+export function FindLOClient({ teamMembers, licensedStates, pendingStates, stateNames, initialState }: Props) {
+  const [selected, setSelected] = useState<string | null>(initialState ?? null);
   const [hovered,  setHovered]  = useState<string | null>(null);
   const allActive = [...licensedStates, ...pendingStates];
   const states = Object.keys(STATE_PATHS);
 
   function fillColor(s: string) {
-    if (s === selected)                return licensedStates.includes(s) ? "#c45213" : "#1d4ed8";
-    if (s === hovered)                 return licensedStates.includes(s) ? "#e8651e" : "#2563eb";
-    if (licensedStates.includes(s))    return "#F37021";
-    if (pendingStates.includes(s))     return "#93c5fd";
-    return "#e8edf3";
+    const isLic = licensedStates.includes(s);
+    const isPen = pendingStates.includes(s);
+    if (s === selected) return isLic ? "#FF9847" : "#27406D";
+    if (s === hovered)  return isLic ? "#FF9847" : "#27406D";
+    if (isLic)          return "#F37021";
+    if (isPen)          return "#142850";
+    return "#CBD5E1";
   }
 
   // Filter LOs for selected state
@@ -80,20 +83,53 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
                 ? `Showing loan officers in ${stateNames[selected] ?? selected} — click another state or click again to clear`
                 : "Click a state to find loan officers"}
             </p>
-            <div className="relative rounded-2xl border border-line bg-white p-3 shadow-soft">
-              <svg viewBox="0 0 975 610" style={{ display:"block", width:"100%" }}
+            <div className="relative overflow-hidden rounded-2xl border border-line bg-sand shadow-soft">
+              {hovered && (
+                <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 z-10
+                                flex items-center gap-2 rounded-xl border border-line bg-white
+                                px-4 py-2 shadow-card text-sm font-bold text-ink whitespace-nowrap">
+                  <span className="h-2 w-2 rounded-full flex-shrink-0"
+                    style={{ background: licensedStates.includes(hovered) ? "#F37021" : "#142850" }} />
+                  {stateNames[hovered] ?? hovered}
+                  {licensedStates.includes(hovered) && (
+                    <span className="ml-1 rounded-md bg-accent-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent">Licensed</span>
+                  )}
+                  {pendingStates.includes(hovered) && (
+                    <span className="ml-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                          style={{ background:"rgba(20,40,80,0.1)", color:"#142850" }}>Coming Soon</span>
+                  )}
+                </div>
+              )}
+              <svg viewBox="0 0 975 610" style={{ display:"block", width:"100%", padding:"16px" }}
                    aria-label="Click a state to find loan officers">
+                <defs>
+                  <filter id="lo-glow-orange" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="6" result="blur" />
+                    <feMerge><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
+                  <filter id="lo-glow-navy" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="5" result="blur" />
+                    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
+                </defs>
                 {states.map((abbr) => {
-                  const active = allActive.includes(abbr);
+                  const active  = allActive.includes(abbr);
+                  const isLic   = licensedStates.includes(abbr);
+                  const isHov   = hovered  === abbr;
+                  const isSel   = selected === abbr;
+                  const glowFilter = (isHov || isSel)
+                    ? isLic ? "url(#lo-glow-orange)" : "url(#lo-glow-navy)"
+                    : undefined;
                   return (
-                    <g key={abbr}>
+                    <g key={abbr} style={{ cursor: active ? "pointer" : "default" }}>
                       <path
                         d={STATE_PATHS[abbr]}
                         fill={fillColor(abbr)}
-                        stroke={active ? "#fff" : "#d1d8e0"}
-                        strokeWidth={active ? 1.5 : 0.8}
+                        stroke="#fff"
+                        strokeWidth={active ? 1.5 : 0.6}
                         strokeLinejoin="round"
-                        style={{ cursor: active ? "pointer" : "default", transition:"fill 0.12s" }}
+                        filter={glowFilter}
+                        style={{ transition:"fill 0.15s ease", opacity: active ? 1 : 0.85 }}
                         onClick={() => active && setSelected(selected === abbr ? null : abbr)}
                         onMouseEnter={() => active && setHovered(abbr)}
                         onMouseLeave={() => setHovered(null)}
@@ -101,9 +137,8 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
                       {active && CENTROIDS[abbr] && (
                         <text x={CENTROIDS[abbr][0]} y={CENTROIDS[abbr][1]}
                           textAnchor="middle" dominantBaseline="middle"
-                          fontSize={9} fontWeight="700"
-                          fill={licensedStates.includes(abbr) ? "#fff" : "#1e40af"}
-                          style={{ pointerEvents:"none", userSelect:"none", letterSpacing:"0.05em" }}>
+                          fontSize={10} fontWeight="800" fill="#fff"
+                          style={{ pointerEvents:"none", userSelect:"none", letterSpacing:"0.06em" }}>
                           {abbr}
                         </text>
                       )}
@@ -111,15 +146,6 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
                   );
                 })}
               </svg>
-
-              {/* Hover tooltip */}
-              {hovered && (
-                <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 z-10 rounded-xl border border-line bg-white px-4 py-2 shadow-card text-sm font-bold text-ink whitespace-nowrap">
-                  {stateNames[hovered] ?? hovered}
-                  {licensedStates.includes(hovered) && <span className="ml-2 text-accent">· Licensed</span>}
-                  {pendingStates.includes(hovered) && <span className="ml-2 text-blue-500">· Coming Soon</span>}
-                </div>
-              )}
             </div>
 
             {/* Legend */}
@@ -128,10 +154,10 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
                 <span className="h-3 w-3 rounded-sm" style={{background:"#F37021"}} /> Licensed &amp; Active
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-sm bg-blue-200" /> Pending Approval
+                <span className="h-3 w-3 rounded-sm" style={{background:"#142850"}} /> Pending Approval
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-sm" style={{background:"#e8edf3"}} /> Not yet available
+                <span className="h-3 w-3 rounded-sm bg-line" /> Not yet available
               </span>
             </div>
           </div>
@@ -161,10 +187,10 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
             )}
 
             {selected && isPending && (
-              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6">
+              <div className="rounded-2xl border p-6" style={{ borderColor:"rgba(20,40,80,0.2)", background:"rgba(20,40,80,0.04)" }}>
                 <div className="mb-3 flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-700">Coming Soon</p>
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background:"#142850" }} />
+                  <p className="text-xs font-bold uppercase tracking-[0.14em]" style={{ color:"#142850" }}>Coming Soon</p>
                 </div>
                 <h3 className="text-xl font-extrabold text-ink">{stateNames[selected]}</h3>
                 <p className="mt-3 text-sm leading-6 text-muted">
@@ -173,7 +199,8 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
                   and one of our licensed LOs in an adjacent state will reach out.
                 </p>
                 <Link href="/get-started"
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                  style={{ background:"#142850" }}>
                   Get notified when we launch →
                 </Link>
               </div>

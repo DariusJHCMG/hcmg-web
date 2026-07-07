@@ -29,7 +29,15 @@ const STATE_NAMES: Record<string,string> = {
   VA:"Virginia", WA:"Washington", WV:"West Virginia", WI:"Wisconsin", WY:"Wyoming",
 };
 
-export default function FindALoanOfficerPage() {
+export default async function FindALoanOfficerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ state?: string }>;
+}) {
+  const { state } = await searchParams;
+  const initialState = state && [...LICENSED_STATES, ...PENDING_STATES].includes(state)
+    ? state : null;
+
   const members = teamMembers.map((m) => ({
     slug: m.slug, name: m.name, role: m.role, nmls: m.nmls,
     photo: m.photo, shortBio: m.shortBio, offices: m.offices ?? [],
@@ -60,6 +68,7 @@ export default function FindALoanOfficerPage() {
         licensedStates={LICENSED_STATES}
         pendingStates={PENDING_STATES}
         stateNames={STATE_NAMES}
+        initialState={initialState}
       />
 
       <Footer />
