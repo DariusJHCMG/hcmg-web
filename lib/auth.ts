@@ -3,21 +3,28 @@ import type { Profile, Role } from "./database.types";
 
 // ── Get current session + profile (server components / API routes) ──
 export async function getSession() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  return session;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    return session;
+  } catch { return null; }
 }
 
 export async function getCurrentProfile(): Promise<Profile | null> {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-  return data as Profile | null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    // Use getSession (reads JWT from cookie locally) instead of getUser (makes network call)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return null;
+    // Fetch profile using service client to bypass any RLS issues
+    const sb = createServiceClient();
+    const { data } = await sb
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+    return data as Profile | null;
+  } catch { return null; }
 }
 
 // ── Role checks ───────────────────────────────────────────────

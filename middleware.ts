@@ -26,8 +26,9 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session (required by @supabase/ssr)
-  const { data: { user } } = await supabase.auth.getUser();
+  // Refresh session — use getSession to avoid extra network round-trip
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   const isAdminRoute  = pathname.startsWith("/admin");
   const isPortalRoute = pathname.startsWith("/portal");
