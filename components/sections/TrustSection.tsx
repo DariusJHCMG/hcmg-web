@@ -6,8 +6,47 @@ import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 
 const STATS = [
   { value: "$2.4B+", label: "In total loan volume funded" },
-  { value: "4,800+", label: "Families helped into homes" },
-  { value: "4.9 ★", label: "Average customer rating" },
+  { value: "500+",   label: "Loans funded" },
+  { value: "4.9 ★",  label: "Average customer rating" },
+];
+
+const REVIEWS = [
+  {
+    initials: "SM",
+    quote: "HCMG made the home buying process seamless. Their team communicated with me every step of the way and got me a rate lower than I expected. Highly recommend!",
+    name: "Sarah M.",
+    location: "Las Vegas, NV",
+  },
+  {
+    initials: "JT",
+    quote: "As a first-time homebuyer, I had so many questions. The HCMG team answered every call and email promptly. They made me feel like family.",
+    name: "James T.",
+    location: "Henderson, NV",
+  },
+  {
+    initials: "MG",
+    quote: "Refinancing with HCMG saved me over $300 a month. The process was quick and hassle-free. I'll definitely use them again.",
+    name: "Maria G.",
+    location: "Houston, TX",
+  },
+  {
+    initials: "DR",
+    quote: "I've worked with many lenders, but HCMG stands out for their transparency and honesty. No hidden fees — what they quoted is what I got.",
+    name: "David R.",
+    location: "Las Vegas, NV",
+  },
+  {
+    initials: "JL",
+    quote: "The team at HCMG helped me secure financing for my first investment property. They explained DSCR loans clearly and got the deal done fast.",
+    name: "Jennifer L.",
+    location: "Dallas, TX",
+  },
+  {
+    initials: "RK",
+    quote: "Friendly, professional, and always available. HCMG made buying my home a joy instead of a stress.",
+    name: "Robert K.",
+    location: "Las Vegas, NV",
+  },
 ];
 
 export function TrustSection() {
@@ -34,28 +73,33 @@ export function TrustSection() {
           ))}
         </div>
 
-        {/* Testimonial */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          className="glass-card mt-8 p-8 lg:p-12"
-        >
-          <div className="ok-gradient-text mb-4 font-extrabold leading-none" style={{ fontSize: 72 }}>"</div>
-          <blockquote className="max-w-4xl font-semibold leading-relaxed text-ink" style={{ fontSize: "clamp(22px, 3vw, 32px)" }}>
-            HCMG gave me real numbers in under a minute. I finally understood what I could afford — and my loan officer walked me through every detail from start to finish. Closed in 26 days.
-          </blockquote>
-          <div className="mt-8 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: "var(--ok-gradient)" }}>
-              MW
-            </div>
-            <div>
-              <div className="font-bold text-ink">Marcus Webb</div>
-              <div className="text-sm text-muted">First-time buyer · Dallas, TX</div>
-              <div className="mt-0.5 text-accent">★★★★★</div>
-            </div>
-          </div>
-        </motion.div>
+        {/* Reviews */}
+        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {REVIEWS.map((r, i) => (
+            <motion.div
+              key={r.name}
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.3 + i * 0.12 }}
+              className="glass-card p-8"
+            >
+              <div className="ok-gradient-text mb-4 font-extrabold leading-none" style={{ fontSize: 56 }}>"</div>
+              <blockquote className="text-base font-semibold leading-relaxed text-ink">
+                {r.quote}
+              </blockquote>
+              <div className="mt-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white" style={{ background: "var(--ok-gradient)" }}>
+                  {r.initials}
+                </div>
+                <div>
+                  <div className="font-bold text-ink">{r.name}</div>
+                  <div className="text-xs text-muted">{r.location}</div>
+                  <div className="mt-0.5 text-sm text-accent">★★★★★</div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );

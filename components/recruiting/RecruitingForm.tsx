@@ -59,7 +59,7 @@ export function RecruitingForm() {
       return;
     }
     setSubmitting(true);
-    // Frontend-only for now — no backend wired. Replace with a POST to
+    // Frontend-only for now, no backend wired. Replace with a POST to
     // /api/recruiting-lead once the recruiting CRM pipeline is set up.
     await new Promise((r) => setTimeout(r, 600));
     setSubmitting(false);
@@ -77,7 +77,7 @@ export function RecruitingForm() {
           ✓
         </div>
         <h3 className="text-2xl font-extrabold text-ink">
-          Thanks{state.firstName ? `, ${state.firstName}` : ""} — we&apos;ll be in touch.
+          Thanks{state.firstName ? `, ${state.firstName}` : ""}, we&apos;ll be in touch.
         </h3>
         <p className="mx-auto mt-3 max-w-md text-base leading-7 text-muted">
           A member of HCMG&apos;s recruiting team will reach out within one business day to walk through
@@ -170,7 +170,7 @@ export function RecruitingForm() {
           rows={5}
           value={state.message}
           onChange={(e) => set("message", e.target.value)}
-          placeholder="Tell us about your business — what you're producing today, what's not working, and what you'd want from a new platform."
+          placeholder="Tell us about your business, what you're producing today, what's not working, and what you'd want from a new platform."
           className="w-full resize-none rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15"
         />
       </div>
@@ -183,7 +183,7 @@ export function RecruitingForm() {
 
       <div className="mt-7 flex flex-wrap items-center justify-between gap-4">
         <p className="text-xs text-muted/70">
-          Your information stays with HCMG&apos;s recruiting team — we never sell or share it.
+          Your information stays with HCMG&apos;s recruiting team, we never sell or share it.
         </p>
         <button
           type="submit"

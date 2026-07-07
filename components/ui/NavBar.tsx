@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { OrangeKeyLogo } from "./OrangeKeyLogo";
+import { TopBanner } from "./TopBanner";
 
 const NAV_LINKS = [
   { label: "Buy", href: "/#calculator" },
   { label: "Refinance", href: "/get-started" },
   { label: "Our Team", href: "/team" },
+  { label: "About", href: "/about" },
   { label: "Glossary", href: "/glossary" },
   { label: "Join HCMG", href: "/careers" },
 ];
@@ -23,8 +25,11 @@ export function NavBar() {
   }, []);
 
   return (
+    <>
+    <div className="sticky top-0 z-50">
+    <TopBanner />
     <header
-      className="sticky top-0 z-50 transition-all duration-300"
+      className="transition-all duration-300"
       style={{
         background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.95)",
         borderBottom: scrolled ? "1px solid #E2E8F0" : "1px solid transparent",
@@ -102,5 +107,7 @@ export function NavBar() {
         </div>
       )}
     </header>
+    </div>
+    </>
   );
 }

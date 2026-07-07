@@ -3,7 +3,7 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — HCMG",
+  title: "Terms of Service, HCMG",
   description: "Terms of Service for Harris Capital Mortgage Group, LLC. NMLS# 1918223.",
   alternates: { canonical: "https://getorangekey.com/terms" },
 };
@@ -52,7 +52,7 @@ export default function TermsPage() {
           <P>These Terms are governed by the laws of the State of Michigan, without regard to conflict of law provisions.</P>
 
           <H2>10. Contact</H2>
-          <P>Legal inquiries: legal@getorangekey.com · Harris Capital Mortgage Group, LLC · 455 E Eisenhower Pkwy, Suite 300, Ann Arbor, MI 48108</P>
+          <P>Legal inquiries: info@harriscapitalmortgage.com · Harris Capital Mortgage Group, LLC · HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120 · Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032</P>
         </div>
       </section>
       <Footer />

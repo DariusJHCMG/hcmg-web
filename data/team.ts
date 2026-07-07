@@ -9,7 +9,7 @@
 //   preview only. Replace with real direct lines / inboxes before
 //   making the site public.
 //
-// Bios for each person are still placeholders — replace longBio
+// Bios for each person are still placeholders, replace longBio
 // arrays once real biographical copy is approved.
 // ═══════════════════════════════════════════════════════════════════
 
@@ -34,21 +34,22 @@ const PLACEHOLDER_PHOTO = "/team/placeholder.svg";
 
 const LOAN_OFFICER_LONG_BIO = (firstName: string, name: string, nmls: string, offices: string[]): string[] => [
   `${name} is a licensed mortgage loan originator (NMLS# ${nmls}) at Harris Capital Mortgage Group, serving clients from HCMG's ${offices.join(" and ")} office${offices.length > 1 ? "s" : ""}.`,
-  `More about ${firstName}'s background and approach is on the way. To connect, start the estimate flow directly on this page or reach out through the contact chips above — the lead will route directly to ${firstName}.`,
+  `More about ${firstName}'s background and approach is on the way. To connect, start the estimate flow directly on this page or reach out through the contact chips above, the lead will route directly to ${firstName}.`,
 ];
 
 export const teamMembers: TeamMember[] = [
   // ── Leadership ────────────────────────────────────────────────
   {
-    slug: "lamont-harris-sr",
-    name: "Lamont Harris Sr.",
-    role: "Chief Executive Officer",
-    nmls: "491049",
+    slug: "lamont-harris-jr",
+    name: "Lamont Harris Jr.",
+    role: "Founder & CEO",
+    nmls: null,
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Leads strategy, vision, and direction for Harris Capital Mortgage Group.",
+      "Over 15 years of mortgage industry experience. Founded HCMG to bring transparency and integrity to lending.",
     longBio: [
-      "Lamont Harris Sr. serves as Chief Executive Officer of Harris Capital Mortgage Group (NMLS# 491049), leading the company's overall strategy, growth, and vision. Based in Las Vegas with additional presence in Houston, he originates loans alongside his executive role.",
+      "Lamont Harris Jr. is the Founder and Chief Executive Officer of Harris Capital Mortgage Group, bringing over 15 years of mortgage industry experience to the role.",
+      "He founded HCMG with a clear purpose: to bring transparency and integrity to the lending process so every family has a fair path to homeownership.",
       "A fuller biography is on the way. To learn more about working with HCMG, reach our team through the contact page.",
     ],
     phone: "(702) 555-0101",
@@ -56,51 +57,19 @@ export const teamMembers: TeamMember[] = [
     offices: ["Las Vegas, NV", "Houston, TX"],
   },
   {
-    slug: "darius-james",
-    name: "Darius James",
+    slug: "astrine-covington",
+    name: "Astrine Covington",
     role: "President",
-    nmls: "1097168",
-    photo: PLACEHOLDER_PHOTO,
-    shortBio:
-      "President of HCMG, leading the executive team and day-to-day operations of the company.",
-    longBio: [
-      "Darius James serves as President at Harris Capital Mortgage Group (NMLS# 1097168), leading the executive team and overseeing the company's day-to-day operations.",
-      "A fuller biography is on the way. To learn more about HCMG, reach our team through the contact page.",
-    ],
-    phone: "(702) 555-0102",
-    email: "darius@hcmg.com",
-    offices: ["Las Vegas, NV"],
-  },
-  {
-    slug: "mesia-crews",
-    name: 'Jamesia "Mesia" Crews',
-    role: "Executive Vice President of Originations",
     nmls: null,
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Heads HCMG's loan origination organization, leading the company's loan officers and origination strategy.",
+      "Leads corporate strategy, business development, and overall company growth.",
     longBio: [
-      "Jamesia \"Mesia\" Crews serves as Executive Vice President of Originations at Harris Capital Mortgage Group, leading the company's loan-officer team and origination strategy.",
-      "A fuller biography is on the way. To learn more, reach our team through the contact page.",
+      "Astrine Covington serves as President of Harris Capital Mortgage Group, leading corporate strategy, business development, and overall company growth.",
+      "A fuller biography is on the way. To learn more about HCMG, reach our team through the contact page.",
     ],
-    phone: "(702) 555-0103",
-    email: "mesia@hcmg.com",
-    offices: ["Las Vegas, NV"],
-  },
-  {
-    slug: "aysha-randall",
-    name: "Aysha Randall",
-    role: "Chief Compliance Officer",
-    nmls: "2341853",
-    photo: PLACEHOLDER_PHOTO,
-    shortBio:
-      "Owns compliance, licensing, and regulatory operations across every state HCMG serves.",
-    longBio: [
-      "Aysha Randall serves as Chief Compliance Officer at Harris Capital Mortgage Group (NMLS# 2341853), responsible for compliance, licensing, and regulatory operations across every state where HCMG originates loans.",
-      "A fuller biography is on the way. To learn more, reach our team through the contact page.",
-    ],
-    phone: "(702) 555-0104",
-    email: "aysha@hcmg.com",
+    phone: "(702) 555-0102",
+    email: "astrine@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
@@ -110,29 +79,77 @@ export const teamMembers: TeamMember[] = [
     nmls: null,
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Oversees operations across processing, underwriting, and closing at HCMG.",
+      "Oversees daily operations, process improvement, and organizational efficiency.",
     longBio: [
-      "Ranada Harris serves as Chief Operating Officer at Harris Capital Mortgage Group, leading operations across processing, underwriting, and closing.",
+      "Ranada Harris serves as Chief Operating Officer at Harris Capital Mortgage Group, overseeing daily operations, process improvement, and organizational efficiency.",
+      "A fuller biography is on the way. To learn more, reach our team through the contact page.",
+    ],
+    phone: "(702) 555-0103",
+    email: "ranada@hcmg.com",
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "aysha-randall",
+    name: "Aysha Randall",
+    role: "CCO (Chief Compliance Officer)",
+    nmls: "2341853",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Ensures regulatory compliance, risk management, and industry standards.",
+    longBio: [
+      "Aysha Randall serves as Chief Compliance Officer at Harris Capital Mortgage Group (NMLS# 2341853), responsible for regulatory compliance, risk management, and upholding industry standards across every state where HCMG operates.",
+      "A fuller biography is on the way. To learn more, reach our team through the contact page.",
+    ],
+    phone: "(702) 555-0104",
+    email: "aysha@hcmg.com",
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "mesia-crews",
+    name: "Mesia Crews",
+    role: "Chief Growth Officer",
+    nmls: null,
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Drives strategic growth, partnerships, and market expansion.",
+    longBio: [
+      "Mesia Crews serves as Chief Growth Officer at Harris Capital Mortgage Group, driving strategic growth, partnerships, and market expansion.",
       "A fuller biography is on the way. To learn more, reach our team through the contact page.",
     ],
     phone: "(702) 555-0105",
-    email: "ranada@hcmg.com",
+    email: "mesia@hcmg.com",
     offices: ["Las Vegas, NV"],
   },
   {
     slug: "adam-demarco",
     name: "Adam DeMarco",
-    role: "National Director of Sales and Marketing",
+    role: "Chief Production & Learning Officer",
     nmls: "2749110",
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Leads sales and marketing strategy nationwide for HCMG.",
+      "Oversees loan production and training/development programs.",
     longBio: [
-      "Adam DeMarco serves as National Director of Sales and Marketing at Harris Capital Mortgage Group (NMLS# 2749110), leading the company's sales organization and marketing strategy nationwide.",
+      "Adam DeMarco serves as Chief Production & Learning Officer at Harris Capital Mortgage Group (NMLS# 2749110), overseeing loan production and training and development programs.",
       "A fuller biography is on the way. To learn more, reach our team through the contact page.",
     ],
     phone: "(702) 555-0106",
     email: "adam@hcmg.com",
+    offices: ["Las Vegas, NV"],
+  },
+  {
+    slug: "darius-james",
+    name: "Darius James",
+    role: "Chief Lending Officer, President of Wholesale Division",
+    nmls: "1097168",
+    photo: PLACEHOLDER_PHOTO,
+    shortBio:
+      "Leads wholesale lending strategy and oversees all wholesale division operations.",
+    longBio: [
+      "Darius James serves as Chief Lending Officer and President of the Wholesale Division at Harris Capital Mortgage Group (NMLS# 1097168), leading wholesale lending strategy and overseeing all wholesale division operations.",
+      "A fuller biography is on the way. To learn more about HCMG, reach our team through the contact page.",
+    ],
+    phone: "888-441-3930",
+    email: "darius@hcmgloans.com",
     offices: ["Las Vegas, NV"],
   },
 
@@ -295,7 +312,7 @@ export const teamMembers: TeamMember[] = [
   },
 
   // ── Operations ─────────────────────────────────────────────────
-  // ▶ Placeholder slots — replace with real names/photos/bios.
+  // ▶ Placeholder slots, replace with real names/photos/bios.
   {
     slug: "ops-processor-placeholder",
     name: "Senior Processor Name",
@@ -305,9 +322,9 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Keeps files moving through underwriting cleanly so borrowers close on time, every time.",
     longBio: [
-      "Replace with paragraph one — operational background, what they bring to the HCMG process.",
-      "Replace with paragraph two — favorite kinds of files, common challenges they help borrowers solve.",
-      "Replace with paragraph three — personal note.",
+      "Replace with paragraph one, operational background, what they bring to the HCMG process.",
+      "Replace with paragraph two, favorite kinds of files, common challenges they help borrowers solve.",
+      "Replace with paragraph three, personal note.",
     ],
     offices: ["Las Vegas, NV"],
   },
@@ -320,9 +337,9 @@ export const teamMembers: TeamMember[] = [
     shortBio:
       "Reviews every loan with an eye toward getting to yes while protecting the borrower and the file.",
     longBio: [
-      "Replace with paragraph one — underwriting background, where they trained.",
-      "Replace with paragraph two — file types they specialize in, what they look for.",
-      "Replace with paragraph three — personal note.",
+      "Replace with paragraph one, underwriting background, where they trained.",
+      "Replace with paragraph two, file types they specialize in, what they look for.",
+      "Replace with paragraph three, personal note.",
     ],
     offices: ["Las Vegas, NV"],
   },
@@ -333,11 +350,11 @@ export const teamMembers: TeamMember[] = [
     nmls: null,
     photo: PLACEHOLDER_PHOTO,
     shortBio:
-      "Runs the engine room — vendor management, compliance support, and the systems that keep HCMG efficient.",
+      "Runs the engine room, vendor management, compliance support, and the systems that keep HCMG efficient.",
     longBio: [
-      "Replace with paragraph one — operational background, what they own at HCMG.",
-      "Replace with paragraph two — systems and processes they oversee.",
-      "Replace with paragraph three — personal note.",
+      "Replace with paragraph one, operational background, what they own at HCMG.",
+      "Replace with paragraph two, systems and processes they oversee.",
+      "Replace with paragraph three, personal note.",
     ],
     offices: ["Las Vegas, NV"],
   },

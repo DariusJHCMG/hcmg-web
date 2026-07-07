@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 
 const STEPS = [
-  { num: "01", title: "Tell us your goal", body: "Buy, refinance, or compare options — tell us what you're trying to accomplish." },
-  { num: "02", title: "Share a few details", body: "Price range, credit range, income range. Quick-select — no typing required." },
+  { num: "01", title: "Tell us your goal", body: "Buy, refinance, or compare options, tell us what you're trying to accomplish." },
+  { num: "02", title: "Share a few details", body: "Price range, credit range, income range. Quick-select, no typing required." },
   { num: "03", title: "See your estimate", body: "Instant buying power, estimated monthly payment, and recommended loan type." },
   { num: "04", title: "Connect when ready", body: "A Harris Capital loan officer will reach out within one business day." },
 ];

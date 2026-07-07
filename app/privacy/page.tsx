@@ -3,7 +3,7 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — HCMG · NMLS# 1918223",
+  title: "Privacy Policy, HCMG · NMLS# 1918223",
   description: "Privacy Policy for Harris Capital Mortgage Group, LLC. How we collect, use, and protect your information.",
   alternates: { canonical: "https://getorangekey.com/privacy" },
 };
@@ -67,9 +67,10 @@ export default function PrivacyPage() {
 
           <H2>9. Contact</H2>
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
-            Privacy inquiries: privacy@getorangekey.com<br />
+            Privacy inquiries: info@harriscapitalmortgage.com<br />
             Harris Capital Mortgage Group, LLC<br />
-            455 E Eisenhower Pkwy, Suite 300, Ann Arbor, MI 48108
+            HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120<br />
+            Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032
           </div>
         </div>
       </section>

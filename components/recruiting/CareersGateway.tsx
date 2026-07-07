@@ -11,7 +11,7 @@ export type CareersPath = {
 };
 
 /**
- * Inspired by the eMortgage Capital careers chooser — four cards that let a
+ * Inspired by the eMortgage Capital careers chooser, four cards that let a
  * visitor self-identify and land on the right recruiting funnel.
  *
  * The `emphasis` flag styles a card as the full-width corporate row at the
@@ -23,27 +23,27 @@ export const CAREERS_PATHS: CareersPath[] = [
     eyebrow: "Loan Officers",
     title: "Want to become a Loan Officer?",
     body:
-      "Join a platform built for producing loan officers — 100+ lenders, 275 BPS lender-paid comp, modern borrower tools, and a back office that gets your files closed.",
+      "Join a platform built for producing loan officers, 100+ lenders, 275 BPS lender-paid comp, modern borrower tools, and a back office that gets your files closed.",
     cta: "Become a Loan Officer",
     href: "/join",
   },
   {
-    slug: "branch-partner",
-    eyebrow: "Branches",
-    title: "Want to become a Branch Partner?",
+    slug: "producing-manager",
+    eyebrow: "Producing Managers",
+    title: "Want to become a Producing Manager?",
     body:
       "Open and lead your own HCMG branch with infrastructure built for scale. Recruit your team, share in their production, and keep your independence with HCMG behind you.",
-    cta: "Become a Branch Partner",
-    href: "/careers/branch-partner",
+    cta: "Become a Producing Manager",
+    href: "/careers/producing-manager",
   },
   {
-    slug: "team-migration",
+    slug: "move-your-team",
     eyebrow: "Teams",
-    title: "Migrate your team to HCMG",
+    title: "Move your team to HCMG",
     body:
-      "We provide the tools, onboarding support, and operational resources to move your full team to HCMG fast — without losing your culture, your pipeline, or your people.",
-    cta: "Migrate My Team",
-    href: "/careers/team-migration",
+      "We provide the tools, onboarding support, and operational resources to move your full team to HCMG fast, without losing your culture, your pipeline, or your people.",
+    cta: "Move My Team",
+    href: "/careers/move-your-team",
   },
   {
     slug: "corporate",

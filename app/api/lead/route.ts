@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
+import { createServiceClient } from "@/lib/supabase";
+import { logAudit, getProfileBySlug } from "@/lib/auth";
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY ?? "placeholder");
@@ -18,7 +20,7 @@ const LeadSchema = z.object({
   creditRange: z.string().optional(),
   incomeRange: z.string().optional(),
   notes: z.string().optional(),
-  // LO routing — present when the lead originated on a per-LO profile page
+  // LO routing, present when the lead originated on a per-LO profile page
   loSlug: z.string().optional(),
   loName: z.string().optional(),
   loNmls: z.string().nullable().optional(),
@@ -42,7 +44,7 @@ const confirmationHtml = (firstName: string, loName?: string) => `
           <td style="padding:40px;">
             <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#1A2B42;">Hi ${firstName} 👋</p>
             <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#5A6B7E;">
-              Thanks for reaching out — we&apos;ve received your mortgage inquiry${
+              Thanks for reaching out, we&apos;ve received your mortgage inquiry${
                 loName ? ` and routed it directly to ${loName}` : " and a licensed loan officer"
               } will be in touch within one business day.
             </p>
@@ -57,6 +59,50 @@ const confirmationHtml = (firstName: string, loName?: string) => `
               This message was sent because you submitted a mortgage inquiry at getorangekey.com.
               Harris Capital Mortgage Group, LLC · NMLS# 1918223.
               Equal Housing Lender.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+`;
+
+const loNotificationHtml = (lead: ReturnType<typeof LeadSchema.parse>, loName: string) => `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background:#f9f9f9;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f9;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+        <tr>
+          <td style="background:#142850;padding:32px 40px;">
+            <p style="margin:0;font-size:22px;font-weight:800;color:#fff;letter-spacing:2px;">HCMG</p>
+            <p style="margin:4px 0 0;font-size:12px;color:#F37021;letter-spacing:1px;">NEW LEAD ASSIGNED TO YOU</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px;">
+            <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#1A2B42;">Hi ${loName.split(" ")[0]} 👋</p>
+            <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#5A6B7E;">
+              You have a new lead from your funnel link. Here are their details:
+            </p>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;width:140px;">Name</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-weight:600;color:#1A2B42;">${lead.firstName} ${lead.lastName ?? ""}</td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Email</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.email}</td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Phone</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.phone}</td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Goal</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.goal ?? "—"}</td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Price Range</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.priceRange ?? "—"}</td></tr>
+              <tr><td style="padding:8px 0;color:#9AABB8;">Credit Range</td><td style="padding:8px 0;color:#1A2B42;">${lead.creditRange ?? "—"}</td></tr>
+            </table>
+            <a href="https://getorangekey.com/portal" style="display:inline-block;margin-top:28px;background:#F37021;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;">
+              View in my portal →
+            </a>
+            <hr style="margin:32px 0;border:none;border-top:1px solid #f0f0f0;" />
+            <p style="margin:0;font-size:12px;line-height:1.7;color:#9AABB8;">
+              Harris Capital Mortgage Group, LLC · NMLS# 1918223. Reply STOP to opt out.
             </p>
           </td>
         </tr>
@@ -83,17 +129,44 @@ export async function POST(request: NextRequest) {
   const lead = parsed.data;
   const lastName = lead.lastName ?? "";
   const fullName = `${lead.firstName}${lastName ? ` ${lastName}` : ""}`.trim();
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? null;
 
-  // Fire-and-forget: send to Porchy Flight Deck CRM
+  // ── 1. Persist to Supabase ────────────────────────────────
+  const sb = createServiceClient();
+  const { data: savedLead } = await sb.from("leads").insert({
+    first_name:   lead.firstName,
+    last_name:    lead.lastName ?? null,
+    email:        lead.email,
+    phone:        lead.phone,
+    sms_consent:  lead.smsConsent,
+    source:       lead.source ?? "funnel",
+    goal:         lead.goal ?? null,
+    price_range:  lead.priceRange ?? null,
+    credit_range: lead.creditRange ?? null,
+    income_range: lead.incomeRange ?? null,
+    notes:        lead.notes ?? null,
+    lo_slug:      lead.loSlug ?? null,
+    lo_name:      lead.loName ?? null,
+    lo_nmls:      lead.loNmls ?? null,
+    status:       "new",
+    ip_address:   ip,
+  }).select("id").single();
+
+  // Log to audit
+  logAudit("lead.created", {
+    lead_id:  savedLead?.id,
+    email:    lead.email,
+    lo_slug:  lead.loSlug,
+    source:   lead.source,
+  }, undefined, undefined, ip ?? undefined);
+
+  // ── 2. Fire-and-forget: Porchy Flight Deck CRM ───────────
   const flightDeckUrl = process.env.FLIGHT_DECK_LEADS_URL;
   const flightDeckKey = process.env.FLIGHT_DECK_API_KEY;
   if (flightDeckUrl && flightDeckKey) {
     fetch(flightDeckUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${flightDeckKey}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${flightDeckKey}` },
       body: JSON.stringify({
         ...lead,
         source_app: "orange-key-web",
@@ -104,17 +177,24 @@ export async function POST(request: NextRequest) {
     }).catch(() => {});
   }
 
-  // Send confirmation + internal notification in parallel
+  // ── 3. Resolve LO notify email ────────────────────────────
+  let loNotifyEmail: string | null = null;
+  if (lead.loSlug) {
+    const loProfile = await getProfileBySlug(lead.loSlug);
+    loNotifyEmail = loProfile?.notify_email ?? loProfile?.email ?? null;
+  }
+
+  // ── 4. Send emails ────────────────────────────────────────
   const resend = getResend();
   const internalSubject = lead.loName
     ? `New lead for ${lead.loName}: ${fullName || lead.email}`
     : `New lead: ${fullName || lead.email}`;
 
-  await Promise.all([
+  const emailJobs = [
     resend.emails.send({
       from: "HCMG <noreply@getorangekey.com>",
       to: lead.email,
-      subject: lead.loName ? `Your HCMG estimate — routed to ${lead.loName}` : "Your HCMG estimate is ready",
+      subject: lead.loName ? `Your HCMG estimate, routed to ${lead.loName}` : "Your HCMG estimate is ready",
       html: confirmationHtml(lead.firstName, lead.loName),
     }),
     resend.emails.send({
@@ -123,7 +203,21 @@ export async function POST(request: NextRequest) {
       subject: internalSubject,
       html: `<pre style="font-family:monospace;font-size:13px;">${JSON.stringify(lead, null, 2)}</pre>`,
     }),
-  ]);
+  ];
+
+  // Instant LO notification
+  if (loNotifyEmail && lead.loName) {
+    emailJobs.push(
+      resend.emails.send({
+        from: "HCMG Leads <noreply@getorangekey.com>",
+        to: loNotifyEmail,
+        subject: `🔔 New lead: ${fullName || lead.email}`,
+        html: loNotificationHtml(lead, lead.loName),
+      })
+    );
+  }
+
+  await Promise.all(emailJobs);
 
   return NextResponse.json({ ok: true });
 }

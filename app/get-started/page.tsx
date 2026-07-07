@@ -6,7 +6,7 @@ import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { getTeamMemberBySlug } from "@/data/team";
 
 export const metadata: Metadata = {
-  title: "Get Your Mortgage Estimate — HCMG",
+  title: "Get Your Mortgage Estimate, HCMG",
   description:
     "See what you can afford in 60 seconds. No hard credit check. FHA, VA, Conventional, and Refinance options. Harris Capital Mortgage Group · NMLS# 1918223.",
   alternates: { canonical: "https://getorangekey.com/get-started" },
@@ -55,7 +55,7 @@ export default async function GetStartedPage({
                   Under 60 seconds · No hard credit check · No commitment
                 </p>
                 <p className="mt-2 text-xs text-muted/70">
-                  Your answers route directly to {lo.name.split(/\s+/)[0]} — no call center, no rep rotation.
+                  Your answers route directly to {lo.name.split(/\s+/)[0]}, no call center, no rep rotation.
                 </p>
               </div>
             </div>

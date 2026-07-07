@@ -23,14 +23,14 @@ export async function generateMetadata({
   const m = getTeamMemberBySlug(slug);
   if (!m) return {};
   const title = m.nmls
-    ? `${m.name} — ${m.role}, NMLS# ${m.nmls} | HCMG`
-    : `${m.name} — ${m.role} | HCMG`;
+    ? `${m.name}, ${m.role}, NMLS# ${m.nmls} | HCMG`
+    : `${m.name}, ${m.role} | HCMG`;
   return {
     title,
     description: m.shortBio,
     alternates: { canonical: `https://getorangekey.com/team/${slug}` },
     openGraph: {
-      title: `${m.name} — ${m.role}`,
+      title: `${m.name}, ${m.role}`,
       description: m.shortBio,
       url: `https://getorangekey.com/team/${slug}`,
       images: [m.photo],
@@ -179,7 +179,7 @@ export default async function TeamMemberPage({
                 </div>
               )}
 
-              {/* Primary CTAs — anchor to the embedded funnel below */}
+              {/* Primary CTAs, anchor to the embedded funnel below */}
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 <a
                   href="#funnel"
@@ -195,10 +195,10 @@ export default async function TeamMemberPage({
                 </a>
               </div>
               <p className="mt-3 text-xs text-muted/70">
-                Your application routes directly to {firstName(m.name)} — no rotation, no call center.
+                Your application routes directly to {firstName(m.name)}, no rotation, no call center.
               </p>
 
-              {/* Quick facts — secondary info */}
+              {/* Quick facts, secondary info */}
               <dl className="mt-8 grid gap-x-8 gap-y-4 border-t border-line pt-6 sm:grid-cols-2">
                 {m.yearsExperience !== undefined && (
                   <Fact label="Experience" value={`${m.yearsExperience}+ years in mortgage`} />
@@ -234,7 +234,7 @@ export default async function TeamMemberPage({
         </div>
       </section>
 
-      {/* Embedded funnel — leads route directly to this LO */}
+      {/* Embedded funnel, leads route directly to this LO */}
       <section id="funnel" className="section-pad bg-sand scroll-mt-24">
         <div className="container-shell">
           <div className="mx-auto mb-10 max-w-xl text-center">
@@ -251,7 +251,7 @@ export default async function TeamMemberPage({
               Purchase or refinance · No hard credit check · No commitment
             </p>
             <p className="mt-2 text-xs text-muted/70">
-              Your answers route directly to {firstName(m.name)} — no rotation, no call center.
+              Your answers route directly to {firstName(m.name)}, no rotation, no call center.
             </p>
           </div>
           <FunnelFlow lo={funnelLo} />

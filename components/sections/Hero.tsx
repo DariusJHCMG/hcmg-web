@@ -30,7 +30,7 @@ export function Hero() {
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-hero-glow" />
 
       <div className="container-shell grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
-        {/* Left — headline */}
+        {/* Left, headline */}
         <div>
           <div className={entered ? "motion-rise motion-delay-1" : "motion-prep"}>
             <SectionEyebrow className="mb-6">
@@ -51,7 +51,7 @@ export function Hero() {
             className={`mt-6 max-w-xl text-lg leading-8 text-muted lg:text-xl ${entered ? "motion-rise motion-delay-3" : "motion-prep"}`}
           >
             No hard credit check. No pressure. Just a fast, honest look at your
-            buying power — before you ever talk to a lender.
+            buying power, before you ever talk to a lender.
           </p>
 
           {/* Trust row */}
@@ -79,7 +79,7 @@ export function Hero() {
           </p>
         </div>
 
-        {/* Right — payment preview card */}
+        {/* Right, payment preview card */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={entered ? { opacity: 1, y: 0 } : {}}

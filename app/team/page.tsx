@@ -7,7 +7,7 @@ import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { teamMembers, getTeamGroupedByRole } from "@/data/team";
 
 export const metadata: Metadata = {
-  title: "Meet the HCMG Team — Loan Officers, Processors & Leadership | Harris Capital Mortgage Group",
+  title: "Meet the HCMG Team, Loan Officers, Processors & Leadership | Harris Capital Mortgage Group",
   description:
     "The people behind HCMG. Licensed loan officers, processors, and operations leaders who walk every client from pre-approval to closing. NMLS# 1918223.",
   alternates: { canonical: "https://getorangekey.com/team" },
@@ -170,7 +170,7 @@ function groupHeadline(role: string): string {
 function groupBlurb(role: string): string {
   switch (role) {
     case "Leadership":
-      return "The team setting direction at HCMG — building the kind of mortgage company we'd want to use ourselves.";
+      return "The team setting direction at HCMG, building the kind of mortgage company we'd want to use ourselves.";
     case "Loan Officers":
       return "Every loan officer at HCMG is licensed through the Nationwide Multistate Licensing System (NMLS) and personally available for the lifecycle of your file. No call centers, no rotating reps.";
     case "Operations":

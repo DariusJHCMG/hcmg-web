@@ -15,7 +15,7 @@ export function FinalCTA() {
             Your home is closer than you think.
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-white/80">
-            Get your estimate in 60 seconds. No credit check. No commitment. Just your numbers — right now.
+            Get your estimate in 60 seconds. No credit check. No commitment. Just your numbers, right now.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">

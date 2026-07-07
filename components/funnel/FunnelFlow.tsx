@@ -248,7 +248,7 @@ export function FunnelFlow({ lo }: { lo?: FunnelLoContext } = {}) {
           )}
 
           {step === 4 && (
-            <StepShell title="What's your approximate household income?" sub="We use this to shape your estimate — not to make decisions." onContinue={() => state.incomeBand && next(5)} disabled={!state.incomeBand} ctaLabel="See my payment range →">
+            <StepShell title="What's your approximate household income?" sub="We use this to shape your estimate, not to make decisions." onContinue={() => state.incomeBand && next(5)} disabled={!state.incomeBand} ctaLabel="See my payment range →">
               <div className="grid grid-cols-2 gap-3">
                 {([
                   { v: "under-75" as IncomeBand, label: "Under $75,000" },

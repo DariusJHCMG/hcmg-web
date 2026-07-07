@@ -47,7 +47,7 @@ function VideoCard({ video }: { video: TeamVideo }) {
   function handleMp4Play() {
     if (videoRef.current) {
       videoRef.current.play().catch(() => {
-        /* autoplay block — controls are visible, user can press play */
+        /* autoplay block, controls are visible, user can press play */
       });
     }
     setPlaying(true);

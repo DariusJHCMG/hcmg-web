@@ -6,7 +6,7 @@ import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { getGlossaryByLetter, glossaryTerms } from "@/data/glossary";
 
 export const metadata: Metadata = {
-  title: "Mortgage Glossary — Plain-English Definitions of Home Loan Terms | HCMG",
+  title: "Mortgage Glossary, Plain-English Definitions of Home Loan Terms | HCMG",
   description: `Browse ${glossaryTerms.length}+ mortgage terms explained in plain English by Harris Capital Mortgage Group. Understand ARMs, APR, escrow, PITI, jumbo loans, and every other term you'll encounter when financing a home.`,
   alternates: { canonical: "https://getorangekey.com/glossary" },
   openGraph: {
@@ -56,7 +56,7 @@ export default function GlossaryIndexPage() {
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">
             Buying or refinancing a home means wading through unfamiliar vocabulary. This glossary covers{" "}
-            {glossaryTerms.length}+ of the terms HCMG&apos;s loan officers explain most often — written for
+            {glossaryTerms.length}+ of the terms HCMG&apos;s loan officers explain most often, written for
             humans, with the context you need to actually decide.
           </p>
         </div>

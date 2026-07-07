@@ -9,22 +9,33 @@ function ContactInfo() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Address</p>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">HQ</p>
         <p className="text-sm leading-7 text-ink">
-          455 E Eisenhower Pkwy, Suite 300<br />
-          Ann Arbor, MI 48108
+          6375 S Pecos Rd, Suite 208<br />
+          Las Vegas, NV 89120
+        </p>
+      </div>
+      <div>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Branch</p>
+        <p className="text-sm leading-7 text-ink">
+          9801 Westheimer Ave, Suite 300<br />
+          Houston, TX 77032
         </p>
       </div>
       <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Phone</p>
-        <a href="tel:8884413930" className="text-sm font-semibold text-ink hover:text-accent transition-colors">
+        <a href="tel:+18884413930" className="text-sm font-semibold text-ink hover:text-accent transition-colors">
           888-441-3930
         </a>
       </div>
       <div>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Fax</p>
+        <p className="text-sm text-ink">404-882-4100</p>
+      </div>
+      <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Email</p>
-        <a href="mailto:hello@getorangekey.com" className="text-sm font-semibold text-ink hover:text-accent transition-colors">
-          hello@getorangekey.com
+        <a href="mailto:info@harriscapitalmortgage.com" className="text-sm font-semibold text-ink hover:text-accent transition-colors">
+          info@harriscapitalmortgage.com
         </a>
       </div>
       <div>

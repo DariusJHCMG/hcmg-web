@@ -8,22 +8,22 @@ import { TeamVideos } from "@/components/recruiting/TeamVideos";
 import { teamVideos } from "@/data/team-videos";
 
 export const metadata: Metadata = {
-  title: "Join HCMG — Loan Officer Careers at Harris Capital Mortgage Group",
+  title: "Join HCMG, Loan Officer Careers at Harris Capital Mortgage Group",
   description:
     "Grow your mortgage business with HCMG. 100+ lender partners, 275 BPS lender-paid compensation, HCMGU on-demand training, and a revenue-share platform built for producing loan officers and mortgage brokers.",
   alternates: { canonical: "https://getorangekey.com/join" },
   openGraph: {
     type: "website",
     url: "https://getorangekey.com/join",
-    siteName: "HCMG — Harris Capital Mortgage Group",
-    title: "Join HCMG — Loan Officer Careers",
+    siteName: "HCMG, Harris Capital Mortgage Group",
+    title: "Join HCMG, Loan Officer Careers",
     description:
       "100+ lender partners. 275 BPS lender-paid comp. Revenue share. Modern borrower tools. Built for producing loan officers and mortgage brokers who want pricing power and clarity.",
     images: ["/hcmg-social-square.svg"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Join HCMG — Loan Officer Careers",
+    title: "Join HCMG, Loan Officer Careers",
     description:
       "100+ lender partners. 275 BPS lender-paid comp. Built for producing LOs and mortgage brokers.",
     images: ["/hcmg-social-square.svg"],
@@ -90,7 +90,7 @@ const WHY_JOIN = [
     icon: "⚡",
     title: "Faster support",
     body:
-      "Processing, underwriting, and ops that move at the speed your borrowers expect. Real humans on real timelines — not tickets in a queue.",
+      "Processing, underwriting, and ops that move at the speed your borrowers expect. Real humans on real timelines, not tickets in a queue.",
   },
   {
     icon: "🛠️",
@@ -102,7 +102,7 @@ const WHY_JOIN = [
     icon: "📈",
     title: "Built for growth",
     body:
-      "HCMGU on-demand education and a revenue-share platform that pays $595 per loan closed by your referrals — for the lifetime of their and your employment.",
+      "HCMGU on-demand education and a revenue-share platform that pays $595 per loan closed by your referrals, for the lifetime of their and your employment.",
   },
 ];
 
@@ -116,7 +116,7 @@ const WHO_THIS_IS_FOR = [
 const FAQS = [
   {
     q: "What's the lender-paid compensation structure?",
-    a: "HCMG offers lender-paid compensation up to 275 BPS depending on your production tier and program. Comp grids are published — no surprises, no carve-outs.",
+    a: "HCMG offers lender-paid compensation up to 275 BPS depending on your production tier and program. Comp grids are published, no surprises, no carve-outs.",
   },
   {
     q: "How many lenders does HCMG work with?",
@@ -124,7 +124,7 @@ const FAQS = [
   },
   {
     q: "What's the revenue-share platform?",
-    a: "Earn $595 per loan closed by loan officers you refer to HCMG — for the lifetime of their employment with HCMG and yours. It's a real long-tail income stream, not a one-time bonus.",
+    a: "Earn $595 per loan closed by loan officers you refer to HCMG, for the lifetime of their employment with HCMG and yours. It's a real long-tail income stream, not a one-time bonus.",
   },
   {
     q: "What support do I get from operations?",
@@ -222,7 +222,7 @@ export default function JoinPage() {
         </div>
       </section>
 
-      {/* ── Hear From the Team — video testimonials ────────────── */}
+      {/* ── Hear From the Team, video testimonials ────────────── */}
       <section className="bg-sand section-pad">
         <div className="container-shell max-w-6xl">
           <div className="mx-auto mb-12 max-w-2xl text-center">
@@ -231,7 +231,7 @@ export default function JoinPage() {
               Real stories from real HCMG loan officers.
             </h2>
             <p className="mt-4 text-base leading-7 text-muted">
-              What it&apos;s actually like to build a mortgage business at HCMG — straight from the people
+              What it&apos;s actually like to build a mortgage business at HCMG, straight from the people
               doing it.
             </p>
           </div>
@@ -248,7 +248,7 @@ export default function JoinPage() {
                 Compensation &amp; Revenue Share
               </div>
               <h2 className="mt-3 text-3xl font-extrabold tracking-tight lg:text-4xl">
-                Paid for the work — and for the team you build.
+                Paid for the work, and for the team you build.
               </h2>
             </div>
             <div className="grid gap-6 lg:col-span-2 sm:grid-cols-3">
@@ -272,7 +272,7 @@ export default function JoinPage() {
             <div>
               <SectionEyebrow>Who This Is For</SectionEyebrow>
               <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
-                If you&apos;re producing and you&apos;re tired of guessing — we should talk.
+                If you&apos;re producing and you&apos;re tired of guessing, we should talk.
               </h2>
             </div>
             <ul className="space-y-4">
@@ -337,7 +337,7 @@ export default function JoinPage() {
             </h2>
             <p className="mt-4 text-base leading-7 text-muted">
               Drop a few details below. A member of our recruiting team will reach out within one business day
-              with pricing examples, comp grids, and a real conversation — no canned pitch deck.
+              with pricing examples, comp grids, and a real conversation, no canned pitch deck.
             </p>
           </div>
           <RecruitingForm />
@@ -352,15 +352,14 @@ export default function JoinPage() {
             <a href="tel:8884413930" className="font-bold text-accent hover:underline">
               888-441-3930
             </a>{" "}
-            — or email{" "}
+           , or email{" "}
             <a href="mailto:recruiting@hcmg.com" className="font-bold text-accent hover:underline">
               recruiting@hcmg.com
             </a>
             .
           </p>
           <p className="mt-4 text-xs text-muted/60">
-            Harris Capital Mortgage Group, LLC · NMLS# 1918223 · 6375 S Pecos Rd, Suite 208, Las Vegas, NV
-            89120 · Equal Housing Lender
+            Harris Capital Mortgage Group, LLC · NMLS# 1918223 · HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120 · Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032 · Equal Housing Lender
           </p>
         </div>
       </section>

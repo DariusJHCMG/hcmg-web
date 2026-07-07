@@ -3,7 +3,7 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "Licensing & Disclosures — HCMG · NMLS# 1918223",
+  title: "Licensing & Disclosures, HCMG · NMLS# 1918223",
   description: "State licensing information for Harris Capital Mortgage Group, LLC. NMLS# 1918223. Equal Housing Lender.",
   alternates: { canonical: "https://getorangekey.com/licensing" },
 };
@@ -39,9 +39,9 @@ export default function LicensingPage() {
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
             <strong className="text-ink">Harris Capital Mortgage Group, LLC</strong><br />
             NMLS# 1918223<br />
-            455 E Eisenhower Pkwy, Suite 300<br />
-            Ann Arbor, MI 48108<br />
-            888-441-3930 · hello@getorangekey.com
+            <strong>HQ:</strong> 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120<br />
+            <strong>Branch:</strong> 9801 Westheimer Ave, Suite 300, Houston, TX 77032<br />
+            888-441-3930 · Fax: 404-882-4100 · info@harriscapitalmortgage.com
           </div>
 
           <H2>NMLS Consumer Access</H2>
@@ -117,10 +117,11 @@ export default function LicensingPage() {
 
           <H2>Contact Regulatory Inquiries</H2>
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
-            Licensing inquiries: legal@getorangekey.com<br />
+            Licensing inquiries: info@harriscapitalmortgage.com<br />
             Harris Capital Mortgage Group, LLC<br />
             NMLS# 1918223<br />
-            455 E Eisenhower Pkwy, Suite 300, Ann Arbor, MI 48108
+            HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120<br />
+            Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032
           </div>
         </div>
       </section>

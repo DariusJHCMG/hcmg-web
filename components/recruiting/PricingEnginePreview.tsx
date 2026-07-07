@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-// Load the Zeitro iframe client-only — server has nothing to render for it.
+// Load the Zeitro iframe client-only, server has nothing to render for it.
 const ZeitroPricingEmbed = dynamic(() => import("@/components/zeitro/ZeitroPricingEmbed"), {
   ssr: false,
   loading: () => (
@@ -16,7 +16,7 @@ const ZeitroPricingEmbed = dynamic(() => import("@/components/zeitro/ZeitroPrici
   ),
 });
 
-// localStorage key — once an NMLS is captured, the gate stays unlocked on
+// localStorage key, once an NMLS is captured, the gate stays unlocked on
 // future visits. Captured NMLS is also exposed in the unlocked-by chip.
 const STORAGE_KEY = "hcmg-pricing-unlocked-nmls";
 
@@ -30,7 +30,7 @@ export function PricingEnginePreview() {
       const stored = window.localStorage.getItem(STORAGE_KEY);
       if (stored) setUnlockedNmls(stored);
     } catch {
-      /* localStorage unavailable — gate just stays up. */
+      /* localStorage unavailable, gate just stays up. */
     }
   }, []);
 
@@ -38,7 +38,7 @@ export function PricingEnginePreview() {
     try {
       window.localStorage.setItem(STORAGE_KEY, nmls);
     } catch {
-      /* ignore — still unlock for this session */
+      /* ignore, still unlock for this session */
     }
     setUnlockedNmls(nmls);
     // ▶ Future: POST { nmls, source: "pricing-gate" } to a backend endpoint
@@ -86,7 +86,7 @@ export function PricingEnginePreview() {
         </div>
       </div>
 
-      {/* Body — Zeitro embed once unlocked, blurred placeholder while locked */}
+      {/* Body, Zeitro embed once unlocked, blurred placeholder while locked */}
       <div className="p-4 sm:p-6">
         {!locked && hydrated ? (
           <ZeitroPricingEmbed />
@@ -151,7 +151,7 @@ function NmlsGate({ onUnlock }: { onUnlock: (nmls: string) => void }) {
           </div>
           <h3 className="text-xl font-extrabold text-ink sm:text-2xl">Unlock the pricing engine.</h3>
           <p className="mt-2 text-sm leading-6 text-muted">
-            Enter your NMLS ID to load HCMG&apos;s pricing engine — lender rates, your comp grid, and net
+            Enter your NMLS ID to load HCMG&apos;s pricing engine, lender rates, your comp grid, and net
             commission at every tier.
           </p>
         </div>

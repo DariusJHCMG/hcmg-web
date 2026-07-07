@@ -3,7 +3,7 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "SMS Terms — HCMG",
+  title: "SMS Terms, HCMG",
   description: "SMS Terms and Conditions for Harris Capital Mortgage Group, LLC. NMLS# 1918223.",
   alternates: { canonical: "https://getorangekey.com/sms-policy" },
 };
@@ -48,7 +48,7 @@ export default function SmsPolicy() {
             Message and data rates may apply. Check with your mobile carrier for details on your specific plan.
           </P>
 
-          <H2>How to Opt Out — STOP</H2>
+          <H2>How to Opt Out, STOP</H2>
           <P>
             <strong className="text-ink">TO STOP RECEIVING TEXTS:</strong> Reply <strong>STOP</strong> to any
             message. You will receive one final confirmation and no further messages will be sent.
@@ -88,10 +88,10 @@ export default function SmsPolicy() {
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
             <strong className="text-ink">Harris Capital Mortgage Group, LLC</strong><br />
             NMLS# 1918223<br />
-            455 E Eisenhower Pkwy, Suite 300<br />
-            Ann Arbor, MI 48108<br />
-            888-441-3930<br />
-            sms@getorangekey.com
+            HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120<br />
+            Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032<br />
+            888-441-3930 · Fax: 404-882-4100<br />
+            info@harriscapitalmortgage.com
           </div>
         </div>
       </section>

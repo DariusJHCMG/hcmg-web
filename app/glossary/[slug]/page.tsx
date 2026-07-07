@@ -21,11 +21,11 @@ export async function generateMetadata({
   const term = getTermBySlug(slug);
   if (!term) return {};
   return {
-    title: `${term.term} — Mortgage Term Definition | HCMG`,
+    title: `${term.term}, Mortgage Term Definition | HCMG`,
     description: term.shortDef,
     alternates: { canonical: `https://getorangekey.com/glossary/${slug}` },
     openGraph: {
-      title: `${term.term} — Defined`,
+      title: `${term.term}, Defined`,
       description: term.shortDef,
       url: `https://getorangekey.com/glossary/${slug}`,
       images: ["/hcmg-social-square.svg"],

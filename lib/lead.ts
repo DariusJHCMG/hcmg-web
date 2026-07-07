@@ -13,7 +13,7 @@ export interface LeadPayload {
   estimatedBuyingPowerHigh?: number;
   estimatedMonthlyPayment?: number;
   recommendedLoanType?: string;
-  // Loan-officer routing — when the lead originated from a per-LO page
+  // Loan-officer routing, when the lead originated from a per-LO page
   loSlug?: string;
   loName?: string;
   loNmls?: string | null;

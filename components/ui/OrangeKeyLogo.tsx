@@ -23,7 +23,7 @@ export function OrangeKeyLogo({ variant = "primary-light", size = 40, className 
   return (
     <img
       src={src}
-      alt="HCMG — Harris Capital Mortgage Group"
+      alt="HCMG, Harris Capital Mortgage Group"
       width={width}
       height={height}
       className={className}

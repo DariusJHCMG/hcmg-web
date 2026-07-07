@@ -35,11 +35,11 @@ export const featuredCities = seoPages.slice(0, 12);
 
 export const STATE_COPY: Record<string, string> = {
   FL: "Florida's real estate market has seen strong buyer demand. Down payment assistance programs are available for first-time buyers through the Florida Housing Finance Corporation.",
-  TX: "Texas has no state income tax, which can increase your buying power. Property taxes vary significantly by county — your loan officer will factor in local rates.",
+  TX: "Texas has no state income tax, which can increase your buying power. Property taxes vary significantly by county, your loan officer will factor in local rates.",
   GA: "Georgia offers first-time homebuyer programs through GAHFA. The Atlanta metro continues to see competitive offers, and our team knows the local market.",
-  NV: "Nevada's no state income tax is attractive to relocating buyers. Las Vegas and Reno markets move quickly — a fast pre-qualification matters.",
+  NV: "Nevada's no state income tax is attractive to relocating buyers. Las Vegas and Reno markets move quickly, a fast pre-qualification matters.",
   CO: "Colorado's CHFA offers down payment assistance and below-market rate programs for first-time buyers. Mountain and metro markets both remain competitive.",
-  VA: "Virginia has strong employment markets and diverse housing stock. Northern Virginia near DC commands premium pricing — our team specializes in this corridor.",
+  VA: "Virginia has strong employment markets and diverse housing stock. Northern Virginia near DC commands premium pricing, our team specializes in this corridor.",
   DC: "Washington DC has some of the highest median home prices on the East Coast. DC and Maryland first-time buyer programs can significantly reduce upfront costs.",
   MD: "Maryland offers the MMP (Maryland Mortgage Program) for first-time buyers with competitive rates and down payment help. Proximity to DC affects pricing in many counties.",
 };

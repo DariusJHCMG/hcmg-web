@@ -38,7 +38,7 @@ export function Calculator() {
             See your payment before you fall in love
           </h2>
           <p className="mt-5 text-lg leading-8 text-muted">
-            Adjust the numbers and your estimate updates instantly. No forms, no commitment — just the math, right now.
+            Adjust the numbers and your estimate updates instantly. No forms, no commitment, just the math, right now.
           </p>
           <ul className="mt-6 space-y-3">
             {["Includes property taxes and insurance", "Shows complete cash-to-close breakdown", "Works for purchase or refinance"].map((b) => (
@@ -53,7 +53,7 @@ export function Calculator() {
           </Link>
         </div>
 
-        {/* Right — card */}
+        {/* Right, card */}
         <div className="glass-card p-6 lg:p-8">
           <div className="space-y-6">
             {/* Home price */}

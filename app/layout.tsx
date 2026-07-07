@@ -11,7 +11,7 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: "HCMG — Find Out What You Can Afford in 60 Seconds",
+    default: "HCMG, Find Out What You Can Afford in 60 Seconds",
     template: "%s | HCMG",
   },
   description:
@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://getorangekey.com",
-    siteName: "HCMG — Harris Capital Mortgage Group",
-    title: "HCMG — Find Out What You Can Afford in 60 Seconds",
+    siteName: "HCMG, Harris Capital Mortgage Group",
+    title: "HCMG, Find Out What You Can Afford in 60 Seconds",
     description:
       "Fast, simple mortgage estimates. No hard credit check. FHA, VA, Conventional, and Refinance. Harris Capital Mortgage Group, LLC · NMLS# 1918223.",
     images: [
@@ -29,13 +29,13 @@ export const metadata: Metadata = {
         url: "/hcmg-social-square.svg",
         width: 1000,
         height: 1000,
-        alt: "HCMG — Harris Capital Mortgage Group",
+        alt: "HCMG, Harris Capital Mortgage Group",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "HCMG — Find Out What You Can Afford in 60 Seconds",
+    title: "HCMG, Find Out What You Can Afford in 60 Seconds",
     description:
       "Fast, simple mortgage estimates. No hard credit check. Harris Capital Mortgage Group · NMLS# 1918223.",
     images: ["/hcmg-social-square.svg"],
@@ -56,13 +56,14 @@ const schemaOrg = {
     "Fast mortgage estimates for home buyers across FL, TX, GA, NV, CO, VA, DC, and MD. Harris Capital Mortgage Group, LLC · NMLS# 1918223.",
   url: "https://getorangekey.com",
   telephone: "+18884413930",
-  email: "hello@getorangekey.com",
+  faxNumber: "+14048824100",
+  email: "info@harriscapitalmortgage.com",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "455 E Eisenhower Pkwy, Suite 300",
-    addressLocality: "Ann Arbor",
-    addressRegion: "MI",
-    postalCode: "48108",
+    streetAddress: "6375 S Pecos Rd, Suite 208",
+    addressLocality: "Las Vegas",
+    addressRegion: "NV",
+    postalCode: "89120",
     addressCountry: "US",
   },
   sameAs: [

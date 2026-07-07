@@ -13,7 +13,7 @@ const CARDS = [
   {
     icon: "🎯",
     title: "Real payment context",
-    body: "We show you principal, taxes, insurance, and HOA together — the real monthly number, not just P&I.",
+    body: "We show you principal, taxes, insurance, and HOA together, the real monthly number, not just P&I.",
   },
   {
     icon: "🛡️",

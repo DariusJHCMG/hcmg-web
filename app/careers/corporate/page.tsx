@@ -6,16 +6,16 @@ import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { RecruitingForm } from "@/components/recruiting/RecruitingForm";
 
 export const metadata: Metadata = {
-  title: "HCMG HQ Careers — Operations, Marketing, Technology, Compliance",
+  title: "HCMG HQ Careers, Operations, Marketing, Technology, Compliance",
   description:
-    "Join HCMG's corporate team. Operations, marketing, technology, compliance — high-leverage roles powering the platform that supports loan officers nationwide. NMLS# 1918223.",
+    "Join HCMG's corporate team. Operations, marketing, technology, compliance, high-leverage roles powering the platform that supports loan officers nationwide. NMLS# 1918223.",
   alternates: { canonical: "https://getorangekey.com/careers/corporate" },
   openGraph: {
     type: "website",
     url: "https://getorangekey.com/careers/corporate",
     title: "HCMG HQ Careers",
     description:
-      "Operations, marketing, technology, compliance — build the engine behind HCMG.",
+      "Operations, marketing, technology, compliance, build the engine behind HCMG.",
     images: ["/hcmg-social-square.svg"],
   },
 };
@@ -37,7 +37,7 @@ const TRACKS = [
     icon: "💻",
     title: "Technology",
     body:
-      "Web, integrations, internal tooling, data, AI. We move fast and ship — no enterprise process theater.",
+      "Web, integrations, internal tooling, data, AI. We move fast and ship, no enterprise process theater.",
   },
   {
     icon: "🛡️",
@@ -76,7 +76,7 @@ export default function CorporatePage() {
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">
               Operations, marketing, technology, compliance. Small teams, big leverage. If you&apos;ve
-              done your time at a slow legacy lender and want to ship — this is where the work happens.
+              done your time at a slow legacy lender and want to ship, this is where the work happens.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a href="#apply" className="primary-button !text-base !px-7 !py-4">

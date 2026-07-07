@@ -62,7 +62,7 @@ export const teamVideos: TeamVideo[] = [
     speaker: "Clark",
     title: "Getting Into the Mortgage Industry",
     description:
-      "Clark's path into mortgage — and what new originators get at HCMG that they wouldn't get anywhere else.",
+      "Clark's path into mortgage, and what new originators get at HCMG that they wouldn't get anywhere else.",
     videoUrl: "/videos/clark-getting-into-mortgage.mp4",
     aspect: "portrait",
   },

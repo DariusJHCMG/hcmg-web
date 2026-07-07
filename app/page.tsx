@@ -12,7 +12,7 @@ import { FAQ } from "@/components/sections/FAQ";
 import { FinalCTA } from "@/components/sections/FinalCTA";
 
 export const metadata: Metadata = {
-  title: "HCMG — Find Out What You Can Afford in 60 Seconds",
+  title: "HCMG, Find Out What You Can Afford in 60 Seconds",
   description:
     "Instant mortgage estimates. No hard credit check. FHA, VA, Conventional, Refinance. Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender.",
   alternates: { canonical: "https://getorangekey.com" },

@@ -1,7 +1,7 @@
 export const FAQS = [
   {
     q: "Does getting an estimate affect my credit score?",
-    a: "No. The HCMG estimate is based entirely on information you provide — income range, price range, and credit band. We never run a credit inquiry of any kind during the estimate process. A hard credit pull only happens when you formally apply for a loan through a licensed loan officer.",
+    a: "No. The HCMG estimate is based entirely on information you provide, income range, price range, and credit band. We never run a credit inquiry of any kind during the estimate process. A hard credit pull only happens when you formally apply for a loan through a licensed loan officer.",
   },
   {
     q: "Is this a pre-approval?",

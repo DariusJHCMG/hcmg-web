@@ -105,7 +105,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
       <section className="section-pad bg-white">
         <div className="container-shell grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <h2 className="mb-6 text-2xl font-extrabold text-ink">{page.loanType} — Common Questions</h2>
+            <h2 className="mb-6 text-2xl font-extrabold text-ink">{page.loanType}, Common Questions</h2>
             <div className="space-y-4">
               {faqs.map((faq) => (
                 <div key={faq.q} className="rounded-2xl border border-line bg-white p-6">
@@ -126,7 +126,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
                   href={`/seo/${r.slug}`}
                   className="block rounded-2xl border border-line bg-white px-5 py-4 text-sm font-semibold text-ink transition-all hover:border-accent hover:text-accent"
                 >
-                  {r.city}, {r.state} — {r.loanType}
+                  {r.city}, {r.state}, {r.loanType}
                 </Link>
               ))}
             </div>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * Loads the HCMG mortgage calculator widget. Same dynamic-injection
- * approach as ZeitroPricingEmbed — the vendor loader looks for
+ * approach as ZeitroPricingEmbed, the vendor loader looks for
  * id="zeitrotag" and injects the iframe next to that script element.
  *
  * IMPORTANT: only one Zeitro-backed embed can render per page.

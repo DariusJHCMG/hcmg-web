@@ -5,16 +5,16 @@ import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { CareersGateway, CAREERS_PATHS } from "@/components/recruiting/CareersGateway";
 
 export const metadata: Metadata = {
-  title: "Careers at HCMG — Loan Officers, Branch Partners, Teams & HQ",
+  title: "Careers at HCMG, Loan Officers, Producing Managers, Teams & HQ",
   description:
-    "Build your mortgage career with Harris Capital Mortgage Group. Producing loan officers, branch partners, team migrations, and HQ corporate roles. 100+ lender partners. NMLS# 1918223.",
+    "Build your mortgage career with Harris Capital Mortgage Group. Loan officers, producing managers, full team moves, and HQ corporate roles. 100+ lender partners. NMLS# 1918223.",
   alternates: { canonical: "https://getorangekey.com/careers" },
   openGraph: {
     type: "website",
     url: "https://getorangekey.com/careers",
     title: "Careers at HCMG",
     description:
-      "Loan officers, branch partners, team migrations, and corporate roles. Pick your path into HCMG.",
+      "Loan officers, producing managers, full team moves, and corporate roles. Pick your path into HCMG.",
     images: ["/hcmg-social-square.svg"],
   },
 };
@@ -37,8 +37,8 @@ export default function CareersLandingPage() {
               Pick the path that <span className="ok-gradient-text">fits your business.</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-muted">
-              Harris Capital Mortgage Group hires across four tracks — producing loan officers, branch
-              partners, full team migrations, and corporate operators. Tell us which one you are and
+              Harris Capital Mortgage Group hires across four tracks, producing loan officers, branch
+              producing managers, full team moves, and corporate operators. Tell us which one you are and
               we&apos;ll route you to the right conversation.
             </p>
           </div>

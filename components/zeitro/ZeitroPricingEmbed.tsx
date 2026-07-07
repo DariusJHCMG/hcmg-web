@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
  * dynamically create the script element inside our own container so the
  * iframe lands exactly where we want it.
  *
- * IMPORTANT: only one of these embeds can render per page — the loader
+ * IMPORTANT: only one of these embeds can render per page, the loader
  * uses a fixed element id and multiple instances would collide.
  */
 const SCRIPT_SRC =
@@ -84,7 +84,7 @@ export default function ZeitroPricingEmbed() {
             <h4 className="text-base font-bold text-ink">Pricing engine is temporarily unavailable.</h4>
             <p className="mt-2 text-sm leading-6 text-muted">
               We couldn&apos;t load the live engine just now. Please refresh the page or try again in a
-              moment — if it keeps failing, our team is already on it.
+              moment, if it keeps failing, our team is already on it.
             </p>
           </div>
         </div>
