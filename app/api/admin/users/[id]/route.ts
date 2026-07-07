@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
-import { getCurrentProfile, isAdmin, logAudit } from "@/lib/auth";
+import { isAdmin, logAudit } from "@/lib/auth";
 import { z } from "zod";
+import type { Profile } from "@/lib/database.types";
+
+async function getCallerFromRequest(request: NextRequest): Promise<Profile | null> {
+  try {
+    const auth = request.headers.get("authorization") ?? "";
+    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+    if (!token) return null;
+    const sb = createServiceClient();
+    const { data: { user }, error } = await sb.auth.getUser(token);
+    if (error || !user) return null;
+    const { data } = await sb.from("profiles").select("*").eq("id", user.id).single();
+    return data as Profile | null;
+  } catch { return null; }
+}
 
 const PatchSchema = z.object({
   // Status / role
@@ -26,9 +40,12 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const caller = await getCurrentProfile();
-  if (!caller || !isAdmin(caller)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  const caller = await getCallerFromRequest(request);
+  if (!caller) {
+    return NextResponse.json({ error: "Not authenticated — please refresh and try again" }, { status: 401 });
+  }
+  if (!isAdmin(caller)) {
+    return NextResponse.json({ error: `Role '${caller.role}' cannot perform this action` }, { status: 403 });
   }
 
   const { id } = await params;

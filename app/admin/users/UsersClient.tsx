@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { createBrowserClient } from "@/lib/supabase-browser";
 import type { Profile, Role } from "@/lib/database.types";
+
+async function getToken(): Promise<string | null> {
+  const sb = createBrowserClient();
+  const { data: { session } } = await sb.auth.getSession();
+  return session?.access_token ?? null;
+}
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -65,6 +72,7 @@ function EditDrawer({ user, onClose, onSaved }: {
 
   async function save() {
     setSaving(true); setErr("");
+    const token = await getToken();
     const payload: Record<string, unknown> = {
       ...form,
       offices:         form.offices ? form.offices.split(",").map((s) => s.trim()).filter(Boolean) : [],
@@ -73,7 +81,7 @@ function EditDrawer({ user, onClose, onSaved }: {
     };
     const res  = await fetch(`/api/admin/users/${user.id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify(payload),
     });
     const json = await res.json();
@@ -176,9 +184,10 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
       ...form,
       offices: form.offices ? form.offices.split(",").map((s) => s.trim()).filter(Boolean) : [],
     };
+    const token = await getToken();
     const res  = await fetch("/api/admin/users", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify(payload),
     });
     const json = await res.json();
@@ -195,9 +204,10 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
 
   async function toggleActive(u: Profile) {
     const next = !u.is_active;
+    const token = await getToken();
     const res = await fetch(`/api/admin/users/${u.id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify({ is_active: next }),
     });
     if (!res.ok) {
