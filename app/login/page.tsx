@@ -31,10 +31,11 @@ function LoginForm() {
       if (authError) { setError(authError.message); setLoading(false); return; }
       if (!data.user)  { setError("Sign in failed. Please try again."); setLoading(false); return; }
 
-      const { data: profile } = await supabase
-        .from("profiles").select("role").eq("id", data.user.id).single();
+      // Use server API to get role — browser client can't read profiles due to RLS
+      const meRes = await fetch("/api/auth/me");
+      const me = meRes.ok ? await meRes.json() : {};
 
-      const dest = next || (profile?.role === "loan_officer" ? "/portal" : "/admin");
+      const dest = next || (me.role === "loan_officer" ? "/portal" : "/admin");
       // Hard redirect — forces full page reload so server middleware sees the session cookie
       window.location.href = dest;
     } catch {

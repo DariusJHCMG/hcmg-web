@@ -194,14 +194,14 @@ export async function POST(request: NextRequest) {
 
     const emailJobs = [
       resend.emails.send({
-        from: "HCMG <noreply@harriscapitalmortgage.com>",
+        from: "HCMG <noreply@hcmgloans.com>",
         to: lead.email,
         subject: lead.loName ? `Your HCMG estimate, routed to ${lead.loName}` : "Your HCMG estimate is ready",
         html: confirmationHtml(lead.firstName, lead.loName),
       }),
       resend.emails.send({
-        from: "HCMG Leads <noreply@harriscapitalmortgage.com>",
-        to: "info@hcmgloans.com",
+        from: "HCMG Leads <noreply@hcmgloans.com>",
+        to: "info@harriscapitalmortgage.com",
         subject: internalSubject,
         html: `<pre style="font-family:monospace;font-size:13px;">${JSON.stringify(lead, null, 2)}</pre>`,
       }),
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
     if (loNotifyEmail && lead.loName) {
       emailJobs.push(
         resend.emails.send({
-          from: "HCMG Leads <noreply@harriscapitalmortgage.com>",
+          from: "HCMG Leads <noreply@hcmgloans.com>",
           to: loNotifyEmail,
           subject: `New lead: ${fullName || lead.email}`,
           html: loNotificationHtml(lead, lead.loName),

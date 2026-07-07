@@ -17,6 +17,7 @@ export default async function TeamPage() {
   const team = await getTeam();
   const leaders = team.filter((p) => p.role !== "loan_officer");
   const los     = team.filter((p) => p.role === "loan_officer");
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
 
   return (
     <div className="space-y-6">
@@ -26,15 +27,15 @@ export default async function TeamPage() {
       </div>
 
       {/* Leadership */}
-      <Section title="Leadership & Admin" members={leaders} />
+      <Section title="Leadership & Admin" members={leaders} baseUrl={baseUrl} />
 
       {/* Loan Officers */}
-      <Section title="Loan Officers" members={los} />
+      <Section title="Loan Officers" members={los} baseUrl={baseUrl} />
     </div>
   );
 }
 
-function Section({ title, members }: { title: string; members: Profile[] }) {
+function Section({ title, members, baseUrl }: { title: string; members: Profile[]; baseUrl: string }) {
   if (members.length === 0) return null;
   return (
     <div>
@@ -69,7 +70,7 @@ function Section({ title, members }: { title: string; members: Profile[] }) {
                 <p>
                   Funnel:{" "}
                   <a
-                    href={`https://hcmg-web.vercel.app/go/${m.lo_slug}`}
+                    href={`${baseUrl}/go/${m.lo_slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-accent underline hover:opacity-80"
