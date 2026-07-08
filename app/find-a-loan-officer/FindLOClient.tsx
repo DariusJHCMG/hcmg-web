@@ -53,23 +53,11 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
 
   const filteredLOs = useMemo(() => {
     if (!selected) return [];
-    // Primary filter: licensed_states array contains the selected state abbreviation
-    const byLicensedStates = teamMembers.filter((m) =>
+    // Only show LOs who explicitly have this state in their licensed_states array
+    return teamMembers.filter((m) =>
       m.licensed_states && m.licensed_states.includes(selected)
     );
-    if (byLicensedStates.length > 0) return byLicensedStates;
-
-    // Fallback: filter by offices text match (for members without licensed_states set)
-    const stateName = stateNames[selected] ?? selected;
-    const byOffices = teamMembers.filter((m) => {
-      const r = m.role.toLowerCase();
-      const isLO = r.includes("loan officer") || r.includes("originator") || r.includes("chief lending") || r.includes("chief production");
-      if (!isLO) return false;
-      if (!m.offices || m.offices.length === 0) return false;
-      return m.offices.some((o) => o.includes(stateName.split(",")[0]) || o.includes(selected));
-    });
-    return byOffices;
-  }, [selected, teamMembers, stateNames]);
+  }, [selected, teamMembers]);
 
   const isPending  = selected ? pendingStates.includes(selected)  : false;
   const isLicensed = selected ? licensedStates.includes(selected) : false;
