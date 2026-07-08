@@ -11,7 +11,10 @@ import { teamMembers, getTeamMemberBySlug } from "@/data/team";
 export const revalidate = 86400;
 
 export function generateStaticParams() {
-  return teamMembers.map((m) => ({ slug: m.slug }));
+  // lamont-harris-jr has its own dedicated page at app/team/lamont-harris-jr/page.tsx
+  return teamMembers
+    .filter((m) => m.slug !== "lamont-harris-jr")
+    .map((m) => ({ slug: m.slug }));
 }
 
 export async function generateMetadata({
