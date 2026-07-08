@@ -1,7 +1,7 @@
 -- Co-branded LO + Realtor funnel pages
 create table if not exists co_branded_pages (
   id                uuid primary key default gen_random_uuid(),
-  lo_slug           text not null references profiles(lo_slug) on delete cascade,
+  lo_slug           text not null,
   realtor_slug      text not null,                    -- URL-safe, auto-generated
   realtor_name      text not null,
   realtor_company   text not null,

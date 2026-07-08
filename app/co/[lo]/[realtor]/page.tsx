@@ -41,22 +41,26 @@ export default async function CoBrandedPublicPage({ params }: Props) {
   const { lo: loSlug, realtor: realtorSlug } = await params;
   const sb = createServiceClient();
 
-  // Fetch both in parallel
-  const [{ data: pageData }, { data: profileData }] = await Promise.all([
-    sb.from("co_branded_pages").select("*").eq("lo_slug", loSlug).eq("realtor_slug", realtorSlug).maybeSingle(),
-    sb.from("profiles").select("*").eq("lo_slug", loSlug).eq("is_active", true).maybeSingle(),
-  ]);
+  // Fetch both in parallel — wrap in try/catch so a bad table name or missing
+  // column never produces an unhandled server crash
+  let pageData: Record<string, unknown> | null = null;
+  let profileData: Record<string, unknown> | null = null;
+  try {
+    const [pageRes, profileRes] = await Promise.all([
+      sb.from("co_branded_pages").select("*").eq("lo_slug", loSlug).eq("realtor_slug", realtorSlug).maybeSingle(),
+      sb.from("profiles").select("*").eq("lo_slug", loSlug).eq("is_active", true).maybeSingle(),
+    ]);
+    pageData    = pageRes.data;
+    profileData = profileRes.data;
+  } catch {
+    notFound();
+  }
 
   if (!pageData || !pageData.is_active) notFound();
   if (!profileData) notFound();
 
-  // Increment click counter (fire-and-forget)
-  void sb.from("co_branded_pages")
-    .update({ clicks: (pageData.clicks ?? 0) + 1 })
-    .eq("id", pageData.id);
-
-  const p = profileData as Profile;
-  const page = pageData as {
+  const p    = profileData as unknown as Profile;
+  const page = pageData as unknown as {
     id: string; lo_slug: string; realtor_slug: string;
     realtor_name: string; realtor_company: string;
     realtor_phone: string | null; realtor_email: string | null;
@@ -64,6 +68,11 @@ export default async function CoBrandedPublicPage({ params }: Props) {
     realtor_logo_url: string | null; headline: string | null;
     is_active: boolean; clicks: number;
   };
+
+  // Increment click counter (fire-and-forget)
+  void sb.from("co_branded_pages")
+    .update({ clicks: (page.clicks ?? 0) + 1 })
+    .eq("id", page.id);
 
   const loName      = p.full_name;
   const loRole      = p.title ?? "Loan Officer";
