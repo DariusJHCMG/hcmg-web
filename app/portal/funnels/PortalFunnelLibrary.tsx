@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { FUNNEL_FAMILIES, FUNNEL_CATALOG } from "@/lib/funnel-catalog";
 import type { FunnelFamily, FunnelFamilyDef } from "@/lib/funnel-catalog";
 
@@ -507,10 +508,17 @@ function FunnelCard({
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setPreview((v) => !v)}
-              className="flex-1 rounded-xl border border-line bg-white py-2 text-center text-[11px] font-semibold text-muted transition-all hover:border-accent/30 hover:text-accent"
+              className="rounded-xl border border-line bg-white px-3 py-2 text-[11px] font-semibold text-muted transition-all hover:border-accent/30 hover:text-accent"
             >
-              {preview ? "Hide preview" : "Preview hook ↓"}
+              {preview ? "Hide ↑" : "Preview ↓"}
             </button>
+            <Link
+              href={`/portal/funnels/${f.slug}`}
+              className="flex-1 rounded-xl border py-2 text-center text-[11px] font-bold transition-all hover:opacity-90"
+              style={{ borderColor: accent + "50", background: accent + "12", color: accent }}
+            >
+              Analytics →
+            </Link>
             <a
               href={url}
               target="_blank"
