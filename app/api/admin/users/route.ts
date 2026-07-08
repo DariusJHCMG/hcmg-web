@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { isAdmin, logAudit } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { Profile } from "@/lib/database.types";
 
@@ -142,15 +141,6 @@ export async function POST(request: NextRequest) {
   }
 
   await logAudit("user.created", { email, role, lo_slug, nmls }, caller.id, caller.email);
-
-  // ── 4. Revalidate public team pages immediately ───────────────
-  revalidatePath("/team", "page");
-  if (lo_slug) {
-    revalidatePath(`/team/${lo_slug}`, "page");
-    if (lo_slug === "lamont-harris-jr") {
-      revalidatePath("/team/lamont-harris-jr", "page");
-    }
-  }
 
   // Welcome email is NOT sent automatically — admin clicks "Send Invite" in the UI
   return NextResponse.json({ ok: true, id: uid, lo_slug });
