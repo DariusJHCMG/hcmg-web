@@ -212,7 +212,7 @@ export default async function TeamMemberPage({
 
           {/* Right — profile photo */}
           <div className="overflow-hidden rounded-3xl border border-line shadow-soft">
-            <TeamPhoto photo={photo} name={name} aspect="4 / 3" />
+            <TeamPhoto photo={photo} name={name} aspect="3 / 4" />
           </div>
 
         </div>
