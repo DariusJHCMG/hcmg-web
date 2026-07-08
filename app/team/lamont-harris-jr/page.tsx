@@ -13,7 +13,7 @@ import { FAQSection } from "@/components/team/FAQSection";
 import { formatCurrency } from "@/lib/calculators";
 import type { Profile } from "@/lib/database.types";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 // ── Default copy — used until the user saves their own ────────────
 const DEFAULT_HERO_BIO =

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { isAdmin, logAudit } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { Profile } from "@/lib/database.types";
 
@@ -100,24 +99,6 @@ export async function PATCH(
 
   if (updates.role) {
     logAudit("user.role_changed", { user_id: id, role: updates.role }, caller.id, caller.email);
-  }
-
-  // Revalidate public team pages so name/title/bio changes show immediately
-  revalidatePath("/team", "page");
-  const slugToRevalidate = updates.lo_slug ?? currentSlug;
-  if (slugToRevalidate) {
-    revalidatePath(`/team/${slugToRevalidate}`, "page");
-    // Lamont has a dedicated route — revalidate it too
-    if (slugToRevalidate === "lamont-harris-jr") {
-      revalidatePath("/team/lamont-harris-jr", "page");
-    }
-    // Also revalidate old slug if it changed
-    if (updates.lo_slug && currentSlug && updates.lo_slug !== currentSlug) {
-      revalidatePath(`/team/${currentSlug}`, "page");
-      if (currentSlug === "lamont-harris-jr") {
-        revalidatePath("/team/lamont-harris-jr", "page");
-      }
-    }
   }
 
   return NextResponse.json({ ok: true });

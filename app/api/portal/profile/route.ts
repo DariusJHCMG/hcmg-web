@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createServiceClient } from "@/lib/supabase";
-import { revalidatePath } from "next/cache";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -43,16 +42,6 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    // Revalidate public team pages immediately so changes show on the site
-    revalidatePath("/team", "page");
-    if (existing?.lo_slug) {
-      revalidatePath(`/team/${existing.lo_slug}`, "page");
-      // Lamont has a dedicated static route — revalidate it too
-      if (existing.lo_slug === "lamont-harris-jr") {
-        revalidatePath("/team/lamont-harris-jr", "page");
-      }
     }
 
     return NextResponse.json({ ok: true });
