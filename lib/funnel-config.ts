@@ -21,6 +21,21 @@ export interface StepOverride {
   ctaLabel?: string;
 }
 
+export interface EstimateContext {
+  /** Overrides the "Recommended loan path" value — e.g. "VA Loan · $0 down, no PMI" */
+  loanPath?: string;
+  /** Label for the first estimate card. Default: "Estimated buying power" */
+  powerLabel?: string;
+  /** Label for the second estimate card. Default: "Estimated monthly payment" */
+  paymentLabel?: string;
+  /** Sub-copy for the first estimate card */
+  powerSub?: string;
+  /** Sub-copy for the second estimate card */
+  paymentSub?: string;
+  /** Sub-copy for the loan path card */
+  loanPathSub?: string;
+}
+
 export interface FunnelConfig {
   /** Goal to pre-select (skips Step 1 if set) */
   goalPreset?: GoalPreset;
@@ -32,8 +47,8 @@ export interface FunnelConfig {
   submitLabel?: string;
   /** Label on the Step 5 "unlock" button */
   unlockLabel?: string;
-  /** Accent color key (matches FAMILY_ACCENT in FunnelFlow) */
-  accentFamily?: string;
+  /** Overrides for the Step 5 estimate reveal cards */
+  estimateContext?: EstimateContext;
 }
 
 // ─── Default (generic) ────────────────────────────────────────────────────────
@@ -66,6 +81,10 @@ const PURCHASE_VA: FunnelConfig = {
   },
   submitLabel: "Claim my VA rate →",
   unlockLabel: "Claim my VA benefit →",
+  estimateContext: {
+    loanPath: "VA Loan · $0 down, no PMI required",
+    loanPathSub: "You've earned this benefit — let's put it to work",
+  },
 };
 
 const PURCHASE_FHA: FunnelConfig = {
@@ -79,6 +98,10 @@ const PURCHASE_FHA: FunnelConfig = {
   },
   submitLabel: "See my FHA rate →",
   unlockLabel: "See my FHA options →",
+  estimateContext: {
+    loanPath: "FHA Loan · 3.5% down, flexible credit",
+    loanPathSub: "FHA is one of the most accessible programs in the country",
+  },
 };
 
 const PURCHASE_DPA: FunnelConfig = {
@@ -117,6 +140,10 @@ const VA_BASE: FunnelConfig = {
   },
   submitLabel: "Claim my VA benefit →",
   unlockLabel: "Claim my VA benefit →",
+  estimateContext: {
+    loanPath: "VA Loan · $0 down, no PMI required",
+    loanPathSub: "You've earned this benefit — let's put it to work",
+  },
 };
 
 const VA_IRRRL: FunnelConfig = {
@@ -129,6 +156,14 @@ const VA_IRRRL: FunnelConfig = {
   },
   submitLabel: "See my IRRRL rate →",
   unlockLabel: "See my IRRRL savings →",
+  estimateContext: {
+    powerLabel: "Estimated new loan amount",
+    powerSub: "Based on your current balance",
+    paymentLabel: "Estimated new monthly payment",
+    paymentSub: "IRRRL typically reduces your payment",
+    loanPath: "VA IRRRL · Streamline refinance",
+    loanPathSub: "Minimal paperwork, often no appraisal required",
+  },
 };
 
 const VA_CASHOUT: FunnelConfig = {
@@ -142,6 +177,14 @@ const VA_CASHOUT: FunnelConfig = {
   },
   submitLabel: "See my VA equity options →",
   unlockLabel: "See my VA cash-out options →",
+  estimateContext: {
+    powerLabel: "Estimated equity available",
+    powerSub: "VA cash-out allows up to 100% of your home's value",
+    paymentLabel: "Estimated new monthly payment",
+    paymentSub: "Based on your home value and credit",
+    loanPath: "VA Cash-Out Refinance",
+    loanPathSub: "Access your equity while keeping your VA benefit",
+  },
 };
 
 // ─── FHA family ───────────────────────────────────────────────────────────────
@@ -156,6 +199,14 @@ const FHA_STREAMLINE: FunnelConfig = {
   },
   submitLabel: "Get my Streamline rate →",
   unlockLabel: "See my Streamline savings →",
+  estimateContext: {
+    powerLabel: "Estimated new loan amount",
+    powerSub: "Based on your current FHA loan balance",
+    paymentLabel: "Estimated new monthly payment",
+    paymentSub: "Streamline typically lowers your payment",
+    loanPath: "FHA Streamline Refinance",
+    loanPathSub: "Faster, simpler, lower — with less documentation",
+  },
 };
 
 const FHA_CASHOUT: FunnelConfig = {
@@ -169,6 +220,14 @@ const FHA_CASHOUT: FunnelConfig = {
   },
   submitLabel: "See my FHA equity options →",
   unlockLabel: "See my FHA cash-out options →",
+  estimateContext: {
+    powerLabel: "Estimated equity available",
+    powerSub: "FHA cash-out allows up to 80% of your home's value",
+    paymentLabel: "Estimated new monthly payment",
+    paymentSub: "Based on your home value, credit, and income",
+    loanPath: "FHA Cash-Out Refinance",
+    loanPathSub: "Tap your equity and potentially consolidate debt",
+  },
 };
 
 // ─── Refinance family ──────────────────────────────────────────────────────────
@@ -183,6 +242,14 @@ const REFI_BASE: FunnelConfig = {
   },
   submitLabel: "Get my refi rate →",
   unlockLabel: "See my refi savings →",
+  estimateContext: {
+    powerLabel: "Estimated new loan amount",
+    powerSub: "Based on your home value and equity",
+    paymentLabel: "Estimated new monthly payment",
+    paymentSub: "Est. includes taxes and insurance",
+    loanPath: "Refinance · Rate & term",
+    loanPathSub: "Based on your credit range",
+  },
 };
 
 const CASH_OUT: FunnelConfig = {
@@ -196,6 +263,14 @@ const CASH_OUT: FunnelConfig = {
   },
   submitLabel: "See my equity options →",
   unlockLabel: "See my cash-out options →",
+  estimateContext: {
+    powerLabel: "Estimated equity available",
+    powerSub: "Based on your home value (up to ~80% LTV)",
+    paymentLabel: "Estimated new monthly payment",
+    paymentSub: "After accessing your equity",
+    loanPath: "Cash-Out Refinance",
+    loanPathSub: "Based on your credit range",
+  },
 };
 
 const HELOC: FunnelConfig = {
@@ -208,6 +283,14 @@ const HELOC: FunnelConfig = {
   },
   submitLabel: "Explore my HELOC →",
   unlockLabel: "See my HELOC options →",
+  estimateContext: {
+    powerLabel: "Estimated available equity",
+    powerSub: "Typical HELOC limit is 80–90% of your home value",
+    paymentLabel: "Estimated monthly draw payment",
+    paymentSub: "Interest-only draws during the draw period",
+    loanPath: "HELOC · Flexible line of credit",
+    loanPathSub: "Use what you need, when you need it",
+  },
 };
 
 // ─── First-Time Buyer family ───────────────────────────────────────────────────
@@ -261,6 +344,14 @@ const DSCR: FunnelConfig = {
   },
   submitLabel: "Get my DSCR quote →",
   unlockLabel: "See my DSCR options →",
+  estimateContext: {
+    powerLabel: "Estimated purchase price range",
+    powerSub: "Based on typical DSCR loan sizing",
+    paymentLabel: "Estimated monthly mortgage payment",
+    paymentSub: "Does not include rental income offset",
+    loanPath: "DSCR Loan · Qualifies on rental income",
+    loanPathSub: "No personal income or W-2s required",
+  },
 };
 
 const DSCR_REFI: FunnelConfig = {
@@ -273,6 +364,14 @@ const DSCR_REFI: FunnelConfig = {
   },
   submitLabel: "Get my DSCR refi quote →",
   unlockLabel: "See my DSCR refi options →",
+  estimateContext: {
+    powerLabel: "Estimated rental equity available",
+    powerSub: "Based on your property value",
+    paymentLabel: "Estimated new monthly mortgage",
+    paymentSub: "Based on property value and credit",
+    loanPath: "DSCR Refinance · Rental income qualifies",
+    loanPathSub: "Lower your rate without W-2s or tax returns",
+  },
 };
 
 const BANK_STMT: FunnelConfig = {
@@ -285,6 +384,10 @@ const BANK_STMT: FunnelConfig = {
   },
   submitLabel: "Get my bank-statement quote →",
   unlockLabel: "See my bank-statement options →",
+  estimateContext: {
+    loanPath: "Bank Statement Loan · Non-QM",
+    loanPathSub: "Your deposits are your income documentation",
+  },
 };
 
 const INVESTOR_BASE: FunnelConfig = {
@@ -297,6 +400,10 @@ const INVESTOR_BASE: FunnelConfig = {
   },
   submitLabel: "Get my investor quote →",
   unlockLabel: "See my investor loan options →",
+  estimateContext: {
+    loanPath: "Investor Loan · Conventional or Non-QM",
+    loanPathSub: "Based on your credit range and property type",
+  },
 };
 
 // ─── Credit & Nurture family ───────────────────────────────────────────────────
@@ -310,6 +417,14 @@ const CREDIT_BASE: FunnelConfig = {
   },
   submitLabel: "Send me my roadmap →",
   unlockLabel: "Get my mortgage roadmap →",
+  estimateContext: {
+    powerLabel: "Estimated buying power range",
+    powerSub: "Preliminary estimate — will improve as your credit grows",
+    paymentLabel: "Estimated future monthly payment",
+    paymentSub: "Based on typical qualifying guidelines",
+    loanPath: "Path determined by credit profile",
+    loanPathSub: "We'll map the right program once we connect",
+  },
 };
 
 const FREE_CONSULT: FunnelConfig = {
@@ -344,6 +459,14 @@ const REFI_CALC: FunnelConfig = {
   },
   submitLabel: "Get my refi savings estimate →",
   unlockLabel: "See my refi savings →",
+  estimateContext: {
+    powerLabel: "Estimated new loan amount",
+    powerSub: "Based on your current balance",
+    paymentLabel: "Estimated new monthly payment",
+    paymentSub: "Est. includes taxes and insurance",
+    loanPath: "Refinance · Rate & term",
+    loanPathSub: "Based on your credit range",
+  },
 };
 
 // ─── Master config map ─────────────────────────────────────────────────────────
