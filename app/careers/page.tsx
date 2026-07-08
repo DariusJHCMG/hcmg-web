@@ -8,10 +8,10 @@ export const metadata: Metadata = {
   title: "Careers at HCMG, Loan Officers, Producing Managers, Teams & HQ",
   description:
     "Build your mortgage career with Harris Capital Mortgage Group. Loan officers, producing managers, full team moves, and HQ corporate roles. 100+ lender partners. NMLS# 1918223.",
-  alternates: { canonical: "https://getorangekey.com/careers" },
+  alternates: { canonical: "https://hcmgloans.com/careers" },
   openGraph: {
     type: "website",
-    url: "https://getorangekey.com/careers",
+    url: "https://hcmgloans.com/careers",
     title: "Careers at HCMG",
     description:
       "Loan officers, producing managers, full team moves, and corporate roles. Pick your path into HCMG.",

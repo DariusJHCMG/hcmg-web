@@ -23,11 +23,11 @@ export async function generateMetadata({
   return {
     title: `${term.term}, Mortgage Term Definition | HCMG`,
     description: term.shortDef,
-    alternates: { canonical: `https://getorangekey.com/glossary/${slug}` },
+    alternates: { canonical: `https://hcmgloans.com/glossary/${slug}` },
     openGraph: {
       title: `${term.term}, Defined`,
       description: term.shortDef,
-      url: `https://getorangekey.com/glossary/${slug}`,
+      url: `https://hcmgloans.com/glossary/${slug}`,
       images: ["/hcmg-social-square.svg"],
     },
   };
@@ -49,11 +49,11 @@ export default async function GlossaryTermPage({
     "@type": "DefinedTerm",
     name: term.term,
     description: term.shortDef,
-    url: `https://getorangekey.com/glossary/${slug}`,
+    url: `https://hcmgloans.com/glossary/${slug}`,
     inDefinedTermSet: {
       "@type": "DefinedTermSet",
       name: "HCMG Mortgage Glossary",
-      url: "https://getorangekey.com/glossary",
+      url: "https://hcmgloans.com/glossary",
     },
   };
 
@@ -61,13 +61,13 @@ export default async function GlossaryTermPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://getorangekey.com" },
-      { "@type": "ListItem", position: 2, name: "Glossary", item: "https://getorangekey.com/glossary" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://hcmgloans.com" },
+      { "@type": "ListItem", position: 2, name: "Glossary", item: "https://hcmgloans.com/glossary" },
       {
         "@type": "ListItem",
         position: 3,
         name: term.term,
-        item: `https://getorangekey.com/glossary/${slug}`,
+        item: `https://hcmgloans.com/glossary/${slug}`,
       },
     ],
   };

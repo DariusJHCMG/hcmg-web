@@ -5,7 +5,7 @@ import { Footer } from "@/components/ui/Footer";
 export const metadata: Metadata = {
   title: "SMS Terms, HCMG",
   description: "SMS Terms and Conditions for Harris Capital Mortgage Group, LLC. NMLS# 1918223.",
-  alternates: { canonical: "https://getorangekey.com/sms-policy" },
+  alternates: { canonical: "https://hcmgloans.com/sms-policy" },
 };
 
 function H2({ children }: { children: React.ReactNode }) {
@@ -55,22 +55,22 @@ export default function SmsPolicy() {
           </P>
           <P>You may also opt out by:</P>
           <ul className="mb-4 list-disc pl-6 text-sm leading-7 text-muted">
-            <li>Emailing sms@getorangekey.com with STOP in the subject line</li>
+            <li>Emailing sms@hcmgloans.com with STOP in the subject line</li>
             <li>Calling 888-441-3930</li>
-            <li>Updating your preferences at getorangekey.com</li>
+            <li>Updating your preferences at hcmgloans.com</li>
           </ul>
 
           <H2>How to Get Help</H2>
           <P>
             Reply <strong>HELP</strong> to any message or contact us at:<br />
-            Email: sms@getorangekey.com<br />
+            Email: sms@hcmgloans.com<br />
             Phone: 888-441-3930
           </P>
 
           <H2>Data Use and Privacy</H2>
           <P>
             Your phone number will never be sold or shared with third parties for their marketing purposes. See our{" "}
-            <a href="/privacy" className="text-accent underline">Privacy Policy</a> at getorangekey.com/privacy.
+            <a href="/privacy" className="text-accent underline">Privacy Policy</a> at hcmgloans.com/privacy.
           </P>
 
           <H2>Supported Carriers</H2>

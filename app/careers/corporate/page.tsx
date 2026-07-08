@@ -9,10 +9,10 @@ export const metadata: Metadata = {
   title: "HCMG HQ Careers, Operations, Marketing, Technology, Compliance",
   description:
     "Join HCMG's corporate team. Operations, marketing, technology, compliance, high-leverage roles powering the platform that supports loan officers nationwide. NMLS# 1918223.",
-  alternates: { canonical: "https://getorangekey.com/careers/corporate" },
+  alternates: { canonical: "https://hcmgloans.com/careers/corporate" },
   openGraph: {
     type: "website",
-    url: "https://getorangekey.com/careers/corporate",
+    url: "https://hcmgloans.com/careers/corporate",
     title: "HCMG HQ Careers",
     description:
       "Operations, marketing, technology, compliance, build the engine behind HCMG.",

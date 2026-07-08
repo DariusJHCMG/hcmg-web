@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Get Your Mortgage Estimate, HCMG",
   description:
     "See what you can afford in 60 seconds. No hard credit check. FHA, VA, Conventional, and Refinance options. Harris Capital Mortgage Group · NMLS# 1918223.",
-  alternates: { canonical: "https://getorangekey.com/get-started" },
+  alternates: { canonical: "https://hcmgloans.com/get-started" },
   robots: { index: true, follow: true },
 };
 

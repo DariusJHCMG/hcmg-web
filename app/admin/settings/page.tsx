@@ -190,7 +190,7 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   className={IC}
-                  placeholder="https://getorangekey.com"
+                  placeholder="https://hcmgloans.com"
                   value={form.gsc_property}
                   onChange={(e) => setForm((p) => ({ ...p, gsc_property: e.target.value }))}
                 />

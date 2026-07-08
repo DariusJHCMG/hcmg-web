@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import Link from "next/link";
 import { OrangeKeyLogo } from "@/components/ui/OrangeKeyLogo";
-import { PwaInstallBanner } from "@/components/portal/PwaInstallBanner";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -68,6 +67,10 @@ export default async function PortalLayout({ children }: { children: React.React
                 className="rounded-lg px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-sand hover:text-ink">
                 My Profile
               </Link>
+              <Link href="/portal/mobile-app"
+                className="rounded-lg px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-sand hover:text-ink">
+                Mobile App
+              </Link>
             </nav>
           </div>
 
@@ -106,8 +109,6 @@ export default async function PortalLayout({ children }: { children: React.React
       <main className="container-shell max-w-5xl py-8">
         {children}
       </main>
-
-      <PwaInstallBanner />
     </div>
   );
 }

@@ -58,7 +58,7 @@ BEGIN
     VALUES (
       acc->>'lo_slug',
       acc->>'full_name',
-      'https://getorangekey.com/go/' || (acc->>'lo_slug'),
+      'https://hcmgloans.com/go/' || (acc->>'lo_slug'),
       true
     )
     ON CONFLICT (lo_slug) DO NOTHING;

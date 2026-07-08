@@ -48,12 +48,12 @@ export const metadata: Metadata = {
   title: "Lamont Harris Jr., Founder & CEO | Harris Capital Mortgage Group",
   description:
     "Lamont Harris Jr. is the Founder and CEO of Harris Capital Mortgage Group. Over 15 years of mortgage industry experience. Get a free estimate, no hard credit check.",
-  alternates: { canonical: "https://getorangekey.com/team/lamont-harris-jr" },
+  alternates: { canonical: "https://hcmgloans.com/team/lamont-harris-jr" },
   openGraph: {
     title: "Lamont Harris Jr. — HCMG Founder & CEO",
     description:
       "Work directly with Lamont Harris Jr. on your home purchase or refinance. No call center, no rotation — your file routed directly to Lamont.",
-    url: "https://getorangekey.com/team/lamont-harris-jr",
+    url: "https://hcmgloans.com/team/lamont-harris-jr",
     images: ["/team/placeholder.svg"],
   },
 };
@@ -111,12 +111,12 @@ export default async function LamontPage() {
     "@type": "Person",
     name,
     jobTitle: role,
-    url: "https://getorangekey.com/team/lamont-harris-jr",
-    image: `https://getorangekey.com${photo}`,
+    url: "https://hcmgloans.com/team/lamont-harris-jr",
+    image: `https://hcmgloans.com${photo}`,
     worksFor: {
       "@type": "Organization",
       name: "Harris Capital Mortgage Group, LLC",
-      url: "https://getorangekey.com",
+      url: "https://hcmgloans.com",
     },
     ...(email    ? { email }     : {}),
     ...(phone    ? { telephone: phone } : {}),

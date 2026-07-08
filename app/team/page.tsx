@@ -26,12 +26,12 @@ export const metadata: Metadata = {
   title: "Meet the HCMG Team, Loan Officers, Processors & Leadership | Harris Capital Mortgage Group",
   description:
     "The people behind HCMG. Licensed loan officers, processors, and operations leaders who walk every client from pre-approval to closing. NMLS# 1918223.",
-  alternates: { canonical: "https://getorangekey.com/team" },
+  alternates: { canonical: "https://hcmgloans.com/team" },
   openGraph: {
     title: "Meet the HCMG Team",
     description:
       "Licensed loan officers, processors, and leadership at Harris Capital Mortgage Group. NMLS# 1918223.",
-    url: "https://getorangekey.com/team",
+    url: "https://hcmgloans.com/team",
     images: ["/hcmg-social-square.svg"],
   },
 };
@@ -101,13 +101,13 @@ export default async function TeamPage() {
     "@type": "Organization",
     name: "Harris Capital Mortgage Group, LLC",
     alternateName: "HCMG",
-    url: "https://getorangekey.com",
+    url: "https://hcmgloans.com",
     employee: allMembers.map((m) => ({
       "@type": "Person",
       name: m.name,
       jobTitle: m.role,
-      url: `https://getorangekey.com/team/${m.slug}`,
-      image: `https://getorangekey.com${m.photo}`,
+      url: `https://hcmgloans.com/team/${m.slug}`,
+      image: `https://hcmgloans.com${m.photo}`,
       ...(m.nmls ? { identifier: { "@type": "PropertyValue", propertyID: "NMLS", value: m.nmls } } : {}),
     })),
   };

@@ -36,7 +36,7 @@ BEGIN
     VALUES (
       new.raw_user_meta_data->>'lo_slug',
       COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
-      'https://getorangekey.com/go/' || (new.raw_user_meta_data->>'lo_slug'),
+      'https://hcmgloans.com/go/' || (new.raw_user_meta_data->>'lo_slug'),
       true
     )
     ON CONFLICT (lo_slug) DO NOTHING;

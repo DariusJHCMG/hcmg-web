@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "About HCMG · Harris Capital Mortgage Group",
   description:
     "Learn about Harris Capital Mortgage Group — a multi-state mortgage lender dedicated to helping families achieve homeownership with transparency and speed. NMLS# 1918223.",
-  alternates: { canonical: "https://getorangekey.com/about" },
+  alternates: { canonical: "https://hcmgloans.com/about" },
 };
 
 const VALUES = [

@@ -11,10 +11,10 @@ export const metadata: Metadata = {
   title: "Join HCMG, Loan Officer Careers at Harris Capital Mortgage Group",
   description:
     "Grow your mortgage business with HCMG. 100+ lender partners, 275 BPS lender-paid compensation, HCMGU on-demand training, and a revenue-share platform built for producing loan officers and mortgage brokers.",
-  alternates: { canonical: "https://getorangekey.com/join" },
+  alternates: { canonical: "https://hcmgloans.com/join" },
   openGraph: {
     type: "website",
-    url: "https://getorangekey.com/join",
+    url: "https://hcmgloans.com/join",
     siteName: "HCMG, Harris Capital Mortgage Group",
     title: "Join HCMG, Loan Officer Careers",
     description:
@@ -51,7 +51,7 @@ const hiringSchema = {
   hiringOrganization: {
     "@type": "Organization",
     name: "Harris Capital Mortgage Group, LLC",
-    sameAs: "https://getorangekey.com",
+    sameAs: "https://hcmgloans.com",
   },
   jobLocation: {
     "@type": "Place",

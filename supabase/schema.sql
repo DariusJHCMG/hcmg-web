@@ -93,7 +93,7 @@ create table public.funnel_links (
   id          uuid primary key default uuid_generate_v4(),
   lo_slug     text not null unique,
   lo_name     text not null,
-  url         text not null,           -- full URL e.g. https://getorangekey.com/go/lamont-harris-jr
+  url         text not null,           -- full URL e.g. https://hcmgloans.com/go/lamont-harris-jr
   clicks      integer not null default 0,
   is_active   boolean not null default true,
   created_at  timestamptz not null default now()

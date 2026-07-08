@@ -20,10 +20,10 @@ export const metadata: Metadata = {
   },
   description:
     "Fast, simple mortgage estimates. No hard credit check. FHA, VA, Conventional, and Refinance. Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender.",
-  metadataBase: new URL("https://getorangekey.com"),
+  metadataBase: new URL("https://hcmgloans.com"),
   openGraph: {
     type: "website",
-    url: "https://getorangekey.com",
+    url: "https://hcmgloans.com",
     siteName: "HCMG, Harris Capital Mortgage Group",
     title: "HCMG, Find Out What You Can Afford in 60 Seconds",
     description:
@@ -58,7 +58,7 @@ const schemaOrg = {
   alternateName: "HCMG",
   description:
     "Fast mortgage estimates for home buyers across FL, TX, GA, NV, CO, VA, DC, and MD. Harris Capital Mortgage Group, LLC · NMLS# 1918223.",
-  url: "https://getorangekey.com",
+  url: "https://hcmgloans.com",
   telephone: "+18884413930",
   faxNumber: "+14048824100",
   email: "info@harriscapitalmortgage.com",

@@ -9,10 +9,10 @@ export const metadata: Metadata = {
   title: "Become an HCMG Branch Partner, Open Your Own Branch with HCMG Behind You",
   description:
     "Open and lead your own HCMG branch. Recruit your team, share in their production, keep your independence, with HCMG's pricing, processing, and operations supporting every loan.",
-  alternates: { canonical: "https://getorangekey.com/careers/branch-partner" },
+  alternates: { canonical: "https://hcmgloans.com/careers/branch-partner" },
   openGraph: {
     type: "website",
-    url: "https://getorangekey.com/careers/branch-partner",
+    url: "https://hcmgloans.com/careers/branch-partner",
     title: "Become an HCMG Branch Partner",
     description:
       "Open your own HCMG branch with infrastructure built for scale. Override on every loan your team closes.",

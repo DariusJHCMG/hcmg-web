@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Find a Loan Officer | Harris Capital Mortgage Group",
   description:
     "Browse HCMG licensed loan officers by state. Get matched with a licensed mortgage professional in your area. NMLS# 1918223.",
-  alternates: { canonical: "https://getorangekey.com/find-a-loan-officer" },
+  alternates: { canonical: "https://hcmgloans.com/find-a-loan-officer" },
 };
 
 const LICENSED_STATES = ["FL","TX","GA","NV","CO","VA","DC","MD","CA","MS"];

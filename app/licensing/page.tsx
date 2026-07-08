@@ -5,7 +5,7 @@ import { Footer } from "@/components/ui/Footer";
 export const metadata: Metadata = {
   title: "Licensing & Disclosures, HCMG · NMLS# 1918223",
   description: "State licensing information for Harris Capital Mortgage Group, LLC. NMLS# 1918223. Equal Housing Lender.",
-  alternates: { canonical: "https://getorangekey.com/licensing" },
+  alternates: { canonical: "https://hcmgloans.com/licensing" },
 };
 
 const licenses = [

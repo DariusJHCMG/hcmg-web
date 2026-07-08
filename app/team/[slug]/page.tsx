@@ -68,11 +68,11 @@ export async function generateMetadata({
   return {
     title,
     description: bio,
-    alternates: { canonical: `https://getorangekey.com/team/${slug}` },
+    alternates: { canonical: `https://hcmgloans.com/team/${slug}` },
     openGraph: {
       title: `${name}, ${role}`,
       description: bio ?? undefined,
-      url: `https://getorangekey.com/team/${slug}`,
+      url: `https://hcmgloans.com/team/${slug}`,
       images: [photo],
     },
   };
@@ -133,13 +133,13 @@ export default async function TeamMemberPage({
     "@type": "Person",
     name,
     jobTitle: role,
-    url: `https://getorangekey.com/team/${slug}`,
-    image: `https://getorangekey.com${photo}`,
+    url: `https://hcmgloans.com/team/${slug}`,
+    image: `https://hcmgloans.com${photo}`,
     worksFor: {
       "@type": "Organization",
       name: "Harris Capital Mortgage Group, LLC",
       alternateName: "HCMG",
-      url: "https://getorangekey.com",
+      url: "https://hcmgloans.com",
     },
     ...(email    ? { email }               : {}),
     ...(phone    ? { telephone: phone }    : {}),
@@ -151,9 +151,9 @@ export default async function TeamMemberPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://getorangekey.com" },
-      { "@type": "ListItem", position: 2, name: "Team", item: "https://getorangekey.com/team" },
-      { "@type": "ListItem", position: 3, name: name,   item: `https://getorangekey.com/team/${slug}` },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://hcmgloans.com" },
+      { "@type": "ListItem", position: 2, name: "Team", item: "https://hcmgloans.com/team" },
+      { "@type": "ListItem", position: 3, name: name,   item: `https://hcmgloans.com/team/${slug}` },
     ],
   };
 

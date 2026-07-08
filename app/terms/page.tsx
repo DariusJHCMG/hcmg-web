@@ -5,7 +5,7 @@ import { Footer } from "@/components/ui/Footer";
 export const metadata: Metadata = {
   title: "Terms of Service, HCMG",
   description: "Terms of Service for Harris Capital Mortgage Group, LLC. NMLS# 1918223.",
-  alternates: { canonical: "https://getorangekey.com/terms" },
+  alternates: { canonical: "https://hcmgloans.com/terms" },
 };
 
 function H2({ children }: { children: React.ReactNode }) {
@@ -25,7 +25,7 @@ export default function TermsPage() {
           <p className="mb-8 text-sm text-muted">Effective date: January 1, 2026</p>
 
           <H2>1. Acceptance of Terms</H2>
-          <P>By accessing or using getorangekey.com, you agree to be bound by these Terms of Service. If you do not agree, please do not use this website.</P>
+          <P>By accessing or using hcmgloans.com, you agree to be bound by these Terms of Service. If you do not agree, please do not use this website.</P>
 
           <H2>2. Description of Service</H2>
           <P>Harris Capital Mortgage Group, LLC (NMLS# 1918223) (&ldquo;HCMG,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) provides informational mortgage estimates and lead generation services through this website. All lending decisions are made by HCMG through a formal application process.</P>

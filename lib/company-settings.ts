@@ -8,7 +8,7 @@ export interface CompanySettings {
   contact_notify_email:    string;  // alert for /contact form submissions
   recruiting_notify_email: string;  // alert for /join and /careers recruiting leads
   ga4_measurement_id:      string;  // e.g. "G-XXXXXXXXXX"
-  gsc_property:            string;  // e.g. "https://getorangekey.com"
+  gsc_property:            string;  // e.g. "https://hcmgloans.com"
 }
 
 export const DEFAULT_SETTINGS: CompanySettings = {

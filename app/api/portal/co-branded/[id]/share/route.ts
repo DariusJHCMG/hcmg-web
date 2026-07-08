@@ -32,7 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const pageUrl = `${SITE}/co/${profile.lo_slug}/${page.realtor_slug}`;
 
     await resend.emails.send({
-      from: "HCMG <no-reply@getorangekey.com>",
+      from: "HCMG <no-reply@hcmgloans.com>",
       to: page.realtor_email,
       subject: `${profile.full_name} created a co-branded page just for you`,
       html: `

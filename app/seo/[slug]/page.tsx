@@ -21,11 +21,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${page.loanType} in ${page.city}, ${page.state} | HCMG · NMLS# 1918223`,
     description: `Explore ${page.loanType.toLowerCase()} options for home buyers in ${page.city}, ${page.state}. Estimate your monthly payment. Harris Capital Mortgage Group · NMLS# 1918223 · Equal Housing Lender.`,
-    alternates: { canonical: `https://getorangekey.com/seo/${slug}` },
+    alternates: { canonical: `https://hcmgloans.com/seo/${slug}` },
     openGraph: {
       title: `${page.loanType} in ${page.city}, ${page.state} | HCMG`,
       description: page.description,
-      url: `https://getorangekey.com/seo/${slug}`,
+      url: `https://hcmgloans.com/seo/${slug}`,
       images: ["/hcmg-social-square.svg"],
     },
   };
@@ -48,7 +48,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
     "@type": "WebPage",
     name: `${page.loanType} in ${page.city}, ${page.state}`,
     description: page.description,
-    url: `https://getorangekey.com/seo/${slug}`,
+    url: `https://hcmgloans.com/seo/${slug}`,
     provider: {
       "@type": "MortgageLender",
       name: "Harris Capital Mortgage Group, LLC",

@@ -8,11 +8,11 @@ import { getGlossaryByLetter, glossaryTerms } from "@/data/glossary";
 export const metadata: Metadata = {
   title: "Mortgage Glossary, Plain-English Definitions of Home Loan Terms | HCMG",
   description: `Browse ${glossaryTerms.length}+ mortgage terms explained in plain English by Harris Capital Mortgage Group. Understand ARMs, APR, escrow, PITI, jumbo loans, and every other term you'll encounter when financing a home.`,
-  alternates: { canonical: "https://getorangekey.com/glossary" },
+  alternates: { canonical: "https://hcmgloans.com/glossary" },
   openGraph: {
     title: "Mortgage Glossary | HCMG",
     description: `${glossaryTerms.length}+ home loan terms defined in plain English. The complete reference for buyers, refinancers, and curious homeowners.`,
-    url: "https://getorangekey.com/glossary",
+    url: "https://hcmgloans.com/glossary",
     images: ["/hcmg-social-square.svg"],
   },
 };
@@ -22,13 +22,13 @@ const glossarySchema = {
   "@type": "DefinedTermSet",
   name: "HCMG Mortgage Glossary",
   description: `A comprehensive plain-English glossary of mortgage terms, definitions, and concepts maintained by Harris Capital Mortgage Group.`,
-  url: "https://getorangekey.com/glossary",
+  url: "https://hcmgloans.com/glossary",
   hasDefinedTerm: glossaryTerms.map((t) => ({
     "@type": "DefinedTerm",
     name: t.term,
     description: t.shortDef,
-    url: `https://getorangekey.com/glossary/${t.slug}`,
-    inDefinedTermSet: "https://getorangekey.com/glossary",
+    url: `https://hcmgloans.com/glossary/${t.slug}`,
+    inDefinedTermSet: "https://hcmgloans.com/glossary",
   })),
 };
 

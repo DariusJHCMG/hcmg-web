@@ -3,7 +3,7 @@ import { seoPages } from "@/data/seo-pages";
 import { glossaryTerms } from "@/data/glossary";
 import { teamMembers } from "@/data/team";
 
-const BASE = "https://getorangekey.com";
+const BASE = "https://hcmgloans.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes: MetadataRoute.Sitemap = [

@@ -5,7 +5,7 @@ import { Footer } from "@/components/ui/Footer";
 export const metadata: Metadata = {
   title: "Privacy Policy, HCMG · NMLS# 1918223",
   description: "Privacy Policy for Harris Capital Mortgage Group, LLC. How we collect, use, and protect your information.",
-  alternates: { canonical: "https://getorangekey.com/privacy" },
+  alternates: { canonical: "https://hcmgloans.com/privacy" },
 };
 
 function H2({ children }: { children: React.ReactNode }) {
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
           <p className="mb-8 text-sm text-muted">Effective date: January 1, 2026 · Last updated: January 1, 2026</p>
 
           <H2>1. Introduction</H2>
-          <P>Harris Capital Mortgage Group, LLC (NMLS# 1918223) (&ldquo;HCMG,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) operates getorangekey.com. This Privacy Policy explains how we collect, use, share, and protect your information when you use our website and services.</P>
+          <P>Harris Capital Mortgage Group, LLC (NMLS# 1918223) (&ldquo;HCMG,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) operates hcmgloans.com. This Privacy Policy explains how we collect, use, share, and protect your information when you use our website and services.</P>
 
           <H2>2. Information We Collect</H2>
           <P>We may collect the following categories of information:</P>
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
           <P>Loan-related data is retained for 7 years per GLBA requirements. Marketing and inquiry data is retained until you opt out or request deletion.</P>
 
           <H2>7. Your Rights</H2>
-          <P>You may request access to, correction of, or deletion of your personal information by contacting us at privacy@getorangekey.com. We will respond within 30 days.</P>
+          <P>You may request access to, correction of, or deletion of your personal information by contacting us at privacy@hcmgloans.com. We will respond within 30 days.</P>
 
           <H2>8. GLBA Notice</H2>
           <P>As a mortgage company, we are subject to the Gramm-Leach-Bliley Act. We maintain physical, electronic, and procedural safeguards to protect your nonpublic personal information (NPI).</P>

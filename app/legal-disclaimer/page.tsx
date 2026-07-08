@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Legal Disclaimer · Harris Capital Mortgage Group",
   description:
     "Legal disclaimer for Harris Capital Mortgage Group, LLC. Terms governing the use of information on this website.",
-  alternates: { canonical: "https://getorangekey.com/legal-disclaimer" },
+  alternates: { canonical: "https://hcmgloans.com/legal-disclaimer" },
 };
 
 function H2({ children }: { children: React.ReactNode }) {

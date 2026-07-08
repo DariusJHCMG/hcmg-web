@@ -104,7 +104,7 @@ export function CoBrandedDetail({ page, leads, loSlug, backHref }: Props) {
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">("");
   const [search,       setSearch]       = useState("");
 
-  const SITE = typeof window !== "undefined" ? window.location.origin : "https://getorangekey.com";
+  const SITE = typeof window !== "undefined" ? window.location.origin : "https://hcmgloans.com";
   const pageUrl = `${SITE}/co/${loSlug}/${page.realtor_slug}`;
 
   // ── Stats ──────────────────────────────────────────────────────
