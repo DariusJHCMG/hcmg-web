@@ -272,10 +272,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
               <div className="mt-4 flex flex-wrap gap-2">
                 {page.realtor_phone && (
                   <a href={`tel:${page.realtor_phone.replace(/[^0-9+]/g, "")}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition-all shadow-soft"
-                    style={{ "--tw-border-opacity": 1 } as React.CSSProperties}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = "#7c5cd8")}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = "")}>
+                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition-all shadow-soft hover:border-[#7c5cd8] hover:text-[#7c5cd8]">
                     📞 {page.realtor_phone}
                   </a>
                 )}
