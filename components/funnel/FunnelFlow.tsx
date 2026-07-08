@@ -417,77 +417,66 @@ export function FunnelFlow({
             </StepShell>
           )}
 
-          {/* ── Step 5: Estimate reveal ── */}
+          {/* ── Step 5: Estimate reveal (gated) ── */}
           {step === 5 && (
             <div>
-              {(() => {
-                const ec = cfg.estimateContext ?? {};
-                const loanPath = ec.loanPath ?? estimate.loanPathFallback;
-                const cards = [
-                  {
-                    label: ec.powerLabel   ?? "Estimated buying power",
-                    value: `${formatCurrency(estimate.powerLow)} – ${formatCurrency(estimate.powerHigh)}`,
-                    sub:   ec.powerSub     ?? "Based on typical debt-to-income guidelines",
-                    delay: 0.1,
-                  },
-                  {
-                    label: ec.paymentLabel ?? "Estimated monthly payment",
-                    value: `${formatCurrency(estimate.monthly)}/mo`,
-                    sub:   ec.paymentSub   ?? "Est. includes taxes and insurance",
-                    delay: 0.2,
-                  },
-                  {
-                    label: "Recommended loan path",
-                    value: loanPath,
-                    sub:   ec.loanPathSub  ?? "Based on your credit range",
-                    delay: 0.3,
-                  },
-                ];
-                return (
-                  <>
-                    <div className="mb-6 flex items-center gap-3">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 300, delay: 0.15 }}
-                        className="flex h-10 w-10 items-center justify-center rounded-full text-white"
-                        style={{ background: "var(--ok-gradient)" }}
-                      >
-                        ✓
-                      </motion.div>
-                      <h2 className="text-2xl font-extrabold text-ink">Here&apos;s your estimate</h2>
-                    </div>
-                    <p className="mb-6 text-sm text-muted">Based on what you shared, here&apos;s your range.</p>
+              <div className="mb-6 flex items-center gap-3">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, delay: 0.15 }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-white"
+                  style={{ background: "var(--ok-gradient)" }}
+                >
+                  ✓
+                </motion.div>
+                <h2 className="text-2xl font-extrabold text-ink">Your estimate is ready</h2>
+              </div>
+              <p className="mb-4 text-sm text-muted">Based on what you shared, we&apos;ve built your personalized range.</p>
 
-                    <div className="space-y-4">
-                      {cards.map((card) => (
-                        <motion.div
-                          key={card.label}
-                          initial={{ opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: card.delay, duration: 0.4 }}
-                          className="rounded-2xl border border-line bg-white p-5"
-                        >
-                          <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{card.label}</div>
-                          <div className="text-2xl font-extrabold text-ink">{card.value}</div>
-                          <div className="mt-1 text-xs text-muted/70">{card.sub}</div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </>
-                );
-              })()}
+              {/* Gated cards */}
+              <div className="relative">
+                {/* Blurred cards — teaser */}
+                <div className="select-none blur-sm pointer-events-none space-y-4" aria-hidden="true">
+                  {(() => {
+                    const ec = cfg.estimateContext ?? {};
+                    const loanPath = ec.loanPath ?? estimate.loanPathFallback;
+                    return [
+                      { label: ec.powerLabel   ?? "Estimated buying power",    value: `${formatCurrency(estimate.powerLow)} – ${formatCurrency(estimate.powerHigh)}`, sub: ec.powerSub  ?? "Based on typical debt-to-income guidelines" },
+                      { label: ec.paymentLabel ?? "Estimated monthly payment",  value: `${formatCurrency(estimate.monthly)}/mo`,                                        sub: ec.paymentSub ?? "Est. includes taxes and insurance" },
+                      { label: "Recommended loan path",                          value: loanPath,                                                                        sub: ec.loanPathSub ?? "Based on your credit range" },
+                    ].map((card) => (
+                      <div key={card.label} className="rounded-2xl border border-line bg-white p-5">
+                        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{card.label}</div>
+                        <div className="text-2xl font-extrabold text-ink">{card.value}</div>
+                        <div className="mt-1 text-xs text-muted/70">{card.sub}</div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+
+                {/* Lock overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-2xl bg-white/85 px-6 py-8 text-center backdrop-blur-[2px]">
+                  <div
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-white text-lg"
+                    style={{ background: "var(--ok-gradient)" }}
+                  >
+                    🔒
+                  </div>
+                  <div>
+                    <p className="text-sm font-extrabold text-ink">Your results are locked</p>
+                    <p className="mt-1 text-xs text-muted">Enter your contact info to unlock your personalized numbers.</p>
+                  </div>
+                  <button onClick={() => next()} className="primary-button w-full justify-center !py-3.5">
+                    {unlockLabel}
+                  </button>
+                  <button onClick={() => go(activeSteps[0], -1)} className="ghost-button w-full justify-center !py-2.5 !text-xs">
+                    ← Adjust my answers
+                  </button>
+                </div>
+              </div>
 
               <Disclosure variant="estimate" className="mt-4" />
-
-              <div className="mt-6 space-y-3">
-                <button onClick={() => next()} className="primary-button w-full justify-center !py-4">
-                  {unlockLabel}
-                </button>
-                <button onClick={() => go(activeSteps[0], -1)} className="ghost-button w-full justify-center !py-4">
-                  Adjust my answers
-                </button>
-              </div>
             </div>
           )}
 
