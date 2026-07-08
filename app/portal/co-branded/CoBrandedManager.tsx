@@ -19,7 +19,7 @@ interface CoBrandedPage {
   created_at: string;
 }
 
-const SITE = typeof window !== "undefined" ? window.location.origin : "https://hcmg-web.vercel.app";
+const SITE = typeof window !== "undefined" ? window.location.origin : "https://getorangekey.com";
 
 // ── Helpers ───────────────────────────────────────────────────────
 
