@@ -103,3 +103,67 @@ export async function PATCH(
 
   return NextResponse.json({ ok: true });
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const caller = await getCallerFromRequest(request);
+  if (!caller) {
+    return NextResponse.json({ error: "Not authenticated — please refresh and try again" }, { status: 401 });
+  }
+  if (!isAdmin(caller)) {
+    return NextResponse.json({ error: `Role '${caller.role}' cannot perform this action` }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  // Cannot delete yourself
+  if (id === caller.id) {
+    return NextResponse.json({ error: "You cannot delete your own account." }, { status: 400 });
+  }
+
+  const sb = createServiceClient();
+
+  // 1. Fetch the profile so we can clean up related data
+  const { data: profile } = await sb
+    .from("profiles")
+    .select("lo_slug, avatar_url, full_name, email")
+    .eq("id", id)
+    .single();
+
+  const lo_slug  = profile?.lo_slug  ?? null;
+  const avatarUrl = profile?.avatar_url ?? null;
+
+  // 2. Delete funnel_link row
+  if (lo_slug) {
+    await sb.from("funnel_links").delete().eq("lo_slug", lo_slug);
+  }
+
+  // 3. Delete avatar from storage
+  if (avatarUrl) {
+    // Path is {userId}/avatar.{ext} — extract from URL
+    const match = avatarUrl.match(/avatars\/([^?]+)/);
+    if (match?.[1]) {
+      await sb.storage.from("avatars").remove([match[1]]);
+    }
+  }
+
+  // 4. Delete profile row
+  await sb.from("profiles").delete().eq("id", id);
+
+  // 5. Delete the auth user (must be last — removes login access)
+  const { error: authError } = await sb.auth.admin.deleteUser(id);
+  if (authError) {
+    return NextResponse.json({ error: authError.message }, { status: 500 });
+  }
+
+  await logAudit(
+    "user.deleted",
+    { deleted_id: id, email: profile?.email, name: profile?.full_name, lo_slug },
+    caller.id,
+    caller.email,
+  );
+
+  return NextResponse.json({ ok: true });
+}

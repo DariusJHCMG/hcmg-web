@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import type { Profile, Role } from "@/lib/database.types";
 
@@ -165,6 +165,118 @@ function EditDrawer({ user, onClose, onSaved }: {
   );
 }
 
+// ── Delete Confirmation Modal ─────────────────────────────────────
+
+function DeleteModal({ user, onClose, onDeleted }: {
+  user: Profile;
+  onClose: () => void;
+  onDeleted: (id: string) => void;
+}) {
+  const [typed,    setTyped]    = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [err,      setErr]      = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  async function confirmDelete() {
+    setDeleting(true); setErr("");
+    const token = await getToken();
+    const res = await fetch(`/api/admin/users/${user.id}`, {
+      method: "DELETE",
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    });
+    if (res.ok) {
+      onDeleted(user.id);
+    } else {
+      const json = await res.json().catch(() => ({}));
+      setErr((json as { error?: string }).error ?? "Delete failed.");
+      setDeleting(false);
+    }
+  }
+
+  return (
+    /* Backdrop */
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style={{ background: "rgba(15,23,42,0.55)" }}
+         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-md rounded-2xl border border-line bg-white shadow-card"
+           role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+
+        {/* Header */}
+        <div className="flex items-start justify-between border-b border-line px-6 py-5">
+          <div>
+            <p id="delete-modal-title" className="text-base font-extrabold text-red-600">
+              Permanently delete user
+            </p>
+            <p className="mt-0.5 text-sm text-muted">{user.full_name} · {user.email}</p>
+          </div>
+          <button onClick={onClose} className="ml-4 text-muted hover:text-ink text-lg leading-none">✕</button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 space-y-4">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 space-y-1">
+            <p className="font-bold">This action cannot be undone. It will permanently delete:</p>
+            <ul className="ml-4 list-disc space-y-0.5 text-xs font-medium">
+              <li>Their login account</li>
+              <li>Their profile and all saved data</li>
+              {user.lo_slug && <li>Their funnel link <code className="font-mono">/go/{user.lo_slug}</code></li>}
+              <li>Their avatar photo (if any)</li>
+            </ul>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-[0.12em] text-ink">
+              Type <span className="font-mono text-red-600">DELETE</span> to confirm
+            </label>
+            <input
+              ref={inputRef}
+              type="text"
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && typed === "DELETE") confirmDelete(); }}
+              placeholder="DELETE"
+              className="w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm font-mono
+                         text-ink placeholder:text-muted/30 focus:border-red-400 focus:outline-none
+                         focus:ring-2 focus:ring-red-200 transition"
+            />
+          </div>
+
+          {err && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{err}</p>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 border-t border-line px-6 py-4">
+          <button onClick={onClose} disabled={deleting}
+            className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-semibold
+                       text-muted hover:border-ink hover:text-ink transition-colors disabled:opacity-50">
+            Cancel
+          </button>
+          <button
+            onClick={confirmDelete}
+            disabled={typed !== "DELETE" || deleting}
+            className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all
+                       disabled:cursor-not-allowed disabled:opacity-40"
+            style={{ background: typed === "DELETE" ? "#dc2626" : "#d1d5db" }}
+          >
+            {deleting ? "Deleting…" : "Permanently delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────
 
 export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
@@ -174,6 +286,7 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
   const [msg, setMsg]           = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [editId, setEditId]     = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
 
   const fld = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -200,6 +313,13 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
       window.location.reload();
     }
     setSaving(false);
+  }
+
+  function handleDeleted(id: string) {
+    const deleted = users.find((u) => u.id === id);
+    setUsers((prev) => prev.filter((u) => u.id !== id));
+    setDeleteTarget(null);
+    setMsg({ type: "ok", text: `${deleted?.full_name ?? "User"} permanently deleted.` });
   }
 
   async function toggleActive(u: Profile) {
@@ -362,19 +482,24 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
                         </span>
                       </td>
                       {/* Actions */}
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-3">
-                          <button onClick={() => setEditId(editId === u.id ? null : u.id)}
-                            className="text-xs font-bold text-accent hover:underline">
-                            {editId === u.id ? "Close" : "Edit"}
-                          </button>
-                          <span className="text-line">|</span>
-                          <button onClick={() => toggleActive(u)}
-                            className={`text-xs font-bold transition-colors ${u.is_active ? "text-red-500 hover:text-red-700" : "text-green-600 hover:text-green-800"}`}>
-                            {u.is_active ? "Deactivate" : "Activate"}
-                          </button>
-                        </div>
-                      </td>
+                       <td className="px-5 py-3">
+                         <div className="flex items-center gap-3">
+                           <button onClick={() => setEditId(editId === u.id ? null : u.id)}
+                             className="text-xs font-bold text-accent hover:underline">
+                             {editId === u.id ? "Close" : "Edit"}
+                           </button>
+                           <span className="text-line">|</span>
+                           <button onClick={() => toggleActive(u)}
+                             className={`text-xs font-bold transition-colors ${u.is_active ? "text-red-500 hover:text-red-700" : "text-green-600 hover:text-green-800"}`}>
+                             {u.is_active ? "Deactivate" : "Activate"}
+                           </button>
+                           <span className="text-line">|</span>
+                           <button onClick={() => setDeleteTarget(u)}
+                             className="text-xs font-bold text-red-400 hover:text-red-700 transition-colors">
+                             Delete
+                           </button>
+                         </div>
+                       </td>
                     </tr>
                     {editId === u.id && (
                       <EditDrawer
@@ -394,6 +519,14 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
           </div>
         </div>
       ))}
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <DeleteModal
+          user={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onDeleted={handleDeleted}
+        />
+      )}
     </div>
   );
 }
