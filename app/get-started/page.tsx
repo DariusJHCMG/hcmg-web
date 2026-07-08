@@ -6,6 +6,7 @@ import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { getTeamMemberBySlug } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
 import { getFunnelBySlug } from "@/lib/funnel-catalog";
+import { getFunnelConfig } from "@/lib/funnel-config";
 
 export const metadata: Metadata = {
   title: "Get Your Mortgage Estimate, HCMG",
@@ -66,8 +67,9 @@ export default async function GetStartedPage({
     : undefined;
   // Determine effective source: explicit param > seo (when from= is present) > default
   const effectiveSource = source ?? (seoSlug ? "seo" : undefined);
-  // Resolve funnel definition if a funnel slug was passed
-  const funnelDef = funnelSlug ? getFunnelBySlug(funnelSlug) : undefined;
+  // Resolve funnel definition + config if a funnel slug was passed
+  const funnelDef    = funnelSlug ? getFunnelBySlug(funnelSlug)  : undefined;
+  const funnelConfig = funnelSlug ? getFunnelConfig(funnelSlug)  : undefined;
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-sand pb-32 md:pb-0">
@@ -123,7 +125,16 @@ export default async function GetStartedPage({
             </div>
           )}
 
-          <FunnelFlow lo={funnelLo} source={effectiveSource} seoSlug={seoSlug} funnelType={funnelDef?.slug} funnelHeadline={funnelDef?.headline} funnelSubhead={funnelDef?.subhead} funnelBadge={funnelDef?.badge} />
+          <FunnelFlow
+            lo={funnelLo}
+            source={effectiveSource}
+            seoSlug={seoSlug}
+            funnelType={funnelDef?.slug}
+            funnelHeadline={funnelDef?.headline}
+            funnelSubhead={funnelDef?.subhead}
+            funnelBadge={funnelDef?.badge}
+            funnelConfig={funnelConfig}
+          />
         </div>
       </section>
 

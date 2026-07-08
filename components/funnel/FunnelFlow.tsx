@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { calculateMortgageEstimate, formatCurrency } from "@/lib/calculators";
@@ -10,6 +10,7 @@ import { submitLead, utmsToPayload } from "@/lib/lead";
 import { getStoredUtms } from "@/lib/utm";
 import { getSessionMeta, trackFunnelStep } from "@/lib/tracker";
 import { identifyLead, getPostHog } from "@/lib/posthog";
+import type { FunnelConfig } from "@/lib/funnel-config";
 
 // ── Types ──────────────────────────────────────────────────
 type Goal = "buy" | "refinance" | "compare";
@@ -78,7 +79,7 @@ function getEstimate(state: FunnelState) {
   return { powerLow, powerHigh, monthly: Math.round(est.totalMonthlyPayment), loanPath: LOAN_PATH[credit] };
 }
 
-// ── Main component ─────────────────────────────────────────
+// ── Public interfaces ──────────────────────────────────────
 export interface FunnelLoContext {
   slug: string;
   name: string;
@@ -93,6 +94,7 @@ export function FunnelFlow({
   funnelHeadline,
   funnelSubhead,
   funnelBadge,
+  funnelConfig,
 }: {
   lo?: FunnelLoContext;
   source?: string;
@@ -101,35 +103,69 @@ export function FunnelFlow({
   funnelHeadline?: string;
   funnelSubhead?: string;
   funnelBadge?: string;
+  funnelConfig?: FunnelConfig;
 } = {}) {
-  const [step, setStep] = useState<Step>(1);
-  const [dir, setDir] = useState<1 | -1>(1);
+  const cfg = funnelConfig ?? {};
+  const activeSteps: Step[] = (cfg.steps ?? [1, 2, 3, 4, 5, 6]) as Step[];
+
+  // Pre-seed goal from config
   const [state, setState] = useState<FunnelState>({
-    goal: null, priceBand: null, creditBand: null, incomeBand: null,
+    goal: cfg.goalPreset ?? null,
+    priceBand: null, creditBand: null, incomeBand: null,
     firstName: "", email: "", phone: "", smsConsent: false,
   });
+
+  // Keep goal in sync if config changes (e.g. client navigation)
+  useEffect(() => {
+    if (cfg.goalPreset) setState((s) => ({ ...s, goal: cfg.goalPreset! }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cfg.goalPreset]);
+
+  const [step, setStep] = useState<Step>(activeSteps[0] ?? 1);
+  const [dir, setDir] = useState<1 | -1>(1);
   const [errors, setErrors] = useState<Partial<Record<"firstName" | "email" | "phone" | "smsConsent", string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   const estimate = getEstimate(state);
-  const stepNum = typeof step === "number" ? step : 6;
-  const progress = Math.min((stepNum / 6) * 100, 100);
+
+  // Progress: position within activeSteps (not raw step number)
+  const stepIdx = activeSteps.indexOf(step);
+  const totalSteps = activeSteps.length;
+  const progress = Math.min(((stepIdx + 1) / totalSteps) * 100, 100);
+  const stepDisplay = stepIdx + 1;
 
   const stepStartRef = React.useRef<number>(Date.now());
 
+  // ── Navigation helpers ─────────────────────────────────
   function go(n: Step, d: 1 | -1 = 1) { setDir(d); setStep(n); }
-  function next(n: Step, choiceLabel?: string) {
+
+  function next(choiceLabel?: string) {
     const duration = Date.now() - stepStartRef.current;
     stepStartRef.current = Date.now();
-    if (typeof step === "number" && choiceLabel) {
-      trackFunnelStep(step, choiceLabel, duration);
-    }
-    go(n, 1);
+    if (typeof step === "number" && choiceLabel) trackFunnelStep(stepIdx + 1, choiceLabel, duration);
+    const nextIdx = stepIdx + 1;
+    if (nextIdx < activeSteps.length) go(activeSteps[nextIdx], 1);
   }
-  function back(n: Step) { go(n, -1); }
-  function set<K extends keyof FunnelState>(k: K, v: FunnelState[K]) { setState((s) => ({ ...s, [k]: v })); }
 
+  function back() {
+    const prevIdx = stepIdx - 1;
+    if (prevIdx >= 0) go(activeSteps[prevIdx], -1);
+  }
+
+  function set<K extends keyof FunnelState>(k: K, v: FunnelState[K]) {
+    setState((s) => ({ ...s, [k]: v }));
+  }
+
+  // ── Per-step copy with config overrides ────────────────
+  function stepTitle(n: number, dflt: string) {
+    return cfg.overrides?.[n]?.title ?? dflt;
+  }
+  function stepSub(n: number, dflt: string) {
+    return cfg.overrides?.[n]?.sub ?? dflt;
+  }
+
+  // ── Validation ─────────────────────────────────────────
   function validate() {
     const e: typeof errors = {};
     if (!state.firstName.trim()) e.firstName = "Enter your first name.";
@@ -140,6 +176,7 @@ export function FunnelFlow({
     return Object.keys(e).length === 0;
   }
 
+  // ── Submit ─────────────────────────────────────────────
   async function handleSubmit() {
     if (!validate()) return;
     setSubmitting(true);
@@ -152,9 +189,9 @@ export function FunnelFlow({
       smsConsent: true,
       smsConsentText: SMS_CONSENT_TEXT,
       smsConsentTimestamp: new Date().toISOString(),
-      source:   source ?? (lo ? "team" : "get-started"),
-      seoSlug:  seoSlug,
-      funnelType: funnelType,
+      source: source ?? (lo ? "team" : "get-started"),
+      seoSlug,
+      funnelType,
       goal: state.goal ?? undefined,
       priceRange: state.priceBand ?? undefined,
       creditRange: state.creditBand ?? undefined,
@@ -169,24 +206,23 @@ export function FunnelFlow({
       ...utmsToPayload(getStoredUtms()),
       sessionId: meta.sessionId,
       entryPage: meta.entryPage,
-      referrer:  meta.referrer,
-      device:    meta.device,
+      referrer: meta.referrer,
+      device: meta.device,
     });
 
     if (result.success) {
-      // Identify the lead in PostHog so session replay is linked to them
       identifyLead(meta.sessionId, {
-        email:     state.email.trim(),
-        name:      state.firstName.trim(),
-        loSlug:    lo?.slug,
-        loName:    lo?.name,
+        email: state.email.trim(),
+        name: state.firstName.trim(),
+        loSlug: lo?.slug,
+        loName: lo?.name,
         utmSource: getStoredUtms().utm_source,
       });
       getPostHog().capture("lead_submitted", {
-        goal:       state.goal,
+        goal: state.goal,
         price_band: state.priceBand,
         credit_band: state.creditBand,
-        lo_slug:    lo?.slug,
+        lo_slug: lo?.slug,
         utm_source: getStoredUtms().utm_source,
       });
     }
@@ -206,8 +242,12 @@ export function FunnelFlow({
   };
   const transition = { duration: 0.28, ease: "easeOut" };
 
+  const unlockLabel = cfg.unlockLabel ?? "Unlock my exact rate →";
+  const submitLabel = cfg.submitLabel ?? "Get my exact rate →";
+
   return (
     <div className="mx-auto w-full max-w-[560px]">
+
       {/* Funnel-specific badge (only shown when entering via a typed funnel URL) */}
       {funnelType && step !== "success" && (
         <div className="mb-5 overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
@@ -234,12 +274,11 @@ export function FunnelFlow({
       {step !== "success" && (
         <div className="mb-6">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Step {stepNum} of 6</span>
-            {stepNum > 1 && (
-              <button
-                onClick={() => back((stepNum - 1) as Step)}
-                className="text-xs font-semibold text-muted hover:text-accent"
-              >
+            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+              Step {stepDisplay} of {totalSteps}
+            </span>
+            {stepIdx > 0 && (
+              <button onClick={back} className="text-xs font-semibold text-muted hover:text-accent">
                 ← Back
               </button>
             )}
@@ -264,20 +303,22 @@ export function FunnelFlow({
           exit="exit"
           transition={transition}
         >
+
+          {/* ── Step 1: Goal ── */}
           {step === 1 && (
             <StepShell
-              title="What are you trying to do?"
-              sub="Start with your goal and we'll show you the right numbers."
-              onContinue={() => state.goal && next(2)}
+              title={stepTitle(1, "What are you trying to do?")}
+              sub={stepSub(1, "Start with your goal and we'll show you the right numbers.")}
+              onContinue={() => state.goal && next()}
               disabled={!state.goal}
               ctaLabel="Continue →"
             >
               <div className="space-y-3">
                 {([
-                  { v: "buy" as Goal, label: "🏠  Buy a home" },
+                  { v: "buy" as Goal,       label: "🏠  Buy a home" },
                   { v: "refinance" as Goal, label: "🔄  Refinance my current mortgage" },
-                  { v: "compare" as Goal, label: "📊  Compare my options" },
-                ] as { v: Goal; label: string }[]).map((o) => (
+                  { v: "compare" as Goal,   label: "📊  Compare my options" },
+                ]).map((o) => (
                   <button key={o.v} onClick={() => set("goal", o.v)}
                     className={`funnel-option ${state.goal === o.v ? "funnel-option-selected" : ""}`}>
                     {o.label}
@@ -287,15 +328,31 @@ export function FunnelFlow({
             </StepShell>
           )}
 
+          {/* ── Step 2: Price / loan amount ── */}
           {step === 2 && (
-            <StepShell title="What price range are you looking at?" sub="A quick range helps us build a realistic payment estimate." onContinue={() => state.priceBand && next(3)} disabled={!state.priceBand} ctaLabel="Show my estimate →">
+            <StepShell
+              title={stepTitle(2, state.goal === "refinance"
+                ? "What's your estimated home value?"
+                : "What price range are you looking at?")}
+              sub={stepSub(2, state.goal === "refinance"
+                ? "This helps us calculate your equity and loan options."
+                : "A quick range helps us build a realistic payment estimate.")}
+              onContinue={() => state.priceBand && next()}
+              disabled={!state.priceBand}
+              ctaLabel={cfg.overrides?.[2]?.ctaLabel ?? "Show my estimate →"}
+            >
               <div className="grid grid-cols-2 gap-3">
-                {([
+                {(state.goal === "refinance" ? [
                   { v: "under-250" as PriceBand, label: "Under $250,000" },
-                  { v: "250-400" as PriceBand, label: "$250k – $400k" },
-                  { v: "400-600" as PriceBand, label: "$400k – $600k" },
-                  { v: "600-plus" as PriceBand, label: "Over $600,000" },
-                ] as { v: PriceBand; label: string }[]).map((o) => (
+                  { v: "250-400"   as PriceBand, label: "$250k – $400k" },
+                  { v: "400-600"   as PriceBand, label: "$400k – $600k" },
+                  { v: "600-plus"  as PriceBand, label: "Over $600,000" },
+                ] : [
+                  { v: "under-250" as PriceBand, label: "Under $250,000" },
+                  { v: "250-400"   as PriceBand, label: "$250k – $400k" },
+                  { v: "400-600"   as PriceBand, label: "$400k – $600k" },
+                  { v: "600-plus"  as PriceBand, label: "Over $600,000" },
+                ]).map((o) => (
                   <button key={o.v} onClick={() => set("priceBand", o.v)}
                     className={`funnel-option ${state.priceBand === o.v ? "funnel-option-selected" : ""}`}>
                     {o.label}
@@ -305,15 +362,22 @@ export function FunnelFlow({
             </StepShell>
           )}
 
+          {/* ── Step 3: Credit ── */}
           {step === 3 && (
-            <StepShell title="Where does your credit likely fall today?" sub="A ballpark is all we need. This won't affect your score." onContinue={() => state.creditBand && next(4)} disabled={!state.creditBand} ctaLabel="Continue →">
+            <StepShell
+              title={stepTitle(3, "Where does your credit likely fall today?")}
+              sub={stepSub(3, "A ballpark is all we need. This won't affect your score.")}
+              onContinue={() => state.creditBand && next()}
+              disabled={!state.creditBand}
+              ctaLabel={cfg.overrides?.[3]?.ctaLabel ?? "Continue →"}
+            >
               <div className="grid grid-cols-2 gap-3">
                 {([
-                  { v: "760-plus" as CreditBand, label: "760+", sub: "Excellent" },
-                  { v: "700-759" as CreditBand, label: "700 – 759", sub: "Good" },
-                  { v: "640-699" as CreditBand, label: "640 – 699", sub: "Fair" },
-                  { v: "below-640" as CreditBand, label: "Below 640", sub: "Building" },
-                ] as { v: CreditBand; label: string; sub: string }[]).map((o) => (
+                  { v: "760-plus"  as CreditBand, label: "760+",       sub: "Excellent" },
+                  { v: "700-759"   as CreditBand, label: "700 – 759",  sub: "Good" },
+                  { v: "640-699"   as CreditBand, label: "640 – 699",  sub: "Fair" },
+                  { v: "below-640" as CreditBand, label: "Below 640",  sub: "Building" },
+                ]).map((o) => (
                   <button key={o.v} onClick={() => set("creditBand", o.v)}
                     className={`funnel-option ${state.creditBand === o.v ? "funnel-option-selected" : ""}`}>
                     <div className="font-bold">{o.label}</div>
@@ -321,19 +385,28 @@ export function FunnelFlow({
                   </button>
                 ))}
               </div>
-              <p className="mt-3 text-xs text-muted/70">Not sure? Pick the range that feels closest. We'll work from there.</p>
+              <p className="mt-3 text-xs text-muted/70">
+                Not sure? Pick the range that feels closest — we&apos;ll work from there.
+              </p>
             </StepShell>
           )}
 
+          {/* ── Step 4: Income ── */}
           {step === 4 && (
-            <StepShell title="What's your approximate household income?" sub="We use this to shape your estimate, not to make decisions." onContinue={() => state.incomeBand && next(5)} disabled={!state.incomeBand} ctaLabel="See my payment range →">
+            <StepShell
+              title={stepTitle(4, "What's your approximate household income?")}
+              sub={stepSub(4, "We use this to shape your estimate, not to make decisions.")}
+              onContinue={() => state.incomeBand && next()}
+              disabled={!state.incomeBand}
+              ctaLabel={cfg.overrides?.[4]?.ctaLabel ?? "See my payment range →"}
+            >
               <div className="grid grid-cols-2 gap-3">
                 {([
-                  { v: "under-75" as IncomeBand, label: "Under $75,000" },
-                  { v: "75-125" as IncomeBand, label: "$75k – $125k" },
-                  { v: "125-200" as IncomeBand, label: "$125k – $200k" },
-                  { v: "200-plus" as IncomeBand, label: "Over $200,000" },
-                ] as { v: IncomeBand; label: string }[]).map((o) => (
+                  { v: "under-75"  as IncomeBand, label: "Under $75,000" },
+                  { v: "75-125"    as IncomeBand, label: "$75k – $125k" },
+                  { v: "125-200"   as IncomeBand, label: "$125k – $200k" },
+                  { v: "200-plus"  as IncomeBand, label: "Over $200,000" },
+                ]).map((o) => (
                   <button key={o.v} onClick={() => set("incomeBand", o.v)}
                     className={`funnel-option ${state.incomeBand === o.v ? "funnel-option-selected" : ""}`}>
                     {o.label}
@@ -343,6 +416,7 @@ export function FunnelFlow({
             </StepShell>
           )}
 
+          {/* ── Step 5: Estimate reveal ── */}
           {step === 5 && (
             <div>
               <div className="mb-6 flex items-center gap-3">
@@ -355,16 +429,16 @@ export function FunnelFlow({
                 >
                   ✓
                 </motion.div>
-                <h2 className="text-2xl font-extrabold text-ink">Here's your estimate</h2>
+                <h2 className="text-2xl font-extrabold text-ink">Here&apos;s your estimate</h2>
               </div>
-              <p className="mb-6 text-sm text-muted">Based on what you shared, here's your range.</p>
+              <p className="mb-6 text-sm text-muted">Based on what you shared, here&apos;s your range.</p>
 
               <div className="space-y-4">
-                {([
-                  { label: "Estimated buying power", value: `${formatCurrency(estimate.powerLow)} – ${formatCurrency(estimate.powerHigh)}`, sub: "Based on typical debt-to-income guidelines", delay: 0.1 },
-                  { label: "Estimated monthly payment", value: `${formatCurrency(estimate.monthly)}/mo`, sub: "Est. includes taxes and insurance", delay: 0.2 },
-                  { label: "Recommended loan path", value: estimate.loanPath, sub: "Based on your credit range", delay: 0.3 },
-                ]).map((card) => (
+                {[
+                  { label: "Estimated buying power",    value: `${formatCurrency(estimate.powerLow)} – ${formatCurrency(estimate.powerHigh)}`, sub: "Based on typical debt-to-income guidelines", delay: 0.1 },
+                  { label: "Estimated monthly payment", value: `${formatCurrency(estimate.monthly)}/mo`,  sub: "Est. includes taxes and insurance",            delay: 0.2 },
+                  { label: "Recommended loan path",     value: estimate.loanPath,                         sub: "Based on your credit range",                   delay: 0.3 },
+                ].map((card) => (
                   <motion.div
                     key={card.label}
                     initial={{ opacity: 0, y: 12 }}
@@ -382,25 +456,34 @@ export function FunnelFlow({
               <Disclosure variant="estimate" className="mt-4" />
 
               <div className="mt-6 space-y-3">
-                <button onClick={() => next(6)} className="primary-button w-full justify-center !py-4">
-                  Unlock my exact rate →
+                <button onClick={() => next()} className="primary-button w-full justify-center !py-4">
+                  {unlockLabel}
                 </button>
-                <button onClick={() => go(1, -1)} className="ghost-button w-full justify-center !py-4">
+                <button onClick={() => go(activeSteps[0], -1)} className="ghost-button w-full justify-center !py-4">
                   Adjust my answers
                 </button>
               </div>
             </div>
           )}
 
+          {/* ── Step 6: Contact info + submit ── */}
           {step === 6 && (
             <div>
-              <h2 className="mb-2 text-2xl font-extrabold text-ink">Unlock your exact rate and next step</h2>
-              <p className="mb-4 text-sm text-muted">Tell us where to send your estimate and we'll connect you with a licensed loan officer.</p>
+              <h2 className="mb-2 text-2xl font-extrabold text-ink">
+                {funnelType ? "One last step — who should we contact?" : "Unlock your exact rate and next step"}
+              </h2>
+              <p className="mb-4 text-sm text-muted">
+                Tell us where to send your estimate and we&apos;ll connect you with a licensed loan officer.
+              </p>
 
-              {/* Estimate summary */}
-              <div className="mb-6 rounded-2xl border border-line bg-sand px-5 py-3 text-sm text-muted">
-                Your estimate: <strong className="text-ink">{formatCurrency(estimate.powerLow)}–{formatCurrency(estimate.powerHigh)}</strong> buying power · ~<strong className="text-ink">{formatCurrency(estimate.monthly)}/mo</strong>
-              </div>
+              {/* Estimate summary — only shown if step 5 was in the flow */}
+              {activeSteps.includes(5) && (
+                <div className="mb-6 rounded-2xl border border-line bg-sand px-5 py-3 text-sm text-muted">
+                  Your estimate:{" "}
+                  <strong className="text-ink">{formatCurrency(estimate.powerLow)}–{formatCurrency(estimate.powerHigh)}</strong>{" "}
+                  buying power · ~<strong className="text-ink">{formatCurrency(estimate.monthly)}/mo</strong>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <TextField label="First name *" placeholder="First name" value={state.firstName} onChange={(v) => set("firstName", v)} error={errors.firstName} />
@@ -438,12 +521,13 @@ export function FunnelFlow({
                   disabled={submitting || !state.smsConsent}
                   className="primary-button w-full justify-center !py-4 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {submitting ? "Submitting…" : "Get my exact rate →"}
+                  {submitting ? "Submitting…" : submitLabel}
                 </button>
               </div>
             </div>
           )}
 
+          {/* ── Success ── */}
           {step === "success" && (
             <div className="text-center">
               <motion.div
@@ -457,7 +541,7 @@ export function FunnelFlow({
               </motion.div>
 
               <h2 className="mb-3 text-2xl font-extrabold text-ink">
-                You're all set{state.firstName ? `, ${state.firstName}` : ""}!
+                You&apos;re all set{state.firstName ? `, ${state.firstName}` : ""}!
               </h2>
               <p className="mb-8 text-base leading-7 text-muted">
                 {lo
@@ -467,9 +551,9 @@ export function FunnelFlow({
 
               <div className="mb-8 space-y-3 text-left">
                 {[
-                  { icon: "📧", title: "Check your email", body: "A confirmation with your estimate summary is on its way." },
-                  { icon: "📞", title: "Expect a call", body: "Within 1 business day from our team in your market." },
-                  { icon: "🤝", title: "No pressure", body: "We're here to help, not to push. You're in control." },
+                  { icon: "📧", title: "Check your email",  body: "A confirmation with your estimate summary is on its way." },
+                  { icon: "📞", title: "Expect a call",     body: "Within 1 business day from our team in your market." },
+                  { icon: "🤝", title: "No pressure",       body: "We're here to help, not to push. You're in control." },
                 ].map((c) => (
                   <div key={c.title} className="flex items-start gap-4 rounded-2xl border border-line bg-white px-5 py-4">
                     <span className="text-xl">{c.icon}</span>
@@ -486,11 +570,12 @@ export function FunnelFlow({
               </Link>
             </div>
           )}
+
         </motion.div>
       </AnimatePresence>
 
-      {/* Mobile sticky CTA */}
-      {typeof step === "number" && step < 5 && (
+      {/* Mobile sticky CTA — only on choice steps (not 5, 6, success) */}
+      {typeof step === "number" && step < 5 && step !== 6 && (
         <div className="mobile-sticky-cta md:hidden">
           <button
             disabled={
@@ -499,7 +584,7 @@ export function FunnelFlow({
               (step === 3 && !state.creditBand) ||
               (step === 4 && !state.incomeBand)
             }
-            onClick={() => next((step + 1) as Step)}
+            onClick={() => next()}
             className="mobile-sticky-primary disabled:opacity-40"
           >
             Continue →
@@ -510,42 +595,56 @@ export function FunnelFlow({
   );
 }
 
-// ── Sub-components ─────────────────────────────────────────
-function StepShell({ title, sub, children, onContinue, disabled, ctaLabel }: {
-  title: string; sub: string; children: React.ReactNode;
-  onContinue: () => void; disabled: boolean; ctaLabel: string;
+// ── Step shell ─────────────────────────────────────────────
+function StepShell({
+  title, sub, children, onContinue, disabled, ctaLabel,
+}: {
+  title: string;
+  sub?: string;
+  children: React.ReactNode;
+  onContinue: () => void;
+  disabled?: boolean;
+  ctaLabel?: string;
 }) {
   return (
     <div>
-      <h2 className="mb-2 text-2xl font-extrabold text-ink">{title}</h2>
-      <p className="mb-6 text-sm text-muted">{sub}</p>
+      <h2 className="mb-1 text-2xl font-extrabold text-ink">{title}</h2>
+      {sub && <p className="mb-5 text-sm text-muted">{sub}</p>}
       {children}
-      <button
-        onClick={onContinue} disabled={disabled}
-        className="primary-button mt-6 w-full justify-center !py-4 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        {ctaLabel}
-      </button>
-      <p className="mt-3 text-center text-xs text-muted/60">
-        Takes under a minute · No hard credit check · No commitment
-      </p>
+      <div className="mt-6 hidden md:block">
+        <button onClick={onContinue} disabled={disabled}
+          className="primary-button w-full justify-center !py-4 disabled:opacity-40">
+          {ctaLabel ?? "Continue →"}
+        </button>
+      </div>
     </div>
   );
 }
 
-function TextField({ label, type = "text", placeholder, value, onChange, error }: {
-  label: string; type?: string; placeholder: string;
-  value: string; onChange: (v: string) => void; error?: string;
+// ── Text field ─────────────────────────────────────────────
+function TextField({
+  label, type = "text", placeholder, value, onChange, error,
+}: {
+  label: string;
+  type?: string;
+  placeholder?: string;
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-sm font-semibold text-ink">{label}</span>
+    <div>
+      <label className="mb-1 block text-sm font-semibold text-ink">{label}</label>
       <input
-        type={type} placeholder={placeholder} value={value}
+        type={type}
+        placeholder={placeholder}
+        value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`input-base ${error ? "!border-red-300 !bg-red-50/50 focus:!border-red-400 focus:!ring-red-100" : ""}`}
+        className={`w-full rounded-xl border px-4 py-3 text-sm text-ink placeholder:text-muted/40
+          focus:outline-none focus:ring-2 transition
+          ${error ? "border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-red-200" : "border-line bg-white focus:border-accent focus:ring-accent/10"}`}
       />
-      {error && <p className="mt-1.5 text-xs font-semibold text-red-600">{error}</p>}
-    </label>
+      {error && <p className="mt-1 text-xs font-semibold text-red-600">{error}</p>}
+    </div>
   );
 }
