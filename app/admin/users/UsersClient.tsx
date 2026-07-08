@@ -12,26 +12,18 @@ async function getToken(): Promise<string | null> {
 
 // ── Constants ─────────────────────────────────────────────────────
 
-// Mirrors the inferGroup logic in data/team.ts — used for the live badge
-function inferTeamSection(title: string, authRole: string): string {
-  const t = title.toLowerCase();
+// Returns "Leadership" only when the title explicitly contains a leadership keyword.
+// Returns null when no title is set — no badge shown.
+function titleSection(title: string): "Leadership" | "Loan Officers" | "Operations" | null {
+  const t = title.trim().toLowerCase();
+  if (!t) return null;
   if (t.includes("founder") || t.includes("ceo") || t.includes("chief executive") ||
       t.includes("president") || t.includes("chief") || t.includes("national director"))
     return "Leadership";
   if (t.includes("loan officer") || t.includes("loan originator") || t.includes("branch manager"))
     return "Loan Officers";
-  if (t.length > 0) return "Operations";
-  // No title — fall back to auth role
-  if (authRole === "loan_officer") return "Loan Officers";
-  if (authRole === "admin" || authRole === "developer") return "Leadership";
   return "Operations";
 }
-
-const SECTION_COLORS: Record<string, string> = {
-  "Leadership":    "bg-amber-50 text-amber-700 border-amber-200",
-  "Loan Officers": "bg-purple-50 text-purple-700 border-purple-200",
-  "Operations":    "bg-teal-50 text-teal-700 border-teal-200",
-};
 
 const ROLES: Role[] = ["admin", "developer", "loan_officer"];
 
@@ -134,12 +126,16 @@ function EditDrawer({ user, onClose, onSaved }: {
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <label className="text-xs font-bold text-ink">Job Title</label>
-                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${SECTION_COLORS[inferTeamSection(form.title, form.role)]}`}>
-                  /team → {inferTeamSection(form.title, form.role)}
-                </span>
+                {titleSection(form.title) === "Leadership" && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                    ★ Leadership
+                  </span>
+                )}
               </div>
               <input className={IC} placeholder="Loan Officer" value={form.title} onChange={(e) => set("title", e.target.value)} />
-              <p className="mt-1 text-[11px] text-muted/60">Controls which section they appear in on the public /team page</p>
+              <p className="mt-1 text-[11px] text-muted/60">
+                Type a title containing &ldquo;Chief&rdquo;, &ldquo;President&rdquo;, &ldquo;CEO&rdquo;, or &ldquo;Founder&rdquo; to place them in the Leadership section on /team.
+              </p>
             </div>
             <Field label="Phone">
               <input className={IC} placeholder="702-555-0101" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
@@ -410,12 +406,16 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <label className="text-xs font-bold text-ink">Job Title</label>
-                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${SECTION_COLORS[inferTeamSection(form.title, form.role)]}`}>
-                  /team → {inferTeamSection(form.title, form.role)}
-                </span>
+                {titleSection(form.title) === "Leadership" && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                    ★ Leadership
+                  </span>
+                )}
               </div>
               <input className={IC} placeholder="Loan Officer" value={form.title} onChange={(e) => fld("title", e.target.value)} />
-              <p className="mt-1 text-[11px] text-muted/60">Controls which section they appear in on the public /team page</p>
+              <p className="mt-1 text-[11px] text-muted/60">
+                Type a title containing &ldquo;Chief&rdquo;, &ldquo;President&rdquo;, &ldquo;CEO&rdquo;, or &ldquo;Founder&rdquo; to place them in the Leadership section on /team.
+              </p>
             </div>
             <Field label="Email *">
               <input required type="email" className={IC} placeholder="cason@hcmgloans.com" value={form.email} onChange={(e) => fld("email", e.target.value)} />
@@ -498,9 +498,11 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
                           <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold capitalize ${ROLE_COLORS[u.role]}`}>
                             {ROLE_LABELS[u.role]}
                           </span>
-                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${SECTION_COLORS[inferTeamSection(u.title ?? "", u.role)]}`}>
-                            {inferTeamSection(u.title ?? "", u.role)}
-                          </span>
+                          {titleSection(u.title ?? "") === "Leadership" && (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
+                              ★ Leadership
+                            </span>
+                          )}
                         </div>
                       </td>
                       {/* NMLS / slug */}
