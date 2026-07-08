@@ -29,9 +29,9 @@ export const metadata: Metadata = {
 
 function ValuePill({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-sm">
-      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent">
-        <svg viewBox="0 0 12 10" className="h-3 w-3" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <div className="flex items-center gap-3 rounded-2xl border border-white/30 bg-white/15 px-4 py-3">
+      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white">
+        <svg viewBox="0 0 12 10" className="h-3 w-3" fill="none" stroke="#F37021" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="1 5 4.5 8.5 11 1" />
         </svg>
       </span>
@@ -108,9 +108,9 @@ export default async function LamontPage() {
                 <p className="text-[10px] text-white/40">Company</p>
               </div>
               {/* Experience badge */}
-              <div className="absolute -left-3 top-6 rounded-2xl border border-white/20 bg-accent px-4 py-3 shadow-lg">
-                <p className="text-2xl font-extrabold text-white">15+</p>
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/80">Years in<br />Mortgage</p>
+              <div className="absolute -left-3 top-6 rounded-2xl bg-white px-4 py-3 shadow-lg">
+                <p className="text-2xl font-extrabold text-accent">15+</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink/70">Years in<br />Mortgage</p>
               </div>
             </div>
 
@@ -147,17 +147,17 @@ export default async function LamontPage() {
                 <ValuePill>Transparent pricing, no hidden fees</ValuePill>
               </div>
 
-              {/* CTAs — outline (navy border) first, orange primary second */}
+              {/* CTAs — both white-filled on orange bg */}
               <div className="mt-8 flex flex-wrap gap-3">
                 {m.phone && (
                   <a
                     href={`tel:${phoneDigits}`}
-                    className="outline-white-button"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white bg-white px-6 py-4 text-base font-semibold text-ink transition hover:bg-white/90"
                   >
                     <span aria-hidden>📞</span> Call Lamont
                   </a>
                 )}
-                <a href="#funnel" className="primary-button">
+                <a href="#funnel" className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white bg-transparent px-6 py-4 text-base font-semibold text-white transition hover:bg-white/15">
                   Get my free estimate →
                 </a>
               </div>
