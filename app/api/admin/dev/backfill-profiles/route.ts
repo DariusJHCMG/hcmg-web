@@ -13,7 +13,7 @@ export async function POST() {
   // Fetch all profiles that have a lo_slug
   const { data: profiles, error: fetchErr } = await sb
     .from("profiles")
-    .select("id, lo_slug, title, nmls, offices, short_bio");
+    .select("id, lo_slug, title, nmls, offices, short_bio, licensed_states");
   if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 500 });
 
   const results: { slug: string; name: string; status: string }[] = [];
@@ -27,11 +27,13 @@ export async function POST() {
 
     // Only fill in fields that are currently blank — never overwrite existing data
     const patch: Record<string, unknown> = {};
-    if (!profile.title   && member.role)        patch.title     = member.role;
-    if (!profile.nmls    && member.nmls)         patch.nmls      = member.nmls;
+    if (!profile.title   && member.role)        patch.title           = member.role;
+    if (!profile.nmls    && member.nmls)         patch.nmls            = member.nmls;
     if ((!profile.offices || profile.offices.length === 0) && member.offices?.length)
-                                                 patch.offices   = member.offices;
-    if (!profile.short_bio && member.shortBio)   patch.short_bio = member.shortBio;
+                                                 patch.offices         = member.offices;
+    if (!profile.short_bio && member.shortBio)   patch.short_bio       = member.shortBio;
+    if ((!profile.licensed_states || profile.licensed_states.length === 0) && member.licensedStates?.length)
+                                                 patch.licensed_states = member.licensedStates;
 
     if (Object.keys(patch).length === 0) {
       results.push({ slug: member.slug, name: member.name, status: "already complete — skipped" });
