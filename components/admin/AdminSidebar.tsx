@@ -21,7 +21,7 @@ const NAV = [
   { label: "My Profile",  href: "/admin/profile",      icon: "👤" },
 ];
 
-export function AdminSidebar() {
+function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
@@ -35,10 +35,10 @@ export function AdminSidebar() {
   }
 
   return (
-    <aside className="flex h-screen w-56 flex-col border-r border-line bg-white">
+    <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="border-b border-line px-5 py-5">
-        <Link href="/admin">
+        <Link href="/admin" onClick={onNavClick}>
           <OrangeKeyLogo variant="primary-light" size={48} />
         </Link>
         <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-muted/60">Admin Portal</p>
@@ -53,6 +53,7 @@ export function AdminSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={onNavClick}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                   active
                     ? "bg-accent/10 text-accent"
@@ -69,7 +70,11 @@ export function AdminSidebar() {
 
       {/* Bottom */}
       <div className="border-t border-line px-3 py-4 space-y-1">
-        <Link href="/" target="_blank" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted hover:bg-sand hover:text-ink transition-colors">
+        <Link
+          href="/"
+          target="_blank"
+          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted hover:bg-sand hover:text-ink transition-colors"
+        >
           <span className="text-base">↗</span> View Site
         </Link>
         <button
@@ -80,6 +85,32 @@ export function AdminSidebar() {
           <span className="text-base">⏻</span> {signingOut ? "Signing out…" : "Sign out"}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** Desktop-only sidebar (hidden on mobile via the parent layout) */
+export function AdminSidebar() {
+  return (
+    <aside className="hidden h-screen w-56 flex-shrink-0 flex-col border-r border-line bg-white lg:flex">
+      <SidebarContent />
     </aside>
+  );
+}
+
+/** Mobile overlay drawer — rendered by AdminLayoutClient when open */
+export function AdminMobileDrawer({ onClose }: { onClose: () => void }) {
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40 bg-ink/25 backdrop-blur-[2px] lg:hidden"
+        onClick={onClose}
+      />
+      {/* Drawer */}
+      <aside className="fixed inset-y-0 left-0 z-50 w-64 border-r border-line bg-white shadow-xl lg:hidden">
+        <SidebarContent onNavClick={onClose} />
+      </aside>
+    </>
   );
 }

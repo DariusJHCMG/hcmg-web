@@ -289,12 +289,12 @@ export function AnalyticsDashboard({ data, scope, scopeLabel }: { data: Analytic
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-line">
+      <div className="flex gap-1 overflow-x-auto border-b border-line">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`px-4 py-2.5 text-sm font-semibold transition-colors border-b-2 -mb-px ${
+            className={`flex-shrink-0 px-4 py-2.5 text-sm font-semibold transition-colors border-b-2 -mb-px ${
               activeTab === t.key
                 ? "border-accent text-accent"
                 : "border-transparent text-muted hover:text-ink"

@@ -233,10 +233,10 @@ export function ProfileEditor({ profile }: Props) {
       </div>
 
       {/* ── Save ── */}
-      <div className="flex items-center justify-between rounded-2xl border border-line bg-white px-6 py-4 shadow-soft">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-white px-6 py-4 shadow-soft sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted">Changes appear on your profile page immediately after saving.</p>
         <button type="submit" disabled={saving}
-          className="rounded-xl px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="w-full rounded-xl px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
           style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
           {saving ? "Saving…" : "Save profile"}
         </button>

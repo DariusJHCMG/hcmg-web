@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import Link from "next/link";
 import { OrangeKeyLogo } from "@/components/ui/OrangeKeyLogo";
+import { PortalMobileNav } from "@/components/portal/PortalMobileNav";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -45,8 +46,8 @@ export default async function PortalLayout({ children }: { children: React.React
             <Link href="/portal">
               <OrangeKeyLogo variant="primary-light" size={44} />
             </Link>
-            {/* Nav links */}
-            <nav className="hidden items-center gap-1 sm:flex">
+            {/* Desktop nav links — hidden on mobile */}
+            <nav className="hidden items-center gap-1 lg:flex">
               <Link href="/portal"
                 className="rounded-lg px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-sand hover:text-ink">
                 Dashboard
@@ -74,7 +75,7 @@ export default async function PortalLayout({ children }: { children: React.React
             </nav>
           </div>
 
-          {/* Right side — avatar + name */}
+          {/* Right side — avatar + mobile hamburger */}
           <div className="flex items-center gap-3">
             <Link href="/portal/profile" className="flex items-center gap-2.5 group">
               {profile.avatar_url ? (
@@ -99,14 +100,16 @@ export default async function PortalLayout({ children }: { children: React.React
               Loan Officer
             </span>
             <a href="/api/admin/signout"
-               className="text-xs font-semibold text-muted hover:text-red-600 transition-colors">
+               className="hidden text-xs font-semibold text-muted hover:text-red-600 transition-colors lg:block">
               Sign out
             </a>
+            {/* Mobile hamburger — visible below lg */}
+            <PortalMobileNav fullName={profile.full_name} />
           </div>
         </div>
       </header>
 
-      <main className="container-shell max-w-5xl py-8">
+      <main className="container-shell max-w-5xl py-6 md:py-8">
         {children}
       </main>
     </div>
