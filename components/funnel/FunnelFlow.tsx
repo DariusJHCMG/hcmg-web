@@ -19,6 +19,19 @@ type CreditBand = "760-plus" | "700-759" | "640-699" | "below-640";
 type IncomeBand = "under-75" | "75-125" | "125-200" | "200-plus";
 type Step = 1 | 2 | 3 | 4 | 5 | 6 | "success";
 
+const LICENSED_STATES = [
+  { code: "FL", label: "Florida (FL)" },
+  { code: "TX", label: "Texas (TX)" },
+  { code: "GA", label: "Georgia (GA)" },
+  { code: "NV", label: "Nevada (NV)" },
+  { code: "CO", label: "Colorado (CO)" },
+  { code: "VA", label: "Virginia (VA)" },
+  { code: "DC", label: "Washington DC (DC)" },
+  { code: "MD", label: "Maryland (MD)" },
+  { code: "CA", label: "California (CA)" },
+  { code: "MS", label: "Mississippi (MS)" },
+];
+
 interface FunnelState {
   goal: Goal | null;
   priceBand: PriceBand | null;
@@ -27,6 +40,7 @@ interface FunnelState {
   firstName: string;
   email: string;
   phone: string;
+  propertyState: string;
   smsConsent: boolean;
 }
 
@@ -113,7 +127,7 @@ export function FunnelFlow({
   const [state, setState] = useState<FunnelState>({
     goal: cfg.goalPreset ?? null,
     priceBand: null, creditBand: null, incomeBand: null,
-    firstName: "", email: "", phone: "", smsConsent: false,
+    firstName: "", email: "", phone: "", propertyState: "", smsConsent: false,
   });
 
   // Keep goal in sync if config changes (e.g. client navigation)
@@ -124,7 +138,7 @@ export function FunnelFlow({
 
   const [step, setStep] = useState<Step>(activeSteps[0] ?? 1);
   const [dir, setDir] = useState<1 | -1>(1);
-  const [errors, setErrors] = useState<Partial<Record<"firstName" | "email" | "phone" | "smsConsent", string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<"firstName" | "email" | "phone" | "propertyState" | "smsConsent", string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -172,6 +186,7 @@ export function FunnelFlow({
     if (!state.firstName.trim()) e.firstName = "Enter your first name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email.trim())) e.email = "Enter a valid email address.";
     if (state.phone.replace(/\D/g, "").length < 10) e.phone = "Enter a 10-digit phone number.";
+    if (!state.propertyState) e.propertyState = "Select the state for your property.";
     if (!state.smsConsent) e.smsConsent = "Consent is required to continue.";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -193,6 +208,7 @@ export function FunnelFlow({
       source: source ?? (lo ? "team" : "get-started"),
       seoSlug,
       funnelType,
+      propertyState: state.propertyState || undefined,
       goal: state.goal ?? undefined,
       priceRange: state.priceBand ?? undefined,
       creditRange: state.creditBand ?? undefined,
@@ -508,6 +524,24 @@ export function FunnelFlow({
                   onChange={(v) => set("phone", formatPhone(v))}
                   error={errors.phone}
                 />
+
+                {/* Property state */}
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-ink">
+                    Property state *
+                  </label>
+                  <select
+                    value={state.propertyState}
+                    onChange={(e) => set("propertyState", e.target.value)}
+                    className={`input-base w-full ${errors.propertyState ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
+                  >
+                    <option value="">Select a state…</option>
+                    {LICENSED_STATES.map((s) => (
+                      <option key={s.code} value={s.code}>{s.label}</option>
+                    ))}
+                  </select>
+                  {errors.propertyState && <p className="mt-1 text-xs font-semibold text-red-600">{errors.propertyState}</p>}
+                </div>
 
                 {/* TCPA consent */}
                 <label className={`block rounded-2xl border px-4 py-4 transition-colors ${errors.smsConsent ? "border-red-300 bg-red-50/60" : "border-line bg-white"}`}>

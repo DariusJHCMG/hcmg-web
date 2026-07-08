@@ -10,6 +10,19 @@ import { submitLead, utmsToPayload } from "@/lib/lead";
 import { getStoredUtms } from "@/lib/utm";
 import { getSessionMeta } from "@/lib/tracker";
 
+const LICENSED_STATES = [
+  { code: "FL", label: "Florida (FL)" },
+  { code: "TX", label: "Texas (TX)" },
+  { code: "GA", label: "Georgia (GA)" },
+  { code: "NV", label: "Nevada (NV)" },
+  { code: "CO", label: "Colorado (CO)" },
+  { code: "VA", label: "Virginia (VA)" },
+  { code: "DC", label: "Washington DC (DC)" },
+  { code: "MD", label: "Maryland (MD)" },
+  { code: "CA", label: "California (CA)" },
+  { code: "MS", label: "Mississippi (MS)" },
+];
+
 const SMS_CONSENT_TEXT =
   "By submitting this form, I agree to be contacted by Harris Capital Mortgage Group, LLC (NMLS# 1918223) regarding my mortgage inquiry. I consent to receive calls, texts, and emails. Message and data rates may apply. Reply STOP to opt out of texts at any time.";
 
@@ -26,12 +39,13 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Gate state
-  const [unlocked, setUnlocked]     = useState(false);
-  const [firstName, setFirstName]   = useState("");
-  const [email, setEmail]           = useState("");
-  const [phone, setPhone]           = useState("");
-  const [smsConsent, setSmsConsent] = useState(false);
-  const [errors, setErrors]         = useState<Partial<Record<"firstName" | "email" | "phone" | "smsConsent", string>>>({});
+  const [unlocked, setUnlocked]         = useState(false);
+  const [firstName, setFirstName]       = useState("");
+  const [email, setEmail]               = useState("");
+  const [phone, setPhone]               = useState("");
+  const [propertyState, setPropertyState] = useState("");
+  const [smsConsent, setSmsConsent]     = useState(false);
+  const [errors, setErrors]             = useState<Partial<Record<"firstName" | "email" | "phone" | "propertyState" | "smsConsent", string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -50,6 +64,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
     if (!firstName.trim()) e.firstName = "Enter your first name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Enter a valid email.";
     if (phone.replace(/\D/g, "").length < 10) e.phone = "Enter a 10-digit phone number.";
+    if (!propertyState) e.propertyState = "Select your property state.";
     if (!smsConsent) e.smsConsent = "Consent is required.";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -70,6 +85,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
       source: seoSlug ? "seo" : "home-calculator",
       seoSlug: seoSlug,
       funnelType: "payment-calculator",
+      propertyState: propertyState || undefined,
       estimatedMonthlyPayment: Math.round(est.totalMonthlyPayment),
       ...utmsToPayload(getStoredUtms()),
       sessionId: meta.sessionId,
@@ -220,6 +236,25 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
                     onChange={(v) => setPhone(formatPhone(v))}
                     error={errors.phone}
                   />
+
+                  {/* Property state */}
+                  <div>
+                    <select
+                      value={propertyState}
+                      onChange={(e) => setPropertyState(e.target.value)}
+                      className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-accent/20 ${
+                        errors.propertyState
+                          ? "border-red-300 bg-red-50/50 focus:border-red-400"
+                          : "border-line bg-white focus:border-accent"
+                      } ${propertyState === "" ? "text-muted/60" : "text-ink"}`}
+                    >
+                      <option value="">Property state…</option>
+                      {LICENSED_STATES.map((s) => (
+                        <option key={s.code} value={s.code}>{s.label}</option>
+                      ))}
+                    </select>
+                    {errors.propertyState && <p className="mt-1 text-[11px] font-semibold text-red-600">{errors.propertyState}</p>}
+                  </div>
 
                   {/* TCPA consent */}
                   <label className={`flex items-start gap-2 rounded-xl border px-3 py-3 text-[11px] leading-5 text-muted cursor-pointer ${errors.smsConsent ? "border-red-300 bg-red-50/60" : "border-line bg-white"}`}>

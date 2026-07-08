@@ -28,6 +28,7 @@ const LeadSchema = z.object({
   source:                  z.string().optional().default("funnel"),
   seoSlug:                 z.string().optional(),
   funnelType:              z.string().optional(),
+  propertyState:           z.string().length(2).toUpperCase().optional(),
   goal:                    z.string().optional(),
   priceRange:              z.string().optional(),
   creditRange:             z.string().optional(),
@@ -375,6 +376,7 @@ function companyLeadAlertHtml(lead: z.infer<typeof LeadSchema>, fullName: string
           </td></tr>
           <tr><td style="padding:16px 20px;">
             <table width="100%" cellpadding="0" cellspacing="0">
+              ${lead.propertyState ? detailRow("Property state", lead.propertyState) : ""}
               ${detailRow("Goal", goalLabel(lead.goal))}
               ${detailRow("Price range", lead.priceRange)}
               ${detailRow("Credit range", creditLabel(lead.creditRange))}
@@ -445,6 +447,7 @@ export async function POST(request: NextRequest) {
     sms_consent:                  lead.smsConsent,
     source:                       lead.source ?? "funnel",
     funnel_type:                  lead.funnelType ?? null,
+    property_state:               lead.propertyState ?? null,
     goal:                         lead.goal ?? null,
     price_range:                  lead.priceRange ?? null,
     credit_range:                 lead.creditRange ?? null,
@@ -455,7 +458,8 @@ export async function POST(request: NextRequest) {
     recommended_loan_type:        lead.recommendedLoanType      ?? null,
     notes: [
       lead.notes,
-      lead.seoSlug    ? `SEO page: /seo/${lead.seoSlug}` : null,
+      lead.propertyState ? `Property state: ${lead.propertyState}` : null,
+      lead.seoSlug       ? `SEO page: /seo/${lead.seoSlug}` : null,
     ].filter(Boolean).join("\n") || null,
     lo_slug:      lead.loSlug ?? null,
     lo_name:      lead.loName ?? null,
@@ -545,6 +549,7 @@ export async function POST(request: NextRequest) {
             leadFullName:        fullName,
             email:               lead.email,
             phone:               lead.phone,
+            propertyState:       lead.propertyState,
             goal:                goalLabel(lead.goal),
             priceRange:          lead.priceRange,
             creditRange:         creditLabel(lead.creditRange),
@@ -588,11 +593,12 @@ export async function POST(request: NextRequest) {
               : isContact         ? `Contact form — ${fullName || lead.email}`
               : `Company lead — ${fullName || lead.email}`,
             html: buildCompanyAlertEmail({
-              leadFullName: fullName,
-              email:        lead.email,
-              phone:        lead.phone,
-              source:       sourceDisplay,
-              goal:         goalLabel(lead.goal),
+              leadFullName:  fullName,
+              email:         lead.email,
+              phone:         lead.phone,
+              source:        sourceDisplay,
+              propertyState: lead.propertyState,
+              goal:          goalLabel(lead.goal),
               priceRange:   lead.priceRange,
               creditRange:  creditLabel(lead.creditRange),
               utmSource:    lead.utmSource,

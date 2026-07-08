@@ -665,6 +665,19 @@ function TextField({
 const SMS_CONSENT_TEXT =
   "By submitting this form, I agree to be contacted by Harris Capital Mortgage Group, LLC (NMLS# 1918223) regarding my mortgage inquiry. I consent to receive calls, texts, and emails. Message and data rates may apply. Reply STOP to opt out of texts at any time.";
 
+const LICENSED_STATES = [
+  { code: "FL", label: "Florida (FL)" },
+  { code: "TX", label: "Texas (TX)" },
+  { code: "GA", label: "Georgia (GA)" },
+  { code: "NV", label: "Nevada (NV)" },
+  { code: "CO", label: "Colorado (CO)" },
+  { code: "VA", label: "Virginia (VA)" },
+  { code: "DC", label: "Washington DC (DC)" },
+  { code: "MD", label: "Maryland (MD)" },
+  { code: "CA", label: "California (CA)" },
+  { code: "MS", label: "Mississippi (MS)" },
+];
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 type Stage = "calc" | "form" | "success";
@@ -693,11 +706,12 @@ export function CalcFunnel({
   const [inputs, setInputs] = useState<Record<string, string>>(initialInputs);
 
   // Contact form state
-  const [firstName, setFirstName] = useState("");
-  const [email, setEmail]         = useState("");
-  const [phone, setPhone]         = useState("");
-  const [smsConsent, setSmsConsent] = useState(false);
-  const [errors, setErrors]       = useState<Partial<Record<"firstName" | "email" | "phone" | "smsConsent", string>>>({});
+  const [firstName, setFirstName]       = useState("");
+  const [email, setEmail]               = useState("");
+  const [phone, setPhone]               = useState("");
+  const [propertyState, setPropertyState] = useState("");
+  const [smsConsent, setSmsConsent]     = useState(false);
+  const [errors, setErrors]             = useState<Partial<Record<"firstName" | "email" | "phone" | "propertyState" | "smsConsent", string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -713,6 +727,7 @@ export function CalcFunnel({
     if (!firstName.trim()) e.firstName = "Enter your first name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Enter a valid email address.";
     if (phone.replace(/\D/g, "").length < 10) e.phone = "Enter a 10-digit phone number.";
+    if (!propertyState) e.propertyState = "Select the state for your property.";
     if (!smsConsent) e.smsConsent = "Consent is required to continue.";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -733,6 +748,7 @@ export function CalcFunnel({
       source: source ?? (lo ? "team" : "get-started"),
       seoSlug,
       funnelType,
+      propertyState: propertyState || undefined,
       goal: undefined,
       loSlug: lo?.slug,
       loName: lo?.name,
@@ -940,6 +956,24 @@ export function CalcFunnel({
                   onChange={(v) => setPhone(formatPhone(v))}
                   error={errors.phone}
                 />
+
+                {/* Property state */}
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-ink">
+                    Property state *
+                  </label>
+                  <select
+                    value={propertyState}
+                    onChange={(e) => setPropertyState(e.target.value)}
+                    className={`input-base w-full ${errors.propertyState ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
+                  >
+                    <option value="">Select a state…</option>
+                    {LICENSED_STATES.map((s) => (
+                      <option key={s.code} value={s.code}>{s.label}</option>
+                    ))}
+                  </select>
+                  {errors.propertyState && <p className="mt-1 text-xs font-semibold text-red-600">{errors.propertyState}</p>}
+                </div>
 
                 <label className={`block rounded-xl border px-4 py-4 transition-colors ${errors.smsConsent ? "border-red-300 bg-red-50/60" : "border-line bg-white"}`}>
                   <div className="flex items-start gap-3">

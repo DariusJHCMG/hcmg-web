@@ -58,6 +58,8 @@ type FormState = "idle" | "loading" | "success" | "error";
 export default function ContactPage() {
   const [state, setState] = useState<FormState>("idle");
   const [consent, setConsent] = useState(false);
+  const [propertyState, setPropertyState] = useState("");
+  const [stateError, setStateError] = useState("");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -66,8 +68,26 @@ export default function ContactPage() {
     message: "",
   });
 
+  const LICENSED_STATES = [
+    { code: "FL", label: "Florida (FL)" },
+    { code: "TX", label: "Texas (TX)" },
+    { code: "GA", label: "Georgia (GA)" },
+    { code: "NV", label: "Nevada (NV)" },
+    { code: "CO", label: "Colorado (CO)" },
+    { code: "VA", label: "Virginia (VA)" },
+    { code: "DC", label: "Washington DC (DC)" },
+    { code: "MD", label: "Maryland (MD)" },
+    { code: "CA", label: "California (CA)" },
+    { code: "MS", label: "Mississippi (MS)" },
+  ];
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!propertyState) {
+      setStateError("Select the state for your property.");
+      return;
+    }
+    setStateError("");
     setState("loading");
     try {
       const res = await fetch("/api/lead", {
@@ -80,6 +100,7 @@ export default function ContactPage() {
           phone: formData.phone,
           smsConsent: consent,
           source: "contact",
+          propertyState,
           notes: formData.message,
         }),
       });
@@ -183,6 +204,22 @@ export default function ContactPage() {
                       value={formData.phone}
                       onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
                     />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Property state *</label>
+                    <select
+                      required
+                      value={propertyState}
+                      onChange={(e) => { setPropertyState(e.target.value); setStateError(""); }}
+                      className={`${inputClass} ${stateError ? "border-red-300" : ""} ${propertyState === "" ? "text-muted/60" : "text-ink"}`}
+                    >
+                      <option value="">Select a state…</option>
+                      {LICENSED_STATES.map((s) => (
+                        <option key={s.code} value={s.code}>{s.label}</option>
+                      ))}
+                    </select>
+                    {stateError && <p className="mt-1 text-xs font-semibold text-red-600">{stateError}</p>}
                   </div>
 
                   <div>

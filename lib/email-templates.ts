@@ -323,11 +323,12 @@ export function buildLeadConfirmationEmail({
 // ── 5. LO new-lead notification ───────────────────────────────────────────────
 
 export function buildLoNotificationEmail({
-  loFirstName, leadFullName, email, phone, goal, priceRange, creditRange,
+  loFirstName, leadFullName, email, phone, propertyState, goal, priceRange, creditRange,
   incomeRange, utmSource, utmMedium, utmCampaign, monthlyPayment,
   buyingPowerLow, buyingPowerHigh, recommendedLoanType, entryPage, device, portalUrl,
 }: {
   loFirstName: string; leadFullName: string; email: string; phone: string;
+  propertyState?: string | null;
   goal?: string | null; priceRange?: string | null; creditRange?: string | null;
   incomeRange?: string | null; utmSource?: string | null; utmMedium?: string | null;
   utmCampaign?: string | null; monthlyPayment?: number | null;
@@ -348,6 +349,7 @@ export function buildLoNotificationEmail({
           infoRow("Entry page", entryPage, true)
         )}
       ${emailSection("Mortgage Details",
+          infoRow("Property state", propertyState) +
           infoRow("Goal", goal) +
           infoRow("Price range", priceRange) +
           infoRow("Credit range", creditRange) +
@@ -374,10 +376,11 @@ export function buildLoNotificationEmail({
 // ── 6. Company / admin lead alert ────────────────────────────────────────────
 
 export function buildCompanyAlertEmail({
-  leadFullName, email, phone, source, goal, priceRange, creditRange,
+  leadFullName, email, phone, source, propertyState, goal, priceRange, creditRange,
   utmSource, utmCampaign, adminUrl, isEmployment, isContact,
 }: {
   leadFullName: string; email: string; phone: string; source: string;
+  propertyState?: string | null;
   goal?: string | null; priceRange?: string | null; creditRange?: string | null;
   utmSource?: string | null; utmCampaign?: string | null;
   adminUrl: string; isEmployment: boolean; isContact: boolean;
@@ -396,6 +399,7 @@ export function buildCompanyAlertEmail({
         )}
       ${!isEmployment && !isContact
         ? emailSection("Mortgage Details",
+            infoRow("Property state", propertyState) +
             infoRow("Goal", goal) +
             infoRow("Price range", priceRange) +
             infoRow("Credit range", creditRange, true)
