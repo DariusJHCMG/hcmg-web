@@ -231,9 +231,9 @@ export default async function TeamMemberPage({
       </div>
 
       {/* ══════════════════════════════════════════════════════════ */}
-      {/* ABOUT + FUNNEL                                            */}
+      {/* ABOUT + MORTGAGE PREVIEW CARD                            */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section id="funnel" className="bg-white py-20 scroll-mt-20">
+      <section className="bg-white py-20">
         <div className="container-shell max-w-6xl">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
             {/* Left: about copy + specialties + contact */}
@@ -289,10 +289,61 @@ export default async function TeamMemberPage({
               </div>
             </div>
 
-            {/* Right: funnel */}
-            <div>
-              <FunnelFlow lo={funnelLo} source="team" />
+            {/* Right: mortgage payment preview card */}
+            <div className="glass-card overflow-hidden p-0">
+              {/* Header bar */}
+              <div className="rounded-t-2xl px-6 py-3 text-center text-sm font-bold text-white" style={{ background: "linear-gradient(90deg,#F37021,#FF9847)" }}>
+                Your estimated monthly payment
+              </div>
+              {/* No credit check badge */}
+              <div className="flex justify-center -mt-3 mb-2">
+                <span className="rounded-full bg-accent px-3 py-0.5 text-[11px] font-bold text-white shadow-soft">No credit check required</span>
+              </div>
+              <div className="px-8 pb-8 pt-4">
+                {/* Big number */}
+                <p className="text-center font-extrabold tracking-tight text-ink" style={{ fontSize: 52 }}>
+                  $2,847<span className="text-2xl font-semibold text-muted">/month</span>
+                </p>
+                <p className="mt-1 text-center text-xs text-muted">Based on $425,000 · 6.5% rate · 20% down</p>
+                {/* Breakdown */}
+                <div className="mt-5 space-y-2.5 border-t border-line pt-5">
+                  {[
+                    { l: "Principal & interest", v: "$2,212" },
+                    { l: "Property taxes (est.)",  v: "$425"  },
+                    { l: "Homeowner's insurance",  v: "$160"  },
+                    { l: "HOA",                    v: "$50"   },
+                  ].map((r) => (
+                    <div key={r.l} className="flex justify-between text-sm">
+                      <span className="text-muted">{r.l}</span>
+                      <span className="font-semibold text-ink">{r.v}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-center text-xs text-muted/60">Estimate only. Not a loan commitment.</p>
+                {/* CTA */}
+                <a href="#funnel" className="primary-button mt-5 flex w-full justify-center">
+                  Get my actual estimate →
+                </a>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* FREE ESTIMATE FUNNEL — full-width own section            */}
+      {/* ══════════════════════════════════════════════════════════ */}
+      <section id="funnel" className="bg-sand py-20 scroll-mt-20">
+        <div className="container-shell max-w-2xl text-center">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">Free Estimate</p>
+          <h2 className="mb-3 text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
+            See what you qualify for in 60 seconds.
+          </h2>
+          <p className="mb-10 text-base text-muted">
+            No hard credit check. No commitment. Your info goes straight to {first}.
+          </p>
+          <div className="mx-auto max-w-xl">
+            <FunnelFlow lo={funnelLo} source="team" />
           </div>
         </div>
       </section>
