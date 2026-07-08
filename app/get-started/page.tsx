@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { FunnelFlow } from "@/components/funnel/FunnelFlow";
+import { CalcFunnel } from "@/components/funnel/CalcFunnel";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { getTeamMemberBySlug } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
@@ -125,16 +126,28 @@ export default async function GetStartedPage({
             </div>
           )}
 
-          <FunnelFlow
-            lo={funnelLo}
-            source={effectiveSource}
-            seoSlug={seoSlug}
-            funnelType={funnelDef?.slug}
-            funnelHeadline={funnelDef?.headline}
-            funnelSubhead={funnelDef?.subhead}
-            funnelBadge={funnelDef?.badge}
-            funnelConfig={funnelConfig}
-          />
+          {funnelDef?.family === "calculator" ? (
+            <CalcFunnel
+              funnelType={funnelDef.slug}
+              funnelHeadline={funnelDef.headline}
+              funnelSubhead={funnelDef.subhead}
+              funnelBadge={funnelDef.badge}
+              lo={funnelLo}
+              source={effectiveSource}
+              seoSlug={seoSlug}
+            />
+          ) : (
+            <FunnelFlow
+              lo={funnelLo}
+              source={effectiveSource}
+              seoSlug={seoSlug}
+              funnelType={funnelDef?.slug}
+              funnelHeadline={funnelDef?.headline}
+              funnelSubhead={funnelDef?.subhead}
+              funnelBadge={funnelDef?.badge}
+              funnelConfig={funnelConfig}
+            />
+          )}
         </div>
       </section>
 
