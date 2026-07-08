@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import Link from "next/link";
 import { OrangeKeyLogo } from "@/components/ui/OrangeKeyLogo";
 import { PortalMobileNav } from "@/components/portal/PortalMobileNav";
+import { PortalPing } from "@/components/portal/PortalPing";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -110,6 +111,7 @@ export default async function PortalLayout({ children }: { children: React.React
       </header>
 
       <main className="container-shell max-w-5xl py-6 md:py-8">
+        <PortalPing />
         {children}
       </main>
     </div>

@@ -509,6 +509,7 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
                   <th className="px-5 py-3 text-left">Role</th>
                   <th className="px-5 py-3 text-left">NMLS / Slug</th>
                   <th className="px-5 py-3 text-left">Status</th>
+                  <th className="px-5 py-3 text-left">Last Seen</th>
                   <th className="px-5 py-3 text-left">Website</th>
                   <th className="px-5 py-3 text-left">Actions</th>
                 </tr>
@@ -554,6 +555,10 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
                         <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${u.is_active ? "bg-green-50 text-green-700" : "bg-red-50 text-red-500"}`}>
                           {u.is_active ? "Active" : "Inactive"}
                         </span>
+                      </td>
+                      {/* Last Seen */}
+                      <td className="px-5 py-3">
+                        <LastSeenBadge ts={u.last_seen_at ?? null} />
                       </td>
                       {/* Website */}
                       <td className="px-5 py-3">
@@ -615,5 +620,39 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
         />
       )}
     </div>
+  );
+}
+
+function LastSeenBadge({ ts }: { ts: string | null }) {
+  if (!ts) {
+    return (
+      <span className="inline-flex rounded-full bg-sand px-2.5 py-0.5 text-[11px] font-semibold text-muted/60">
+        Never
+      </span>
+    );
+  }
+  const diff = Date.now() - new Date(ts).getTime();
+  const mins  = Math.floor(diff / 60_000);
+  const hrs   = Math.floor(mins / 60);
+  const days  = Math.floor(hrs / 24);
+
+  let label: string;
+  if (mins < 2)       label = "Just now";
+  else if (mins < 60) label = `${mins}m ago`;
+  else if (hrs < 24)  label = `${hrs}h ago`;
+  else if (days < 7)  label = `${days}d ago`;
+  else                label = new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  // Green ≤1d, yellow ≤7d, red >7d
+  const color = days < 1
+    ? "bg-green-50 text-green-700"
+    : days < 7
+    ? "bg-yellow-50 text-yellow-700"
+    : "bg-red-50 text-red-500";
+
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${color}`}>
+      {label}
+    </span>
   );
 }

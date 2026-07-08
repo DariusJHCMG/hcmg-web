@@ -27,6 +27,8 @@ export interface Profile {
   specialties: string[] | null;
   created_at: string;
   updated_at: string;
+  // Activity tracking
+  last_seen_at: string | null;
 }
 
 export interface Lead {
