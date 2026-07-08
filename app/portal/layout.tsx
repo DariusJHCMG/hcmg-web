@@ -39,6 +39,10 @@ export default async function PortalLayout({ children }: { children: React.React
                 className="rounded-lg px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-sand hover:text-ink">
                 My Funnels
               </Link>
+              <Link href="/portal/co-branded"
+                className="rounded-lg px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-sand hover:text-ink">
+                Co-Branded
+              </Link>
               <Link href="/portal/profile"
                 className="rounded-lg px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-sand hover:text-ink">
                 My Profile

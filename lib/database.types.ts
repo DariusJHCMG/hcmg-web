@@ -76,6 +76,24 @@ export interface LeadEvent {
   created_at: string;
 }
 
+export interface CoBrandedPage {
+  id: string;
+  lo_slug: string;
+  realtor_slug: string;
+  realtor_name: string;
+  realtor_company: string;
+  realtor_phone: string | null;
+  realtor_email: string | null;
+  realtor_license: string | null;
+  realtor_photo_url: string | null;
+  realtor_logo_url: string | null;
+  headline: string | null;
+  is_active: boolean;
+  clicks: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface FunnelLink {
   id: string;
   lo_slug: string;
