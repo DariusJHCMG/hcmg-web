@@ -184,7 +184,7 @@ const RANGES = [
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function AnalyticsDashboard({ data, scope }: { data: AnalyticsData; scope: "admin" | "portal" }) {
+export function AnalyticsDashboard({ data, scope, scopeLabel }: { data: AnalyticsData; scope: "admin" | "portal"; scopeLabel?: string }) {
   const [rangeDays, setRangeDays] = useState(30);
   const [activeTab, setActiveTab] = useState<"lead-gen" | "funnel" | "traffic" | "seo">("lead-gen");
 
@@ -242,10 +242,10 @@ export function AnalyticsDashboard({ data, scope }: { data: AnalyticsData; scope
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="ok-gradient-text text-[11px] font-bold uppercase tracking-[0.2em]">
-            {scope === "admin" ? "Company-Wide Analytics" : "My Analytics"}
+            {scopeLabel ?? (scope === "admin" ? "Company-Wide Analytics" : "My Analytics")}
           </p>
           <h1 className="mt-0.5 text-2xl font-extrabold text-ink">Analytics</h1>
-          {scope === "admin" && data.teamSize !== undefined && (
+          {scope === "admin" && !scopeLabel && data.teamSize !== undefined && (
             <p className="mt-1 text-xs text-muted">{data.teamSize} active team members · {allLeads.length.toLocaleString()} total leads all time</p>
           )}
         </div>
