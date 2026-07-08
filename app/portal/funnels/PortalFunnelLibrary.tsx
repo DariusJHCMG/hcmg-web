@@ -52,18 +52,6 @@ function CopyBtn({ text, variant = "default" }: { text: string; variant?: "defau
   );
 }
 
-// ── Platform presets ───────────────────────────────────────────────────────────
-const UTM_PRESETS = [
-  { label: "Facebook",  icon: "📘", source: "facebook",  medium: "paid-social" },
-  { label: "Instagram", icon: "📸", source: "instagram", medium: "paid-social" },
-  { label: "Google",    icon: "🔍", source: "google",    medium: "cpc"         },
-  { label: "Email",     icon: "✉️", source: "email",     medium: "email"       },
-  { label: "SMS / Text",icon: "💬", source: "sms",       medium: "sms"         },
-  { label: "TikTok",    icon: "🎵", source: "tiktok",    medium: "paid-social" },
-  { label: "YouTube",   icon: "▶️", source: "youtube",   medium: "video"       },
-  { label: "Custom",    icon: "✏️", source: "",          medium: ""            },
-];
-
 // ── Family accent color map ────────────────────────────────────────────────────
 const FAMILY_ACCENT: Record<string, string> = {
   purchase:     "#f59e0b",
@@ -80,34 +68,15 @@ const FAMILY_ACCENT: Record<string, string> = {
 export function PortalFunnelLibrary({ loSlug, siteUrl: _siteUrl, analyticsBasePath = "/portal/funnels" }: Props) {
   const [activeFamily, setActiveFamily] = useState<FunnelFamily | "all">("all");
   const [search,       setSearch]       = useState("");
-  const [utmPreset,    setUtmPreset]    = useState(-1); // -1 = no preset selected
-  const [utmSource,    setUtmSource]    = useState("");
-  const [utmMedium,    setUtmMedium]    = useState("");
-  const [utmCampaign,  setUtmCampaign]  = useState("");
-  const [utmContent,   setUtmContent]   = useState("");
 
   // Always derive the origin from the browser — never trust the env var which may be
   // localhost or wrong. typeof window check makes SSR safe.
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
-  const isCustom  = utmPreset === UTM_PRESETS.length - 1;
-  const activeSrc = utmPreset < 0 ? "" : (isCustom ? utmSource : UTM_PRESETS[utmPreset].source);
-  const activeMed = utmPreset < 0 ? "" : (isCustom ? utmMedium : UTM_PRESETS[utmPreset].medium);
-
-  function buildSuffix() {
-    const p: string[] = [];
-    if (activeSrc)   p.push(`utm_source=${encodeURIComponent(activeSrc)}`);
-    if (activeMed)   p.push(`utm_medium=${encodeURIComponent(activeMed)}`);
-    if (utmCampaign) p.push(`utm_campaign=${encodeURIComponent(utmCampaign)}`);
-    if (utmContent)  p.push(`utm_content=${encodeURIComponent(utmContent)}`);
-    return p.length ? `?${p.join("&")}` : "";
-  }
-
-  const suffix  = buildSuffix();
-  const baseUrl = `${origin}/go/${loSlug}${suffix}`;
+  const baseUrl = `${origin}/go/${loSlug}`;
 
   function buildUrl(slug: string) {
-    return `${origin}/go/${loSlug}/${slug}${suffix}`;
+    return `${origin}/go/${loSlug}/${slug}`;
   }
 
   const filtered = useMemo(() => {
@@ -241,101 +210,9 @@ export function PortalFunnelLibrary({ loSlug, siteUrl: _siteUrl, analyticsBasePa
             <CopyBtn text={baseUrl} variant="accent" />
           </div>
 
-          {suffix && (
-            <p className="mt-2 text-[11px] text-muted/60">
-              UTM params from builder applied ↑
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* ── UTM builder ──────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-line bg-white shadow-soft">
-        <div className="flex items-center justify-between border-b border-line px-5 py-4 sm:px-6">
-          <div>
-            <p className="text-sm font-extrabold text-ink">UTM Campaign Tracking</p>
-            <p className="text-xs text-muted">
-              Select a platform — tracking parameters are added to every link you copy below.
-            </p>
-          </div>
-          {utmPreset >= 0 && (
-            <button
-              onClick={() => { setUtmPreset(-1); setUtmSource(""); setUtmMedium(""); setUtmCampaign(""); setUtmContent(""); }}
-              className="text-xs font-semibold text-muted hover:text-red-500 transition-colors"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-
-        <div className="p-5 sm:p-6 space-y-4">
-          {/* Platform pills */}
-          <div className="flex flex-wrap gap-2">
-            {UTM_PRESETS.map((p, i) => (
-              <button
-                key={p.label}
-                onClick={() => {
-                  setUtmPreset(i);
-                  if (i < UTM_PRESETS.length - 1) { setUtmSource(""); setUtmMedium(""); }
-                }}
-                className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all
-                  ${utmPreset === i
-                    ? "border-accent/40 bg-accent/10 text-accent"
-                    : "border-line bg-sand text-muted hover:border-accent/30 hover:text-ink"
-                  }`}
-              >
-                <span>{p.icon}</span>
-                <span>{p.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Fields — only shown once a preset is chosen */}
-          {utmPreset >= 0 && (
-            <div className="grid gap-3 sm:grid-cols-4">
-              {[
-                { key: "source",   label: "utm_source",   val: activeSrc,   set: (v: string) => { if (isCustom) setUtmSource(v); },   editable: isCustom, ph: "facebook"    },
-                { key: "medium",   label: "utm_medium",   val: activeMed,   set: (v: string) => { if (isCustom) setUtmMedium(v); },   editable: isCustom, ph: "paid-social"  },
-                { key: "campaign", label: "utm_campaign", val: utmCampaign, set: setUtmCampaign, editable: true, ph: "spring2025"   },
-                { key: "content",  label: "utm_content",  val: utmContent,  set: setUtmContent,  editable: true, ph: "va-ad-v1"     },
-              ].map((f) => (
-                <div key={f.key}>
-                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted">
-                    {f.label}
-                  </label>
-                  <input
-                    type="text"
-                    value={f.val}
-                    onChange={(e) => f.set(e.target.value)}
-                    readOnly={!f.editable}
-                    placeholder={f.ph}
-                    className={`w-full rounded-xl border border-line bg-sand px-3 py-2 font-mono text-xs text-ink
-                      placeholder:text-muted/40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/10 transition-all
-                      ${!f.editable ? "cursor-not-allowed opacity-50" : ""}`}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Live suffix preview */}
-          {suffix && (
-            <div className="flex items-start gap-3 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3">
-              <span className="mt-0.5 flex-shrink-0 text-sm">🔗</span>
-              <div className="min-w-0">
-                <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-accent/70">
-                  Appended to every link you copy
-                </p>
-                <code className="break-all text-xs font-semibold text-accent">{suffix}</code>
-              </div>
-            </div>
-          )}
-
-          {utmPreset < 0 && (
-            <p className="text-xs text-muted/60">
-              👆 Choose a platform above to start adding tracking to your links — or skip this and copy links without UTM params.
-            </p>
-          )}
+          <p className="mt-2 text-[11px] text-muted/60">
+            UTM tracking is added automatically when this link is clicked.
+          </p>
         </div>
       </div>
 
