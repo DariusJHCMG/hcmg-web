@@ -12,6 +12,27 @@ async function getToken(): Promise<string | null> {
 
 // ── Constants ─────────────────────────────────────────────────────
 
+// Mirrors the inferGroup logic in data/team.ts — used for the live badge
+function inferTeamSection(title: string, authRole: string): string {
+  const t = title.toLowerCase();
+  if (t.includes("founder") || t.includes("ceo") || t.includes("chief executive") ||
+      t.includes("president") || t.includes("chief") || t.includes("national director"))
+    return "Leadership";
+  if (t.includes("loan officer") || t.includes("loan originator") || t.includes("branch manager"))
+    return "Loan Officers";
+  if (t.length > 0) return "Operations";
+  // No title — fall back to auth role
+  if (authRole === "loan_officer") return "Loan Officers";
+  if (authRole === "admin" || authRole === "developer") return "Leadership";
+  return "Operations";
+}
+
+const SECTION_COLORS: Record<string, string> = {
+  "Leadership":    "bg-amber-50 text-amber-700 border-amber-200",
+  "Loan Officers": "bg-purple-50 text-purple-700 border-purple-200",
+  "Operations":    "bg-teal-50 text-teal-700 border-teal-200",
+};
+
 const ROLES: Role[] = ["admin", "developer", "loan_officer"];
 
 const ROLE_COLORS: Record<string, string> = {
@@ -110,9 +131,16 @@ function EditDrawer({ user, onClose, onSaved }: {
                 {ROLES.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
               </select>
             </Field>
-            <Field label="Job Title" hint="Shown on team page (e.g. 'Loan Officer', 'CEO')">
+            <div>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="text-xs font-bold text-ink">Job Title</label>
+                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${SECTION_COLORS[inferTeamSection(form.title, form.role)]}`}>
+                  /team → {inferTeamSection(form.title, form.role)}
+                </span>
+              </div>
               <input className={IC} placeholder="Loan Officer" value={form.title} onChange={(e) => set("title", e.target.value)} />
-            </Field>
+              <p className="mt-1 text-[11px] text-muted/60">Controls which section they appear in on the public /team page</p>
+            </div>
             <Field label="Phone">
               <input className={IC} placeholder="702-555-0101" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
             </Field>
@@ -379,9 +407,16 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
                 {ROLES.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
               </select>
             </Field>
-            <Field label="Job Title" hint="e.g. 'Loan Officer', 'CEO'">
+            <div>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="text-xs font-bold text-ink">Job Title</label>
+                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${SECTION_COLORS[inferTeamSection(form.title, form.role)]}`}>
+                  /team → {inferTeamSection(form.title, form.role)}
+                </span>
+              </div>
               <input className={IC} placeholder="Loan Officer" value={form.title} onChange={(e) => fld("title", e.target.value)} />
-            </Field>
+              <p className="mt-1 text-[11px] text-muted/60">Controls which section they appear in on the public /team page</p>
+            </div>
             <Field label="Email *">
               <input required type="email" className={IC} placeholder="cason@hcmgloans.com" value={form.email} onChange={(e) => fld("email", e.target.value)} />
             </Field>
@@ -459,9 +494,14 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
                       </td>
                       {/* Role */}
                       <td className="px-5 py-3">
-                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold capitalize ${ROLE_COLORS[u.role]}`}>
-                          {ROLE_LABELS[u.role]}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold capitalize ${ROLE_COLORS[u.role]}`}>
+                            {ROLE_LABELS[u.role]}
+                          </span>
+                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${SECTION_COLORS[inferTeamSection(u.title ?? "", u.role)]}`}>
+                            {inferTeamSection(u.title ?? "", u.role)}
+                          </span>
+                        </div>
                       </td>
                       {/* NMLS / slug */}
                       <td className="px-5 py-3 text-xs text-muted">
