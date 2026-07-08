@@ -8,9 +8,10 @@ interface Settings {
 }
 
 const COMPANY_PAGES = [
-  { label: "Get Started (/get-started)",   path: "/get-started",  desc: "Main mortgage estimate funnel — no LO assigned" },
-  { label: "Contact (/contact)",            path: "/contact",       desc: "General contact form" },
-  { label: "Join (/join)",                  path: "/join",          desc: "Join the HCMG team form" },
+  { label: "Get Started",  path: "/get-started",  desc: "Main mortgage estimate funnel — no LO assigned" },
+  { label: "Contact",      path: "/contact",       desc: "General contact form" },
+  { label: "Join",         path: "/join",          desc: "Join the HCMG team application form" },
+  { label: "Team page",    path: "/team",          desc: "Leads submitted through the team page without clicking an LO link" },
 ];
 
 export default function SettingsPage() {
@@ -51,7 +52,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-extrabold text-ink">Company Settings</h1>
         <p className="mt-1 text-sm text-muted">
-          Configure company-wide lead routing and notification emails.
+          Configure how company-wide leads are handled and who gets notified.
         </p>
       </div>
 
@@ -64,12 +65,28 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Lead routing */}
+      {/* How company leads work callout */}
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm">
+        <p className="font-bold text-amber-900">How company leads work</p>
+        <p className="mt-1.5 text-xs leading-6 text-amber-800">
+          Leads from the company pages below (not tied to a specific loan officer) are saved directly to the
+          <strong> Admin → Leads</strong> table and appear in the amber <em>Company Leads</em> section at the top — visible only to admins.
+          They are <strong>never auto-routed</strong> to an LO. An admin reviews them and assigns or contacts the lead directly.
+        </p>
+        <p className="mt-2 text-xs text-amber-700">
+          Optionally, set the alert email below to get an instant email notification every time a company lead comes in —
+          the email shows the lead&apos;s details and which funnel page they came from.
+          Leave it blank to disable email alerts (leads still appear in the portal).
+        </p>
+      </div>
+
+      {/* Alert email */}
       <div className="rounded-2xl border border-line bg-white p-6">
-        <h2 className="mb-1 text-sm font-black uppercase tracking-[0.14em] text-muted">Company Lead Routing</h2>
+        <h2 className="mb-1 text-sm font-black uppercase tracking-[0.14em] text-muted">Company Lead Alert Email</h2>
         <p className="mb-5 text-xs text-muted">
-          Leads that come in through the company pages below (not tied to a specific loan officer) are
-          sent to this email address. This is in addition to the lead always being saved to the Leads table.
+          Optional. When set, an email is sent here every time a company lead comes in. The email includes the
+          lead&apos;s full details and the funnel page they submitted from.
+          Leave blank to disable.
         </p>
 
         {settings === null ? (
@@ -77,32 +94,30 @@ export default function SettingsPage() {
         ) : (
           <form onSubmit={save} className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-bold text-ink">Company Notification Email</label>
+              <label className="mb-1 block text-xs font-bold text-ink">Alert Email Address</label>
               <input
                 type="email"
-                required
                 className={IC}
-                placeholder="info@harriscapitalmortgage.com"
+                placeholder="Leave blank to disable email alerts"
                 value={form.company_notify_email}
                 onChange={(e) => setForm((p) => ({ ...p, company_notify_email: e.target.value }))}
               />
               <p className="mt-1 text-[11px] text-muted/60">
-                All non-LO-routed leads (from /get-started, /contact, /team, /go/company) send an alert here.
+                e.g. info@harriscapitalmortgage.com — whoever should be alerted when a new unassigned lead arrives.
               </p>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-bold text-ink">Company Funnel Label</label>
+              <label className="mb-1 block text-xs font-bold text-ink">Company Lead Display Label</label>
               <input
                 type="text"
-                required
                 className={IC}
                 placeholder="HCMG Company"
                 value={form.company_funnel_label}
                 onChange={(e) => setForm((p) => ({ ...p, company_funnel_label: e.target.value }))}
               />
               <p className="mt-1 text-[11px] text-muted/60">
-                Display name used in the Leads table when a lead has no assigned LO.
+                The label shown in the Leads table for leads with no LO assigned.
               </p>
             </div>
 
@@ -122,51 +137,32 @@ export default function SettingsPage() {
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted/70">Company Funnel Pages</h2>
         </div>
         <p className="px-5 pt-4 pb-2 text-xs text-muted">
-          These public pages generate leads that are not tied to a specific loan officer.
-          Leads from these pages are routed to the company notification email above.
+          These pages accept leads that are not tied to any specific loan officer.
+          All submissions land in the admin portal under the Company Leads section.
         </p>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-xs font-semibold uppercase tracking-[0.1em] text-muted/60">
               <th className="px-5 py-3 text-left">Page</th>
               <th className="px-5 py-3 text-left">Description</th>
-              <th className="px-5 py-3 text-left">Link</th>
+              <th className="px-5 py-3 text-left">Open</th>
             </tr>
           </thead>
           <tbody>
             {COMPANY_PAGES.map((p, i) => (
               <tr key={p.path} className={i % 2 === 0 ? "bg-white" : "bg-sand/30"}>
-                <td className="px-5 py-3 font-semibold text-ink">{p.label}</td>
+                <td className="px-5 py-3 font-semibold text-ink text-sm">{p.label}</td>
                 <td className="px-5 py-3 text-xs text-muted">{p.desc}</td>
                 <td className="px-5 py-3">
                   <a href={p.path} target="_blank" rel="noopener noreferrer"
                     className="text-xs font-bold text-accent hover:underline">
-                    Open ↗
+                    {p.path} ↗
                   </a>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* How leads are routed */}
-      <div className="rounded-2xl border border-line bg-sand p-5 text-sm leading-7 text-muted">
-        <p className="font-semibold text-ink">How company vs LO lead routing works</p>
-        <ul className="mt-2 space-y-1 text-xs leading-6">
-          <li>
-            <span className="font-semibold text-ink">LO funnel link</span> (e.g. /go/cason-knight) →
-            lead assigned to that LO, notification sent to their notify email
-          </li>
-          <li>
-            <span className="font-semibold text-ink">Company pages</span> (/get-started, /contact, /team) →
-            lead has no LO assignment, notification sent to the company email above
-          </li>
-          <li>
-            <span className="font-semibold text-ink">All leads</span> → always saved to the Leads table
-            regardless of source
-          </li>
-        </ul>
       </div>
     </div>
   );

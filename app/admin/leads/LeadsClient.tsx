@@ -6,50 +6,75 @@ import { LeadIntelPanel } from "@/components/portal/LeadIntelPanel";
 
 const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed", "lost"];
 
+const SOURCE_LABELS: Record<string, string> = {
+  "funnel":      "LO Funnel",
+  "contact":     "Contact Page",
+  "get-started": "Get Started",
+  "team":        "Team Page",
+  "calculator":  "Calculator",
+  "join":        "Join Page",
+};
+
+function sourceLabel(s: string | null): string {
+  return SOURCE_LABELS[s ?? ""] ?? s ?? "Unknown";
+}
+
 export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   const [leads, setLeads]               = useState<Lead[]>(initialLeads);
   const [search, setSearch]             = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">("");
-  const [sourceFilter, setSourceFilter] = useState("");
-
-  async function updateStatus(id: string, status: LeadStatus) {
-    await fetch(`/api/admin/leads/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    setLeads((prev) => prev.map((l) => l.id === id ? { ...l, status } : l));
-  }
+  const [loFilter, setLoFilter]         = useState<"all" | "company" | "lo">("all");
 
   function exportCSV() {
     const cols: (keyof Lead)[] = ["first_name","last_name","email","phone","source","lo_name","status","goal","price_range","credit_range","utm_source","utm_medium","utm_campaign","created_at"];
-    const rows = [cols.join(","), ...filtered.map((l) => cols.map((c) => `"${String(l[c] ?? "").replace(/"/g, '""')}"`).join(","))];
+    const rows = [cols.join(","), ...allFiltered.map((l) => cols.map((c) => `"${String(l[c] ?? "").replace(/"/g, '""')}"`).join(","))];
     const blob = new Blob([rows.join("\n")], { type: "text/csv" });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement("a"); a.href = url; a.download = "hcmg-leads.csv"; a.click();
     URL.revokeObjectURL(url);
   }
 
-  const filtered = leads.filter((l) => {
-    const matchesStatus = !statusFilter || l.status === statusFilter;
-    const matchesSource = !sourceFilter || l.source === sourceFilter;
-    if (!matchesStatus || !matchesSource) return false;
-    if (!search) return true;
+  function applySearch(list: Lead[]): Lead[] {
+    if (!search) return list;
     const q = search.toLowerCase();
-    return (
+    return list.filter((l) =>
       l.first_name?.toLowerCase().includes(q) ||
       l.last_name?.toLowerCase().includes(q)  ||
       l.email?.toLowerCase().includes(q)      ||
       l.phone?.toLowerCase().includes(q)
     );
-  });
+  }
+
+  function applyStatus(list: Lead[]): Lead[] {
+    return statusFilter ? list.filter((l) => l.status === statusFilter) : list;
+  }
+
+  const allFiltered = applySearch(applyStatus(leads));
+
+  // Split into company (no lo_slug) vs LO-assigned
+  const companyLeads = allFiltered.filter((l) => !l.lo_slug);
+  const loLeads      = allFiltered.filter((l) => !!l.lo_slug);
+
+  const shown = loFilter === "company" ? companyLeads
+    : loFilter === "lo"      ? loLeads
+    : allFiltered;
+
+  const newCompanyCount = leads.filter((l) => !l.lo_slug && l.status === "new").length;
 
   return (
     <div className="space-y-5">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-ink">Leads</h1>
-          <p className="mt-0.5 text-sm text-muted">{filtered.length} leads</p>
+          <p className="mt-0.5 text-sm text-muted">
+            {leads.length} total · {companyLeads.length} company · {loLeads.length} LO-assigned
+            {newCompanyCount > 0 && (
+              <span className="ml-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+                ⚠ {newCompanyCount} company lead{newCompanyCount > 1 ? "s" : ""} need attention
+              </span>
+            )}
+          </p>
         </div>
         <button onClick={exportCSV} className="secondary-button !py-2 !px-4 !text-sm">
           ↓ Export CSV
@@ -73,45 +98,102 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
           <option value="">All statuses</option>
           {ALL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select
-          value={sourceFilter}
-          onChange={(e) => setSourceFilter(e.target.value)}
-          className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink focus:border-accent focus:outline-none transition"
-        >
-          <option value="">All sources</option>
-          {["funnel","contact","get-started","team","calculator"].map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-2xl border border-line bg-white overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-line bg-sand text-xs font-semibold uppercase tracking-[0.1em] text-muted/70">
-                <th className="px-5 py-3 text-left">Name</th>
-                <th className="px-5 py-3 text-left">Contact</th>
-                <th className="px-5 py-3 text-left">Source</th>
-                <th className="px-5 py-3 text-left">LO Assigned</th>
-                <th className="px-5 py-3 text-left">Goal</th>
-                <th className="px-5 py-3 text-left">Status</th>
-                <th className="px-5 py-3 text-left">Date</th>
-                <th className="px-5 py-3 text-left"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 && (
-                <tr><td colSpan={8} className="px-6 py-10 text-center text-sm text-muted/60">No leads found.</td></tr>
+        {/* Company / LO toggle */}
+        <div className="flex rounded-xl border border-line bg-white overflow-hidden text-sm font-semibold">
+          {(["all", "company", "lo"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setLoFilter(v)}
+              className={`px-4 py-2.5 transition-colors ${loFilter === v ? "bg-accent text-white" : "text-muted hover:bg-sand"}`}
+            >
+              {v === "all" ? "All" : v === "company" ? "Company" : "LO-assigned"}
+              {v === "company" && newCompanyCount > 0 && (
+                <span className="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 rounded-full bg-amber-400 text-[10px] font-black text-white px-1">
+                  {newCompanyCount}
+                </span>
               )}
-              {filtered.map((lead) => (
-                <LeadIntelPanel key={lead.id} lead={lead} />
-              ))}
-            </tbody>
-          </table>
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* Company leads callout — only when viewing all or company */}
+      {loFilter !== "lo" && companyLeads.length > 0 && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-amber-200 bg-amber-100/60 px-5 py-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-amber-800">
+                ⚠ Company Leads — No LO Assigned · {companyLeads.filter(l => l.status === "new").length} new
+              </p>
+              <p className="mt-0.5 text-[11px] text-amber-700">
+                These came in through company pages (/get-started, /contact, /team). Assign to an LO or action directly.
+              </p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-amber-200 text-xs font-semibold uppercase tracking-[0.1em] text-amber-800/70">
+                  <th className="px-5 py-3 text-left">Name</th>
+                  <th className="px-5 py-3 text-left">Contact</th>
+                  <th className="px-5 py-3 text-left">Funnel / Source</th>
+                  <th className="px-5 py-3 text-left">Goal</th>
+                  <th className="px-5 py-3 text-left">Status</th>
+                  <th className="px-5 py-3 text-left">Date</th>
+                  <th className="px-5 py-3 text-left"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {companyLeads.map((lead) => (
+                  <LeadIntelPanel key={lead.id} lead={lead} sourceLabel={sourceLabel(lead.source)} hideLoColumn />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* LO leads table */}
+      {loFilter !== "company" && (
+        <div className="rounded-2xl border border-line bg-white overflow-hidden">
+          <div className="border-b border-line bg-sand/60 px-5 py-3">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted/70">
+              LO-Assigned Leads · {loFilter === "lo" ? loLeads.length : loLeads.length}
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line text-xs font-semibold uppercase tracking-[0.1em] text-muted/60">
+                  <th className="px-5 py-3 text-left">Name</th>
+                  <th className="px-5 py-3 text-left">Contact</th>
+                  <th className="px-5 py-3 text-left">Source</th>
+                  <th className="px-5 py-3 text-left">LO Assigned</th>
+                  <th className="px-5 py-3 text-left">Goal</th>
+                  <th className="px-5 py-3 text-left">Status</th>
+                  <th className="px-5 py-3 text-left">Date</th>
+                  <th className="px-5 py-3 text-left"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {loLeads.length === 0 && (
+                  <tr><td colSpan={8} className="px-6 py-10 text-center text-sm text-muted/60">No LO-assigned leads.</td></tr>
+                )}
+                {loLeads.map((lead) => (
+                  <LeadIntelPanel key={lead.id} lead={lead} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Empty state when filtering to company but none exist */}
+      {loFilter === "company" && companyLeads.length === 0 && (
+        <div className="rounded-2xl border border-line bg-white px-6 py-10 text-center text-sm text-muted/60">
+          No company leads found.
+        </div>
+      )}
     </div>
   );
 }

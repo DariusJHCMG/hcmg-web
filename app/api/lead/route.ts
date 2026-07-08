@@ -126,6 +126,53 @@ const loNotificationHtml = (lead: ReturnType<typeof LeadSchema.parse>, loName: s
 </html>
 `;
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://getorangekey.com";
+
+const companyLeadAlertHtml = (lead: ReturnType<typeof LeadSchema.parse>, fullName: string, source: string) => `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:0;background:#f9f9f9;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f9;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+        <tr>
+          <td style="background:#142850;padding:32px 40px;">
+            <p style="margin:0;font-size:22px;font-weight:800;color:#fff;letter-spacing:2px;">HCMG</p>
+            <p style="margin:4px 0 0;font-size:12px;color:#F37021;letter-spacing:1px;">⚠ COMPANY LEAD — NEEDS ASSIGNMENT</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px;">
+            <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1A2B42;">New unassigned lead</p>
+            <p style="margin:0 0 20px;font-size:13px;color:#9AABB8;">
+              Came in via <strong style="color:#1A2B42;">${source}</strong> — no loan officer assigned. Log in to the admin portal to assign or action this lead.
+            </p>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;width:140px;">Name</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-weight:600;color:#1A2B42;">${fullName || "—"}</td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Email</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.email}</td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Phone</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.phone}</td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Goal</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.goal ?? "—"}</td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Price Range</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.priceRange ?? "—"}</td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Credit Range</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.creditRange ?? "—"}</td></tr>
+              <tr><td style="padding:8px 0;color:#9AABB8;">Funnel / Source</td><td style="padding:8px 0;font-weight:600;color:#1A2B42;">${source}</td></tr>
+            </table>
+            <a href="${SITE_URL}/admin/leads" style="display:inline-block;margin-top:28px;background:#142850;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;">
+              View in admin portal →
+            </a>
+            <hr style="margin:32px 0;border:none;border-top:1px solid #f0f0f0;" />
+            <p style="margin:0;font-size:12px;line-height:1.7;color:#9AABB8;">
+              Harris Capital Mortgage Group, LLC · NMLS# 1918223.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+`;
+
 export async function POST(request: NextRequest) {
   let body: unknown;
   try {
@@ -209,27 +256,18 @@ export async function POST(request: NextRequest) {
   // ── 4. Send emails (skipped if RESEND_API_KEY not set) ───
   const resend = getResend();
   if (resend) {
-    const internalSubject = lead.loName
-      ? `New lead for ${lead.loName}: ${fullName || lead.email}`
-      : `New lead: ${fullName || lead.email}`;
-
     const emailJobs = [
+      // Confirmation to the lead submitter always fires
       resend.emails.send({
         from: "HCMG <noreply@hcmgloans.com>",
         to: lead.email,
         subject: lead.loName ? `Your HCMG estimate, routed to ${lead.loName}` : "Your HCMG estimate is ready",
         html: confirmationHtml(lead.firstName, lead.loName),
       }),
-      resend.emails.send({
-        from: "HCMG Leads <noreply@hcmgloans.com>",
-        to: (await readSettings()).company_notify_email,
-        subject: internalSubject,
-        html: `<pre style="font-family:monospace;font-size:13px;">${JSON.stringify(lead, null, 2)}</pre>`,
-      }),
     ];
 
-    // Instant LO notification
-    if (loNotifyEmail && lead.loName) {
+    if (lead.loSlug && loNotifyEmail && lead.loName) {
+      // LO lead — notify the assigned LO directly
       emailJobs.push(
         resend.emails.send({
           from: "HCMG Leads <noreply@hcmgloans.com>",
@@ -238,6 +276,20 @@ export async function POST(request: NextRequest) {
           html: loNotificationHtml(lead, lead.loName),
         })
       );
+    } else if (!lead.loSlug) {
+      // Company lead — alert the admin notify email if one is configured
+      const settings = await readSettings();
+      if (settings.company_notify_email) {
+        const source = lead.source ?? "website";
+        emailJobs.push(
+          resend.emails.send({
+            from: "HCMG Leads <noreply@hcmgloans.com>",
+            to: settings.company_notify_email,
+            subject: `Company lead needs attention — ${fullName || lead.email} via ${source}`,
+            html: companyLeadAlertHtml(lead, fullName, source),
+          })
+        );
+      }
     }
 
     await Promise.all(emailJobs).catch(() => {}); // don't fail the lead save if email fails

@@ -74,9 +74,11 @@ function AttrBadge({ icon, label, value }: { icon: string; label: string; value:
 
 interface Props {
   lead: Lead;
+  sourceLabel?: string;  // override the source cell with a human label (company leads)
+  hideLoColumn?: boolean; // suppress the LO column for company-leads table
 }
 
-export function LeadIntelPanel({ lead }: Props) {
+export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn }: Props) {
   const [open, setOpen]       = useState(false);
   const [events, setEvents]   = useState<LeadEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -136,18 +138,24 @@ export function LeadIntelPanel({ lead }: Props) {
         </td>
         {/* Source */}
         <td className="px-5 py-3.5 text-sm text-muted">
-          <span className="flex items-center gap-1.5">
-            <span>{sourceIcon(lead.utm_source)}</span>
-            <span>{lead.utm_source ?? lead.source}</span>
-          </span>
+          {sourceLabel ? (
+            <span className="font-semibold text-ink">{sourceLabel}</span>
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <span>{sourceIcon(lead.utm_source)}</span>
+              <span>{lead.utm_source ?? lead.source}</span>
+            </span>
+          )}
           {lead.device && (
             <span className="text-xs text-muted/60">
               {DEVICE_ICONS[lead.device] ?? ""} {lead.device}
             </span>
           )}
         </td>
-        {/* LO */}
-        <td className="px-5 py-3.5 text-sm text-muted">{lead.lo_name ?? "—"}</td>
+        {/* LO — hidden for company-leads table */}
+        {!hideLoColumn && (
+          <td className="px-5 py-3.5 text-sm text-muted">{lead.lo_name ?? "—"}</td>
+        )}
         {/* Goal */}
         <td className="px-5 py-3.5 text-sm text-muted">{lead.goal ?? "—"}</td>
         {/* Status */}
