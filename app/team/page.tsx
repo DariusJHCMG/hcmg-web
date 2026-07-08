@@ -46,12 +46,15 @@ export default async function TeamPage() {
     .eq("is_active", true)
     .order("created_at", { ascending: true });
 
-  // Build a lookup of lo_slug → avatar_url for leadership members only
-  const leadershipAvatars = new Map<string, string>();
+  // Build lookups from DB profiles: slug → avatar_url, slug → title, slug → short_bio
+  const dbAvatars  = new Map<string, string>();
+  const dbTitles   = new Map<string, string>();
+  const dbBios     = new Map<string, string>();
   for (const p of profiles ?? []) {
-    if (p.lo_slug && p.avatar_url && LEADERSHIP_SLUGS.has(p.lo_slug)) {
-      leadershipAvatars.set(p.lo_slug, p.avatar_url);
-    }
+    if (!p.lo_slug) continue;
+    if (p.avatar_url)  dbAvatars.set(p.lo_slug, p.avatar_url);
+    if (p.title)       dbTitles.set(p.lo_slug, p.title);
+    if (p.short_bio)   dbBios.set(p.lo_slug, p.short_bio);
   }
 
   // Build a set of lo_slugs that are deactivated → hide from static list
@@ -64,15 +67,25 @@ export default async function TeamPage() {
   // Static slugs already in team.ts
   const staticSlugs = new Set(teamMembers.map((m) => m.slug));
 
-  // Filter out deactivated members from the static list
-  // For leadership members, swap in their portal avatar_url if set
+  // For every static member: override photo (leadership only) + title + bio from DB if set
   const activeStaticMembers: TeamMember[] = teamMembers
     .filter((m) => !inactiveSlugs.has(m.slug))
-    .map((m) =>
-      LEADERSHIP_SLUGS.has(m.slug) && leadershipAvatars.has(m.slug)
-        ? { ...m, photo: leadershipAvatars.get(m.slug)! }
-        : m
-    );
+    .map((m) => {
+      const overrides: Partial<TeamMember> = {};
+      // Photo: only swap for leadership slugs (LOs keep placeholder on roster)
+      if (LEADERSHIP_SLUGS.has(m.slug) && dbAvatars.has(m.slug)) {
+        overrides.photo = dbAvatars.get(m.slug)!;
+      }
+      // Title: use DB value for everyone if set
+      if (dbTitles.has(m.slug)) {
+        overrides.role = dbTitles.get(m.slug)!;
+      }
+      // Short bio: use DB value for everyone if set
+      if (dbBios.has(m.slug)) {
+        overrides.shortBio = dbBios.get(m.slug)!;
+      }
+      return Object.keys(overrides).length > 0 ? { ...m, ...overrides } : m;
+    });
 
   // Portal-only users: active profiles with a lo_slug NOT already in the static list
   const portalMembers = (profiles ?? [])
