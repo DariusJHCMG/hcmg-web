@@ -67,7 +67,7 @@ export default function PrivacyPage() {
 
           <H2>9. Contact</H2>
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
-            Privacy inquiries: info@harriscapitalmortgage.com<br />
+            Privacy inquiries: info@hcmgloans.com<br />
             Harris Capital Mortgage Group, LLC<br />
             HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120<br />
             Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032

@@ -61,7 +61,7 @@ const schemaOrg = {
   url: "https://hcmgloans.com",
   telephone: "+18884413930",
   faxNumber: "+14048824100",
-  email: "info@harriscapitalmortgage.com",
+  email: "info@hcmgloans.com",
   address: {
     "@type": "PostalAddress",
     streetAddress: "6375 S Pecos Rd, Suite 208",

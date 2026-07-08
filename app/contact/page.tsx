@@ -34,8 +34,8 @@ function ContactInfo() {
       </div>
       <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Email</p>
-        <a href="mailto:info@harriscapitalmortgage.com" className="text-sm font-semibold text-ink hover:text-accent transition-colors">
-          info@harriscapitalmortgage.com
+        <a href="mailto:info@hcmgloans.com" className="text-sm font-semibold text-ink hover:text-accent transition-colors">
+          info@hcmgloans.com
         </a>
       </div>
       <div>

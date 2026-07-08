@@ -43,8 +43,8 @@ export function Footer() {
             <a href="tel:+18884413930" className="block hover:text-accent transition-colors">
               888-441-3930
             </a>
-            <a href="mailto:info@harriscapitalmortgage.com" className="block hover:text-accent transition-colors">
-              info@harriscapitalmortgage.com
+            <a href="mailto:info@hcmgloans.com" className="block hover:text-accent transition-colors">
+              info@hcmgloans.com
             </a>
             <p>Fax: 404-882-4100</p>
           </div>

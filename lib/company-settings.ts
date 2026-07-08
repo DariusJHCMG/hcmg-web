@@ -12,7 +12,7 @@ export interface CompanySettings {
 }
 
 export const DEFAULT_SETTINGS: CompanySettings = {
-  company_notify_email:    "info@harriscapitalmortgage.com",
+  company_notify_email:    "info@hcmgloans.com",
   company_funnel_label:    "HCMG Company",
   contact_notify_email:    "",
   recruiting_notify_email: "",

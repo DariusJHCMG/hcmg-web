@@ -41,7 +41,7 @@ export default function LicensingPage() {
             NMLS# 1918223<br />
             <strong>HQ:</strong> 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120<br />
             <strong>Branch:</strong> 9801 Westheimer Ave, Suite 300, Houston, TX 77032<br />
-            888-441-3930 · Fax: 404-882-4100 · info@harriscapitalmortgage.com
+            888-441-3930 · Fax: 404-882-4100 · info@hcmgloans.com
           </div>
 
           <H2>NMLS Consumer Access</H2>
@@ -117,7 +117,7 @@ export default function LicensingPage() {
 
           <H2>Contact Regulatory Inquiries</H2>
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
-            Licensing inquiries: info@harriscapitalmortgage.com<br />
+            Licensing inquiries: info@hcmgloans.com<br />
             Harris Capital Mortgage Group, LLC<br />
             NMLS# 1918223<br />
             HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120<br />

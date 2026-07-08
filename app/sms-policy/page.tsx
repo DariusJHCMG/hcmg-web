@@ -91,7 +91,7 @@ export default function SmsPolicy() {
             HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120<br />
             Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032<br />
             888-441-3930 · Fax: 404-882-4100<br />
-            info@harriscapitalmortgage.com
+            info@hcmgloans.com
           </div>
         </div>
       </section>

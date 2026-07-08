@@ -202,7 +202,7 @@ function LoginForm() {
 
             <p style={{ marginTop:28,fontSize:12,color:"#94A3B8",textAlign:"center" }}>
               Trouble signing in?{" "}
-              <a href="mailto:info@harriscapitalmortgage.com" style={{ color:"#F37021",textDecoration:"underline" }}>
+              <a href="mailto:info@hcmgloans.com" style={{ color:"#F37021",textDecoration:"underline" }}>
                 Contact support
               </a>
             </p>

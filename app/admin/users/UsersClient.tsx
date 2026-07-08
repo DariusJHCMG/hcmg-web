@@ -315,6 +315,23 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
 
   const fld = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
+  // Auto-generate slug from full_name whenever name changes and slug hasn't been manually edited
+  function nameToSlug(name: string): string {
+    return name.toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+  function handleNameChange(v: string) {
+    setForm((p) => ({
+      ...p,
+      full_name: v,
+      // Only auto-fill slug if it hasn't been manually changed
+      lo_slug: p.lo_slug === nameToSlug(p.full_name) || p.lo_slug === "" ? nameToSlug(v) : p.lo_slug,
+    }));
+  }
+
   async function createUser(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true); setMsg(null);
@@ -413,7 +430,7 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
           <h2 className="mb-5 font-bold text-ink">New Account</h2>
           <form onSubmit={createUser} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Full Name *">
-              <input required className={IC} placeholder="Cason Thomas Knight" value={form.full_name} onChange={(e) => fld("full_name", e.target.value)} />
+              <input required className={IC} placeholder="Cason Thomas Knight" value={form.full_name} onChange={(e) => handleNameChange(e.target.value)} />
             </Field>
             <Field label="Role *">
               <select required className={IC} value={form.role} onChange={(e) => fld("role", e.target.value)}>
@@ -446,9 +463,13 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
             <Field label="NMLS#">
               <input className={IC} placeholder="1234567" value={form.nmls} onChange={(e) => fld("nmls", e.target.value)} />
             </Field>
-            <Field label="LO Slug" hint="Used in /go/[slug] funnel link">
-              <input className={IC} placeholder="cason-knight" value={form.lo_slug} onChange={(e) => fld("lo_slug", e.target.value)} />
-            </Field>
+            <div>
+              <label className="mb-1 block text-xs font-bold text-ink">LO Slug</label>
+              <input className={IC} placeholder="auto-generated from name" value={form.lo_slug} onChange={(e) => fld("lo_slug", e.target.value)} />
+              <p className="mt-1 text-[11px] text-muted/60">
+                Auto-filled from name · Edit to override · Used in <code className="font-mono">/go/[slug]</code> and <code className="font-mono">/team/[slug]</code>
+              </p>
+            </div>
             <Field label="Lead Notify Email">
               <input type="email" className={IC} placeholder="Defaults to login email" value={form.notify_email} onChange={(e) => fld("notify_email", e.target.value)} />
             </Field>

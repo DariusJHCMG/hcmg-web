@@ -52,7 +52,7 @@ export default function TermsPage() {
           <P>These Terms are governed by the laws of the State of Michigan, without regard to conflict of law provisions.</P>
 
           <H2>10. Contact</H2>
-          <P>Legal inquiries: info@harriscapitalmortgage.com · Harris Capital Mortgage Group, LLC · HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120 · Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032</P>
+          <P>Legal inquiries: info@hcmgloans.com · Harris Capital Mortgage Group, LLC · HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120 · Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032</P>
         </div>
       </section>
       <Footer />

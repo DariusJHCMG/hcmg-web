@@ -44,10 +44,6 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const m = getTeamMemberBySlug(slug);
-  if (!m) return {};
-
-  // Try to enrich with DB data
   const sb = createServiceClient();
   const { data: p } = await sb
     .from("profiles")
@@ -55,11 +51,14 @@ export async function generateMetadata({
     .eq("lo_slug", slug)
     .single();
 
-  const name  = p?.full_name ?? m.name;
-  const role  = p?.title     ?? m.role;
-  const nmls  = p?.nmls      ?? m.nmls;
-  const bio   = p?.short_bio ?? m.shortBio;
-  const photo = p?.avatar_url ?? m.photo;
+  const m = getTeamMemberBySlug(slug);
+  if (!p && !m) return {};
+
+  const name  = p?.full_name ?? m?.name ?? "";
+  const role  = p?.title     ?? m?.role ?? "";
+  const nmls  = p?.nmls      ?? m?.nmls ?? null;
+  const bio   = p?.short_bio ?? m?.shortBio ?? null;
+  const photo = p?.avatar_url ?? m?.photo ?? "/team/placeholder.svg";
 
   const title = nmls
     ? `${name}, ${role}, NMLS# ${nmls} | HCMG`
@@ -97,36 +96,39 @@ export default async function TeamMemberPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const m = getTeamMemberBySlug(slug);
-  if (!m) notFound();
 
-  // Pull from Supabase profile first, fall back to data/team.ts
+  // Query DB first — portal-only users (not in data/team.ts) still get a page
   const sb = createServiceClient();
   const { data: profileData } = await sb
     .from("profiles")
     .select("*")
     .eq("lo_slug", slug)
+    .eq("is_active", true)
     .single();
 
   const p = profileData as Profile | null;
+  const m = getTeamMemberBySlug(slug);
 
-  // Resolved values — DB takes precedence, data/team.ts or defaults as fallback
-  const name          = p?.full_name       ?? m.name;
-  const role          = p?.title           ?? m.role;
-  const phone         = p?.phone           ?? m.phone ?? "";
-  const email         = p?.email           ?? m.email ?? "";
-  const linkedin      = p?.linkedin        ?? m.linkedin ?? "";
-  const nmls          = p?.nmls            ?? m.nmls;
-  const photo         = p?.avatar_url      ?? m.photo;
+  // 404 only if neither DB nor static list knows this slug
+  if (!p && !m) notFound();
+
+  // Resolved values — DB takes precedence, data/team.ts as fallback
+  const name          = p?.full_name       ?? m!.name;
+  const role          = p?.title           ?? m!.role;
+  const phone         = p?.phone           ?? m?.phone ?? "";
+  const email         = p?.email           ?? m?.email ?? "";
+  const linkedin      = p?.linkedin        ?? m?.linkedin ?? "";
+  const nmls          = p?.nmls            ?? m?.nmls ?? null;
+  const photo         = p?.avatar_url      ?? m?.photo ?? "/team/placeholder.svg";
   const heroBio       = p?.hero_bio        ?? DEFAULT_HERO_BIO(name, role);
   const aboutHeadline = p?.about_headline  ?? DEFAULT_ABOUT_HEADLINE;
-  const longBio       = p?.long_bio        ?? DEFAULT_LONG_BIO(name, nmls, m.offices ?? []);
-  const specialties   = p?.specialties     ?? m.speciality ?? DEFAULT_SPECIALTIES;
-  const offices       = p?.offices         ?? m.offices ?? [];
+  const longBio       = p?.long_bio        ?? DEFAULT_LONG_BIO(name, nmls, p?.offices ?? m?.offices ?? []);
+  const specialties   = p?.specialties     ?? m?.speciality ?? DEFAULT_SPECIALTIES;
+  const offices       = p?.offices         ?? m?.offices ?? [];
 
   const phoneDigits = phone.replace(/[^0-9+]/g, "");
   const first       = name.replace(/['"()]/g, "").split(/\s+/)[0];
-  const funnelLo    = { slug: m.slug, name, nmls };
+  const funnelLo    = { slug, name, nmls };
 
   const personSchema = {
     "@context": "https://schema.org",
@@ -298,7 +300,7 @@ export default async function TeamMemberPage({
       {/* ══════════════════════════════════════════════════════════ */}
       {/* REVIEWS                                                   */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <ReviewsSection firstName={first} loSlug={m.slug} />
+      <ReviewsSection firstName={first} loSlug={slug} />
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/* FAQ                                                       */}

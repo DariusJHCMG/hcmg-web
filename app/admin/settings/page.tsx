@@ -113,7 +113,7 @@ export default function SettingsPage() {
               <input
                 type="email"
                 className={IC}
-                placeholder="info@harriscapitalmortgage.com — or leave blank"
+                placeholder="info@hcmgloans.com — or leave blank"
                 value={form.company_notify_email}
                 onChange={(e) => setForm((p) => ({ ...p, company_notify_email: e.target.value }))}
               />
@@ -128,7 +128,7 @@ export default function SettingsPage() {
               <input
                 type="email"
                 className={IC}
-                placeholder="info@harriscapitalmortgage.com — or leave blank"
+                placeholder="info@hcmgloans.com — or leave blank"
                 value={form.contact_notify_email}
                 onChange={(e) => setForm((p) => ({ ...p, contact_notify_email: e.target.value }))}
               />
@@ -143,7 +143,7 @@ export default function SettingsPage() {
               <input
                 type="email"
                 className={IC}
-                placeholder="recruiting@harriscapitalmortgage.com — or leave blank"
+                placeholder="recruiting@hcmgloans.com — or leave blank"
                 value={form.recruiting_notify_email}
                 onChange={(e) => setForm((p) => ({ ...p, recruiting_notify_email: e.target.value }))}
               />
