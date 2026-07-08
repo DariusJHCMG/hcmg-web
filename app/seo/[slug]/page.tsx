@@ -74,7 +74,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">{page.description}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/get-started" className="primary-button">
+            <Link href={`/get-started?source=seo&from=${page.slug}`} className="primary-button">
               Get my free estimate →
             </Link>
             <Link href="/#calculator" className="secondary-button">

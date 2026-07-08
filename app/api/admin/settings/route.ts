@@ -6,6 +6,7 @@ import { z } from "zod";
 const PatchSchema = z.object({
   company_notify_email:    z.string().email().optional().or(z.literal("")),
   company_funnel_label:    z.string().min(1).optional(),
+  contact_notify_email:    z.string().email().optional().or(z.literal("")),
   recruiting_notify_email: z.string().email().optional().or(z.literal("")),
 });
 

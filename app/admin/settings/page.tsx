@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 interface Settings {
   company_notify_email:    string;
   company_funnel_label:    string;
+  contact_notify_email:    string;
   recruiting_notify_email: string;
 }
 
@@ -20,7 +21,7 @@ const COMPANY_PAGES = [
 
 export default function SettingsPage() {
   const [settings, setSettings]   = useState<Settings | null>(null);
-  const [form,     setForm]       = useState<Settings>({ company_notify_email: "", company_funnel_label: "", recruiting_notify_email: "" });
+  const [form,     setForm]       = useState<Settings>({ company_notify_email: "", company_funnel_label: "", contact_notify_email: "", recruiting_notify_email: "" });
   const [saving,   setSaving]     = useState(false);
   const [msg,      setMsg]        = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -84,30 +85,61 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Alert email */}
+      {/* Alert emails */}
       <div className="rounded-2xl border border-line bg-white p-6">
-        <h2 className="mb-1 text-sm font-black uppercase tracking-[0.14em] text-muted">Company Lead Alert Email</h2>
+        <h2 className="mb-1 text-sm font-black uppercase tracking-[0.14em] text-muted">Lead Alert Emails</h2>
         <p className="mb-5 text-xs text-muted">
-          Optional. When set, an email is sent here every time a company lead comes in. The email includes the
-          lead&apos;s full details and the funnel page they submitted from.
-          Leave blank to disable.
+          Each lead type can route to a different email address. Leave any field blank to disable alerts for that type.
+          All leads are always saved to the portal regardless.
         </p>
 
         {settings === null ? (
           <p className="text-sm text-muted/60">Loading…</p>
         ) : (
-          <form onSubmit={save} className="space-y-4">
-            <div>
-              <label className="mb-1 block text-xs font-bold text-ink">Alert Email Address</label>
+          <form onSubmit={save} className="space-y-5">
+
+            {/* Funnel leads */}
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <label className="mb-1 block text-xs font-bold text-amber-900">🟡 Funnel Lead Alert Email</label>
               <input
                 type="email"
                 className={IC}
-                placeholder="Leave blank to disable email alerts"
+                placeholder="info@harriscapitalmortgage.com — or leave blank"
                 value={form.company_notify_email}
                 onChange={(e) => setForm((p) => ({ ...p, company_notify_email: e.target.value }))}
               />
-              <p className="mt-1 text-[11px] text-muted/60">
-                e.g. info@harriscapitalmortgage.com — whoever should be alerted when a new unassigned lead arrives.
+              <p className="mt-1 text-[11px] text-amber-800/70">
+                Leads from /get-started, /team, /seo/* (no LO assigned). Leave blank to disable.
+              </p>
+            </div>
+
+            {/* Contact leads */}
+            <div className="rounded-xl border border-orange-200 bg-orange-50 p-4">
+              <label className="mb-1 block text-xs font-bold text-orange-900">🟠 Contact Form Alert Email</label>
+              <input
+                type="email"
+                className={IC}
+                placeholder="info@harriscapitalmortgage.com — or leave blank"
+                value={form.contact_notify_email}
+                onChange={(e) => setForm((p) => ({ ...p, contact_notify_email: e.target.value }))}
+              />
+              <p className="mt-1 text-[11px] text-orange-800/70">
+                Leads from /contact. General inquiries only — no mortgage data. Leave blank to disable.
+              </p>
+            </div>
+
+            {/* Recruiting leads */}
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <label className="mb-1 block text-xs font-bold text-blue-900">🔵 Recruiting Alert Email</label>
+              <input
+                type="email"
+                className={IC}
+                placeholder="recruiting@harriscapitalmortgage.com — or leave blank"
+                value={form.recruiting_notify_email}
+                onChange={(e) => setForm((p) => ({ ...p, recruiting_notify_email: e.target.value }))}
+              />
+              <p className="mt-1 text-[11px] text-blue-800/70">
+                Leads from /join and /careers. Leave blank to disable.
               </p>
             </div>
 
@@ -121,22 +153,7 @@ export default function SettingsPage() {
                 onChange={(e) => setForm((p) => ({ ...p, company_funnel_label: e.target.value }))}
               />
               <p className="mt-1 text-[11px] text-muted/60">
-                The label shown in the Leads table for leads with no LO assigned.
-              </p>
-            </div>
-
-            <div className="border-t border-line pt-4 mt-2">
-              <label className="mb-1 block text-xs font-bold text-ink">Recruiting / Employment Alert Email</label>
-              <input
-                type="email"
-                className={IC}
-                placeholder="recruiting@harriscapitalmortgage.com — or leave blank"
-                value={form.recruiting_notify_email}
-                onChange={(e) => setForm((p) => ({ ...p, recruiting_notify_email: e.target.value }))}
-              />
-              <p className="mt-1 text-[11px] text-muted/60">
-                Employment leads from /join and /careers go here. Separate from the company lead email above.
-                Leave blank to disable email alerts for recruiting leads.
+                The label shown in the Leads table for unassigned leads.
               </p>
             </div>
 

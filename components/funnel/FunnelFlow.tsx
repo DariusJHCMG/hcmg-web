@@ -85,7 +85,7 @@ export interface FunnelLoContext {
   nmls: string | null;
 }
 
-export function FunnelFlow({ lo }: { lo?: FunnelLoContext } = {}) {
+export function FunnelFlow({ lo, source, seoSlug }: { lo?: FunnelLoContext; source?: string; seoSlug?: string } = {}) {
   const [step, setStep] = useState<Step>(1);
   const [dir, setDir] = useState<1 | -1>(1);
   const [state, setState] = useState<FunnelState>({
@@ -136,6 +136,8 @@ export function FunnelFlow({ lo }: { lo?: FunnelLoContext } = {}) {
       smsConsent: true,
       smsConsentText: SMS_CONSENT_TEXT,
       smsConsentTimestamp: new Date().toISOString(),
+      source:   source ?? (lo ? "team" : "get-started"),
+      seoSlug:  seoSlug,
       goal: state.goal ?? undefined,
       priceRange: state.priceBand ?? undefined,
       creditRange: state.creditBand ?? undefined,

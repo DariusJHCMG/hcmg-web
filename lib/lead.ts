@@ -7,6 +7,8 @@ export interface LeadPayload {
   smsConsent: boolean;
   smsConsentText: string;
   smsConsentTimestamp: string;
+  source?: string;   // e.g. "get-started", "team", "seo"
+  seoSlug?: string;  // which seo page (e.g. "orlando-fha-loan"), when source="seo"
   goal?: string;
   priceRange?: string;
   creditRange?: string;

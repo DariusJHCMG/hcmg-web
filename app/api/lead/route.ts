@@ -16,7 +16,8 @@ const LeadSchema = z.object({
   email: z.string().email(),
   phone: z.string().min(7),
   smsConsent: z.boolean(),
-  source: z.string().optional().default("funnel"),
+  source:  z.string().optional().default("funnel"),
+  seoSlug: z.string().optional(),  // which seo page slug when source="seo"
   goal: z.string().optional(),
   priceRange: z.string().optional(),
   creditRange: z.string().optional(),
@@ -204,7 +205,10 @@ export async function POST(request: NextRequest) {
     price_range:  lead.priceRange ?? null,
     credit_range: lead.creditRange ?? null,
     income_range: lead.incomeRange ?? null,
-    notes:        lead.notes ?? null,
+    notes:        [
+      lead.notes,
+      lead.seoSlug ? `SEO page: /seo/${lead.seoSlug}` : null,
+    ].filter(Boolean).join("\n") || null,
     lo_slug:      lead.loSlug ?? null,
     lo_name:      lead.loName ?? null,
     lo_nmls:      lead.loNmls ?? null,
@@ -277,23 +281,32 @@ export async function POST(request: NextRequest) {
         })
       );
     } else if (!lead.loSlug) {
-      // Company or employment lead — pick the right alert email
+      // Unassigned lead — pick alert email by source type
       const settings = await readSettings();
       const source = lead.source ?? "website";
       const isEmployment = source === "employment";
-      const alertEmail = isEmployment
-        ? settings.recruiting_notify_email
-        : settings.company_notify_email;
+      const isContact    = source === "contact";
+
+      const alertEmail = isEmployment ? settings.recruiting_notify_email
+        : isContact    ? settings.contact_notify_email
+        : settings.company_notify_email;   // get-started, team, seo, etc.
 
       if (alertEmail) {
+        const sourceDisplay = isEmployment ? "Recruiting"
+          : isContact ? "Contact form"
+          : (lead as { seoSlug?: string }).seoSlug
+            ? `SEO — ${(lead as { seoSlug?: string }).seoSlug}`
+            : source;
         emailJobs.push(
           resend.emails.send({
             from: "HCMG Leads <noreply@hcmgloans.com>",
             to: alertEmail,
             subject: isEmployment
               ? `Recruiting inquiry — ${fullName || lead.email}`
-              : `Company lead needs attention — ${fullName || lead.email} via ${source}`,
-            html: companyLeadAlertHtml(lead, fullName, source),
+              : isContact
+              ? `Contact form inquiry — ${fullName || lead.email}`
+              : `Company lead — ${fullName || lead.email} via ${sourceDisplay}`,
+            html: companyLeadAlertHtml(lead, fullName, sourceDisplay),
           })
         );
       }

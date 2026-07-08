@@ -3,14 +3,16 @@ import { createServiceClient } from "@/lib/supabase";
 const SETTINGS_SLUG = "__settings__";
 
 export interface CompanySettings {
-  company_notify_email:    string;  // alert for unassigned mortgage leads
+  company_notify_email:    string;  // alert for get-started / team / seo funnel leads (no LO)
   company_funnel_label:    string;  // display label in leads table
-  recruiting_notify_email: string;  // alert for employment / recruiting leads
+  contact_notify_email:    string;  // alert for /contact form submissions
+  recruiting_notify_email: string;  // alert for /join and /careers recruiting leads
 }
 
 export const DEFAULT_SETTINGS: CompanySettings = {
   company_notify_email:    "info@harriscapitalmortgage.com",
   company_funnel_label:    "HCMG Company",
+  contact_notify_email:    "",
   recruiting_notify_email: "",
 };
 
