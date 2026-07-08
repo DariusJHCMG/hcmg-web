@@ -22,13 +22,19 @@ export const metadata: Metadata = {
 };
 
 // Role → display group
-function inferGroup(role: string): string {
-  const r = (role ?? "").toLowerCase();
-  if (r.includes("founder") || r.includes("ceo") || r.includes("chief executive") ||
-      r.includes("president") || r.includes("chief") || r.includes("national director"))
+function inferGroup(title: string | null, authRole: string): string {
+  // Check job title first (the real human-readable role)
+  const t = (title ?? "").toLowerCase();
+  if (t.includes("founder") || t.includes("ceo") || t.includes("chief executive") ||
+      t.includes("president") || t.includes("chief") || t.includes("national director"))
     return "Leadership";
-  if (r.includes("loan officer") || r.includes("loan originator") || r.includes("branch manager"))
+  if (t.includes("loan officer") || t.includes("loan originator") || t.includes("branch manager"))
     return "Loan Officers";
+  if (t.length > 0) return "Operations"; // Has a title but none of the above → Operations
+
+  // No title set — fall back to auth role
+  if (authRole === "loan_officer") return "Loan Officers";
+  if (authRole === "admin" || authRole === "developer") return "Leadership";
   return "Operations";
 }
 
@@ -79,7 +85,7 @@ export default async function TeamPage() {
   // Group by display group
   const groupMap = new Map<string, typeof members>();
   for (const m of members) {
-    const g = inferGroup(m.title ?? m.role ?? "");
+    const g = inferGroup(m.title, m.role);
     if (!groupMap.has(g)) groupMap.set(g, []);
     groupMap.get(g)!.push(m);
   }
@@ -144,7 +150,12 @@ export default async function TeamPage() {
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {group.members.map((m) => {
                   const profileHref = m.lo_slug ? `/team/${m.lo_slug}` : null;
-                  const displayRole = m.title ?? m.role ?? "";
+                  // Show title if set; otherwise humanise the auth role
+                  const displayRole = m.title
+                    ?? (m.role === "loan_officer" ? "Loan Officer"
+                      : m.role === "admin" ? "Admin"
+                      : m.role === "developer" ? "Developer"
+                      : m.role ?? "");
                   const bio = m.short_bio ?? "";
 
                   const card = (
