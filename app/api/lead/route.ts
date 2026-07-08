@@ -128,7 +128,7 @@ const loNotificationHtml = (lead: ReturnType<typeof LeadSchema.parse>, loName: s
 </html>
 `;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://getorangekey.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app";
 
 const companyLeadAlertHtml = (lead: ReturnType<typeof LeadSchema.parse>, fullName: string, source: string) => `
 <!DOCTYPE html>
