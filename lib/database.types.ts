@@ -19,6 +19,12 @@ export interface Profile {
   linkedin: string | null;
   licensed_states: string[] | null;
   show_on_website: boolean;
+  // Profile page content
+  hero_bio: string | null;
+  about_headline: string | null;
+  long_bio: string[] | null;
+  years_experience: number | null;
+  specialties: string[] | null;
   created_at: string;
   updated_at: string;
 }
