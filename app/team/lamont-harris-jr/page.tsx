@@ -101,16 +101,16 @@ export default async function LamontPage() {
               <div className="relative overflow-hidden rounded-3xl shadow-card">
                 <TeamPhoto photo={m.photo} name={m.name} aspect="4 / 5" />
               </div>
-              {/* Floating NMLS badge */}
-              <div className="absolute -bottom-4 -right-3 rounded-2xl border border-white/20 bg-accent-dark px-4 py-3 shadow-lg">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">NMLS#</p>
-                <p className="mt-0.5 text-sm font-extrabold text-white">1918223</p>
-                <p className="text-[10px] text-white/40">Company</p>
-              </div>
-              {/* Experience badge */}
-              <div className="absolute -left-3 top-6 rounded-2xl bg-white px-4 py-3 shadow-lg">
-                <p className="text-2xl font-extrabold text-accent">15+</p>
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink/70">Years in<br />Mortgage</p>
+              {/* Personal NMLS badge — only shown if the member has one */}
+              {m.nmls && (
+                <div className="absolute -bottom-4 -right-3 rounded-2xl border border-white/20 bg-accent-dark px-4 py-3 shadow-lg">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">NMLS#</p>
+                  <p className="mt-0.5 text-sm font-extrabold text-white">{m.nmls}</p>
+                </div>
+              )}
+              {/* Role badge — pulls m.role from team data */}
+              <div className="absolute -left-3 top-6 max-w-[120px] rounded-2xl bg-white px-4 py-3 shadow-lg">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink/70 leading-snug">{m.role}</p>
               </div>
             </div>
 
