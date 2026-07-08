@@ -10,14 +10,21 @@ interface Settings {
 }
 
 const COMPANY_PAGES = [
-  { label: "Get Started",  path: "/get-started",  desc: "Mortgage estimate funnel — no LO assigned", type: "company" },
-  { label: "Contact",      path: "/contact",       desc: "General contact form",                      type: "company" },
-  { label: "Team page",    path: "/team",          desc: "Leads without an LO link clicked",          type: "company" },
-  { label: "Join / Careers (/join)", path: "/join", desc: "LO recruiting inquiry form",               type: "employment" },
-  { label: "Careers — Producing Manager", path: "/careers/producing-manager", desc: "Branch partner recruiting form", type: "employment" },
-  { label: "Careers — Move Your Team",    path: "/careers/move-your-team",    desc: "Team move recruiting form",      type: "employment" },
-  { label: "Careers — Corporate",         path: "/careers/corporate",         desc: "Corporate role recruiting form", type: "employment" },
+  { label: "Get Started",        path: "/get-started",               desc: "Mortgage estimate funnel — no LO assigned",         type: "funnel"      },
+  { label: "Team page",          path: "/team",                      desc: "Leads from team page without clicking an LO link",   type: "funnel"      },
+  { label: "SEO / Local pages",  path: "/seo/[slug]",                desc: "100+ local pages (e.g. /seo/orlando-fha-loan) — all link to /get-started with source=seo", type: "funnel" },
+  { label: "Contact",            path: "/contact",                   desc: "General contact form — no mortgage data collected",  type: "contact"     },
+  { label: "Join / Careers",     path: "/join",                      desc: "LO recruiting inquiry form",                         type: "employment"  },
+  { label: "Careers — Producing Manager", path: "/careers/producing-manager", desc: "Branch partner recruiting form",            type: "employment"  },
+  { label: "Careers — Move Your Team",    path: "/careers/move-your-team",    desc: "Team move recruiting form",                 type: "employment"  },
+  { label: "Careers — Corporate",         path: "/careers/corporate",         desc: "Corporate role recruiting form",            type: "employment"  },
 ];
+
+const TYPE_BADGE: Record<string, { label: string; cls: string }> = {
+  funnel:     { label: "Funnel",     cls: "border-amber-200 bg-amber-50 text-amber-700" },
+  contact:    { label: "Contact",    cls: "border-orange-200 bg-orange-50 text-orange-700" },
+  employment: { label: "Employment", cls: "border-blue-200 bg-blue-50 text-blue-700" },
+};
 
 export default function SettingsPage() {
   const [settings, setSettings]   = useState<Settings | null>(null);
@@ -190,11 +197,8 @@ export default function SettingsPage() {
               <tr key={p.path} className={i % 2 === 0 ? "bg-white" : "bg-sand/30"}>
                 <td className="px-5 py-3 font-semibold text-ink text-sm">{p.label}</td>
                 <td className="px-5 py-3">
-                  <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold
-                    ${p.type === "employment"
-                      ? "border-blue-200 bg-blue-50 text-blue-700"
-                      : "border-amber-200 bg-amber-50 text-amber-700"}`}>
-                    {p.type === "employment" ? "Employment" : "Company"}
+                  <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold ${TYPE_BADGE[p.type]?.cls ?? ""}`}>
+                    {TYPE_BADGE[p.type]?.label ?? p.type}
                   </span>
                 </td>
                 <td className="px-5 py-3 text-xs text-muted">{p.desc}</td>
