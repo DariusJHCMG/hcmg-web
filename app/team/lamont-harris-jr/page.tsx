@@ -40,15 +40,6 @@ function ValuePill({ children }: { children: React.ReactNode }) {
   );
 }
 
-function StatBadge({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="text-center">
-      <p className="text-3xl font-extrabold text-white">{value}</p>
-      <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/60">{label}</p>
-    </div>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────
 
 export default async function LamontPage() {
@@ -167,12 +158,6 @@ export default async function LamontPage() {
             </div>
           </div>
 
-          {/* Stats strip */}
-          <div className="mt-14 grid grid-cols-3 gap-6 rounded-3xl border border-white/20 bg-white/10 px-8 py-6 backdrop-blur-sm sm:grid-cols-3">
-            <StatBadge value="15+" label="Years Experience" />
-            <StatBadge value="1,000+" label="Families Helped" />
-            <StatBadge value="5.0★" label="Average Rating" />
-          </div>
         </div>
       </section>
 
