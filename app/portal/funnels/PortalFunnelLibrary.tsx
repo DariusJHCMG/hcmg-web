@@ -74,7 +74,7 @@ const FAMILY_ACCENT: Record<string, string> = {
 };
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export function PortalFunnelLibrary({ loSlug, siteUrl }: Props) {
+export function PortalFunnelLibrary({ loSlug, siteUrl: _siteUrl }: Props) {
   const [activeFamily, setActiveFamily] = useState<FunnelFamily | "all">("all");
   const [search,       setSearch]       = useState("");
   const [utmPreset,    setUtmPreset]    = useState(-1); // -1 = no preset selected
@@ -82,6 +82,10 @@ export function PortalFunnelLibrary({ loSlug, siteUrl }: Props) {
   const [utmMedium,    setUtmMedium]    = useState("");
   const [utmCampaign,  setUtmCampaign]  = useState("");
   const [utmContent,   setUtmContent]   = useState("");
+
+  // Always derive the origin from the browser — never trust the env var which may be
+  // localhost or wrong. typeof window check makes SSR safe.
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   const isCustom  = utmPreset === UTM_PRESETS.length - 1;
   const activeSrc = utmPreset < 0 ? "" : (isCustom ? utmSource : UTM_PRESETS[utmPreset].source);
@@ -97,10 +101,10 @@ export function PortalFunnelLibrary({ loSlug, siteUrl }: Props) {
   }
 
   const suffix  = buildSuffix();
-  const baseUrl = `${siteUrl}/go/${loSlug}${suffix}`;
+  const baseUrl = `${origin}/go/${loSlug}${suffix}`;
 
   function buildUrl(slug: string) {
-    return `${siteUrl}/go/${loSlug}/${slug}${suffix}`;
+    return `${origin}/go/${loSlug}/${slug}${suffix}`;
   }
 
   const filtered = useMemo(() => {
@@ -492,9 +496,11 @@ function FunnelCard({
 
         {/* Full URL */}
         <div className="mt-auto space-y-2">
-          <div className="flex items-center gap-2 rounded-xl border border-line bg-sand px-3 py-2.5">
-            <code className="flex-1 truncate text-[11px] font-semibold text-accent">{url}</code>
-            <CopyBtn text={url} />
+          <div className="flex flex-col gap-2 rounded-xl border border-line bg-sand px-3 py-2.5">
+            <code className="break-all text-[11px] font-semibold leading-relaxed text-accent">{url}</code>
+            <div className="flex items-center justify-end">
+              <CopyBtn text={url} />
+            </div>
           </div>
 
           {/* Footer actions */}
