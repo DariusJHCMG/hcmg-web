@@ -9,6 +9,8 @@ interface Props {
   loSlug: string;
   loName: string;
   siteUrl: string;
+  /** Base path for the Analytics → link on each card. Defaults to /portal/funnels. */
+  analyticsBasePath?: string;
 }
 
 // ── Copy button ────────────────────────────────────────────────────────────────
@@ -75,7 +77,7 @@ const FAMILY_ACCENT: Record<string, string> = {
 };
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export function PortalFunnelLibrary({ loSlug, siteUrl: _siteUrl }: Props) {
+export function PortalFunnelLibrary({ loSlug, siteUrl: _siteUrl, analyticsBasePath = "/portal/funnels" }: Props) {
   const [activeFamily, setActiveFamily] = useState<FunnelFamily | "all">("all");
   const [search,       setSearch]       = useState("");
   const [utmPreset,    setUtmPreset]    = useState(-1); // -1 = no preset selected
@@ -410,7 +412,7 @@ export function PortalFunnelLibrary({ loSlug, siteUrl: _siteUrl }: Props) {
                     View all {funnels.length} →
                   </button>
                 </div>
-                <FunnelGrid funnels={funnels} buildUrl={buildUrl} fam={fam} />
+                <FunnelGrid funnels={funnels} buildUrl={buildUrl} fam={fam} analyticsBasePath={analyticsBasePath} />
               </section>
             );
           })}
@@ -427,7 +429,7 @@ export function PortalFunnelLibrary({ loSlug, siteUrl: _siteUrl }: Props) {
                 Showing results across all categories
               </p>
             )}
-            <FunnelGrid funnels={filtered} buildUrl={buildUrl} fam={fam} />
+            <FunnelGrid funnels={filtered} buildUrl={buildUrl} fam={fam} analyticsBasePath={analyticsBasePath} />
           </div>
         );
       })()}
@@ -437,16 +439,17 @@ export function PortalFunnelLibrary({ loSlug, siteUrl: _siteUrl }: Props) {
 
 // ── Card grid ──────────────────────────────────────────────────────────────────
 function FunnelGrid({
-  funnels, buildUrl, fam,
+  funnels, buildUrl, fam, analyticsBasePath,
 }: {
   funnels: typeof FUNNEL_CATALOG;
   buildUrl: (slug: string) => string;
   fam: FunnelFamilyDef;
+  analyticsBasePath: string;
 }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {funnels.map((f) => (
-        <FunnelCard key={f.slug} f={f} url={buildUrl(f.slug)} fam={fam} />
+        <FunnelCard key={f.slug} f={f} url={buildUrl(f.slug)} fam={fam} analyticsBasePath={analyticsBasePath} />
       ))}
     </div>
   );
@@ -454,11 +457,12 @@ function FunnelGrid({
 
 // ── Individual card ────────────────────────────────────────────────────────────
 function FunnelCard({
-  f, url, fam,
+  f, url, fam, analyticsBasePath,
 }: {
   f: typeof FUNNEL_CATALOG[number];
   url: string;
   fam: FunnelFamilyDef;
+  analyticsBasePath: string;
 }) {
   const [preview, setPreview] = useState(false);
   const accent = FAMILY_ACCENT[fam.key] ?? "#F37021";
@@ -513,7 +517,7 @@ function FunnelCard({
               {preview ? "Hide ↑" : "Preview ↓"}
             </button>
             <Link
-              href={`/portal/funnels/${f.slug}`}
+              href={`${analyticsBasePath}/${f.slug}`}
               className="flex-1 rounded-xl border py-2 text-center text-[11px] font-bold transition-all hover:opacity-90"
               style={{ borderColor: accent + "50", background: accent + "12", color: accent }}
             >

@@ -30,6 +30,7 @@ export default async function AdminMyFunnelsPage() {
       loSlug={profile.lo_slug}
       loName={profile.full_name}
       siteUrl={SITE}
+      analyticsBasePath="/admin/funnels"
     />
   );
 }
