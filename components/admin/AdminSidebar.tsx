@@ -13,6 +13,7 @@ const NAV = [
   { label: "Reviews",     href: "/admin/reviews",      icon: "⭐" },
   { label: "Users",       href: "/admin/users",        icon: "👥" },
   { label: "My Funnels",  href: "/admin/my-funnels",   icon: "🔗" },
+  { label: "Co-Branded",  href: "/admin/co-branded",   icon: "🤝" },
   { label: "Settings",    href: "/admin/settings",     icon: "⚙" },
   { label: "Audit Log",   href: "/admin/audit",        icon: "📋" },
   { label: "Dev Tools",   href: "/admin/dev",          icon: "🛠" },
