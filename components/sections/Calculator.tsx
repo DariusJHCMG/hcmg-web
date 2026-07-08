@@ -13,7 +13,7 @@ import { getSessionMeta } from "@/lib/tracker";
 const SMS_CONSENT_TEXT =
   "By submitting this form, I agree to be contacted by Harris Capital Mortgage Group, LLC (NMLS# 1918223) regarding my mortgage inquiry. I consent to receive calls, texts, and emails. Message and data rates may apply. Reply STOP to opt out of texts at any time.";
 
-export function Calculator() {
+export function Calculator({ heading, subheading }: { heading?: string; subheading?: string } = {}) {
   const [calc, setCalc] = useState({
     homePrice: 425000,
     downPaymentPercent: 20,
@@ -91,10 +91,10 @@ export function Calculator() {
         <div>
           <SectionEyebrow>Mortgage Calculator</SectionEyebrow>
           <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink lg:text-5xl">
-            See your payment before you fall in love
+            {heading ?? "See your payment before you fall in love"}
           </h2>
           <p className="mt-5 text-lg leading-8 text-muted">
-            Adjust the numbers and your estimate updates instantly. No forms, no commitment, just the math, right now.
+            {subheading ?? "Adjust the numbers and your estimate updates instantly. No forms, no commitment, just the math, right now."}
           </p>
           <ul className="mt-6 space-y-3">
             {["Includes property taxes and insurance", "Shows complete cash-to-close breakdown", "Works for purchase or refinance"].map((b) => (

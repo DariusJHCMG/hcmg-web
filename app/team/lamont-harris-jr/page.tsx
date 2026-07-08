@@ -4,6 +4,7 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { FunnelFlow } from "@/components/funnel/FunnelFlow";
+import { Calculator } from "@/components/sections/Calculator";
 import { getTeamMemberBySlug } from "@/data/team";
 import { ReviewsSection } from "@/components/team/ReviewsSection";
 import { FAQSection } from "@/components/team/FAQSection";
@@ -94,15 +95,6 @@ export default async function LamontPage() {
         />
 
         <div className="container-shell relative max-w-6xl">
-          {/* Breadcrumb */}
-          <nav className="mb-10 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span aria-hidden>›</span>
-            <Link href="/team" className="hover:text-white transition-colors">Team</Link>
-            <span aria-hidden>›</span>
-            <span className="text-white/80">Lamont Harris Jr.</span>
-          </nav>
-
           <div className="grid items-center gap-12 lg:grid-cols-[480px_1fr]">
             {/* Photo — large, offset corner style */}
             <div className="relative">
@@ -155,11 +147,8 @@ export default async function LamontPage() {
                 <ValuePill>Transparent pricing, no hidden fees</ValuePill>
               </div>
 
-              {/* CTAs */}
+              {/* CTAs — outline (navy border) first, orange primary second */}
               <div className="mt-8 flex flex-wrap gap-3">
-                <a href="#funnel" className="primary-button">
-                  Get my free estimate →
-                </a>
                 {m.phone && (
                   <a
                     href={`tel:${phoneDigits}`}
@@ -168,6 +157,9 @@ export default async function LamontPage() {
                     <span aria-hidden>📞</span> Call Lamont
                   </a>
                 )}
+                <a href="#funnel" className="primary-button">
+                  Get my free estimate →
+                </a>
               </div>
               <p className="mt-3 text-xs text-white/40">
                 No hard credit check · No commitment · Your info goes directly to me
@@ -183,6 +175,16 @@ export default async function LamontPage() {
           </div>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* CALCULATOR — get my estimated monthly payment             */}
+      {/* ══════════════════════════════════════════════════════════ */}
+      <div id="calculator">
+        <Calculator
+          heading="Get my estimated monthly payment."
+          subheading="Adjust the sliders and see your full payment breakdown instantly. No credit check, no commitment."
+        />
+      </div>
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/* ABOUT — long bio on white                                 */}
