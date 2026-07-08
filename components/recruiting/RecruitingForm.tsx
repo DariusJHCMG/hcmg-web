@@ -54,16 +54,37 @@ export function RecruitingForm() {
     e.preventDefault();
     setError("");
     const v = validate();
-    if (v) {
-      setError(v);
-      return;
-    }
+    if (v) { setError(v); return; }
     setSubmitting(true);
-    // Frontend-only for now, no backend wired. Replace with a POST to
-    // /api/recruiting-lead once the recruiting CRM pipeline is set up.
-    await new Promise((r) => setTimeout(r, 600));
+
+    const notesLines = [
+      state.nmls            && `NMLS: ${state.nmls}`,
+      state.currentCompany  && `Current company: ${state.currentCompany}`,
+      state.statesLicensed  && `States licensed: ${state.statesLicensed}`,
+      state.monthlyVolume   && `Monthly volume: ${state.monthlyVolume}`,
+      state.message         && `Message: ${state.message}`,
+    ].filter(Boolean).join("\n");
+
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName:   state.firstName.trim(),
+          lastName:    state.lastName.trim(),
+          email:       state.email.trim(),
+          phone:       state.phone.trim(),
+          smsConsent:  false,
+          source:      "employment",
+          notes:       notesLines || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong. Please try again or email recruiting@hcmg.com.");
+    }
     setSubmitting(false);
-    setSubmitted(true);
   }
 
   if (submitted) {
@@ -156,9 +177,7 @@ export function RecruitingForm() {
           >
             <option value="">Select range</option>
             {VOLUME_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
+              <option key={opt} value={opt}>{opt}</option>
             ))}
           </select>
         </div>

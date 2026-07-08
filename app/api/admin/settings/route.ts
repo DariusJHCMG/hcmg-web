@@ -4,8 +4,9 @@ import { readSettings, writeSettings } from "@/lib/company-settings";
 import { z } from "zod";
 
 const PatchSchema = z.object({
-  company_notify_email: z.string().email().optional(),
-  company_funnel_label: z.string().min(1).optional(),
+  company_notify_email:    z.string().email().optional().or(z.literal("")),
+  company_funnel_label:    z.string().min(1).optional(),
+  recruiting_notify_email: z.string().email().optional().or(z.literal("")),
 });
 
 export async function GET() {

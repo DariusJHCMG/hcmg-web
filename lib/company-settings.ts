@@ -3,13 +3,15 @@ import { createServiceClient } from "@/lib/supabase";
 const SETTINGS_SLUG = "__settings__";
 
 export interface CompanySettings {
-  company_notify_email: string;
-  company_funnel_label: string;
+  company_notify_email:    string;  // alert for unassigned mortgage leads
+  company_funnel_label:    string;  // display label in leads table
+  recruiting_notify_email: string;  // alert for employment / recruiting leads
 }
 
 export const DEFAULT_SETTINGS: CompanySettings = {
-  company_notify_email: "info@harriscapitalmortgage.com",
-  company_funnel_label: "HCMG Company",
+  company_notify_email:    "info@harriscapitalmortgage.com",
+  company_funnel_label:    "HCMG Company",
+  recruiting_notify_email: "",
 };
 
 export async function readSettings(): Promise<CompanySettings> {

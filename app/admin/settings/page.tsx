@@ -3,20 +3,24 @@
 import { useState, useEffect } from "react";
 
 interface Settings {
-  company_notify_email: string;
-  company_funnel_label: string;
+  company_notify_email:    string;
+  company_funnel_label:    string;
+  recruiting_notify_email: string;
 }
 
 const COMPANY_PAGES = [
-  { label: "Get Started",  path: "/get-started",  desc: "Main mortgage estimate funnel — no LO assigned" },
-  { label: "Contact",      path: "/contact",       desc: "General contact form" },
-  { label: "Join",         path: "/join",          desc: "Join the HCMG team application form" },
-  { label: "Team page",    path: "/team",          desc: "Leads submitted through the team page without clicking an LO link" },
+  { label: "Get Started",  path: "/get-started",  desc: "Mortgage estimate funnel — no LO assigned", type: "company" },
+  { label: "Contact",      path: "/contact",       desc: "General contact form",                      type: "company" },
+  { label: "Team page",    path: "/team",          desc: "Leads without an LO link clicked",          type: "company" },
+  { label: "Join / Careers (/join)", path: "/join", desc: "LO recruiting inquiry form",               type: "employment" },
+  { label: "Careers — Producing Manager", path: "/careers/producing-manager", desc: "Branch partner recruiting form", type: "employment" },
+  { label: "Careers — Move Your Team",    path: "/careers/move-your-team",    desc: "Team move recruiting form",      type: "employment" },
+  { label: "Careers — Corporate",         path: "/careers/corporate",         desc: "Corporate role recruiting form", type: "employment" },
 ];
 
 export default function SettingsPage() {
   const [settings, setSettings]   = useState<Settings | null>(null);
-  const [form,     setForm]       = useState<Settings>({ company_notify_email: "", company_funnel_label: "" });
+  const [form,     setForm]       = useState<Settings>({ company_notify_email: "", company_funnel_label: "", recruiting_notify_email: "" });
   const [saving,   setSaving]     = useState(false);
   const [msg,      setMsg]        = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -121,6 +125,21 @@ export default function SettingsPage() {
               </p>
             </div>
 
+            <div className="border-t border-line pt-4 mt-2">
+              <label className="mb-1 block text-xs font-bold text-ink">Recruiting / Employment Alert Email</label>
+              <input
+                type="email"
+                className={IC}
+                placeholder="recruiting@harriscapitalmortgage.com — or leave blank"
+                value={form.recruiting_notify_email}
+                onChange={(e) => setForm((p) => ({ ...p, recruiting_notify_email: e.target.value }))}
+              />
+              <p className="mt-1 text-[11px] text-muted/60">
+                Employment leads from /join and /careers go here. Separate from the company lead email above.
+                Leave blank to disable email alerts for recruiting leads.
+              </p>
+            </div>
+
             <div className="flex items-center gap-4 pt-2">
               <button type="submit" disabled={saving}
                 className="primary-button !py-2.5 !px-6 !text-sm disabled:opacity-50">
@@ -144,6 +163,7 @@ export default function SettingsPage() {
           <thead>
             <tr className="border-b border-line text-xs font-semibold uppercase tracking-[0.1em] text-muted/60">
               <th className="px-5 py-3 text-left">Page</th>
+              <th className="px-5 py-3 text-left">Type</th>
               <th className="px-5 py-3 text-left">Description</th>
               <th className="px-5 py-3 text-left">Open</th>
             </tr>
@@ -152,6 +172,14 @@ export default function SettingsPage() {
             {COMPANY_PAGES.map((p, i) => (
               <tr key={p.path} className={i % 2 === 0 ? "bg-white" : "bg-sand/30"}>
                 <td className="px-5 py-3 font-semibold text-ink text-sm">{p.label}</td>
+                <td className="px-5 py-3">
+                  <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold
+                    ${p.type === "employment"
+                      ? "border-blue-200 bg-blue-50 text-blue-700"
+                      : "border-amber-200 bg-amber-50 text-amber-700"}`}>
+                    {p.type === "employment" ? "Employment" : "Company"}
+                  </span>
+                </td>
                 <td className="px-5 py-3 text-xs text-muted">{p.desc}</td>
                 <td className="px-5 py-3">
                   <a href={p.path} target="_blank" rel="noopener noreferrer"

@@ -277,15 +277,22 @@ export async function POST(request: NextRequest) {
         })
       );
     } else if (!lead.loSlug) {
-      // Company lead — alert the admin notify email if one is configured
+      // Company or employment lead — pick the right alert email
       const settings = await readSettings();
-      if (settings.company_notify_email) {
-        const source = lead.source ?? "website";
+      const source = lead.source ?? "website";
+      const isEmployment = source === "employment";
+      const alertEmail = isEmployment
+        ? settings.recruiting_notify_email
+        : settings.company_notify_email;
+
+      if (alertEmail) {
         emailJobs.push(
           resend.emails.send({
             from: "HCMG Leads <noreply@hcmgloans.com>",
-            to: settings.company_notify_email,
-            subject: `Company lead needs attention — ${fullName || lead.email} via ${source}`,
+            to: alertEmail,
+            subject: isEmployment
+              ? `Recruiting inquiry — ${fullName || lead.email}`
+              : `Company lead needs attention — ${fullName || lead.email} via ${source}`,
             html: companyLeadAlertHtml(lead, fullName, source),
           })
         );
