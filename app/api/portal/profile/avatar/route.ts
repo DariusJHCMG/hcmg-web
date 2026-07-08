@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createServiceClient } from "@/lib/supabase";
 
 const BUCKET = "avatars";
-const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (file.size > MAX_BYTES) {
-      return NextResponse.json({ error: "File exceeds 5 MB limit" }, { status: 400 });
+      return NextResponse.json({ error: "File exceeds 2 MB limit" }, { status: 400 });
     }
 
     const allowed = ["image/jpeg", "image/png", "image/webp"];

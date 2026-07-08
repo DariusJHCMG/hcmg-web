@@ -35,9 +35,9 @@ export function ProfileEditor({ profile }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Client-side size guard: 5 MB max
-    if (file.size > 5 * 1024 * 1024) {
-      setBanner({ type: "error", msg: "Photo must be under 5 MB." });
+    // Client-side size guard: 2 MB max
+    if (file.size > 2 * 1024 * 1024) {
+      setBanner({ type: "error", msg: "Photo must be under 2 MB." });
       return;
     }
 
@@ -144,7 +144,7 @@ export function ProfileEditor({ profile }: Props) {
             >
               {uploading ? "Uploading…" : avatarUrl ? "Change photo" : "Upload photo"}
             </button>
-            <p className="mt-2 text-xs text-muted">JPG, PNG or WebP · max 5 MB</p>
+            <p className="mt-2 text-xs text-muted">JPG, PNG or WebP · max 2 MB</p>
             {avatarUrl && (
               <button
                 type="button"
