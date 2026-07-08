@@ -1,129 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // ── Types ─────────────────────────────────────────────────────────
 
 interface Review {
+  id: string;
   author: string;
-  initials: string;
   rating: number;
-  date: string;
   text: string;
-  platform: "Google" | "Zillow" | "HCMG";
+  scope: "personal" | "company";
+  created_at: string;
 }
-
-// ── Mock reviews — swap for real API data later ───────────────────
-
-const LAMONT_REVIEWS: Review[] = [
-  {
-    author: "Marcus T.",
-    initials: "MT",
-    rating: 5,
-    date: "2 months ago",
-    text: "Lamont walked me through every step of my first home purchase. I came in with zero knowledge and left with keys in hand. He was available nights and weekends — that level of commitment is rare.",
-    platform: "Google",
-  },
-  {
-    author: "Denise & Ray W.",
-    initials: "DW",
-    rating: 5,
-    date: "4 months ago",
-    text: "We tried two other lenders before HCMG. Lamont got us approved in under a week and locked us into a rate the big banks said was impossible for our credit profile. Couldn't be happier.",
-    platform: "Google",
-  },
-  {
-    author: "Priya M.",
-    initials: "PM",
-    rating: 5,
-    date: "6 months ago",
-    text: "I was worried about my self-employment income killing my chances. Lamont knew exactly which programs fit my situation and we closed in 28 days. Professional, patient, and genuinely cares.",
-    platform: "Zillow",
-  },
-  {
-    author: "Kevin O.",
-    initials: "KO",
-    rating: 5,
-    date: "7 months ago",
-    text: "Refinanced with HCMG and dropped my rate significantly. Lamont was transparent about every fee — no surprises at closing. This is how mortgage should work.",
-    platform: "Zillow",
-  },
-  {
-    author: "Shanice B.",
-    initials: "SB",
-    rating: 5,
-    date: "9 months ago",
-    text: "First-time buyer and a VA loan — Lamont handled it perfectly. Explained my entitlement, the funding fee, all of it. Closed on time and under budget.",
-    platform: "Google",
-  },
-  {
-    author: "Luis & Carmen R.",
-    initials: "LR",
-    rating: 5,
-    date: "1 year ago",
-    text: "We've purchased three properties through HCMG. Every time Lamont finds us a better deal than we expected. We send everyone we know here.",
-    platform: "Zillow",
-  },
-];
-
-const COMPANY_REVIEWS: Review[] = [
-  {
-    author: "Tanya F.",
-    initials: "TF",
-    rating: 5,
-    date: "1 month ago",
-    text: "The entire HCMG team made our purchase seamless. From application to closing in 21 days — every email was answered same day. This company is built different.",
-    platform: "Google",
-  },
-  {
-    author: "Jerome K.",
-    initials: "JK",
-    rating: 5,
-    date: "3 months ago",
-    text: "Harris Capital got me into a home when every other lender said no. They found a program designed for my situation and walked me through every document. Five stars, no question.",
-    platform: "Google",
-  },
-  {
-    author: "Melinda S.",
-    initials: "MS",
-    rating: 5,
-    date: "5 months ago",
-    text: "I appreciated the honesty most. They told me exactly what I qualified for, what the numbers meant, and why. No pressure, no bait-and-switch — just solid advice.",
-    platform: "Zillow",
-  },
-  {
-    author: "Andre & Dominique L.",
-    initials: "AL",
-    rating: 5,
-    date: "8 months ago",
-    text: "HCMG has handled two purchases and one refinance for our family. Consistent excellence every time. They are the only mortgage company we'll ever use.",
-    platform: "Google",
-  },
-  {
-    author: "Patricia N.",
-    initials: "PN",
-    rating: 5,
-    date: "10 months ago",
-    text: "The team explained the FHA vs conventional decision in plain language. I didn't feel like I was being sold to — I felt like I was being advised. That's the difference.",
-    platform: "Zillow",
-  },
-  {
-    author: "David H.",
-    initials: "DH",
-    rating: 5,
-    date: "1 year ago",
-    text: "Called on a Tuesday, had a pre-approval letter on Thursday. HCMG moves fast and does it right. Our realtor even commented on how smooth the process was.",
-    platform: "Google",
-  },
-];
 
 // ── Stars ─────────────────────────────────────────────────────────
 
-function Stars({ rating }: { rating: number }) {
+function Stars({ rating, size = 4 }: { rating: number; size?: number }) {
   return (
     <div className="flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <svg key={i} viewBox="0 0 16 16" className="h-4 w-4" fill={i <= rating ? "#F37021" : "#E2E8F0"}>
+        <svg key={i} viewBox="0 0 16 16" className={`h-${size} w-${size}`} fill={i <= rating ? "#F37021" : "#E2E8F0"}>
           <path d="M8 1l1.85 3.75 4.15.6-3 2.92.71 4.13L8 10.35l-3.71 1.95.71-4.13-3-2.92 4.15-.6z" />
         </svg>
       ))}
@@ -131,20 +27,19 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-// ── Platform badge ────────────────────────────────────────────────
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days < 1)  return "Today";
+  if (days < 7)  return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+  return `${Math.floor(days / 365)}y ago`;
+}
 
-const PLATFORM_STYLES: Record<string, string> = {
-  Google: "border-blue-200 bg-blue-50 text-blue-700",
-  Zillow: "border-[#006AFF]/20 bg-[#006AFF]/5 text-[#006AFF]",
-  HCMG:   "border-accent/20 bg-accent/5 text-accent",
-};
-
-function PlatformBadge({ platform }: { platform: string }) {
-  return (
-    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] ${PLATFORM_STYLES[platform] ?? ""}`}>
-      {platform}
-    </span>
-  );
+function initials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  return (words[0]?.[0] ?? "") + (words[1]?.[0] ?? "");
 }
 
 // ── Review card ───────────────────────────────────────────────────
@@ -156,32 +51,24 @@ function ReviewCard({ review }: { review: Review }) {
 
   return (
     <div className="flex flex-col justify-between rounded-2xl border border-line bg-white p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-card">
-      {/* Top */}
       <div>
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-extrabold text-white"
-              style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}
-            >
-              {review.initials}
-            </div>
-            <div>
-              <p className="text-sm font-bold text-ink">{review.author}</p>
-              <p className="text-[11px] text-muted">{review.date}</p>
-            </div>
+        <div className="mb-3 flex items-start gap-3">
+          <div
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-extrabold text-white"
+            style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}
+          >
+            {initials(review.author).toUpperCase()}
           </div>
-          <PlatformBadge platform={review.platform} />
+          <div>
+            <p className="text-sm font-bold text-ink">{review.author}</p>
+            <p className="text-[11px] text-muted">{relativeTime(review.created_at)}</p>
+          </div>
         </div>
         <Stars rating={review.rating} />
-        <p className="mt-3 text-sm leading-6 text-ink/80">
-          {displayText}
-        </p>
+        <p className="mt-3 text-sm leading-6 text-ink/80">{displayText}</p>
         {long && (
-          <button
-            onClick={() => setExpanded((e) => !e)}
-            className="mt-1.5 text-xs font-semibold text-accent hover:underline"
-          >
+          <button onClick={() => setExpanded((e) => !e)}
+            className="mt-1.5 text-xs font-semibold text-accent hover:underline">
             {expanded ? "Show less" : "Read more"}
           </button>
         )}
@@ -190,16 +77,126 @@ function ReviewCard({ review }: { review: Review }) {
   );
 }
 
+// ── Leave a review form ───────────────────────────────────────────
+
+function LeaveReviewForm({
+  loSlug,
+  scope,
+  onClose,
+}: {
+  loSlug?: string;
+  scope: "personal" | "company";
+  onClose: () => void;
+}) {
+  const [author,     setAuthor]     = useState("");
+  const [rating,     setRating]     = useState(5);
+  const [text,       setText]       = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [done,       setDone]       = useState(false);
+  const [error,      setError]      = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!author.trim() || !text.trim()) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author: author.trim(), rating, text: text.trim(), lo_slug: loSlug ?? null, scope }),
+      });
+      if (res.ok) setDone(true);
+      else setError("Something went wrong. Please try again.");
+    } catch {
+      setError("Something went wrong. Please try again.");
+    }
+    setSubmitting(false);
+  }
+
+  const IC = "w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm text-ink placeholder:text-muted/40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 transition";
+
+  if (done) {
+    return (
+      <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
+        <p className="text-2xl mb-2">🎉</p>
+        <p className="font-bold text-green-800">Thank you for your review!</p>
+        <p className="mt-1 text-sm text-green-700">It will appear after a quick approval.</p>
+        <button onClick={onClose} className="mt-4 text-sm font-semibold text-accent hover:underline">Close</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-line bg-white p-6 shadow-soft">
+      <div className="mb-5 flex items-center justify-between">
+        <h3 className="font-extrabold text-ink">Leave a Review</h3>
+        <button onClick={onClose} className="text-xl text-muted hover:text-ink leading-none">×</button>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="mb-1 block text-xs font-bold text-ink">Your name</label>
+          <input className={IC} placeholder="First name or initials" value={author} onChange={(e) => setAuthor(e.target.value)} required />
+        </div>
+        <div>
+          <label className="mb-2 block text-xs font-bold text-ink">Rating</label>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setRating(n)}
+                className="transition-transform hover:scale-110"
+                aria-label={`${n} star${n > 1 ? "s" : ""}`}
+              >
+                <svg viewBox="0 0 16 16" className="h-7 w-7" fill={n <= rating ? "#F37021" : "#E2E8F0"}>
+                  <path d="M8 1l1.85 3.75 4.15.6-3 2.92.71 4.13L8 10.35l-3.71 1.95.71-4.13-3-2.92 4.15-.6z" />
+                </svg>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-bold text-ink">Your experience</label>
+          <textarea className={IC + " min-h-[100px] resize-y"} placeholder="Tell us about your experience…"
+            value={text} onChange={(e) => setText(e.target.value)} required />
+        </div>
+        {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
+        <button type="submit" disabled={submitting}
+          className="primary-button w-full justify-center !py-3 disabled:opacity-50">
+          {submitting ? "Submitting…" : "Submit review →"}
+        </button>
+        <p className="text-center text-[11px] text-muted/60">Reviews are reviewed before publishing.</p>
+      </form>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────
 
-export function ReviewsSection({ firstName }: { firstName: string }) {
-  const [tab, setTab] = useState<"personal" | "company">("personal");
-  const reviews = tab === "personal" ? LAMONT_REVIEWS : COMPANY_REVIEWS;
+export function ReviewsSection({
+  firstName,
+  loSlug,
+}: {
+  firstName: string;
+  loSlug?: string;
+}) {
+  const [tab,          setTab]         = useState<"personal" | "company">("personal");
+  const [reviews,      setReviews]     = useState<Review[]>([]);
+  const [loading,      setLoading]     = useState(true);
+  const [showForm,     setShowForm]    = useState(false);
 
-  // Stat summary
-  const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
-  const googleCount = reviews.filter((r) => r.platform === "Google").length;
-  const zillowCount = reviews.filter((r) => r.platform === "Zillow").length;
+  useEffect(() => {
+    setLoading(true);
+    const url = tab === "company"
+      ? "/api/reviews?scope=company"
+      : `/api/reviews?scope=personal${loSlug ? `&lo_slug=${loSlug}` : ""}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((d) => setReviews(d.reviews ?? []))
+      .catch(() => setReviews([]))
+      .finally(() => setLoading(false));
+  }, [tab, loSlug]);
 
   return (
     <section className="bg-white py-20">
@@ -214,66 +211,85 @@ export function ReviewsSection({ firstName }: { firstName: string }) {
             </h2>
           </div>
 
-          {/* Tab pills */}
-          <div className="flex items-center gap-1 rounded-2xl border border-line bg-sand p-1">
+          {/* Tab pills + Leave Review button */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1 rounded-2xl border border-line bg-sand p-1">
+              <button
+                onClick={() => setTab("personal")}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+                  tab === "personal" ? "bg-accent text-white shadow-orange" : "text-muted hover:text-ink"
+                }`}
+              >
+                {firstName}&apos;s Reviews
+              </button>
+              <button
+                onClick={() => setTab("company")}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+                  tab === "company" ? "bg-accent text-white shadow-orange" : "text-muted hover:text-ink"
+                }`}
+              >
+                HCMG Reviews
+              </button>
+            </div>
             <button
-              onClick={() => setTab("personal")}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
-                tab === "personal"
-                  ? "bg-accent text-white shadow-orange"
-                  : "text-muted hover:text-ink"
-              }`}
+              onClick={() => setShowForm((v) => !v)}
+              className="secondary-button !py-2 !px-4 !text-sm"
             >
-              {firstName}&apos;s Reviews
-            </button>
-            <button
-              onClick={() => setTab("company")}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
-                tab === "company"
-                  ? "bg-accent text-white shadow-orange"
-                  : "text-muted hover:text-ink"
-              }`}
-            >
-              HCMG Reviews
+              ✏️ Leave a Review
             </button>
           </div>
         </div>
 
-        {/* Aggregate stats bar */}
-        <div className="mb-8 flex flex-wrap items-center gap-5 rounded-2xl border border-line bg-sand px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Stars rating={5} />
-            <span className="text-2xl font-extrabold text-ink">{avg}</span>
-            <span className="text-sm text-muted">/ 5.0</span>
+        {/* Leave a review form */}
+        {showForm && (
+          <div className="mb-8 max-w-lg">
+            <LeaveReviewForm
+              loSlug={loSlug}
+              scope={tab}
+              onClose={() => setShowForm(false)}
+            />
           </div>
-          <div className="h-5 w-px bg-line" />
-          <span className="text-sm font-semibold text-muted">
-            <strong className="text-ink">{reviews.length}</strong> verified reviews
-          </span>
-          {googleCount > 0 && (
-            <>
-              <div className="h-5 w-px bg-line" />
-              <span className="text-sm font-semibold text-muted">
-                <strong className="text-blue-700">{googleCount}</strong> Google
-              </span>
-            </>
-          )}
-          {zillowCount > 0 && (
-            <>
-              <div className="h-5 w-px bg-line" />
-              <span className="text-sm font-semibold text-muted">
-                <strong className="text-[#006AFF]">{zillowCount}</strong> Zillow
-              </span>
-            </>
-          )}
-        </div>
+        )}
 
-        {/* Cards grid */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {reviews.map((r, i) => (
-            <ReviewCard key={i} review={r} />
-          ))}
-        </div>
+        {/* Stats bar */}
+        {reviews.length > 0 && (
+          <div className="mb-8 flex flex-wrap items-center gap-5 rounded-2xl border border-line bg-sand px-5 py-4">
+            <div className="flex items-center gap-2">
+              <Stars rating={5} />
+              <span className="text-2xl font-extrabold text-ink">
+                {(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)}
+              </span>
+              <span className="text-sm text-muted">/ 5.0</span>
+            </div>
+            <div className="h-5 w-px bg-line" />
+            <span className="text-sm font-semibold text-muted">
+              <strong className="text-ink">{reviews.length}</strong> verified review{reviews.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+        )}
+
+        {/* Cards or empty states */}
+        {loading ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 animate-pulse rounded-2xl border border-line bg-sand" />
+            ))}
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="rounded-2xl border border-line bg-sand px-6 py-12 text-center">
+            <p className="text-2xl mb-2">⭐</p>
+            <p className="font-semibold text-ink">No reviews yet</p>
+            <p className="mt-1 text-sm text-muted">Be the first to leave one!</p>
+            <button onClick={() => setShowForm(true)}
+              className="primary-button mt-4 !py-2.5 !px-5 !text-sm">
+              ✏️ Leave a Review
+            </button>
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {reviews.map((r) => <ReviewCard key={r.id} review={r} />)}
+          </div>
+        )}
       </div>
     </section>
   );

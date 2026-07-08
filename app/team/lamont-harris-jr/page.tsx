@@ -300,7 +300,7 @@ export default async function LamontPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/* REVIEWS                                                   */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <ReviewsSection firstName="Lamont" />
+      <ReviewsSection firstName="Lamont" loSlug={m.slug} />
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/* FAQ                                                        */}
