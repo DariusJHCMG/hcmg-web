@@ -10,58 +10,84 @@ interface Props {
   siteUrl: string;
 }
 
-// ── Copy button ───────────────────────────────────────────────────────────────
-function CopyBtn({ text, size = "md" }: { text: string; size?: "sm" | "md" }) {
+// ── Copy button ────────────────────────────────────────────────────────────────
+function CopyBtn({ text, variant = "default" }: { text: string; variant?: "default" | "accent" }) {
   const [state, setState] = useState<"idle" | "copied">("idle");
+
   async function copy() {
     await navigator.clipboard.writeText(text).catch(() => {});
     setState("copied");
     setTimeout(() => setState("idle"), 2200);
   }
-  const base = size === "sm"
-    ? "rounded-lg px-2.5 py-1 text-[10px]"
-    : "rounded-xl px-3.5 py-1.5 text-xs";
+
+  if (variant === "accent") {
+    return (
+      <button
+        onClick={copy}
+        className={`flex-shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all
+          ${state === "copied"
+            ? "bg-green-500 text-white"
+            : "bg-accent text-white hover:bg-accent-dark active:scale-95"
+          }`}
+      >
+        {state === "copied" ? "✓ Copied!" : "Copy link"}
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={copy}
-      className={`flex-shrink-0 font-bold transition-all duration-200 ${base}
+      className={`flex-shrink-0 rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-all
         ${state === "copied"
-          ? "border border-green-400/60 bg-green-500/15 text-green-400"
-          : "border border-white/20 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white"
+          ? "border-green-300 bg-green-50 text-green-700"
+          : "border-line bg-white text-muted hover:border-accent hover:text-accent"
         }`}
     >
-      {state === "copied" ? "✓ Copied!" : "Copy"}
+      {state === "copied" ? "✓ Copied" : "Copy"}
     </button>
   );
 }
 
-// ── UTM presets ───────────────────────────────────────────────────────────────
+// ── Platform presets ───────────────────────────────────────────────────────────
 const UTM_PRESETS = [
-  { label: "Facebook Ad",     icon: "📘", source: "facebook",  medium: "paid-social" },
-  { label: "Instagram Ad",    icon: "📸", source: "instagram", medium: "paid-social" },
-  { label: "Google Ad",       icon: "🔍", source: "google",    medium: "cpc"         },
-  { label: "Email",           icon: "✉️",  source: "email",     medium: "email"       },
-  { label: "Text / SMS",      icon: "💬", source: "sms",       medium: "sms"         },
-  { label: "TikTok",          icon: "🎵", source: "tiktok",    medium: "paid-social" },
-  { label: "YouTube",         icon: "▶️",  source: "youtube",   medium: "video"       },
-  { label: "Custom…",         icon: "✏️",  source: "",          medium: ""            },
+  { label: "Facebook",  icon: "📘", source: "facebook",  medium: "paid-social" },
+  { label: "Instagram", icon: "📸", source: "instagram", medium: "paid-social" },
+  { label: "Google",    icon: "🔍", source: "google",    medium: "cpc"         },
+  { label: "Email",     icon: "✉️", source: "email",     medium: "email"       },
+  { label: "SMS / Text",icon: "💬", source: "sms",       medium: "sms"         },
+  { label: "TikTok",    icon: "🎵", source: "tiktok",    medium: "paid-social" },
+  { label: "YouTube",   icon: "▶️", source: "youtube",   medium: "video"       },
+  { label: "Custom",    icon: "✏️", source: "",          medium: ""            },
 ];
 
-// ── Main component ────────────────────────────────────────────────────────────
-export function PortalFunnelLibrary({ loSlug, loName: _loName, siteUrl }: Props) {
-  const [activeFamily, setActiveFamily]   = useState<FunnelFamily | "all">("all");
-  const [search, setSearch]               = useState("");
-  const [utmPreset, setUtmPreset]         = useState(0);
-  const [utmSource, setUtmSource]         = useState("");
-  const [utmMedium, setUtmMedium]         = useState("");
-  const [utmCampaign, setUtmCampaign]     = useState("");
-  const [utmContent, setUtmContent]       = useState("");
+// ── Family accent color map ────────────────────────────────────────────────────
+const FAMILY_ACCENT: Record<string, string> = {
+  purchase:     "#f59e0b",
+  va:           "#3b82f6",
+  fha:          "#22c55e",
+  "first-time": "#8b5cf6",
+  refinance:    "#f97316",
+  investor:     "#64748b",
+  credit:       "#f43f5e",
+  calculator:   "#14b8a6",
+};
 
-  const isCustom = utmPreset === UTM_PRESETS.length - 1;
-  const activeSrc = isCustom ? utmSource : UTM_PRESETS[utmPreset].source;
-  const activeMed = isCustom ? utmMedium : UTM_PRESETS[utmPreset].medium;
+// ── Main component ─────────────────────────────────────────────────────────────
+export function PortalFunnelLibrary({ loSlug, siteUrl }: Props) {
+  const [activeFamily, setActiveFamily] = useState<FunnelFamily | "all">("all");
+  const [search,       setSearch]       = useState("");
+  const [utmPreset,    setUtmPreset]    = useState(-1); // -1 = no preset selected
+  const [utmSource,    setUtmSource]    = useState("");
+  const [utmMedium,    setUtmMedium]    = useState("");
+  const [utmCampaign,  setUtmCampaign]  = useState("");
+  const [utmContent,   setUtmContent]   = useState("");
 
-  function buildUtmSuffix() {
+  const isCustom  = utmPreset === UTM_PRESETS.length - 1;
+  const activeSrc = utmPreset < 0 ? "" : (isCustom ? utmSource : UTM_PRESETS[utmPreset].source);
+  const activeMed = utmPreset < 0 ? "" : (isCustom ? utmMedium : UTM_PRESETS[utmPreset].medium);
+
+  function buildSuffix() {
     const p: string[] = [];
     if (activeSrc)   p.push(`utm_source=${encodeURIComponent(activeSrc)}`);
     if (activeMed)   p.push(`utm_medium=${encodeURIComponent(activeMed)}`);
@@ -70,11 +96,12 @@ export function PortalFunnelLibrary({ loSlug, loName: _loName, siteUrl }: Props)
     return p.length ? `?${p.join("&")}` : "";
   }
 
-  function buildUrl(funnelSlug: string) {
-    return `${siteUrl}/go/${loSlug}/${funnelSlug}${buildUtmSuffix()}`;
-  }
+  const suffix  = buildSuffix();
+  const baseUrl = `${siteUrl}/go/${loSlug}${suffix}`;
 
-  const baseUrl = `${siteUrl}/go/${loSlug}${buildUtmSuffix()}`;
+  function buildUrl(slug: string) {
+    return `${siteUrl}/go/${loSlug}/${slug}${suffix}`;
+  }
 
   const filtered = useMemo(() => {
     let list = FUNNEL_CATALOG;
@@ -92,8 +119,7 @@ export function PortalFunnelLibrary({ loSlug, loName: _loName, siteUrl }: Props)
   }, [activeFamily, search]);
 
   const grouped = useMemo(() => {
-    if (activeFamily !== "all") return null;
-    if (search.trim()) return null; // flat view when searching
+    if (activeFamily !== "all" || search.trim()) return null;
     const map = new Map<FunnelFamily, typeof FUNNEL_CATALOG>();
     for (const f of filtered) {
       if (!map.has(f.family)) map.set(f.family, []);
@@ -103,280 +129,294 @@ export function PortalFunnelLibrary({ loSlug, loName: _loName, siteUrl }: Props)
   }, [activeFamily, filtered, search]);
 
   return (
-    <div className="min-h-screen bg-[#0d0f14]">
+    <div className="space-y-6">
 
-      {/* ── Hero header ──────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden border-b border-white/8"
-        style={{ background: "linear-gradient(135deg,#0f1923 0%,#142035 50%,#0f1923 100%)" }}>
-        {/* Decorative blobs */}
-        <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full opacity-20"
-          style={{ background: "radial-gradient(circle,#F37021 0%,transparent 70%)" }} />
-        <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full opacity-10"
-          style={{ background: "radial-gradient(circle,#FF9847 0%,transparent 70%)" }} />
-
-        <div className="relative px-6 py-8 sm:px-8 sm:py-10">
-          <div className="mb-1 flex items-center gap-2">
-            <span className="h-1.5 w-6 rounded-full" style={{ background: "linear-gradient(90deg,#FF9847,#F37021)" }} />
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">Funnel Library</span>
-          </div>
-          <h1 className="text-3xl font-extrabold text-white sm:text-4xl">
-            Your Personal<br />
-            <span style={{ background: "linear-gradient(90deg,#FF9847,#F37021)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Funnel Links
-            </span>
-          </h1>
-          <p className="mt-2 max-w-xl text-sm text-white/50">
-            {FUNNEL_CATALOG.length} trackable links across {FUNNEL_FAMILIES.length} categories.
-            Every submission routes directly to you with an instant notification.
+      {/* ── Page header ──────────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="ok-gradient-text text-xs font-bold uppercase tracking-[0.2em]">My Funnels</p>
+          <h1 className="mt-1 text-2xl font-extrabold text-ink">Funnel Library</h1>
+          <p className="mt-1 text-sm text-muted">
+            {FUNNEL_CATALOG.length} personalised lead funnels — pick one, copy the link, share it anywhere.
           </p>
-
-          {/* Stats row */}
-          <div className="mt-6 flex flex-wrap gap-3">
-            {FUNNEL_FAMILIES.map((fam) => (
-              <button
-                key={fam.key}
-                onClick={() => { setActiveFamily(fam.key); setSearch(""); }}
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all
-                  ${activeFamily === fam.key
-                    ? "border-orange-500/60 bg-orange-500/20 text-orange-300"
-                    : "border-white/10 bg-white/5 text-white/50 hover:border-white/20 hover:text-white/80"
-                  }`}
-              >
-                <span>{fam.icon}</span>
-                <span>{fam.label}</span>
-                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold
-                  ${activeFamily === fam.key ? "bg-orange-500/30 text-orange-200" : "bg-white/8 text-white/40"}`}>
-                  {FUNNEL_CATALOG.filter((f) => f.family === fam.key).length}
-                </span>
-              </button>
-            ))}
-            <button
-              onClick={() => { setActiveFamily("all"); setSearch(""); }}
-              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all
-                ${activeFamily === "all" && !search
-                  ? "border-white/30 bg-white/10 text-white"
-                  : "border-white/10 bg-white/5 text-white/50 hover:border-white/20 hover:text-white/80"
-                }`}
-            >
-              All · {FUNNEL_CATALOG.length}
-            </button>
-          </div>
+        </div>
+        <div className="flex items-center gap-2 rounded-2xl border border-line bg-sand px-4 py-2.5 text-xs text-muted">
+          <span className="h-2 w-2 rounded-full bg-green-500" />
+          All links active
         </div>
       </div>
 
-      <div className="px-6 py-6 sm:px-8 sm:py-8 space-y-6">
+      {/* ── Your base funnel link ─────────────────────────────────────────────── */}
+      <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+        {/* Orange top bar */}
+        <div className="h-1 w-full ok-gradient-bg" />
+        <div className="p-5 sm:p-6">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-extrabold text-ink">Your Personal Funnel Link</p>
+              <p className="mt-0.5 text-xs text-muted">
+                General catch-all — works for any campaign. Share on social, email, or bio.
+              </p>
+            </div>
+            <span className="flex-shrink-0 rounded-full border border-green-200 bg-green-50 px-2.5 py-0.5 text-[10px] font-bold text-green-700">
+              Active
+            </span>
+          </div>
 
-        {/* ── General funnel link ──────────────────────────────────────────── */}
-        <div className="overflow-hidden rounded-2xl border border-white/10"
-          style={{ background: "linear-gradient(135deg,#1a2235,#1e2840)" }}>
-          <div className="px-5 py-4 sm:px-6">
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/40">General Funnel Link</p>
-                <p className="mt-0.5 text-sm font-bold text-white">Your catch-all personal link</p>
-              </div>
-              <span className="rounded-full border border-green-500/30 bg-green-500/15 px-2.5 py-0.5 text-[10px] font-bold text-green-400">
-                ● Active
-              </span>
-            </div>
-            {/* Full URL display */}
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-4 py-3">
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-mono text-sm font-semibold text-orange-300">{baseUrl}</p>
-              </div>
-              <CopyBtn text={baseUrl} />
-            </div>
-            <p className="mt-2 text-[11px] text-white/30">
-              Share anywhere. UTM parameters below are automatically appended to every link you copy.
+          <div className="flex items-center gap-2 rounded-xl border border-line bg-sand px-4 py-3">
+            <code className="flex-1 min-w-0 break-all text-sm font-semibold text-accent">{baseUrl}</code>
+            <CopyBtn text={baseUrl} variant="accent" />
+          </div>
+
+          {suffix && (
+            <p className="mt-2 text-[11px] text-muted/60">
+              UTM params from builder applied ↑
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* ── UTM builder ──────────────────────────────────────────────────────── */}
+      <div className="rounded-2xl border border-line bg-white shadow-soft">
+        <div className="flex items-center justify-between border-b border-line px-5 py-4 sm:px-6">
+          <div>
+            <p className="text-sm font-extrabold text-ink">UTM Campaign Tracking</p>
+            <p className="text-xs text-muted">
+              Select a platform — tracking parameters are added to every link you copy below.
             </p>
           </div>
-          <div className="h-px" style={{ background: "linear-gradient(90deg,transparent,rgba(243,112,33,.4),transparent)" }} />
+          {utmPreset >= 0 && (
+            <button
+              onClick={() => { setUtmPreset(-1); setUtmSource(""); setUtmMedium(""); setUtmCampaign(""); setUtmContent(""); }}
+              className="text-xs font-semibold text-muted hover:text-red-500 transition-colors"
+            >
+              Clear
+            </button>
+          )}
         </div>
 
-        {/* ── UTM Builder ──────────────────────────────────────────────────── */}
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#141820]">
-          <div className="border-b border-white/8 px-5 py-4 sm:px-6">
-            <p className="text-sm font-bold text-white">UTM Tracking</p>
-            <p className="mt-0.5 text-xs text-white/40">
-              Select a platform preset — all URLs you copy below will include these tracking parameters.
-            </p>
+        <div className="p-5 sm:p-6 space-y-4">
+          {/* Platform pills */}
+          <div className="flex flex-wrap gap-2">
+            {UTM_PRESETS.map((p, i) => (
+              <button
+                key={p.label}
+                onClick={() => {
+                  setUtmPreset(i);
+                  if (i < UTM_PRESETS.length - 1) { setUtmSource(""); setUtmMedium(""); }
+                }}
+                className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all
+                  ${utmPreset === i
+                    ? "border-accent/40 bg-accent/10 text-accent"
+                    : "border-line bg-sand text-muted hover:border-accent/30 hover:text-ink"
+                  }`}
+              >
+                <span>{p.icon}</span>
+                <span>{p.label}</span>
+              </button>
+            ))}
           </div>
 
-          <div className="px-5 py-5 sm:px-6 space-y-4">
-            {/* Preset grid */}
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {UTM_PRESETS.map((p, i) => (
-                <button
-                  key={p.label}
-                  onClick={() => {
-                    setUtmPreset(i);
-                    if (i < UTM_PRESETS.length - 1) { setUtmSource(""); setUtmMedium(""); }
-                  }}
-                  className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all text-left
-                    ${utmPreset === i
-                      ? "border-orange-500/50 bg-orange-500/15 text-orange-300"
-                      : "border-white/8 bg-white/5 text-white/50 hover:border-white/15 hover:text-white/80"
-                    }`}
-                >
-                  <span className="text-sm">{p.icon}</span>
-                  <span>{p.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Fields */}
+          {/* Fields — only shown once a preset is chosen */}
+          {utmPreset >= 0 && (
             <div className="grid gap-3 sm:grid-cols-4">
               {[
-                { label: "Source",   value: activeSrc,    set: (v: string) => { if (isCustom) setUtmSource(v); },   placeholder: "facebook"   },
-                { label: "Medium",   value: activeMed,    set: (v: string) => { if (isCustom) setUtmMedium(v); },   placeholder: "paid-social" },
-                { label: "Campaign", value: utmCampaign,  set: setUtmCampaign,  placeholder: "spring2025",  editable: true },
-                { label: "Content",  value: utmContent,   set: setUtmContent,   placeholder: "va-ad-v1",    editable: true },
-              ].map((f) => {
-                const editable = "editable" in f ? f.editable : isCustom;
-                return (
-                  <div key={f.label}>
-                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">
-                      utm_{f.label.toLowerCase()}
-                    </label>
-                    <input
-                      type="text"
-                      value={f.value}
-                      onChange={(e) => f.set(e.target.value)}
-                      readOnly={!editable}
-                      placeholder={f.placeholder}
-                      className={`w-full rounded-xl border bg-black/20 px-3 py-2 font-mono text-xs text-white/80
-                        placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all
-                        ${editable ? "border-white/10 focus:border-orange-500/40" : "cursor-not-allowed border-white/5 opacity-50"}`}
-                    />
-                  </div>
-                );
-              })}
+                { key: "source",   label: "utm_source",   val: activeSrc,   set: (v: string) => { if (isCustom) setUtmSource(v); },   editable: isCustom, ph: "facebook"    },
+                { key: "medium",   label: "utm_medium",   val: activeMed,   set: (v: string) => { if (isCustom) setUtmMedium(v); },   editable: isCustom, ph: "paid-social"  },
+                { key: "campaign", label: "utm_campaign", val: utmCampaign, set: setUtmCampaign, editable: true, ph: "spring2025"   },
+                { key: "content",  label: "utm_content",  val: utmContent,  set: setUtmContent,  editable: true, ph: "va-ad-v1"     },
+              ].map((f) => (
+                <div key={f.key}>
+                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted">
+                    {f.label}
+                  </label>
+                  <input
+                    type="text"
+                    value={f.val}
+                    onChange={(e) => f.set(e.target.value)}
+                    readOnly={!f.editable}
+                    placeholder={f.ph}
+                    className={`w-full rounded-xl border border-line bg-sand px-3 py-2 font-mono text-xs text-ink
+                      placeholder:text-muted/40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/10 transition-all
+                      ${!f.editable ? "cursor-not-allowed opacity-50" : ""}`}
+                  />
+                </div>
+              ))}
             </div>
+          )}
 
-            {/* Live preview */}
-            {buildUtmSuffix() && (
-              <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 px-4 py-2.5">
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-orange-400/60">
-                  UTM suffix applied to all links
+          {/* Live suffix preview */}
+          {suffix && (
+            <div className="flex items-start gap-3 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3">
+              <span className="mt-0.5 flex-shrink-0 text-sm">🔗</span>
+              <div className="min-w-0">
+                <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-accent/70">
+                  Appended to every link you copy
                 </p>
-                <p className="font-mono text-xs text-orange-300/80 break-all">{buildUtmSuffix()}</p>
+                <code className="break-all text-xs font-semibold text-accent">{suffix}</code>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
 
-        {/* ── Search bar ───────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-sm">🔍</span>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search funnels — VA, FHA, DSCR, first-time buyer…"
-              className="w-full rounded-xl border border-white/10 bg-[#141820] py-3 pl-10 pr-4 text-sm text-white/80
-                placeholder:text-white/25 focus:border-orange-500/40 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-            />
-          </div>
-          <div className="flex-shrink-0 rounded-xl border border-white/10 bg-[#141820] px-4 py-3 text-xs font-bold text-white/40">
-            {filtered.length} funnels
-          </div>
+          {utmPreset < 0 && (
+            <p className="text-xs text-muted/60">
+              👆 Choose a platform above to start adding tracking to your links — or skip this and copy links without UTM params.
+            </p>
+          )}
         </div>
+      </div>
 
-        {/* ── No results ───────────────────────────────────────────────────── */}
-        {filtered.length === 0 && (
-          <div className="rounded-2xl border border-white/8 bg-[#141820] py-16 text-center">
-            <p className="text-3xl mb-3">🔍</p>
-            <p className="text-sm font-semibold text-white/40">No funnels match &ldquo;{search}&rdquo;</p>
-            <button onClick={() => setSearch("")}
-              className="mt-3 text-xs font-semibold text-orange-400 hover:text-orange-300">
-              Clear search
+      {/* ── Search + family tabs ──────────────────────────────────────────────── */}
+      <div className="space-y-3">
+        {/* Search */}
+        <div className="relative">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+          </span>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); if (e.target.value) setActiveFamily("all"); }}
+            placeholder="Search — VA loan, DSCR, first-time buyer, cash-out…"
+            className="w-full rounded-xl border border-line bg-white py-3 pl-11 pr-4 text-sm text-ink
+              placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/10 shadow-soft"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-muted hover:text-ink"
+            >
+              ✕
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* ── Grouped view (all families, no search) ───────────────────────── */}
-        {grouped && filtered.length > 0 && (
-          <div className="space-y-10">
+        {/* Family filter tabs */}
+        {!search && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveFamily("all")}
+              className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all
+                ${activeFamily === "all"
+                  ? "border-ink bg-ink text-white"
+                  : "border-line bg-white text-muted hover:border-ink/20 hover:text-ink"
+                }`}
+            >
+              All  ·  {FUNNEL_CATALOG.length}
+            </button>
             {FUNNEL_FAMILIES.map((fam) => {
-              const funnels = grouped.get(fam.key);
-              if (!funnels || funnels.length === 0) return null;
+              const count = FUNNEL_CATALOG.filter((f) => f.family === fam.key).length;
+              const active = activeFamily === fam.key;
               return (
-                <FamilySection
+                <button
                   key={fam.key}
-                  fam={fam}
-                  funnels={funnels}
-                  buildUrl={buildUrl}
-                  onFamilyClick={() => setActiveFamily(fam.key)}
-                />
+                  onClick={() => setActiveFamily(fam.key)}
+                  style={active ? { borderColor: FAMILY_ACCENT[fam.key] + "60", background: FAMILY_ACCENT[fam.key] + "12", color: FAMILY_ACCENT[fam.key] } : {}}
+                  className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all
+                    ${!active ? "border-line bg-white text-muted hover:border-line hover:text-ink" : ""}`}
+                >
+                  {fam.icon} {fam.label}
+                  <span className="ml-1.5 rounded-full bg-black/8 px-1.5 py-0.5 text-[10px] font-bold">
+                    {count}
+                  </span>
+                </button>
               );
             })}
           </div>
         )}
 
-        {/* ── Single family or search results — flat grid ───────────────────── */}
-        {!grouped && filtered.length > 0 && (() => {
-          const fam = FUNNEL_FAMILIES.find((f) => f.key === activeFamily) ?? FUNNEL_FAMILIES[0];
-          return <FunnelGrid funnels={filtered} buildUrl={buildUrl} fam={fam} />;
-        })()}
+        {/* Count line */}
+        <p className="text-xs text-muted">
+          {search ? `${filtered.length} result${filtered.length !== 1 ? "s" : ""} for "${search}"` : `${filtered.length} funnels`}
+        </p>
       </div>
-    </div>
-  );
-}
 
-// ── Family section with header ─────────────────────────────────────────────
-function FamilySection({
-  fam, funnels, buildUrl, onFamilyClick,
-}: {
-  fam: FunnelFamilyDef;
-  funnels: typeof FUNNEL_CATALOG;
-  buildUrl: (slug: string) => string;
-  onFamilyClick: () => void;
-}) {
-  return (
-    <div>
-      {/* Section header */}
-      <button
-        onClick={onFamilyClick}
-        className="group mb-4 flex w-full items-center justify-between rounded-2xl border border-white/8 bg-[#141820] px-5 py-4 text-left transition-all hover:border-white/15"
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-xl">{fam.icon}</span>
-          <div>
-            <p className="text-sm font-extrabold text-white">{fam.label}</p>
-            <p className="text-xs text-white/40">{fam.description} · {funnels.length} funnels</p>
-          </div>
+      {/* ── No results ───────────────────────────────────────────────────────── */}
+      {filtered.length === 0 && (
+        <div className="rounded-2xl border border-line bg-white py-14 text-center shadow-soft">
+          <p className="text-2xl">🔍</p>
+          <p className="mt-2 text-sm font-semibold text-ink">No funnels match &ldquo;{search}&rdquo;</p>
+          <button onClick={() => setSearch("")}
+            className="mt-2 text-xs font-semibold text-accent hover:underline">
+            Clear search
+          </button>
         </div>
-        <span className="text-xs font-semibold text-white/30 group-hover:text-orange-400 transition-colors">
-          View all →
-        </span>
-      </button>
-      <FunnelGrid funnels={funnels} buildUrl={buildUrl} fam={fam} />
+      )}
+
+      {/* ── Grouped (all families, no search) ────────────────────────────────── */}
+      {grouped && filtered.length > 0 && (
+        <div className="space-y-10">
+          {FUNNEL_FAMILIES.map((fam) => {
+            const funnels = grouped.get(fam.key);
+            if (!funnels || funnels.length === 0) return null;
+            return (
+              <section key={fam.key}>
+                {/* Section header */}
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="flex h-8 w-8 items-center justify-center rounded-xl text-base"
+                      style={{ background: FAMILY_ACCENT[fam.key] + "18" }}
+                    >
+                      {fam.icon}
+                    </span>
+                    <div>
+                      <p className="text-sm font-extrabold text-ink">{fam.label}</p>
+                      <p className="text-[11px] text-muted">{fam.description}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveFamily(fam.key)}
+                    className="text-xs font-semibold text-accent hover:underline"
+                  >
+                    View all {funnels.length} →
+                  </button>
+                </div>
+                <FunnelGrid funnels={funnels} buildUrl={buildUrl} fam={fam} />
+              </section>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Single family or search — flat grid ─────────────────────────────── */}
+      {!grouped && filtered.length > 0 && (() => {
+        const fam = FUNNEL_FAMILIES.find((f) => f.key === activeFamily) ?? FUNNEL_FAMILIES[0];
+        return (
+          <div>
+            {search && (
+              <p className="mb-4 text-xs font-semibold text-muted">
+                Showing results across all categories
+              </p>
+            )}
+            <FunnelGrid funnels={filtered} buildUrl={buildUrl} fam={fam} />
+          </div>
+        );
+      })()}
     </div>
   );
 }
 
-// ── Funnel card grid ───────────────────────────────────────────────────────
+// ── Card grid ──────────────────────────────────────────────────────────────────
 function FunnelGrid({
-  funnels,
-  buildUrl,
-  fam,
+  funnels, buildUrl, fam,
 }: {
   funnels: typeof FUNNEL_CATALOG;
   buildUrl: (slug: string) => string;
   fam: FunnelFamilyDef;
 }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {funnels.map((f) => {
-        const url = buildUrl(f.slug);
-        return <FunnelCard key={f.slug} f={f} url={url} fam={fam} />;
-      })}
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {funnels.map((f) => (
+        <FunnelCard key={f.slug} f={f} url={buildUrl(f.slug)} fam={fam} />
+      ))}
     </div>
   );
 }
 
-// ── Individual funnel card ─────────────────────────────────────────────────
+// ── Individual card ────────────────────────────────────────────────────────────
 function FunnelCard({
   f, url, fam,
 }: {
@@ -384,59 +424,61 @@ function FunnelCard({
   url: string;
   fam: FunnelFamilyDef;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const accent = FAMILY_ACCENT[fam.key] ?? "#F37021";
 
   return (
-    <div
-      className="group flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-[#141820] transition-all duration-200 hover:border-white/15 hover:bg-[#181e2a]"
-    >
-      {/* Top accent line per family */}
-      <div className="h-0.5 w-full flex-shrink-0" style={{ background: FAMILY_GRADIENT[fam.key] }} />
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-soft transition-all hover:border-accent/30 hover:shadow-card">
+      {/* Top color stripe */}
+      <div className="h-[3px] w-full flex-shrink-0" style={{ background: accent }} />
 
       <div className="flex flex-1 flex-col p-4">
         {/* Title + badge */}
-        <div className="mb-2 flex items-start gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-sm font-bold text-white leading-snug">{f.label}</span>
-              {f.badge && (
-                <span className="inline-flex flex-shrink-0 items-center rounded-full border border-white/15 bg-white/8 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white/60">
-                  {f.badge}
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-[11px] leading-relaxed text-white/40 line-clamp-2">{f.subhead}</p>
+        <div className="mb-3">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-sm font-extrabold text-ink leading-snug">{f.label}</span>
+            {f.badge && (
+              <span
+                className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide"
+                style={{ borderColor: accent + "40", background: accent + "12", color: accent }}
+              >
+                {f.badge}
+              </span>
+            )}
           </div>
+          <p className="mt-1 text-[12px] leading-relaxed text-muted line-clamp-2">{f.subhead}</p>
         </div>
 
-        {/* Expand toggle for headline */}
-        {expanded && (
-          <div className="mb-3 rounded-xl border border-white/8 bg-black/20 px-3 py-2.5">
-            <p className="text-[11px] font-semibold text-orange-300/80">&ldquo;{f.headline}&rdquo;</p>
-            <p className="mt-0.5 text-[10px] text-white/30">Shown to visitor at top of funnel</p>
+        {/* Preview hook */}
+        {preview && (
+          <div className="mb-3 rounded-xl border border-line bg-sand px-3 py-2.5">
+            <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60">
+              What visitors see
+            </p>
+            <p className="text-xs font-semibold text-ink">&ldquo;{f.headline}&rdquo;</p>
           </div>
         )}
 
-        {/* Full URL — always visible */}
-        <div className="mt-auto space-y-1.5">
-          <div className="flex items-center gap-1.5 rounded-xl border border-white/8 bg-black/25 px-3 py-2">
-            <code className="flex-1 truncate font-mono text-[11px] text-orange-300/90">{url}</code>
-            <CopyBtn text={url} size="sm" />
+        {/* Full URL */}
+        <div className="mt-auto space-y-2">
+          <div className="flex items-center gap-2 rounded-xl border border-line bg-sand px-3 py-2.5">
+            <code className="flex-1 truncate text-[11px] font-semibold text-accent">{url}</code>
+            <CopyBtn text={url} />
           </div>
 
-          {/* Action row */}
+          {/* Footer actions */}
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => setExpanded((v) => !v)}
-              className="flex-1 rounded-lg border border-white/8 bg-white/4 py-1.5 text-center text-[10px] font-semibold text-white/40 transition-all hover:border-white/15 hover:text-white/70"
+              onClick={() => setPreview((v) => !v)}
+              className="flex-1 rounded-xl border border-line bg-white py-2 text-center text-[11px] font-semibold text-muted transition-all hover:border-accent/30 hover:text-accent"
             >
-              {expanded ? "↑ Less" : "Preview funnel hook"}
+              {preview ? "Hide preview" : "Preview hook ↓"}
             </button>
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 text-[10px] font-semibold text-white/40 transition-all hover:border-orange-500/30 hover:text-orange-400"
+              className="rounded-xl border border-line bg-white px-3 py-2 text-[11px] font-semibold text-muted transition-all hover:border-accent/30 hover:text-accent"
             >
               Open ↗
             </a>
@@ -446,15 +488,3 @@ function FunnelCard({
     </div>
   );
 }
-
-// ── Per-family gradient top accent ─────────────────────────────────────────
-const FAMILY_GRADIENT: Record<string, string> = {
-  purchase:    "linear-gradient(90deg,#f59e0b,#d97706)",
-  va:          "linear-gradient(90deg,#3b82f6,#1d4ed8)",
-  fha:         "linear-gradient(90deg,#22c55e,#16a34a)",
-  "first-time":"linear-gradient(90deg,#8b5cf6,#6d28d9)",
-  refinance:   "linear-gradient(90deg,#f97316,#ea580c)",
-  investor:    "linear-gradient(90deg,#64748b,#475569)",
-  credit:      "linear-gradient(90deg,#f43f5e,#e11d48)",
-  calculator:  "linear-gradient(90deg,#14b8a6,#0d9488)",
-};
