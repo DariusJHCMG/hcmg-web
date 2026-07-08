@@ -12,7 +12,7 @@ import { teamMembers, getTeamMemberBySlug } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
 import type { Profile } from "@/lib/database.types";
 
-export const revalidate = 86400;
+export const revalidate = 60;
 
 // ── Default copy — used until the user saves their own ────────────
 const DEFAULT_HERO_BIO = (name: string, role: string) =>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createServiceClient } from "@/lib/supabase";
+import { revalidatePath } from "next/cache";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -27,6 +28,14 @@ export async function PATCH(request: NextRequest) {
     patch.updated_at = new Date().toISOString();
 
     const sb = createServiceClient();
+
+    // Fetch lo_slug before update so we can revalidate the right page
+    const { data: existing } = await sb
+      .from("profiles")
+      .select("lo_slug")
+      .eq("id", session.user.id)
+      .single();
+
     const { error } = await sb
       .from("profiles")
       .update(patch)
@@ -34,6 +43,16 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Revalidate public team pages immediately so changes show on the site
+    revalidatePath("/team", "page");
+    if (existing?.lo_slug) {
+      revalidatePath(`/team/${existing.lo_slug}`, "page");
+      // Lamont has a dedicated static route — revalidate it too
+      if (existing.lo_slug === "lamont-harris-jr") {
+        revalidatePath("/team/lamont-harris-jr", "page");
+      }
     }
 
     return NextResponse.json({ ok: true });
