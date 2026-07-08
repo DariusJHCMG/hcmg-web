@@ -17,7 +17,6 @@ function Initials({ name }: { name: string }) {
 
 export function ProfileEditor({ profile }: Props) {
   const [fullName,     setFullName]     = useState(profile.full_name ?? "");
-  const [title,        setTitle]        = useState(profile.title ?? "");
   const [phone,        setPhone]        = useState(profile.phone ?? "");
   const [notifyEmail,  setNotifyEmail]  = useState(profile.notify_email ?? "");
   const [linkedin,     setLinkedin]     = useState(profile.linkedin ?? "");
@@ -75,7 +74,6 @@ export function ProfileEditor({ profile }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         full_name:    fullName.trim()    || null,
-        title:        title.trim()       || null,
         phone:        phone.trim()       || null,
         notify_email: notifyEmail.trim() || null,
         linkedin:     linkedin.trim()    || null,
@@ -189,11 +187,11 @@ export function ProfileEditor({ profile }: Props) {
           <Field label="Title / Role">
             <input
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Senior Loan Officer"
-              className="input-base"
+              value={profile.title ?? "—"}
+              readOnly
+              className="input-base cursor-not-allowed opacity-60"
             />
+            <p className="mt-1 text-[11px] text-muted">Contact admin to update your title</p>
           </Field>
           <Field label="Phone">
             <input
