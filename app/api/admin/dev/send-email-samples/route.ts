@@ -12,7 +12,7 @@ import {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
 
 export async function POST(request: NextRequest) {
   const profile = await getCurrentProfile();

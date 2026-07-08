@@ -42,7 +42,7 @@ export async function writeSettings(updates: Partial<CompanySettings>): Promise<
   const updated: CompanySettings = { ...current, ...updates };
 
   const sb = createServiceClient();
-  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
+  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
 
   const { error } = await sb.from("funnel_links").upsert({
     lo_slug:   SETTINGS_SLUG,

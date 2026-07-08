@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
 
   // ── 3. Create base funnel_link (one row per LO) ───────────────
   if (lo_slug) {
-    const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
+    const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
     await sb.from("funnel_links").upsert({
       lo_slug,
       lo_name:   full_name,

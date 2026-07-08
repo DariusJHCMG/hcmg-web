@@ -61,7 +61,7 @@ export default async function LoFunnelRedirect({ params, searchParams }: Props) 
       }
     });
 
-  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/+$/, "");
+  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/+$/, "");
 
   // Auto-tag with defaults so every click is tracked, even without manual UTM setup.
   // If the link already has a UTM param (e.g. from a paid ad), it wins over the default.

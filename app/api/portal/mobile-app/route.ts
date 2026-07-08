@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const { email, device } = await request.json() as { email: string; device: "ios" | "android" | "other" };
     if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
 
-    const SITE       = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
+    const SITE       = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
     const installUrl = `${SITE}/portal`;
 
     const { error } = await resend.emails.send({

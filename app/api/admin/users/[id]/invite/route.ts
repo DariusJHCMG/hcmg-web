@@ -40,7 +40,7 @@ export async function POST(
   if (!user)        return NextResponse.json({ error: "User not found" }, { status: 404 });
   if (!user.email)  return NextResponse.json({ error: "User has no email" }, { status: 400 });
 
-  const SITE      = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
+  const SITE      = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
   const portalUrl = `${SITE}/portal`;
   const teamUrl   = user.lo_slug ? `${SITE}/team/${user.lo_slug}` : null;
   const funnelUrl = user.lo_slug ? `${SITE}/go/${user.lo_slug}`   : null;

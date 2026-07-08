@@ -29,7 +29,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (!page.realtor_email) return NextResponse.json({ error: "Realtor has no email on file" }, { status: 400 });
 
-    const SITE    = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
+    const SITE    = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
     const pageUrl = `${SITE}/co/${profile.lo_slug}/${page.realtor_slug}`;
 
     await resend.emails.send({

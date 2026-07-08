@@ -12,7 +12,7 @@ insert into public.funnel_links (lo_slug, lo_name, url, is_active, clicks)
 select
   p.lo_slug,
   p.full_name,
-  'https://hcmg-web.vercel.app/go/' || p.lo_slug,
+  'https://hcmgloans.com/go/' || p.lo_slug,
   p.is_active,
   0
 from public.profiles p
@@ -32,7 +32,7 @@ where notify_email is null;
 create or replace function public.sync_funnel_link()
 returns trigger language plpgsql security definer as $$
 declare
-  _site text := 'https://hcmg-web.vercel.app';
+  _site text := 'https://hcmgloans.com';
 begin
   -- If lo_slug was cleared, deactivate the old funnel link
   if (old.lo_slug is not null) and (new.lo_slug is null or new.lo_slug = '') then
@@ -73,7 +73,7 @@ create trigger profiles_sync_funnel_link
 create or replace function public.sync_funnel_link_on_insert()
 returns trigger language plpgsql security definer as $$
 declare
-  _site text := 'https://hcmg-web.vercel.app';
+  _site text := 'https://hcmgloans.com';
 begin
   if new.lo_slug is not null and new.lo_slug <> '' then
     insert into public.funnel_links (lo_slug, lo_name, url, is_active, clicks)
