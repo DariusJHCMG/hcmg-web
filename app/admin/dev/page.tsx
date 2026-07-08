@@ -15,6 +15,8 @@ export default function DevToolsPage() {
   const [dbHealth,  setDbHealth]    = useState<"checking" | "ok" | "error">("checking");
   const [revalidating, setRevalidating] = useState(false);
   const [revalMsg, setRevalMsg] = useState("");
+  const [backfilling, setBackfilling] = useState(false);
+  const [backfillResults, setBackfillResults] = useState<{ slug: string; name: string; status: string }[] | null>(null);
 
   useEffect(() => {
     fetchChecks();
@@ -42,6 +44,18 @@ export default function DevToolsPage() {
       const data = await res.json();
       setDbHealth(data.ok ? "ok" : "error");
     } catch { setDbHealth("error"); }
+  }
+
+  async function backfillProfiles() {
+    setBackfilling(true); setBackfillResults(null);
+    try {
+      const res  = await fetch("/api/admin/dev/backfill-profiles", { method: "POST" });
+      const json = await res.json();
+      setBackfillResults(json.results ?? [{ slug: "", name: "", status: json.error ?? "Unknown error" }]);
+    } catch (e) {
+      setBackfillResults([{ slug: "", name: "", status: String(e) }]);
+    }
+    setBackfilling(false);
   }
 
   async function revalidateAll() {
@@ -126,6 +140,45 @@ export default function DevToolsPage() {
           </button>
           {revalMsg && <p className="text-sm font-semibold text-green-600">{revalMsg}</p>}
         </div>
+      </div>
+
+      {/* Backfill static team data */}
+      <div className="rounded-2xl border border-line bg-white p-6">
+        <p className="mb-1 text-sm font-bold text-ink">Backfill Static Team Data → Profiles</p>
+        <p className="mb-4 text-xs text-muted">
+          Writes title, NMLS, offices, and short bio from the static team roster into any matching Supabase
+          profile that has those fields blank. Safe to run multiple times — never overwrites existing data.
+        </p>
+        <button
+          onClick={backfillProfiles}
+          disabled={backfilling}
+          className="secondary-button !py-2 !px-5 !text-sm disabled:opacity-50"
+        >
+          {backfilling ? "Running…" : "Run backfill"}
+        </button>
+
+        {backfillResults && (
+          <div className="mt-4 overflow-x-auto rounded-xl border border-line">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-line bg-sand/60 text-left font-semibold uppercase tracking-[0.1em] text-muted/70">
+                  <th className="px-4 py-2">Slug</th>
+                  <th className="px-4 py-2">Name</th>
+                  <th className="px-4 py-2">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {backfillResults.map((r, i) => (
+                  <tr key={i} className={`border-b border-line/50 ${r.status.startsWith("updated") ? "bg-green-50" : r.status.startsWith("error") ? "bg-red-50" : ""}`}>
+                    <td className="px-4 py-2 font-mono">{r.slug || "—"}</td>
+                    <td className="px-4 py-2 font-semibold text-ink">{r.name || "—"}</td>
+                    <td className="px-4 py-2 text-muted">{r.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Quick links */}
