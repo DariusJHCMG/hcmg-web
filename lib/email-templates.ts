@@ -222,17 +222,21 @@ export function buildMobileAppEmail({
   const deviceLabel = device === "ios" ? "iPhone / iPad" : device === "android" ? "Android" : "your device";
   const deviceIcon  = device === "ios" ? "🍎" : device === "android" ? "🤖" : "📱";
 
+  // Link to the public /install page with device param — no login required
+  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+  const installPageUrl = `${SITE}/install?device=${device}`;
+
   const steps = device === "ios"
-    ? ["Open the link below in <strong>Safari</strong> on your iPhone or iPad",
-       "Tap the <strong>Share</strong> button (box with arrow pointing up ↑)",
+    ? ["Tap the button below to open the install page in <strong>Safari</strong>",
+       "Tap the <strong>Share</strong> button at the bottom of the screen (box with arrow pointing up ↑)",
        "Scroll down and tap <strong>&ldquo;Add to Home Screen&rdquo;</strong>",
        "Tap <strong>Add</strong> — the HCMG icon appears on your home screen"]
     : device === "android"
-    ? ["Open the link below in <strong>Chrome</strong> on your Android device",
+    ? ["Tap the button below to open the install page in <strong>Chrome</strong>",
        "Tap the <strong>three-dot menu</strong> (⋮) in the top-right corner",
        "Tap <strong>&ldquo;Add to Home screen&rdquo;</strong> or <strong>&ldquo;Install app&rdquo;</strong>",
        "Tap <strong>Add</strong> — the HCMG icon appears on your home screen"]
-    : ["Open the link below on your phone",
+    : ["Tap the button below to open the install page on your phone",
        "Follow your browser&apos;s prompt to install or add to home screen"];
 
   const stepsHtml = steps.map((s, i) => `
@@ -253,7 +257,7 @@ export function buildMobileAppEmail({
         ${stepsHtml}
       </table>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-        <tr><td align="center">${ctaButton("Open Portal on My Phone →", installUrl)}</td></tr>
+        <tr><td align="center">${ctaButton("Install on My Phone →", installPageUrl)}</td></tr>
       </table>
       <p style="margin:0 0 28px;font-size:12px;color:#9AABB8;text-align:center;">
         If you didn&apos;t request this, you can safely ignore this email.

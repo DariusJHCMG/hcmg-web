@@ -91,21 +91,28 @@ export default async function TeamPage() {
   // Portal-only users: active profiles with a lo_slug NOT already in the static list
   const portalMembers = (profiles ?? [])
     .filter((p) => p.full_name && p.lo_slug && !staticSlugs.has(p.lo_slug))
-    .map((p) => ({
-      slug: p.lo_slug as string,
-      name: p.full_name as string,
-      // Use title if set; otherwise humanise the auth role
-      role: p.title
-        ?? (p.role === "loan_officer" ? "Loan Officer"
-          : p.role === "admin" ? "Admin"
-          : p.role === "developer" ? "Developer"
-          : p.role ?? ""),
-      nmls: p.nmls ?? null,
-      photo: "/team/placeholder.svg",
-      shortBio: p.short_bio ?? "",
-      longBio: [],
-      offices: p.offices ?? [],
-    }));
+    .map((p) => {
+      const slug = p.lo_slug as string;
+      // Leadership portal-only users get their DB photo shown on the roster
+      const photo = LEADERSHIP_SLUGS.has(slug) && p.avatar_url
+        ? p.avatar_url
+        : "/team/placeholder.svg";
+      return {
+        slug,
+        name: p.full_name as string,
+        // Use title if set; otherwise humanise the auth role
+        role: p.title
+          ?? (p.role === "loan_officer" ? "Loan Officer"
+            : p.role === "admin" ? "Admin"
+            : p.role === "developer" ? "Developer"
+            : p.role ?? ""),
+        nmls: p.nmls ?? null,
+        photo,
+        shortBio: p.short_bio ?? "",
+        longBio: [],
+        offices: p.offices ?? [],
+      };
+    });
 
   // All members to display
   const allMembers = [...activeStaticMembers, ...portalMembers];
