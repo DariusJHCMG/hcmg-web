@@ -7,6 +7,8 @@ export interface CompanySettings {
   company_funnel_label:    string;  // display label in leads table
   contact_notify_email:    string;  // alert for /contact form submissions
   recruiting_notify_email: string;  // alert for /join and /careers recruiting leads
+  ga4_measurement_id:      string;  // e.g. "G-XXXXXXXXXX"
+  gsc_property:            string;  // e.g. "https://getorangekey.com"
 }
 
 export const DEFAULT_SETTINGS: CompanySettings = {
@@ -14,6 +16,8 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   company_funnel_label:    "HCMG Company",
   contact_notify_email:    "",
   recruiting_notify_email: "",
+  ga4_measurement_id:      "",
+  gsc_property:            "",
 };
 
 export async function readSettings(): Promise<CompanySettings> {

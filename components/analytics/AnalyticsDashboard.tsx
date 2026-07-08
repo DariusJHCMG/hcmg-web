@@ -9,8 +9,19 @@ export interface AnalyticsData {
   leads: LeadRow[];
   /** funnel_links rows (clicks) */
   funnelLinks: FunnelLinkRow[];
+  /** Aggregated funnel step reach counts: { step: number, reached: number }[] */
+  stepReach: StepReachRow[];
   /** Total active profiles (admin only) */
   teamSize?: number;
+  /** GA4 Measurement ID (if configured) */
+  ga4Id?: string | null;
+  /** GSC property URL (if configured) */
+  gscProperty?: string | null;
+}
+
+export interface StepReachRow {
+  step: number;
+  reached: number;
 }
 
 export interface LeadRow {
@@ -398,14 +409,47 @@ export function AnalyticsDashboard({ data, scope }: { data: AnalyticsData; scope
               </div>
             </div>
 
-            {/* Conversion rate note */}
-            <div className="rounded-2xl border border-dashed border-line bg-sand/50 p-5 lg:col-span-2">
+            {/* Question-level drop-off — real data from lead_events */}
+            <div className="rounded-2xl border border-line bg-white p-5 lg:col-span-2">
               <SectionHeader>Question-Level Drop-Off</SectionHeader>
-              <p className="mt-3 text-sm text-muted leading-6">
-                Step-by-step drop-off tracking (which question loses the most users) requires
-                server-side funnel session events. The lead event table captures <code className="text-xs bg-sand px-1 py-0.5 rounded">funnel_step</code> events —
-                connect a PostHog dashboard or ask your developer to aggregate <code className="text-xs bg-sand px-1 py-0.5 rounded">lead_events</code> by step number.
-              </p>
+              {data.stepReach.length === 0 ? (
+                <p className="mt-4 text-center text-xs text-muted/60 py-4">
+                  No funnel step events yet. Drop-off data populates as visitors complete funnel steps.
+                </p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {(() => {
+                    const maxReached = data.stepReach[0]?.reached ?? 1;
+                    return data.stepReach.map((row, i) => {
+                      const prev = i === 0 ? maxReached : data.stepReach[i - 1].reached;
+                      const dropPct = prev > 0 ? ((prev - row.reached) / prev * 100).toFixed(1) : "0";
+                      return (
+                        <div key={row.step}>
+                          <div className="mb-1 flex items-center justify-between text-xs">
+                            <span className="font-semibold text-ink">Step {row.step}</span>
+                            <span className="text-muted">
+                              {row.reached.toLocaleString()} reached
+                              {i > 0 && <span className="ml-2 text-red-500">−{dropPct}% drop</span>}
+                            </span>
+                          </div>
+                          <div className="h-2.5 w-full overflow-hidden rounded-full bg-sand">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${(row.reached / maxReached) * 100}%`,
+                                background: i === 0 ? "var(--ok-gradient)" : `hsl(${24 - i * 4}, 90%, ${50 + i * 4}%)`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                  <p className="pt-2 text-[11px] text-muted/50">
+                    Based on <code className="bg-sand px-1 py-0.5 rounded">funnel_step</code> events from all sessions. Each bar = unique sessions that reached that step.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -414,18 +458,31 @@ export function AnalyticsDashboard({ data, scope }: { data: AnalyticsData; scope
       {/* ── TRAFFIC TAB ───────────────────────────────────────────────────── */}
       {activeTab === "traffic" && (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-accent/20 bg-accent/5 px-5 py-4">
-            <p className="text-sm font-extrabold text-ink">Connect Google Analytics / Search Console</p>
-            <p className="mt-1 text-xs text-muted leading-5">
-              Traffic metrics (unique visitors, sessions, pageviews, bounce rate, geographic breakdown)
-              require a Google Analytics 4 integration. Add your GA4 Measurement ID to site settings
-              and these tiles will populate automatically.
-            </p>
-            <a href="/admin/settings" className="mt-3 inline-block text-xs font-bold text-accent hover:underline">
-              Go to Settings →
-            </a>
-          </div>
-
+          {data.ga4Id ? (
+            <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-start gap-3">
+              <span className="text-xl mt-0.5">✓</span>
+              <div>
+                <p className="text-sm font-extrabold text-green-800">GA4 Connected — {data.ga4Id}</p>
+                <p className="mt-1 text-xs text-green-700 leading-5">
+                  Google Analytics is collecting data. View your full traffic dashboard at{" "}
+                  <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer"
+                    className="font-bold underline">analytics.google.com</a>.
+                  These tiles will show embedded data once the GA4 Data API integration is added.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
+              <p className="text-sm font-extrabold text-amber-900">GA4 not configured</p>
+              <p className="mt-1 text-xs text-amber-800 leading-5">
+                Add your GA4 Measurement ID in Settings to start collecting traffic data.
+                Once added, GA4 will track all pageviews automatically.
+              </p>
+              <a href="/admin/settings" className="mt-2 inline-block text-xs font-bold text-amber-900 underline">
+                Go to Settings →
+              </a>
+            </div>
+          )}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { label: "Unique Visitors",       icon: "👤", description: "Individual website visitors in period" },
@@ -447,26 +504,39 @@ export function AnalyticsDashboard({ data, scope }: { data: AnalyticsData; scope
       {/* ── SEO TAB ───────────────────────────────────────────────────────── */}
       {activeTab === "seo" && (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-accent/20 bg-accent/5 px-5 py-4">
-            <p className="text-sm font-extrabold text-ink">Connect Google Search Console</p>
-            <p className="mt-1 text-xs text-muted leading-5">
-              SEO metrics (impressions, organic clicks, keyword rankings, CTR, indexed pages)
-              are pulled from Google Search Console. Add your property to site settings to activate.
-            </p>
-            <a href="/admin/settings" className="mt-3 inline-block text-xs font-bold text-accent hover:underline">
-              Go to Settings →
-            </a>
-          </div>
-
+          {data.gscProperty ? (
+            <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-start gap-3">
+              <span className="text-xl mt-0.5">✓</span>
+              <div>
+                <p className="text-sm font-extrabold text-green-800">Search Console Connected — {data.gscProperty}</p>
+                <p className="mt-1 text-xs text-green-700 leading-5">
+                  View your SEO data at{" "}
+                  <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"
+                    className="font-bold underline">search.google.com/search-console</a>.
+                  Embedded metrics will populate once the GSC API integration is added.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
+              <p className="text-sm font-extrabold text-amber-900">Search Console not configured</p>
+              <p className="mt-1 text-xs text-amber-800 leading-5">
+                Add your GSC property URL in Settings to link your Search Console account.
+              </p>
+              <a href="/admin/settings" className="mt-2 inline-block text-xs font-bold text-amber-900 underline">
+                Go to Settings →
+              </a>
+            </div>
+          )}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { label: "Google Impressions",        icon: "👁", description: "How many times the site appeared in search" },
-              { label: "Organic Clicks",             icon: "🖱", description: "Clicks generated from search results" },
-              { label: "Avg. Keyword Position",      icon: "📈", description: "Average ranking position across all keywords" },
-              { label: "Organic CTR",                icon: "🎯", description: "Impressions → clicks rate" },
-              { label: "Indexed Landing Pages",      icon: "📄", description: "State, city, and loan-program pages in Google" },
-              { label: "Top Search Queries",         icon: "🔑", description: "Keywords producing visibility and traffic" },
-              { label: "Top Organic Landing Pages",  icon: "🏆", description: "SEO pages generating the most traffic" },
+              { label: "Google Impressions",        icon: "👁",  description: "How many times the site appeared in search" },
+              { label: "Organic Clicks",             icon: "🖱",  description: "Clicks generated from search results" },
+              { label: "Avg. Keyword Position",      icon: "📈",  description: "Average ranking position across all keywords" },
+              { label: "Organic CTR",                icon: "🎯",  description: "Impressions → clicks rate" },
+              { label: "Indexed Landing Pages",      icon: "📄",  description: "State, city, and loan-program pages in Google" },
+              { label: "Top Search Queries",         icon: "🔑",  description: "Keywords producing visibility and traffic" },
+              { label: "Top Organic Landing Pages",  icon: "🏆",  description: "SEO pages generating the most traffic" },
             ].map((t) => (
               <PlaceholderTile key={t.label} {...t} />
             ))}

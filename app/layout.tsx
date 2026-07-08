@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { UtmCapture } from "@/components/ui/UtmCapture";
 import { Tracker } from "@/components/ui/Tracker";
+import { GoogleAnalytics } from "@/components/ui/GoogleAnalytics";
+import { readSettings } from "@/lib/company-settings";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -75,7 +77,8 @@ const schemaOrg = {
   knowsAbout: ["FHA Loan", "VA Loan", "Conventional Loan", "Mortgage Refinance", "First-Time Homebuyer Programs"],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await readSettings().catch(() => ({ ga4_measurement_id: "" }));
   return (
     <html lang="en" className={montserrat.variable}>
       <head>
@@ -85,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <GoogleAnalytics id={settings.ga4_measurement_id || null} />
         <UtmCapture />
         <Tracker />
         {children}

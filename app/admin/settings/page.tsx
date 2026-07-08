@@ -7,6 +7,8 @@ interface Settings {
   company_funnel_label:    string;
   contact_notify_email:    string;
   recruiting_notify_email: string;
+  ga4_measurement_id:      string;
+  gsc_property:            string;
 }
 
 const COMPANY_PAGES = [
@@ -28,7 +30,7 @@ const TYPE_BADGE: Record<string, { label: string; cls: string }> = {
 
 export default function SettingsPage() {
   const [settings, setSettings]   = useState<Settings | null>(null);
-  const [form,     setForm]       = useState<Settings>({ company_notify_email: "", company_funnel_label: "", contact_notify_email: "", recruiting_notify_email: "" });
+  const [form,     setForm]       = useState<Settings>({ company_notify_email: "", company_funnel_label: "", contact_notify_email: "", recruiting_notify_email: "", ga4_measurement_id: "", gsc_property: "" });
   const [saving,   setSaving]     = useState(false);
   const [msg,      setMsg]        = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -162,6 +164,41 @@ export default function SettingsPage() {
               <p className="mt-1 text-[11px] text-muted/60">
                 The label shown in the Leads table for unassigned leads.
               </p>
+            </div>
+
+            {/* GA4 + GSC */}
+            <div className="col-span-full rounded-xl border border-line bg-sand/50 p-4 space-y-4">
+              <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-muted/70">Analytics Integrations</p>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold text-ink">GA4 Measurement ID</label>
+                <input
+                  type="text"
+                  className={IC}
+                  placeholder="G-XXXXXXXXXX"
+                  value={form.ga4_measurement_id}
+                  onChange={(e) => setForm((p) => ({ ...p, ga4_measurement_id: e.target.value }))}
+                />
+                <p className="mt-1 text-[11px] text-muted/60">
+                  Found in Google Analytics → Admin → Data Streams. Format: <code>G-XXXXXXXXXX</code>.
+                  Once saved, GA4 tracking is automatically injected on every page.
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold text-ink">Google Search Console Property</label>
+                <input
+                  type="text"
+                  className={IC}
+                  placeholder="https://getorangekey.com"
+                  value={form.gsc_property}
+                  onChange={(e) => setForm((p) => ({ ...p, gsc_property: e.target.value }))}
+                />
+                <p className="mt-1 text-[11px] text-muted/60">
+                  Your verified GSC property URL. Used to link to your console and future embedded reporting.
+                  Verify at <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="text-accent underline">search.google.com/search-console</a>.
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center gap-4 pt-2">
