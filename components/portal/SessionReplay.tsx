@@ -231,7 +231,7 @@ export function SessionReplay({ leadId, leadName }: Props) {
           <span className="h-3 w-3 rounded-full bg-yellow-500/60" />
           <span className="h-3 w-3 rounded-full bg-green-500/60" />
           <div className="mx-3 flex-1 rounded bg-[#0d1117] px-3 py-1 text-[11px] text-[#8b949e] font-mono">
-            hcmg-web.vercel.app
+            hcmgloans.com
           </div>
         </div>
 

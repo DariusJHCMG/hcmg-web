@@ -14,7 +14,7 @@ async function getFunnelLinks(): Promise<FunnelLink[]> {
 
 export default async function FunnelsPage() {
   const links = await getFunnelLinks();
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://hcmg-web.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://hcmgloans.com";
 
   return (
     <div className="space-y-6">
