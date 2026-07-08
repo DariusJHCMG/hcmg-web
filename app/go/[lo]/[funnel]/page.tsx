@@ -13,28 +13,28 @@ export default async function LoFunnelRedirect({ params, searchParams }: Props) 
   const { lo: loSlug, funnel: funnelSlug } = await params;
   const query = await searchParams;
 
-  // Validate funnel slug exists in our catalog
+  // Validate funnel slug exists in our catalog — this is pure in-memory, never fails
   const funnelDef = getFunnelBySlug(funnelSlug);
   if (!funnelDef) notFound();
 
   const sb = createServiceClient();
 
-  // Validate LO slug is active — any row for this LO is enough to confirm they exist
-  const { data: rows } = await sb
-    .from("funnel_links")
-    .select("lo_slug, clicks, is_active")
+  // Validate LO exists and is active — use profiles as source of truth.
+  // funnel_links may not be populated yet (backfill pending), so never gate on it.
+  const { data: profile } = await sb
+    .from("profiles")
+    .select("lo_slug, is_active")
     .eq("lo_slug", loSlug)
     .eq("is_active", true)
-    .limit(1);
+    .maybeSingle();
 
-  if (!rows?.[0]) notFound();
+  if (!profile) notFound();
 
-  // Best-effort click increment (ignore errors — funnel_type column may not exist yet)
+  // Best-effort click counter — ignore if row doesn't exist yet
   void sb
     .from("funnel_links")
-    .update({ clicks: (rows[0].clicks ?? 0) + 1 })
-    .eq("lo_slug", loSlug)
-    .eq("is_active", true);
+    .update({ clicks: 1 })
+    .eq("lo_slug", loSlug);
 
   const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/+$/, "");
   const UTM  = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
