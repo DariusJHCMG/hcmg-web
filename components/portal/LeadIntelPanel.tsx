@@ -84,9 +84,8 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
 
 interface Props {
   lead: Lead;
-  sourceLabel?: string;   // override the source cell with a human label (company leads)
-  hideLoColumn?: boolean; // suppress the LO column for company-leads table
-  /** Which PATCH endpoint to use. Defaults to admin route. */
+  sourceLabel?: string;
+  hideLoColumn?: boolean;
   patchEndpoint?: "admin" | "portal";
 }
 
@@ -214,19 +213,19 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
       {/* Intelligence drawer */}
       {open && (
         <tr>
-          <td colSpan={8} className="p-0 bg-[#0d1117] border-b border-[#30363d]">
+          <td colSpan={8} className="p-0 bg-sand border-b border-line">
             <div className="px-6 py-5 space-y-5">
 
               {/* ── Header row ── */}
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#f37021]">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-accent">
                     Lead Intelligence
                   </p>
-                  <h3 className="mt-0.5 text-lg font-extrabold text-white">
+                  <h3 className="mt-0.5 text-lg font-extrabold text-ink">
                     {lead.first_name} {lead.last_name ?? ""}
                   </h3>
-                  <p className="text-xs text-[#8b949e]">
+                  <p className="text-xs text-muted">
                     {new Date(lead.created_at).toLocaleString()} ·{" "}
                     {lead.entry_page ? `entered via ${lead.entry_page}` : "entry page not tracked"}
                   </p>
@@ -234,7 +233,7 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                 {lead.session_id && (
                   <button
                     onClick={() => setTab("replay")}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#f37021] px-4 py-2 text-xs font-bold text-white transition hover:opacity-90"
+                    className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white transition hover:opacity-90"
                   >
                     ▶ Watch Replay
                   </button>
@@ -250,20 +249,20 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                 <AttrBadge icon="↩️"                          label="Referrer"  value={lead.referrer} />
                 <AttrBadge icon={DEVICE_ICONS[lead.device ?? ""] ?? "💻"} label="Device" value={lead.device} />
                 {!hasUtm && !lead.entry_page && (
-                  <p className="text-xs text-[#8b949e]">No attribution data — lead predates tracking or came directly.</p>
+                  <p className="text-xs text-muted">No attribution data — lead predates tracking or came directly.</p>
                 )}
               </div>
 
               {/* ── Tabs ── */}
-              <div className="flex gap-1 border-b border-[#30363d] pb-0">
+              <div className="flex gap-1 border-b border-line pb-0">
                 {(["journey", "funnel", "replay"] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setTab(t)}
                     className={`px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition rounded-t-lg border border-b-0 ${
                       tab === t
-                        ? "border-[#30363d] bg-[#161b22] text-white"
-                        : "border-transparent text-[#8b949e] hover:text-white"
+                        ? "border-line bg-white text-ink"
+                        : "border-transparent text-muted hover:text-ink"
                     }`}
                   >
                     {t === "journey" && `Pages (${pageViews.length})`}
@@ -274,20 +273,20 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
               </div>
 
               {/* ── Tab content ── */}
-              <div className="rounded-xl border border-[#30363d] bg-[#161b22] overflow-hidden">
+              <div className="rounded-xl border border-line bg-white overflow-hidden">
                 {loading ? (
-                  <p className="px-6 py-8 text-center text-sm text-[#8b949e]">Loading intelligence data…</p>
+                  <p className="px-6 py-8 text-center text-sm text-muted">Loading intelligence data…</p>
                 ) : (
                   <>
                     {/* JOURNEY TAB */}
                     {tab === "journey" && (
                       <div>
                         {pageViews.length === 0 ? (
-                          <p className="px-6 py-8 text-center text-sm text-[#8b949e]">
+                          <p className="px-6 py-8 text-center text-sm text-muted">
                             No page views recorded.{!lead.session_id ? " This lead submitted before tracking was active." : ""}
                           </p>
                         ) : (
-                          <div className="divide-y divide-[#30363d]">
+                          <div className="divide-y divide-line">
                             {pageViews.map((ev, i) => {
                               const next = pageViews[i + 1];
                               const durationMs = next
@@ -296,26 +295,26 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                               return (
                                 <div key={ev.id} className="flex items-center justify-between px-5 py-3 gap-4">
                                   <div className="flex items-center gap-3 min-w-0">
-                                    <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-[#30363d] text-[10px] font-bold text-[#8b949e]">
+                                    <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-line text-[10px] font-bold text-muted">
                                       {i + 1}
                                     </div>
                                     <div className="min-w-0">
-                                      <p className="text-sm font-semibold text-white truncate">
+                                      <p className="text-sm font-semibold text-ink truncate">
                                         {ev.pathname ?? "—"}
                                       </p>
-                                      <p className="text-[10px] text-[#8b949e]">
+                                      <p className="text-[10px] text-muted">
                                         {new Date(ev.ts).toLocaleTimeString()}
                                       </p>
                                     </div>
                                   </div>
                                   <div className="flex-shrink-0 text-right">
                                     {durationMs !== null && durationMs > 0 && (
-                                      <span className="inline-flex items-center rounded-full bg-[#1f2937] px-2.5 py-0.5 text-[11px] font-semibold text-[#d1d5db]">
+                                      <span className="inline-flex items-center rounded-full bg-sand px-2.5 py-0.5 text-[11px] font-semibold text-muted">
                                         {duration(durationMs)} on page
                                       </span>
                                     )}
                                     {ctaClicks.some((c) => c.pathname === ev.pathname) && (
-                                      <span className="ml-1.5 inline-flex items-center rounded-full bg-[#f37021]/20 px-2 py-0.5 text-[10px] font-bold text-[#f37021]">
+                                      <span className="ml-1.5 inline-flex items-center rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">
                                         clicked CTA
                                       </span>
                                     )}
@@ -328,7 +327,7 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                       </div>
                     )}
 
-                    {/* FUNNEL REPLAY TAB */}
+                    {/* FUNNEL TAB */}
                     {tab === "funnel" && (
                       <div className="p-5 space-y-3">
                         {[1, 2, 3, 4, 5, 6].map((stepNum) => {
@@ -341,30 +340,30 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                               key={stepNum}
                               className={`flex items-center gap-4 rounded-xl border p-3.5 transition ${
                                 completed
-                                  ? "border-[#238636]/60 bg-[#238636]/10"
-                                  : "border-[#30363d] bg-[#0d1117]"
+                                  ? "border-green-200 bg-green-50"
+                                  : "border-line bg-sand"
                               }`}
                             >
                               <div
                                 className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                                  completed ? "bg-[#238636] text-white" : "border border-[#30363d] text-[#8b949e]"
+                                  completed ? "bg-green-600 text-white" : "border border-line text-muted"
                                 }`}
                               >
                                 {completed ? "✓" : stepNum}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#8b949e]">
+                                <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
                                   Step {stepNum} — {FUNNEL_STEPS[stepNum]}
                                 </p>
                                 {choice && (
-                                  <p className="mt-0.5 text-sm font-semibold text-white">{choice}</p>
+                                  <p className="mt-0.5 text-sm font-semibold text-ink">{choice}</p>
                                 )}
                                 {!completed && (
-                                  <p className="mt-0.5 text-xs text-[#8b949e]">Not reached</p>
+                                  <p className="mt-0.5 text-xs text-muted">Not reached</p>
                                 )}
                               </div>
                               {dur && dur > 0 && (
-                                <span className="flex-shrink-0 text-[11px] font-semibold text-[#8b949e]">
+                                <span className="flex-shrink-0 text-[11px] font-semibold text-muted">
                                   {duration(dur)}
                                 </span>
                               )}
@@ -385,8 +384,8 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                         ) : (
                           <div className="flex flex-col items-center py-10 gap-3 text-center">
                             <p className="text-2xl">🎬</p>
-                            <p className="text-sm font-semibold text-white">No session tracked</p>
-                            <p className="text-xs text-[#8b949e] max-w-xs">
+                            <p className="text-sm font-semibold text-ink">No session tracked</p>
+                            <p className="text-xs text-muted max-w-xs">
                               This lead submitted before session tracking was active.
                               All new leads are tracked automatically.
                             </p>
@@ -399,8 +398,8 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
               </div>
 
               {/* ── Status change ── */}
-              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#30363d] bg-[#161b22] px-4 py-3">
-                <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8b949e]">
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white px-4 py-3">
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
                   Status
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -411,8 +410,8 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                       onClick={() => updateStatus(s)}
                       className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors disabled:opacity-50 ${
                         status === s
-                          ? STATUS_COLORS[s] + " ring-2 ring-offset-1 ring-offset-[#161b22] ring-current"
-                          : "border border-[#30363d] text-[#8b949e] hover:border-[#f37021] hover:text-[#f37021]"
+                          ? STATUS_COLORS[s] + " ring-2 ring-offset-1 ring-current"
+                          : "border border-line text-muted hover:border-accent hover:text-accent"
                       }`}
                     >
                       {STATUS_LABELS[s]}
@@ -420,13 +419,13 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                   ))}
                 </div>
                 {statusSaving && (
-                  <span className="text-[11px] text-[#8b949e]">Saving…</span>
+                  <span className="text-[11px] text-muted">Saving…</span>
                 )}
                 {statusMsg === "ok" && (
-                  <span className="text-[11px] font-semibold text-[#3fb950]">✓ Saved</span>
+                  <span className="text-[11px] font-semibold text-green-600">✓ Saved</span>
                 )}
                 {statusMsg === "err" && (
-                  <span className="text-[11px] font-semibold text-[#f85149]">Failed to save</span>
+                  <span className="text-[11px] font-semibold text-red-500">Failed to save</span>
                 )}
               </div>
 
@@ -434,28 +433,29 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <a
                   href={`tel:${lead.phone.replace(/\D/g, "")}`}
-                  className="inline-flex items-center gap-2 rounded-xl border border-[#30363d] bg-[#161b22] px-4 py-2 text-xs font-bold text-white transition hover:border-[#f37021] hover:text-[#f37021]"
+                  className="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-xs font-bold text-ink transition hover:border-accent hover:text-accent"
                 >
                   📞 Call {lead.first_name}
                 </a>
                 <a
                   href={`mailto:${lead.email}`}
-                  className="inline-flex items-center gap-2 rounded-xl border border-[#30363d] bg-[#161b22] px-4 py-2 text-xs font-bold text-white transition hover:border-[#f37021] hover:text-[#f37021]"
+                  className="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-xs font-bold text-ink transition hover:border-accent hover:text-accent"
                 >
                   ✉️ Email
                 </a>
                 <a
                   href={`sms:${lead.phone.replace(/\D/g, "")}`}
-                  className="inline-flex items-center gap-2 rounded-xl border border-[#30363d] bg-[#161b22] px-4 py-2 text-xs font-bold text-white transition hover:border-[#f37021] hover:text-[#f37021]"
+                  className="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-xs font-bold text-ink transition hover:border-accent hover:text-accent"
                 >
                   💬 Text
                 </a>
-                <div className="ml-auto flex flex-wrap gap-2 text-[11px] text-[#8b949e]">
-                  {lead.price_range  && <span className="rounded-full border border-[#30363d] px-2.5 py-1">{lead.price_range}</span>}
-                  {lead.credit_range && <span className="rounded-full border border-[#30363d] px-2.5 py-1">Credit {lead.credit_range}</span>}
-                  {lead.income_range && <span className="rounded-full border border-[#30363d] px-2.5 py-1">{lead.income_range}</span>}
+                <div className="ml-auto flex flex-wrap gap-2 text-[11px] text-muted">
+                  {lead.price_range  && <span className="rounded-full border border-line bg-white px-2.5 py-1">{lead.price_range}</span>}
+                  {lead.credit_range && <span className="rounded-full border border-line bg-white px-2.5 py-1">Credit {lead.credit_range}</span>}
+                  {lead.income_range && <span className="rounded-full border border-line bg-white px-2.5 py-1">{lead.income_range}</span>}
                 </div>
               </div>
+
             </div>
           </td>
         </tr>
