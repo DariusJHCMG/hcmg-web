@@ -76,7 +76,8 @@ function getEstimate(state: FunnelState) {
     annualTaxes: price * 0.012, annualInsurance: price * 0.0045,
   });
 
-  return { powerLow, powerHigh, monthly: Math.round(est.totalMonthlyPayment), loanPath: LOAN_PATH[credit] };
+  // loanPath is resolved later from estimateContext — return the credit-based fallback
+  return { powerLow, powerHigh, monthly: Math.round(est.totalMonthlyPayment), loanPathFallback: LOAN_PATH[credit] };
 }
 
 // ── Public interfaces ──────────────────────────────────────
@@ -199,7 +200,7 @@ export function FunnelFlow({
       estimatedBuyingPowerLow: estimate.powerLow,
       estimatedBuyingPowerHigh: estimate.powerHigh,
       estimatedMonthlyPayment: estimate.monthly,
-      recommendedLoanType: estimate.loanPath,
+      recommendedLoanType: estimate.loanPathFallback,
       loSlug: lo?.slug,
       loName: lo?.name,
       loNmls: lo?.nmls,
@@ -419,39 +420,63 @@ export function FunnelFlow({
           {/* ── Step 5: Estimate reveal ── */}
           {step === 5 && (
             <div>
-              <div className="mb-6 flex items-center gap-3">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 300, delay: 0.15 }}
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-white"
-                  style={{ background: "var(--ok-gradient)" }}
-                >
-                  ✓
-                </motion.div>
-                <h2 className="text-2xl font-extrabold text-ink">Here&apos;s your estimate</h2>
-              </div>
-              <p className="mb-6 text-sm text-muted">Based on what you shared, here&apos;s your range.</p>
+              {(() => {
+                const ec = cfg.estimateContext ?? {};
+                const loanPath = ec.loanPath ?? estimate.loanPathFallback;
+                const cards = [
+                  {
+                    label: ec.powerLabel   ?? "Estimated buying power",
+                    value: `${formatCurrency(estimate.powerLow)} – ${formatCurrency(estimate.powerHigh)}`,
+                    sub:   ec.powerSub     ?? "Based on typical debt-to-income guidelines",
+                    delay: 0.1,
+                  },
+                  {
+                    label: ec.paymentLabel ?? "Estimated monthly payment",
+                    value: `${formatCurrency(estimate.monthly)}/mo`,
+                    sub:   ec.paymentSub   ?? "Est. includes taxes and insurance",
+                    delay: 0.2,
+                  },
+                  {
+                    label: "Recommended loan path",
+                    value: loanPath,
+                    sub:   ec.loanPathSub  ?? "Based on your credit range",
+                    delay: 0.3,
+                  },
+                ];
+                return (
+                  <>
+                    <div className="mb-6 flex items-center gap-3">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, delay: 0.15 }}
+                        className="flex h-10 w-10 items-center justify-center rounded-full text-white"
+                        style={{ background: "var(--ok-gradient)" }}
+                      >
+                        ✓
+                      </motion.div>
+                      <h2 className="text-2xl font-extrabold text-ink">Here&apos;s your estimate</h2>
+                    </div>
+                    <p className="mb-6 text-sm text-muted">Based on what you shared, here&apos;s your range.</p>
 
-              <div className="space-y-4">
-                {[
-                  { label: "Estimated buying power",    value: `${formatCurrency(estimate.powerLow)} – ${formatCurrency(estimate.powerHigh)}`, sub: "Based on typical debt-to-income guidelines", delay: 0.1 },
-                  { label: "Estimated monthly payment", value: `${formatCurrency(estimate.monthly)}/mo`,  sub: "Est. includes taxes and insurance",            delay: 0.2 },
-                  { label: "Recommended loan path",     value: estimate.loanPath,                         sub: "Based on your credit range",                   delay: 0.3 },
-                ].map((card) => (
-                  <motion.div
-                    key={card.label}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: card.delay, duration: 0.4 }}
-                    className="rounded-2xl border border-line bg-white p-5"
-                  >
-                    <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{card.label}</div>
-                    <div className="text-2xl font-extrabold text-ink">{card.value}</div>
-                    <div className="mt-1 text-xs text-muted/70">{card.sub}</div>
-                  </motion.div>
-                ))}
-              </div>
+                    <div className="space-y-4">
+                      {cards.map((card) => (
+                        <motion.div
+                          key={card.label}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: card.delay, duration: 0.4 }}
+                          className="rounded-2xl border border-line bg-white p-5"
+                        >
+                          <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{card.label}</div>
+                          <div className="text-2xl font-extrabold text-ink">{card.value}</div>
+                          <div className="mt-1 text-xs text-muted/70">{card.sub}</div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
 
               <Disclosure variant="estimate" className="mt-4" />
 
@@ -479,9 +504,9 @@ export function FunnelFlow({
               {/* Estimate summary — only shown if step 5 was in the flow */}
               {activeSteps.includes(5) && (
                 <div className="mb-6 rounded-2xl border border-line bg-sand px-5 py-3 text-sm text-muted">
-                  Your estimate:{" "}
-                  <strong className="text-ink">{formatCurrency(estimate.powerLow)}–{formatCurrency(estimate.powerHigh)}</strong>{" "}
-                  buying power · ~<strong className="text-ink">{formatCurrency(estimate.monthly)}/mo</strong>
+                  {cfg.estimateContext?.powerLabel ?? "Estimated buying power"}:{" "}
+                  <strong className="text-ink">{formatCurrency(estimate.powerLow)}–{formatCurrency(estimate.powerHigh)}</strong>
+                  {" "}· ~<strong className="text-ink">{formatCurrency(estimate.monthly)}/mo</strong>
                 </div>
               )}
 
