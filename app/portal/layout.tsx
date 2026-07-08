@@ -2,6 +2,27 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import Link from "next/link";
 import { OrangeKeyLogo } from "@/components/ui/OrangeKeyLogo";
+import { PwaInstallBanner } from "@/components/portal/PwaInstallBanner";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "HCMG Portal",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "HCMG",
+    startupImage: "/icons/apple-touch-icon.png",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "msapplication-TileColor": "#142850",
+    "msapplication-TileImage": "/icons/icon-192.png",
+  },
+};
 
 function Initials({ name }: { name: string }) {
   const parts = name.trim().split(/\s+/);
@@ -85,6 +106,8 @@ export default async function PortalLayout({ children }: { children: React.React
       <main className="container-shell max-w-5xl py-8">
         {children}
       </main>
+
+      <PwaInstallBanner />
     </div>
   );
 }
