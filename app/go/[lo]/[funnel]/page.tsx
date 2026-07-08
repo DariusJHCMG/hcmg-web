@@ -30,11 +30,36 @@ export default async function LoFunnelRedirect({ params, searchParams }: Props) 
 
   if (!profile) notFound();
 
-  // Best-effort click counter — ignore if row doesn't exist yet
-  void sb
-    .from("funnel_links")
-    .update({ clicks: 1 })
-    .eq("lo_slug", loSlug);
+  // Best-effort click counter — try per-funnel row first, fall back to base link
+  sb.from("funnel_links")
+    .select("clicks")
+    .eq("lo_slug", loSlug)
+    .eq("funnel_type", funnelSlug)
+    .maybeSingle()
+    .then(({ data: funnelRow }) => {
+      if (funnelRow) {
+        // Increment the per-funnel row
+        void sb.from("funnel_links")
+          .update({ clicks: (funnelRow.clicks ?? 0) + 1 })
+          .eq("lo_slug", loSlug)
+          .eq("funnel_type", funnelSlug);
+      } else {
+        // Funnel variant row not found (backfill pending) — increment the base link
+        sb.from("funnel_links")
+          .select("clicks")
+          .eq("lo_slug", loSlug)
+          .is("funnel_type", null)
+          .single()
+          .then(({ data: baseRow }) => {
+            if (baseRow) {
+              void sb.from("funnel_links")
+                .update({ clicks: (baseRow.clicks ?? 0) + 1 })
+                .eq("lo_slug", loSlug)
+                .is("funnel_type", null);
+            }
+          });
+      }
+    });
 
   const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/+$/, "");
   const UTM  = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];

@@ -26,10 +26,19 @@ export default async function FunnelRedirect({ params, searchParams }: Props) {
   if (!profile) notFound();
 
   // Best-effort click counter increment — ignore if funnel_links row doesn't exist yet
-  void sb
-    .from("funnel_links")
-    .update({ clicks: 1 })
-    .eq("lo_slug", slug);
+  sb.from("funnel_links")
+    .select("clicks")
+    .eq("lo_slug", slug)
+    .is("funnel_type", null)
+    .single()
+    .then(({ data }) => {
+      if (data) {
+        void sb.from("funnel_links")
+          .update({ clicks: (data.clicks ?? 0) + 1 })
+          .eq("lo_slug", slug)
+          .is("funnel_type", null);
+      }
+    });
 
   const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/+$/, "");
   const UTM  = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];

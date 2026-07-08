@@ -41,7 +41,7 @@ const LeadSchema = z.object({
   device:      z.string().optional(),
 });
 
-const confirmationHtml = (firstName: string, loName?: string) => `
+const confirmationHtml = (firstName: string, loName?: string, siteUrl = "https://hcmg-web.vercel.app") => `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" /></head>
@@ -66,12 +66,12 @@ const confirmationHtml = (firstName: string, loName?: string) => `
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#5A6B7E;">
               In the meantime, you can use our free mortgage calculator to explore your payment options:
             </p>
-            <a href="https://getorangekey.com/get-started" style="display:inline-block;background:#F37021;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;">
+            <a href="${siteUrl}/get-started" style="display:inline-block;background:#F37021;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;">
               Explore my options →
             </a>
             <hr style="margin:32px 0;border:none;border-top:1px solid #f0f0f0;" />
             <p style="margin:0;font-size:12px;line-height:1.7;color:#9AABB8;">
-              This message was sent because you submitted a mortgage inquiry at getorangekey.com.
+              This message was sent because you submitted a mortgage inquiry at hcmgloans.com.
               Harris Capital Mortgage Group, LLC · NMLS# 1918223.
               Equal Housing Lender.
             </p>
@@ -268,7 +268,7 @@ export async function POST(request: NextRequest) {
         from: "HCMG <noreply@hcmgloans.com>",
         to: lead.email,
         subject: lead.loName ? `Your HCMG estimate, routed to ${lead.loName}` : "Your HCMG estimate is ready",
-        html: confirmationHtml(lead.firstName, lead.loName),
+        html: confirmationHtml(lead.firstName, lead.loName, SITE_URL),
       }),
     ];
 

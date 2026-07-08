@@ -7,6 +7,7 @@ async function getFunnelLinks(): Promise<FunnelLink[]> {
     .from("funnel_links")
     .select("*")
     .neq("lo_slug", "__settings__")
+    .is("funnel_type", null)          // base links only — excludes the 107 variants per LO
     .order("lo_name");
   return (data ?? []) as FunnelLink[];
 }
@@ -20,8 +21,8 @@ export default async function FunnelsPage() {
       <div>
         <h1 className="text-2xl font-extrabold text-ink">Funnel Links</h1>
         <p className="mt-1 text-sm text-muted">
-          Each loan officer gets a personal funnel link. Leads that come through it are automatically
-          routed to them and they receive an instant email notification.
+          Base personal funnel links for each loan officer. Each LO also has 107 typed funnel variants
+          available in their portal under <strong>My Funnels</strong>.
         </p>
       </div>
 
