@@ -181,46 +181,9 @@ export default async function LamontPage() {
             </p>
           </div>
 
-          {/* Right — payment preview card (same as home page) */}
-          <div className="relative">
-            {/* "No credit check" badge */}
-            <div className="absolute -top-4 right-6 z-10 rounded-full px-4 py-1.5 text-xs font-semibold text-white shadow-orange"
-              style={{ background: "var(--ok-gradient)" }}>
-              No credit check required
-            </div>
-
-            <div className="glass-card overflow-hidden">
-              {/* Orange strip header */}
-              <div className="flex items-center justify-center px-6 py-3.5" style={{ background: "var(--ok-gradient)" }}>
-                <span className="text-sm font-semibold text-white">Your estimated monthly payment</span>
-              </div>
-              <div className="p-6 lg:p-8">
-                {/* Big number */}
-                <div className="mb-1 text-center">
-                  <span className="font-extrabold tracking-tight text-ink" style={{ fontSize: 52 }}>
-                    {formatCurrency(TOTAL)}
-                  </span>
-                  <span className="text-xl font-semibold text-muted">/month</span>
-                </div>
-                <p className="mb-6 text-center text-xs text-muted/60">
-                  Based on $425,000 · 6.5% rate · 20% down
-                </p>
-                {/* Breakdown */}
-                <div className="space-y-3 border-t border-line pt-5">
-                  {BREAKDOWN.map((row) => (
-                    <div key={row.label} className="flex items-center justify-between text-sm">
-                      <span className="text-muted">{row.label}</span>
-                      <span className="font-semibold text-ink">{formatCurrency(row.value)}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="my-5 border-t border-line" />
-                <p className="mb-5 text-center text-xs text-muted/50">Estimate only. Not a loan commitment.</p>
-                <a href="#funnel" className="primary-button w-full justify-center !py-3.5">
-                  Get my actual estimate →
-                </a>
-              </div>
-            </div>
+          {/* Right — profile photo */}
+          <div className="overflow-hidden rounded-3xl border border-line shadow-soft">
+            <TeamPhoto photo={photo} name={name} aspect="4 / 3" />
           </div>
 
         </div>
@@ -237,12 +200,12 @@ export default async function LamontPage() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════ */}
-      {/* ABOUT                                                     */}
+      {/* ABOUT + FUNNEL                                            */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="bg-white py-20">
+      <section id="funnel" className="bg-white py-20 scroll-mt-20">
         <div className="container-shell max-w-6xl">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
-            {/* Left: about copy */}
+            {/* Left: about copy + specialties + contact */}
             <div>
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">About {firstName}</p>
               <h2 className="mb-6 text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
@@ -251,8 +214,29 @@ export default async function LamontPage() {
               {longBio.map((para, i) => (
                 <p key={i} className="mb-5 text-base leading-8 text-ink/80">{para}</p>
               ))}
+              {/* Specialties */}
+              {specialties.length > 0 && (
+                <div className="mt-4 rounded-2xl border border-line bg-sand p-4">
+                  <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">Specialties</p>
+                  <div className="flex flex-wrap gap-2">
+                    {specialties.map((s) => (
+                      <span key={s}
+                        className="inline-flex items-center rounded-full border border-accent/25 px-3 py-1 text-xs font-semibold text-accent"
+                        style={{ background: "rgba(243,112,33,0.07)" }}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                  {offices.length > 0 && (
+                    <p className="mt-3 text-xs text-muted">📍 {offices.join(" · ")}</p>
+                  )}
+                  {nmls && (
+                    <p className="mt-1 text-xs text-muted">NMLS# {nmls}</p>
+                  )}
+                </div>
+              )}
               {/* Contact chips */}
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap gap-2">
                 {phone && (
                   <a href={`tel:${phoneDigits}`}
                     className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent shadow-soft">
@@ -274,69 +258,11 @@ export default async function LamontPage() {
               </div>
             </div>
 
-            {/* Right: photo + specialties */}
-            <div className="space-y-6">
-              <div className="overflow-hidden rounded-3xl border border-line shadow-soft">
-                <TeamPhoto photo={photo} name={name} aspect="4 / 3" />
-              </div>
-              {specialties.length > 0 && (
-                <div className="rounded-2xl border border-line bg-sand p-5">
-                  <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">Specialties</p>
-                  <div className="flex flex-wrap gap-2">
-                    {specialties.map((s) => (
-                      <span key={s}
-                        className="inline-flex items-center rounded-full border border-accent/25 px-3 py-1 text-xs font-semibold text-accent"
-                        style={{ background: "rgba(243,112,33,0.07)" }}>
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                  {offices.length > 0 && (
-                    <p className="mt-4 text-xs text-muted">
-                      📍 {offices.join(" · ")}
-                    </p>
-                  )}
-                  {nmls && (
-                    <p className="mt-1 text-xs text-muted">NMLS# {nmls}</p>
-                  )}
-                </div>
-              )}
+            {/* Right: funnel */}
+            <div>
+              <FunnelFlow lo={funnelLo} source="team" />
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════ */}
-      {/* FUNNEL — gated estimate, routes to this LO               */}
-      {/* ══════════════════════════════════════════════════════════ */}
-      <section id="funnel" className="bg-sand py-20 scroll-mt-20">
-        <div className="container-shell max-w-3xl">
-          {/* LO identity card */}
-          <div className="mx-auto mb-8 max-w-xl">
-            <div className="flex items-center gap-4 rounded-3xl border border-line bg-white p-4 shadow-soft sm:p-5">
-              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl">
-                <TeamPhoto photo={photo} name={name} aspect="1 / 1" className="h-full w-full" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
-                  You&apos;re starting with
-                </div>
-                <div className="truncate text-base font-bold text-ink">{name}</div>
-                <div className="text-xs text-muted">
-                  {role} · HCMG · No call center, no rotation
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="mb-10 text-center">
-            <h2 className="text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
-              See what you can afford in 60 seconds.
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-base text-muted">
-              Purchase or refinance &middot; No hard credit check &middot; No commitment
-            </p>
-          </div>
-          <FunnelFlow lo={funnelLo} source="team" />
         </div>
       </section>
 
