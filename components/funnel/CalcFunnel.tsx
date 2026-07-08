@@ -865,31 +865,47 @@ export function CalcFunnel({
                 </div>
               </div>
 
-              {/* Right: Live results */}
+              {/* Right: Gated results */}
               <div className="flex flex-col gap-4">
-                <div className="rounded-2xl border border-line bg-sand p-5">
-                  <h2 className="mb-3 text-sm font-extrabold uppercase tracking-[0.13em] text-muted">
-                    Live result
-                  </h2>
-                  <div className="space-y-3">
-                    {def.results.map((card) => (
-                      <ResultCardEl key={card.label} card={card} inputs={inputs} />
-                    ))}
+                {/* Blurred result cards + unlock overlay */}
+                <div className="relative rounded-2xl border border-line bg-sand p-5 overflow-hidden">
+                  {/* Blurred cards — rendered but hidden */}
+                  <div className="select-none blur-sm pointer-events-none" aria-hidden="true">
+                    <h2 className="mb-3 text-sm font-extrabold uppercase tracking-[0.13em] text-muted">
+                      Your result
+                    </h2>
+                    <div className="space-y-3">
+                      {def.results.map((card) => (
+                        <ResultCardEl key={card.label} card={card} inputs={inputs} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Overlay */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-2xl bg-white/80 px-5 text-center backdrop-blur-[2px]">
+                    <div
+                      className="flex h-11 w-11 items-center justify-center rounded-full text-white text-lg"
+                      style={{ background: "var(--ok-gradient)" }}
+                    >
+                      🔒
+                    </div>
+                    <div>
+                      <p className="text-sm font-extrabold text-ink">Your results are ready</p>
+                      <p className="mt-1 text-xs text-muted">Fill in your info to unlock your personalized numbers.</p>
+                    </div>
+                    <button
+                      onClick={handleGetReport}
+                      className="primary-button w-full justify-center !py-3"
+                    >
+                      {def.gateLabel}
+                    </button>
+                    <p className="text-[11px] text-muted/70">{def.gateSubhead}</p>
                   </div>
                 </div>
 
                 <p className="text-center text-[11px] text-muted/60 leading-5">
-                  Results are illustrative estimates based on your inputs. Not a commitment to lend.
-                  Actual rates and terms depend on full application review.
+                  Results are illustrative estimates. Not a commitment to lend.
                 </p>
-
-                <button
-                  onClick={handleGetReport}
-                  className="primary-button w-full justify-center !py-4"
-                >
-                  {def.gateLabel}
-                </button>
-                <p className="text-center text-xs text-muted">{def.gateSubhead}</p>
               </div>
             </div>
           )}
