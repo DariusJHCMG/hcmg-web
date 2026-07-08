@@ -43,8 +43,8 @@ function ValuePill({ children }: { children: React.ReactNode }) {
 function StatBadge({ value, label }: { value: string; label: string }) {
   return (
     <div className="text-center">
-      <p className="text-3xl font-extrabold text-accent">{value}</p>
-      <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/70">{label}</p>
+      <p className="text-3xl font-extrabold text-white">{value}</p>
+      <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/60">{label}</p>
     </div>
   );
 }
@@ -83,14 +83,14 @@ export default async function LamontPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/* HERO — branded navy bg, "Hi, I'm Lamont" style           */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-brand py-16 lg:py-24">
+      <section className="relative overflow-hidden bg-accent py-16 lg:py-24">
         {/* Subtle background texture */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-20"
+          className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 70% 80% at -10% 60%, rgba(243,112,33,0.55) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 110% -10%, rgba(255,152,71,0.35) 0%, transparent 60%)",
+              "radial-gradient(ellipse 70% 80% at -10% 60%, rgba(255,255,255,0.18) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 110% -10%, rgba(195,82,19,0.45) 0%, transparent 60%)",
           }}
         />
 
@@ -102,7 +102,7 @@ export default async function LamontPage() {
                 <TeamPhoto photo={m.photo} name={m.name} aspect="4 / 5" />
               </div>
               {/* Floating NMLS badge */}
-              <div className="absolute -bottom-4 -right-3 rounded-2xl border border-white/20 bg-brand-dark px-4 py-3 shadow-lg">
+              <div className="absolute -bottom-4 -right-3 rounded-2xl border border-white/20 bg-accent-dark px-4 py-3 shadow-lg">
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">NMLS#</p>
                 <p className="mt-0.5 text-sm font-extrabold text-white">1918223</p>
                 <p className="text-[10px] text-white/40">Company</p>
@@ -168,7 +168,7 @@ export default async function LamontPage() {
           </div>
 
           {/* Stats strip */}
-          <div className="mt-14 grid grid-cols-3 gap-6 rounded-3xl border border-white/10 bg-white/5 px-8 py-6 backdrop-blur-sm sm:grid-cols-3">
+          <div className="mt-14 grid grid-cols-3 gap-6 rounded-3xl border border-white/20 bg-white/10 px-8 py-6 backdrop-blur-sm sm:grid-cols-3">
             <StatBadge value="15+" label="Years Experience" />
             <StatBadge value="1,000+" label="Families Helped" />
             <StatBadge value="5.0★" label="Average Rating" />
@@ -276,21 +276,32 @@ export default async function LamontPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       <section id="funnel" className="bg-sand py-20 scroll-mt-20">
         <div className="container-shell max-w-3xl">
+          {/* LO identity card — same style as get-started page */}
+          <div className="mx-auto mb-8 max-w-xl">
+            <div className="flex items-center gap-4 rounded-3xl border border-line bg-white p-4 shadow-soft sm:p-5">
+              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl">
+                <TeamPhoto photo={m.photo} name={m.name} aspect="1 / 1" className="h-full w-full" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+                  You&apos;re starting with
+                </div>
+                <div className="truncate text-base font-bold text-ink">{m.name}</div>
+                <div className="text-xs text-muted">
+                  {m.role} · HCMG · No call center, no rotation
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="mb-10 text-center">
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">
-              Start with Lamont
-            </p>
             <h2 className="text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
               See what you can afford in 60 seconds.
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base text-muted">
               Purchase or refinance &middot; No hard credit check &middot; No commitment
             </p>
-            <p className="mt-2 text-xs text-muted/70">
-              Your answers route directly to Lamont — no call center, no rotation.
-            </p>
           </div>
-          <FunnelFlow lo={funnelLo} />
+          <FunnelFlow lo={funnelLo} source="team" />
         </div>
       </section>
 
@@ -307,17 +318,17 @@ export default async function LamontPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/* BOTTOM CTA BAND                                           */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="bg-brand py-16">
+      <section className="bg-accent py-16">
         <div className="container-shell max-w-3xl text-center">
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">Ready to move forward?</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-white/60">Ready to move forward?</p>
           <h2 className="text-3xl font-extrabold text-white lg:text-4xl">
             Let&apos;s talk about your next home.
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-base text-white/70">
+          <p className="mx-auto mt-4 max-w-xl text-base text-white/80">
             No pressure, no obligation. Start the free estimate above or reach out directly — Lamont answers his own phone.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#funnel" className="primary-button">
+            <a href="#funnel" className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white bg-white px-6 py-4 text-base font-semibold text-accent transition hover:bg-white/90">
               Get my free estimate →
             </a>
             {m.phone && (
