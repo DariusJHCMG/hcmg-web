@@ -16,8 +16,9 @@ const LeadSchema = z.object({
   email: z.string().email(),
   phone: z.string().min(7),
   smsConsent: z.boolean(),
-  source:  z.string().optional().default("funnel"),
-  seoSlug: z.string().optional(),  // which seo page slug when source="seo"
+  source:     z.string().optional().default("funnel"),
+  seoSlug:    z.string().optional(),    // which seo page slug when source="seo"
+  funnelType: z.string().optional(),    // funnel catalog slug (e.g. "va-purchase")
   goal: z.string().optional(),
   priceRange: z.string().optional(),
   creditRange: z.string().optional(),
@@ -207,7 +208,8 @@ export async function POST(request: NextRequest) {
     income_range: lead.incomeRange ?? null,
     notes:        [
       lead.notes,
-      lead.seoSlug ? `SEO page: /seo/${lead.seoSlug}` : null,
+      lead.seoSlug   ? `SEO page: /seo/${lead.seoSlug}`      : null,
+      lead.funnelType ? `Funnel: ${lead.funnelType}`          : null,
     ].filter(Boolean).join("\n") || null,
     lo_slug:      lead.loSlug ?? null,
     lo_name:      lead.loName ?? null,

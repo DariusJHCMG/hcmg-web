@@ -5,6 +5,7 @@ import { FunnelFlow } from "@/components/funnel/FunnelFlow";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { getTeamMemberBySlug } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
+import { getFunnelBySlug } from "@/lib/funnel-catalog";
 
 export const metadata: Metadata = {
   title: "Get Your Mortgage Estimate, HCMG",
@@ -56,15 +57,17 @@ export const dynamic = "force-dynamic";
 export default async function GetStartedPage({
   searchParams,
 }: {
-  searchParams: Promise<{ lo?: string; source?: string; from?: string }>;
+  searchParams: Promise<{ lo?: string; source?: string; from?: string; funnel?: string }>;
 }) {
-  const { lo: loSlug, source, from: seoSlug } = await searchParams;
+  const { lo: loSlug, source, from: seoSlug, funnel: funnelSlug } = await searchParams;
   const lo = loSlug ? await resolveLo(loSlug) : null;
   const funnelLo = lo
     ? { slug: lo.slug, name: lo.name, nmls: lo.nmls }
     : undefined;
   // Determine effective source: explicit param > seo (when from= is present) > default
   const effectiveSource = source ?? (seoSlug ? "seo" : undefined);
+  // Resolve funnel definition if a funnel slug was passed
+  const funnelDef = funnelSlug ? getFunnelBySlug(funnelSlug) : undefined;
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-sand pb-32 md:pb-0">
@@ -120,7 +123,7 @@ export default async function GetStartedPage({
             </div>
           )}
 
-          <FunnelFlow lo={funnelLo} source={effectiveSource} seoSlug={seoSlug} />
+          <FunnelFlow lo={funnelLo} source={effectiveSource} seoSlug={seoSlug} funnelType={funnelDef?.slug} funnelHeadline={funnelDef?.headline} funnelSubhead={funnelDef?.subhead} funnelBadge={funnelDef?.badge} />
         </div>
       </section>
 

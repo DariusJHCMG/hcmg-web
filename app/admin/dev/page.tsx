@@ -17,6 +17,9 @@ export default function DevToolsPage() {
   const [revalMsg, setRevalMsg] = useState("");
   const [backfilling, setBackfilling] = useState(false);
   const [backfillResults, setBackfillResults] = useState<{ slug: string; name: string; status: string }[] | null>(null);
+  const [backfillingFunnels, setBackfillingFunnels] = useState(false);
+  const [backfillFunnelsResult, setBackfillFunnelsResult] = useState<{ total_los: number; total_funnel_types: number; total_created: number } | null>(null);
+  const [backfillFunnelsError, setBackfillFunnelsError] = useState("");
 
   useEffect(() => {
     fetchChecks();
@@ -56,6 +59,22 @@ export default function DevToolsPage() {
       setBackfillResults([{ slug: "", name: "", status: String(e) }]);
     }
     setBackfilling(false);
+  }
+
+  async function backfillFunnels() {
+    setBackfillingFunnels(true); setBackfillFunnelsResult(null); setBackfillFunnelsError("");
+    try {
+      const res  = await fetch("/api/admin/dev/backfill-funnels", { method: "POST" });
+      const json = await res.json();
+      if (json.ok) {
+        setBackfillFunnelsResult(json);
+      } else {
+        setBackfillFunnelsError(json.error ?? "Unknown error");
+      }
+    } catch (e) {
+      setBackfillFunnelsError(String(e));
+    }
+    setBackfillingFunnels(false);
   }
 
   async function revalidateAll() {
@@ -178,6 +197,43 @@ export default function DevToolsPage() {
               </tbody>
             </table>
           </div>
+        )}
+      </div>
+
+      {/* Backfill all funnel links */}
+      <div className="rounded-2xl border border-line bg-white p-6">
+        <p className="mb-1 text-sm font-bold text-ink">Backfill Funnel Library → All LOs</p>
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+          <p className="font-bold">⚠ Requires DB migration first</p>
+          <p className="mt-1">Run this SQL in Supabase before clicking the button:</p>
+          <code className="mt-1.5 block whitespace-nowrap rounded bg-white/60 px-2 py-1 font-mono text-[11px] text-amber-900">
+            ALTER TABLE funnel_links ADD COLUMN IF NOT EXISTS funnel_type TEXT DEFAULT NULL;
+          </code>
+        </div>
+        <p className="mb-4 text-xs text-muted">
+          Creates one funnel_link row per funnel type (107 funnels) for every active LO with a slug.
+          Safe to run multiple times — only creates rows that don&apos;t already exist.
+          Run this after adding new funnels to the catalog or creating LO accounts in bulk.
+        </p>
+        <button
+          onClick={backfillFunnels}
+          disabled={backfillingFunnels}
+          className="secondary-button !py-2 !px-5 !text-sm disabled:opacity-50"
+        >
+          {backfillingFunnels ? "Running…" : "Run funnel backfill"}
+        </button>
+        {backfillFunnelsResult && (
+          <div className="mt-4 flex flex-wrap gap-3">
+            <span className="rounded-xl border border-green-200 bg-green-50 px-4 py-2 text-xs font-bold text-green-700">
+              ✓ {backfillFunnelsResult.total_created} rows created
+            </span>
+            <span className="rounded-xl border border-line bg-sand px-4 py-2 text-xs font-semibold text-muted">
+              {backfillFunnelsResult.total_los} LOs · {backfillFunnelsResult.total_funnel_types} funnel types
+            </span>
+          </div>
+        )}
+        {backfillFunnelsError && (
+          <p className="mt-3 text-sm font-semibold text-red-600">{backfillFunnelsError}</p>
         )}
       </div>
 

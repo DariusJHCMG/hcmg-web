@@ -77,6 +77,8 @@ export interface FunnelLink {
   url: string;
   clicks: number;
   is_active: boolean;
+  /** For LO-variant funnels: the funnel slug from FUNNEL_CATALOG. Null = base /go/[lo] link. */
+  funnel_type: string | null;
   created_at: string;
 }
 

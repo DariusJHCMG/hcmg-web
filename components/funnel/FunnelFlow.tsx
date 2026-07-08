@@ -85,7 +85,23 @@ export interface FunnelLoContext {
   nmls: string | null;
 }
 
-export function FunnelFlow({ lo, source, seoSlug }: { lo?: FunnelLoContext; source?: string; seoSlug?: string } = {}) {
+export function FunnelFlow({
+  lo,
+  source,
+  seoSlug,
+  funnelType,
+  funnelHeadline,
+  funnelSubhead,
+  funnelBadge,
+}: {
+  lo?: FunnelLoContext;
+  source?: string;
+  seoSlug?: string;
+  funnelType?: string;
+  funnelHeadline?: string;
+  funnelSubhead?: string;
+  funnelBadge?: string;
+} = {}) {
   const [step, setStep] = useState<Step>(1);
   const [dir, setDir] = useState<1 | -1>(1);
   const [state, setState] = useState<FunnelState>({
@@ -138,6 +154,7 @@ export function FunnelFlow({ lo, source, seoSlug }: { lo?: FunnelLoContext; sour
       smsConsentTimestamp: new Date().toISOString(),
       source:   source ?? (lo ? "team" : "get-started"),
       seoSlug:  seoSlug,
+      funnelType: funnelType,
       goal: state.goal ?? undefined,
       priceRange: state.priceBand ?? undefined,
       creditRange: state.creditBand ?? undefined,
@@ -191,6 +208,28 @@ export function FunnelFlow({ lo, source, seoSlug }: { lo?: FunnelLoContext; sour
 
   return (
     <div className="mx-auto w-full max-w-[560px]">
+      {/* Funnel-specific badge (only shown when entering via a typed funnel URL) */}
+      {funnelType && step !== "success" && (
+        <div className="mb-5 overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+          <div className="flex items-center gap-3 px-5 py-4">
+            <div className="flex-1 min-w-0">
+              {funnelBadge && (
+                <span className="mb-1 inline-block rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
+                  {funnelBadge}
+                </span>
+              )}
+              <div className="text-base font-extrabold text-ink leading-snug">
+                {funnelHeadline ?? "Find your mortgage options"}
+              </div>
+              {funnelSubhead && (
+                <div className="mt-0.5 text-xs text-muted">{funnelSubhead}</div>
+              )}
+            </div>
+          </div>
+          <div className="h-1 w-full" style={{ background: "var(--ok-gradient)" }} />
+        </div>
+      )}
+
       {/* Progress */}
       {step !== "success" && (
         <div className="mb-6">

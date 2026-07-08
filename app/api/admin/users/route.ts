@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase";
 import { isAdmin, logAudit } from "@/lib/auth";
 import { z } from "zod";
 import type { Profile } from "@/lib/database.types";
+import { FUNNEL_CATALOG } from "@/lib/funnel-catalog";
 
 async function getCallerFromRequest(request: NextRequest): Promise<Profile | null> {
   try {
@@ -127,16 +128,31 @@ export async function POST(request: NextRequest) {
 
   await sb.from("profiles").upsert(profilePatch, { onConflict: "id" });
 
-  // ── 3. Create funnel_link ─────────────────────────────────────
+  // ── 3. Create funnel_links — base link + all catalog variants ────
   if (lo_slug) {
     const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
+
+    // Base link (null funnel_type) — the original /go/[lo] redirect
     await sb.from("funnel_links").upsert({
       lo_slug,
-      lo_name:   full_name,
-      url:       `${SITE}/go/${lo_slug}`,
-      is_active: true,
-      clicks:    0,
+      lo_name:     full_name,
+      url:         `${SITE}/go/${lo_slug}`,
+      funnel_type: null,
+      is_active:   true,
+      clicks:      0,
     }, { onConflict: "lo_slug" });
+
+    // One row per funnel variant from the catalog
+    const variantRows = FUNNEL_CATALOG.map((f) => ({
+      lo_slug,
+      lo_name:     full_name,
+      url:         `${SITE}/go/${lo_slug}/${f.slug}`,
+      funnel_type: f.slug,
+      is_active:   true,
+      clicks:      0,
+    }));
+    // Insert all; ignore duplicates if somehow already exist
+    await sb.from("funnel_links").insert(variantRows).then(() => {});
   }
 
   await logAudit("user.created", { email, role, lo_slug, nmls }, caller.id, caller.email);
