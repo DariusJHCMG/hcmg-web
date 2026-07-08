@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
-import { teamMembers } from "@/data/team";
+import { createServiceClient } from "@/lib/supabase";
+import { getTeamMemberBySlug } from "@/data/team";
 import { FindLOClient } from "./FindLOClient";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Find a Loan Officer | Harris Capital Mortgage Group",
@@ -12,8 +15,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://hcmgloans.com/find-a-loan-officer" },
 };
 
-const LICENSED_STATES = ["FL","TX","GA","NV","CO","VA","DC","MD","CA","MS"];
-const PENDING_STATES  = ["OH","MI","AL","OR","NJ","TN","NC","SC","IL","IN","OK","NM","AZ","PA"];
+// Company-level licensed + pending states (used for map colouring)
+const LICENSED_STATES = ["FL","TX","GA","NV","CO","VA","DC","MD","CA","MS","MI","OH","IN","IL","WI"];
+const PENDING_STATES  = ["AL","OR","NJ","TN","NC","SC","OK","NM","AZ","PA"];
 
 const STATE_NAMES: Record<string,string> = {
   AL:"Alabama", AK:"Alaska", AZ:"Arizona", AR:"Arkansas", CA:"California",
@@ -38,11 +42,32 @@ export default async function FindALoanOfficerPage({
   const initialState = state && [...LICENSED_STATES, ...PENDING_STATES].includes(state)
     ? state : null;
 
-  const members = teamMembers.map((m) => ({
-    slug: m.slug, name: m.name, role: m.role, nmls: m.nmls,
-    photo: m.photo, shortBio: m.shortBio, offices: m.offices ?? [],
-    phone: m.phone ?? null, email: m.email ?? null,
-  }));
+  // Pull active LOs with lo_slug + licensed_states from DB
+  const sb = createServiceClient();
+  const { data: profiles } = await sb
+    .from("profiles")
+    .select("id, full_name, title, role, nmls, lo_slug, avatar_url, short_bio, offices, phone, email, licensed_states, is_active, show_on_website")
+    .eq("is_active", true)
+    .not("lo_slug", "is", null)
+    .order("full_name", { ascending: true });
+
+  const members = (profiles ?? []).map((p) => {
+    // Fall back to static team photo if no avatar_url
+    const staticMember = p.lo_slug ? getTeamMemberBySlug(p.lo_slug) : null;
+    const photo = p.avatar_url ?? staticMember?.photo ?? "/team/placeholder.svg";
+    return {
+      slug:             p.lo_slug as string,
+      name:             p.full_name,
+      role:             p.title ?? (p.role === "loan_officer" ? "Loan Officer" : p.role),
+      nmls:             p.nmls ?? null,
+      photo,
+      shortBio:         p.short_bio ?? "",
+      offices:          p.offices ?? [],
+      phone:            p.phone ?? null,
+      email:            p.email ?? null,
+      licensed_states:  (p.licensed_states ?? []) as string[],
+    };
+  });
 
   return (
     <main>

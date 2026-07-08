@@ -6,6 +6,7 @@ const COMPANY_LINKS = [
   { label: "Refinance", href: "/get-started" },
   { label: "Calculator", href: "/#calculator" },
   { label: "Contact", href: "/contact" },
+  { label: "Team Login", href: "/login" },
 ];
 const RESOURCE_LINKS = [
   { label: "Meet the Team", href: "/team" },

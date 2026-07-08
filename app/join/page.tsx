@@ -182,7 +182,7 @@ export default function JoinPage() {
             <div className="relative">
               <div className="grid gap-4 sm:grid-cols-2">
                 <StatCard value="100+" label="Lender partners" sub="Plus HCMG+ for commercial" />
-                <StatCard value="275" label="BPS lender-paid comp" sub="Published grids, no carve-outs" highlight />
+                <StatCard value="Up to 275" label="BPS lender-paid comp" sub="Published grids, no carve-outs" highlight />
                 <StatCard value="$595" label="Per referred loan" sub="Revenue-share, lifetime" />
                 <StatCard value="HCMGU" label="On-demand training" sub="For you and your team" />
               </div>
