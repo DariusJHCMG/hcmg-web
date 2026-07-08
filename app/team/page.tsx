@@ -4,10 +4,23 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
-import { teamMembers, getTeamGroupedByRole } from "@/data/team";
+import { teamMembers, getTeamGroupedByRole, type TeamMember } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
 
 export const revalidate = 60;
+
+// Leadership slugs — only these get their portal photo shown on the /team roster page.
+// All other roles (LOs, operations) always show the placeholder here; their
+// uploaded photo only appears on their personal /team/[slug] page and funnels.
+const LEADERSHIP_SLUGS = new Set([
+  "lamont-harris-jr",
+  "astrine-covington",
+  "ranada-harris",
+  "aysha-randall",
+  "mesia-crews",
+  "adam-demarco",
+  "darius-james",
+]);
 
 export const metadata: Metadata = {
   title: "Meet the HCMG Team, Loan Officers, Processors & Leadership | Harris Capital Mortgage Group",
@@ -29,9 +42,17 @@ export default async function TeamPage() {
   // Fetch all active Supabase profiles
   const { data: profiles } = await sb
     .from("profiles")
-    .select("id, full_name, role, title, nmls, lo_slug, short_bio, offices, is_active, show_on_website")
+    .select("id, full_name, role, title, nmls, lo_slug, short_bio, offices, is_active, show_on_website, avatar_url")
     .eq("is_active", true)
     .order("created_at", { ascending: true });
+
+  // Build a lookup of lo_slug → avatar_url for leadership members only
+  const leadershipAvatars = new Map<string, string>();
+  for (const p of profiles ?? []) {
+    if (p.lo_slug && p.avatar_url && LEADERSHIP_SLUGS.has(p.lo_slug)) {
+      leadershipAvatars.set(p.lo_slug, p.avatar_url);
+    }
+  }
 
   // Build a set of lo_slugs that are deactivated → hide from static list
   const inactiveSlugs = new Set(
@@ -44,7 +65,14 @@ export default async function TeamPage() {
   const staticSlugs = new Set(teamMembers.map((m) => m.slug));
 
   // Filter out deactivated members from the static list
-  const activeStaticMembers = teamMembers.filter((m) => !inactiveSlugs.has(m.slug));
+  // For leadership members, swap in their portal avatar_url if set
+  const activeStaticMembers: TeamMember[] = teamMembers
+    .filter((m) => !inactiveSlugs.has(m.slug))
+    .map((m) =>
+      LEADERSHIP_SLUGS.has(m.slug) && leadershipAvatars.has(m.slug)
+        ? { ...m, photo: leadershipAvatars.get(m.slug)! }
+        : m
+    );
 
   // Portal-only users: active profiles with a lo_slug NOT already in the static list
   const portalMembers = (profiles ?? [])
