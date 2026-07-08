@@ -278,7 +278,7 @@ export function FunnelFlow({
             <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
               Step {stepDisplay} of {totalSteps}
             </span>
-            {stepIdx > 0 && (
+            {stepIdx > 0 && step !== 5 && (
               <button onClick={back} className="text-xs font-semibold text-muted hover:text-accent">
                 ← Back
               </button>
@@ -469,9 +469,6 @@ export function FunnelFlow({
                   </div>
                   <button onClick={() => next()} className="primary-button w-full justify-center !py-3.5">
                     {unlockLabel}
-                  </button>
-                  <button onClick={() => go(activeSteps[0], -1)} className="ghost-button w-full justify-center !py-2.5 !text-xs">
-                    ← Adjust my answers
                   </button>
                 </div>
               </div>

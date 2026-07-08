@@ -805,14 +805,6 @@ export function CalcFunnel({
             </div>
             {funnelSubhead && <div className="mt-0.5 text-xs text-muted">{funnelSubhead}</div>}
           </div>
-          {stage === "form" && (
-            <button
-              onClick={() => { setDir(-1); setStage("calc"); }}
-              className="shrink-0 text-xs font-semibold text-muted hover:text-accent"
-            >
-              ← Back
-            </button>
-          )}
         </div>
         {/* Progress bar */}
         <div className="h-1 w-full bg-line">
