@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { NavBar } from "@/components/ui/NavBar";
-import { Footer } from "@/components/ui/Footer";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { FunnelFlow } from "@/components/funnel/FunnelFlow";
 import { createServiceClient } from "@/lib/supabase";
@@ -80,8 +78,30 @@ export default async function CoBrandedPublicPage({ params }: Props) {
     ?? `${realtorFirst} + ${loFirst}: Let's get your clients to the closing table.`;
 
   return (
-    <main>
-      <NavBar />
+    <div className="min-h-screen bg-white">
+
+      {/* ── LOCKED HEADER — no nav links ───────────────────────────── */}
+      <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur">
+        <div className="container-shell flex h-14 max-w-5xl items-center justify-between">
+          {/* LO + Realtor co-brand lockup */}
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 overflow-hidden rounded-full border border-line flex-shrink-0">
+              <TeamPhoto photo={loPhoto} name={loName} aspect="1/1" className="h-full w-full" />
+            </div>
+            <span className="text-xs font-bold text-muted hidden sm:block">
+              {loFirst} · {page.realtor_name.split(" ")[0]}
+            </span>
+            <span className="hidden sm:block text-line">·</span>
+            <span className="text-xs font-semibold text-muted hidden sm:block">Harris Capital Mortgage Group</span>
+          </div>
+          {/* Single CTA — anchors to funnel */}
+          <a href="#funnel"
+            className="rounded-xl px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
+            style={{ background: "var(--ok-gradient)" }}>
+            Get pre-qualified →
+          </a>
+        </div>
+      </header>
 
       {/* ── CO-BRAND HERO ──────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-white" style={{ paddingTop: "clamp(60px, 8vw, 100px)", paddingBottom: "clamp(48px, 6vw, 80px)" }}>
@@ -317,7 +337,23 @@ export default async function CoBrandedPublicPage({ params }: Props) {
         </div>
       </section>
 
-      <Footer />
-    </main>
+      {/* ── LOCKED FOOTER ──────────────────────────────────────────── */}
+      <footer className="border-t border-line bg-white py-8">
+        <div className="container-shell max-w-5xl text-center">
+          <p className="text-xs text-muted">
+            This page was created by {loName} (NMLS# {loNmls ?? "—"}) at Harris Capital Mortgage Group, LLC · NMLS# 1918223
+          </p>
+          <p className="mt-1 text-xs text-muted/60">
+            Not a commitment to lend. All loans subject to credit approval. Equal Housing Lender.
+          </p>
+          <div className="mt-3 flex flex-wrap justify-center gap-4 text-xs text-muted/50">
+            <a href="/privacy" target="_blank" className="hover:text-muted transition-colors">Privacy Policy</a>
+            <a href="/terms" target="_blank" className="hover:text-muted transition-colors">Terms of Use</a>
+            <a href="/legal-disclaimer" target="_blank" className="hover:text-muted transition-colors">Legal Disclaimer</a>
+          </div>
+        </div>
+      </footer>
+
+    </div>
   );
 }
