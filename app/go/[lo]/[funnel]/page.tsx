@@ -19,47 +19,33 @@ export default async function LoFunnelRedirect({ params, searchParams }: Props) 
 
   const sb = createServiceClient();
 
-  // Validate LO slug is active
-  const { data: link, error } = await sb
+  // Validate LO slug is active — any row for this LO is enough to confirm they exist
+  const { data: rows } = await sb
     .from("funnel_links")
     .select("lo_slug, clicks, is_active")
     .eq("lo_slug", loSlug)
-    .is("funnel_type", null)   // base LO record
-    .single();
+    .eq("is_active", true)
+    .limit(1);
 
-  if (error || !link || !link.is_active) notFound();
+  if (!rows?.[0]) notFound();
 
-  // Increment click counter on the LO-funnel specific row if it exists,
-  // or fall back to incrementing the base row (best-effort)
-  const { data: variantRow } = await sb
+  // Best-effort click increment (ignore errors — funnel_type column may not exist yet)
+  void sb
     .from("funnel_links")
-    .select("id, clicks")
+    .update({ clicks: (rows[0].clicks ?? 0) + 1 })
     .eq("lo_slug", loSlug)
-    .eq("funnel_type", funnelSlug)
-    .maybeSingle();
-
-  if (variantRow) {
-    void sb
-      .from("funnel_links")
-      .update({ clicks: (variantRow.clicks ?? 0) + 1 })
-      .eq("id", variantRow.id);
-  } else {
-    void sb
-      .from("funnel_links")
-      .update({ clicks: (link.clicks ?? 0) + 1 })
-      .eq("lo_slug", loSlug)
-      .is("funnel_type", null);
-  }
+    .eq("is_active", true);
 
   const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/+$/, "");
+  const UTM  = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
 
-  const UTM = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
   const utmParams = UTM
-    .map(p => { const v = query[p]; return v ? `${p}=${encodeURIComponent(Array.isArray(v) ? v[0] : v)}` : null; })
+    .map(p => {
+      const v = query[p];
+      return v ? `${p}=${encodeURIComponent(Array.isArray(v) ? v[0] : v)}` : null;
+    })
     .filter(Boolean)
     .join("&");
 
-  const dest = `${SITE}/get-started?lo=${encodeURIComponent(loSlug)}&funnel=${encodeURIComponent(funnelSlug)}${utmParams ? `&${utmParams}` : ""}`;
-
-  redirect(dest);
+  redirect(`${SITE}/get-started?lo=${encodeURIComponent(loSlug)}&funnel=${encodeURIComponent(funnelSlug)}${utmParams ? `&${utmParams}` : ""}`);
 }
