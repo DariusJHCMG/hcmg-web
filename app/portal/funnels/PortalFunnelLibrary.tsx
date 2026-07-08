@@ -131,18 +131,84 @@ export function PortalFunnelLibrary({ loSlug, siteUrl }: Props) {
   return (
     <div className="space-y-6">
 
-      {/* ── Page header ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="ok-gradient-text text-xs font-bold uppercase tracking-[0.2em]">My Funnels</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-ink">Funnel Library</h1>
-          <p className="mt-1 text-sm text-muted">
-            {FUNNEL_CATALOG.length} personalised lead funnels — pick one, copy the link, share it anywhere.
+      {/* ── Hero header (light version) ──────────────────────────────────────── */}
+      <div className="relative -mx-6 -mt-8 mb-2 overflow-hidden border-b border-line bg-white sm:-mx-8">
+        {/* Subtle warm glow — replaces the dark blob */}
+        <div
+          className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full opacity-30"
+          style={{ background: "radial-gradient(circle, #FF9847 0%, transparent 70%)" }}
+        />
+        <div
+          className="pointer-events-none absolute -left-8 bottom-0 h-40 w-40 rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, #F37021 0%, transparent 70%)" }}
+        />
+
+        <div className="relative px-6 py-8 sm:px-8 sm:py-10">
+          {/* Eyebrow — orange bar + label, same as screenshot */}
+          <div className="mb-3 flex items-center gap-2">
+            <span
+              className="h-[5px] w-7 rounded-full"
+              style={{ background: "linear-gradient(90deg,#FF9847,#F37021)" }}
+            />
+            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted">
+              Funnel Library
+            </span>
+          </div>
+
+          {/* Headline — two-line like the screenshot */}
+          <h1 className="text-3xl font-extrabold leading-tight text-ink sm:text-4xl">
+            Your Personal
+            <br />
+            <span className="ok-gradient-text">Funnel Links</span>
+          </h1>
+
+          <p className="mt-2 max-w-lg text-sm text-muted">
+            {FUNNEL_CATALOG.length} trackable links across {FUNNEL_FAMILIES.length} categories.
+            Every submission routes directly to you with an instant notification.
           </p>
-        </div>
-        <div className="flex items-center gap-2 rounded-2xl border border-line bg-sand px-4 py-2.5 text-xs text-muted">
-          <span className="h-2 w-2 rounded-full bg-green-500" />
-          All links active
+
+          {/* Category pills row — same layout as screenshot */}
+          <div className="mt-6 flex flex-wrap gap-2">
+            {FUNNEL_FAMILIES.map((fam) => {
+              const count  = FUNNEL_CATALOG.filter((f) => f.family === fam.key).length;
+              const active = activeFamily === fam.key;
+              return (
+                <button
+                  key={fam.key}
+                  onClick={() => { setActiveFamily(fam.key); setSearch(""); }}
+                  style={active ? {
+                    borderColor: "#F37021",
+                    background:  "linear-gradient(135deg,#FF9847,#F37021)",
+                    color:       "#fff",
+                  } : {}}
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all
+                    ${!active
+                      ? "border-line bg-white text-muted hover:border-accent/40 hover:text-ink"
+                      : ""
+                    }`}
+                >
+                  <span>{fam.icon}</span>
+                  <span>{fam.label}</span>
+                  <span
+                    className="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                    style={active ? { background: "rgba(255,255,255,0.25)", color: "#fff" } : { background: "#F3F4F6", color: "#6B7280" }}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+            <button
+              onClick={() => { setActiveFamily("all"); setSearch(""); }}
+              className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all
+                ${activeFamily === "all" && !search
+                  ? "border-ink bg-ink text-white"
+                  : "border-line bg-white text-muted hover:border-ink/30 hover:text-ink"
+                }`}
+            >
+              All · {FUNNEL_CATALOG.length}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -266,9 +332,8 @@ export function PortalFunnelLibrary({ loSlug, siteUrl }: Props) {
         </div>
       </div>
 
-      {/* ── Search + family tabs ──────────────────────────────────────────────── */}
-      <div className="space-y-3">
-        {/* Search */}
+      {/* ── Search ───────────────────────────────────────────────────────────── */}
+      <div className="space-y-2">
         <div className="relative">
           <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -280,7 +345,7 @@ export function PortalFunnelLibrary({ loSlug, siteUrl }: Props) {
             value={search}
             onChange={(e) => { setSearch(e.target.value); if (e.target.value) setActiveFamily("all"); }}
             placeholder="Search — VA loan, DSCR, first-time buyer, cash-out…"
-            className="w-full rounded-xl border border-line bg-white py-3 pl-11 pr-4 text-sm text-ink
+            className="w-full rounded-xl border border-line bg-white py-3 pl-11 pr-10 text-sm text-ink
               placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/10 shadow-soft"
           />
           {search && (
@@ -292,44 +357,10 @@ export function PortalFunnelLibrary({ loSlug, siteUrl }: Props) {
             </button>
           )}
         </div>
-
-        {/* Family filter tabs */}
-        {!search && (
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setActiveFamily("all")}
-              className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all
-                ${activeFamily === "all"
-                  ? "border-ink bg-ink text-white"
-                  : "border-line bg-white text-muted hover:border-ink/20 hover:text-ink"
-                }`}
-            >
-              All  ·  {FUNNEL_CATALOG.length}
-            </button>
-            {FUNNEL_FAMILIES.map((fam) => {
-              const count = FUNNEL_CATALOG.filter((f) => f.family === fam.key).length;
-              const active = activeFamily === fam.key;
-              return (
-                <button
-                  key={fam.key}
-                  onClick={() => setActiveFamily(fam.key)}
-                  style={active ? { borderColor: FAMILY_ACCENT[fam.key] + "60", background: FAMILY_ACCENT[fam.key] + "12", color: FAMILY_ACCENT[fam.key] } : {}}
-                  className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all
-                    ${!active ? "border-line bg-white text-muted hover:border-line hover:text-ink" : ""}`}
-                >
-                  {fam.icon} {fam.label}
-                  <span className="ml-1.5 rounded-full bg-black/8 px-1.5 py-0.5 text-[10px] font-bold">
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Count line */}
         <p className="text-xs text-muted">
-          {search ? `${filtered.length} result${filtered.length !== 1 ? "s" : ""} for "${search}"` : `${filtered.length} funnels`}
+          {search
+            ? `${filtered.length} result${filtered.length !== 1 ? "s" : ""} for "${search}"`
+            : `${filtered.length} funnels`}
         </p>
       </div>
 
