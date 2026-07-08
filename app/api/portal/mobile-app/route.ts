@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase";
 import { Resend } from "resend";
 import { buildMobileAppEmail } from "@/lib/email-templates";
 
@@ -7,10 +6,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createSupabaseServerClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
     const { email, device } = await request.json() as { email: string; device: "ios" | "android" | "other" };
     if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
 
