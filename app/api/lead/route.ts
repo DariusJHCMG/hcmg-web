@@ -4,6 +4,11 @@ import { Resend } from "resend";
 import { createServiceClient } from "@/lib/supabase";
 import { logAudit, getProfileBySlug } from "@/lib/auth";
 import { readSettings } from "@/lib/company-settings";
+import {
+  buildLeadConfirmationEmail,
+  buildLoNotificationEmail,
+  buildCompanyAlertEmail,
+} from "@/lib/email-templates";
 
 const RESEND_KEY = process.env.RESEND_API_KEY;
 function getResend() {
@@ -512,7 +517,19 @@ export async function POST(request: NextRequest) {
         subject: lead.loName
           ? `You're connected — ${lead.loName} will be in touch shortly`
           : "We received your inquiry — Harris Capital Mortgage Group",
-        html: confirmationHtml(lead),
+        html: buildLeadConfirmationEmail({
+          firstName:           lead.firstName,
+          loName:              lead.loName,
+          loNmls:              loNmls,
+          goal:                goalLabel(lead.goal),
+          priceRange:          lead.priceRange,
+          creditRange:         creditLabel(lead.creditRange),
+          buyingPowerLow:      lead.estimatedBuyingPowerLow,
+          buyingPowerHigh:     lead.estimatedBuyingPowerHigh,
+          monthlyPayment:      lead.estimatedMonthlyPayment,
+          recommendedLoanType: lead.recommendedLoanType,
+          siteUrl:             SITE_URL,
+        }),
       }),
     ];
 
@@ -523,7 +540,26 @@ export async function POST(request: NextRequest) {
           from:    "HCMG Leads <noreply@hcmgloans.com>",
           to:      loNotifyEmail,
           subject: `🔔 New lead: ${fullName || lead.email}${lead.funnelType ? ` via ${lead.funnelType}` : ""}`,
-          html:    loNotificationHtml(lead, lead.loName, loNmls),
+          html: buildLoNotificationEmail({
+            loFirstName:         lead.loName.split(" ")[0],
+            leadFullName:        fullName,
+            email:               lead.email,
+            phone:               lead.phone,
+            goal:                goalLabel(lead.goal),
+            priceRange:          lead.priceRange,
+            creditRange:         creditLabel(lead.creditRange),
+            incomeRange:         lead.incomeRange,
+            utmSource:           lead.utmSource,
+            utmMedium:           lead.utmMedium,
+            utmCampaign:         lead.utmCampaign,
+            monthlyPayment:      lead.estimatedMonthlyPayment,
+            buyingPowerLow:      lead.estimatedBuyingPowerLow,
+            buyingPowerHigh:     lead.estimatedBuyingPowerHigh,
+            recommendedLoanType: lead.recommendedLoanType,
+            entryPage:           lead.entryPage,
+            device:              deviceLabel(lead.device),
+            portalUrl:           `${SITE_URL}/portal`,
+          }),
         })
       );
     } else if (!lead.loSlug) {
@@ -551,7 +587,20 @@ export async function POST(request: NextRequest) {
             subject: isEmployment ? `Recruiting inquiry — ${fullName || lead.email}`
               : isContact         ? `Contact form — ${fullName || lead.email}`
               : `Company lead — ${fullName || lead.email}`,
-            html: companyLeadAlertHtml(lead, fullName, sourceDisplay, isEmployment, isContact),
+            html: buildCompanyAlertEmail({
+              leadFullName: fullName,
+              email:        lead.email,
+              phone:        lead.phone,
+              source:       sourceDisplay,
+              goal:         goalLabel(lead.goal),
+              priceRange:   lead.priceRange,
+              creditRange:  creditLabel(lead.creditRange),
+              utmSource:    lead.utmSource,
+              utmCampaign:  lead.utmCampaign,
+              adminUrl:     `${SITE_URL}/admin/leads`,
+              isEmployment,
+              isContact,
+            }),
           })
         );
       }

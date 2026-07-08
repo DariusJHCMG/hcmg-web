@@ -20,6 +20,10 @@ export default function DevToolsPage() {
   const [backfillingFunnels, setBackfillingFunnels] = useState(false);
   const [backfillFunnelsResult, setBackfillFunnelsResult] = useState<{ total_los: number; total_funnel_types: number; total_created: number } | null>(null);
   const [backfillFunnelsError, setBackfillFunnelsError] = useState("");
+  // Email samples
+  const [sampleEmail, setSampleEmail] = useState("");
+  const [sendingSamples, setSendingSamples] = useState(false);
+  const [sampleResults, setSampleResults] = useState<{ subject: string; ok: boolean; error?: string }[] | null>(null);
 
   useEffect(() => {
     fetchChecks();
@@ -75,6 +79,23 @@ export default function DevToolsPage() {
       setBackfillFunnelsError(String(e));
     }
     setBackfillingFunnels(false);
+  }
+
+  async function sendEmailSamples() {
+    if (!sampleEmail) return;
+    setSendingSamples(true); setSampleResults(null);
+    try {
+      const res  = await fetch("/api/admin/dev/send-email-samples", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: sampleEmail }),
+      });
+      const json = await res.json();
+      setSampleResults(json.results ?? [{ subject: "Error", ok: false, error: json.error }]);
+    } catch (e) {
+      setSampleResults([{ subject: "Network error", ok: false, error: String(e) }]);
+    }
+    setSendingSamples(false);
   }
 
   async function revalidateAll() {
@@ -234,6 +255,46 @@ export default function DevToolsPage() {
         )}
         {backfillFunnelsError && (
           <p className="mt-3 text-sm font-semibold text-red-600">{backfillFunnelsError}</p>
+        )}
+      </div>
+
+      {/* ── Email Previews ── */}
+      <div className="rounded-2xl border border-line bg-white p-6">
+        <p className="mb-1 text-sm font-bold text-ink">Email Template Previews</p>
+        <p className="mb-4 text-xs text-muted">
+          Send all 7 email templates to any inbox as samples — lead confirmation, LO notification,
+          company alert, portal invite, co-branded share, and both mobile app installs.
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[220px]">
+            <label className="mb-1 block text-xs font-bold text-ink">Send to email</label>
+            <input
+              type="email"
+              value={sampleEmail}
+              onChange={e => setSampleEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && sendEmailSamples()}
+              placeholder="you@example.com"
+              className="w-full rounded-xl border border-line bg-sand px-3 py-2.5 text-sm text-ink placeholder:text-muted/40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
+            />
+          </div>
+          <button
+            onClick={sendEmailSamples}
+            disabled={!sampleEmail || sendingSamples}
+            className="secondary-button !py-2.5 !px-5 !text-sm disabled:opacity-50"
+          >
+            {sendingSamples ? "Sending…" : "Send all 7 samples →"}
+          </button>
+        </div>
+        {sampleResults && (
+          <div className="mt-4 space-y-1.5">
+            {sampleResults.map((r, i) => (
+              <div key={i} className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm ${r.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                <span className="font-bold">{r.ok ? "✓" : "✗"}</span>
+                <span className="flex-1 font-mono text-xs">{r.subject}</span>
+                {r.error && <span className="text-xs opacity-70">{r.error}</span>}
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
