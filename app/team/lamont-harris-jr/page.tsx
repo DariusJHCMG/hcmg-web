@@ -74,11 +74,10 @@ function CheckItem({ children }: { children: React.ReactNode }) {
 export default async function LamontPage() {
   // Pull from Supabase profile first, fall back to data/team.ts
   const sb = createServiceClient();
-  const { data: profileData } = await sb
-    .from("profiles")
-    .select("*")
-    .eq("lo_slug", "lamont-harris-jr")
-    .single();
+  const [{ data: profileData }, { data: reviewData }] = await Promise.all([
+    sb.from("profiles").select("*").eq("lo_slug", "lamont-harris-jr").single(),
+    sb.from("reviews").select("rating").eq("lo_slug", "lamont-harris-jr").eq("status", "approved"),
+  ]);
 
   const p = profileData as Profile | null;
   const m = getTeamMemberBySlug("lamont-harris-jr")!;
@@ -106,6 +105,12 @@ export default async function LamontPage() {
   const heroBioP1 = p?.hero_bio ? heroBio : DEFAULT_HERO_BIO;
   const heroBioP2 = p?.hero_bio ? null    : DEFAULT_HERO_BIO_2;
 
+  const lReviews = reviewData ?? [];
+  const lReviewCount = lReviews.length;
+  const lAvgRating = lReviewCount > 0
+    ? Math.round((lReviews.reduce((s, r) => s + r.rating, 0) / lReviewCount) * 10) / 10
+    : null;
+
   const personSchema = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -121,6 +126,15 @@ export default async function LamontPage() {
     ...(email    ? { email }     : {}),
     ...(phone    ? { telephone: phone } : {}),
     ...(linkedin ? { sameAs: [linkedin] } : {}),
+    ...(lAvgRating && lReviewCount >= 3 ? {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: lAvgRating,
+        reviewCount: lReviewCount,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    } : {}),
   };
 
   return (

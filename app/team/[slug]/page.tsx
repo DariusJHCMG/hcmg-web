@@ -99,12 +99,10 @@ export default async function TeamMemberPage({
 
   // Query DB first — portal-only users (not in data/team.ts) still get a page
   const sb = createServiceClient();
-  const { data: profileData } = await sb
-    .from("profiles")
-    .select("*")
-    .eq("lo_slug", slug)
-    .eq("is_active", true)
-    .single();
+  const [{ data: profileData }, { data: reviewData }] = await Promise.all([
+    sb.from("profiles").select("*").eq("lo_slug", slug).eq("is_active", true).single(),
+    sb.from("reviews").select("rating").eq("lo_slug", slug).eq("status", "approved"),
+  ]);
 
   const p = profileData as Profile | null;
   const m = getTeamMemberBySlug(slug);
@@ -130,6 +128,12 @@ export default async function TeamMemberPage({
   const first       = name.replace(/['"()]/g, "").split(/\s+/)[0];
   const funnelLo    = { slug, name, nmls };
 
+  const reviews = reviewData ?? [];
+  const reviewCount = reviews.length;
+  const avgRating = reviewCount > 0
+    ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviewCount) * 10) / 10
+    : null;
+
   const personSchema = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -147,6 +151,15 @@ export default async function TeamMemberPage({
     ...(phone    ? { telephone: phone }    : {}),
     ...(linkedin ? { sameAs: [linkedin] }  : {}),
     ...(nmls     ? { identifier: { "@type": "PropertyValue", propertyID: "NMLS", value: nmls } } : {}),
+    ...(avgRating && reviewCount >= 3 ? {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: avgRating,
+        reviewCount,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    } : {}),
   };
 
   const breadcrumbSchema = {

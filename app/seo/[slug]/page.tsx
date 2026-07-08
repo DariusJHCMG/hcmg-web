@@ -57,6 +57,16 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
     },
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home",     item: "https://hcmgloans.com" },
+      { "@type": "ListItem", position: 2, name: "Mortgage Loans", item: "https://hcmgloans.com/get-started" },
+      { "@type": "ListItem", position: 3, name: `${page.loanType} in ${page.city}, ${page.state}`, item: `https://hcmgloans.com/seo/${slug}` },
+    ],
+  };
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -73,6 +83,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
   return (
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pageSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <NavBar />
 
