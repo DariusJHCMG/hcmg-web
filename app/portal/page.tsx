@@ -128,7 +128,7 @@ export default async function PortalPage() {
               </thead>
               <tbody>
                 {leads.map((lead) => (
-                  <LeadIntelPanel key={lead.id} lead={lead} />
+                   <LeadIntelPanel key={lead.id} lead={lead} patchEndpoint="portal" />
                 ))}
               </tbody>
             </table>

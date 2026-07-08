@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Lead, LeadEvent } from "@/lib/database.types";
+import type { Lead, LeadEvent, LeadStatus } from "@/lib/database.types";
 import { SessionReplay } from "./SessionReplay";
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -72,17 +72,58 @@ function AttrBadge({ icon, label, value }: { icon: string; label: string; value:
 
 // ── Main component ────────────────────────────────────────────────
 
+const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed", "lost"];
+
+const STATUS_LABELS: Record<LeadStatus, string> = {
+  new:       "New",
+  contacted: "Contacted",
+  qualified: "Qualified",
+  closed:    "Closed",
+  lost:      "Lost",
+};
+
 interface Props {
   lead: Lead;
-  sourceLabel?: string;  // override the source cell with a human label (company leads)
+  sourceLabel?: string;   // override the source cell with a human label (company leads)
   hideLoColumn?: boolean; // suppress the LO column for company-leads table
+  /** Which PATCH endpoint to use. Defaults to admin route. */
+  patchEndpoint?: "admin" | "portal";
 }
 
-export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn }: Props) {
-  const [open, setOpen]       = useState(false);
-  const [events, setEvents]   = useState<LeadEvent[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [tab, setTab]         = useState<"journey" | "funnel" | "replay">("journey");
+export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint = "admin" }: Props) {
+  const [open, setOpen]           = useState(false);
+  const [events, setEvents]       = useState<LeadEvent[]>([]);
+  const [loading, setLoading]     = useState(false);
+  const [tab, setTab]             = useState<"journey" | "funnel" | "replay">("journey");
+  const [status, setStatus]       = useState<LeadStatus>(lead.status);
+  const [statusSaving, setStatusSaving] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<"ok" | "err" | null>(null);
+
+  async function updateStatus(next: LeadStatus) {
+    if (next === status) return;
+    setStatusSaving(true);
+    setStatusMsg(null);
+    const url = patchEndpoint === "portal"
+      ? `/api/portal/leads/${lead.id}`
+      : `/api/admin/leads/${lead.id}`;
+    try {
+      const res = await fetch(url, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      if (res.ok) {
+        setStatus(next);
+        setStatusMsg("ok");
+        setTimeout(() => setStatusMsg(null), 2000);
+      } else {
+        setStatusMsg("err");
+      }
+    } catch {
+      setStatusMsg("err");
+    }
+    setStatusSaving(false);
+  }
 
   const fetchEvents = useCallback(async () => {
     if (events.length > 0 || !lead.session_id) return;
@@ -160,8 +201,8 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn }: Props) {
         <td className="px-5 py-3.5 text-sm text-muted">{lead.goal ?? "—"}</td>
         {/* Status */}
         <td className="px-5 py-3.5">
-          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ${STATUS_COLORS[lead.status]}`}>
-            {lead.status}
+          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ${STATUS_COLORS[status]}`}>
+            {status}
           </span>
         </td>
         {/* Date */}
@@ -354,6 +395,38 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn }: Props) {
                       </div>
                     )}
                   </>
+                )}
+              </div>
+
+              {/* ── Status change ── */}
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#30363d] bg-[#161b22] px-4 py-3">
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8b949e]">
+                  Status
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {ALL_STATUSES.map((s) => (
+                    <button
+                      key={s}
+                      disabled={statusSaving}
+                      onClick={() => updateStatus(s)}
+                      className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors disabled:opacity-50 ${
+                        status === s
+                          ? STATUS_COLORS[s] + " ring-2 ring-offset-1 ring-offset-[#161b22] ring-current"
+                          : "border border-[#30363d] text-[#8b949e] hover:border-[#f37021] hover:text-[#f37021]"
+                      }`}
+                    >
+                      {STATUS_LABELS[s]}
+                    </button>
+                  ))}
+                </div>
+                {statusSaving && (
+                  <span className="text-[11px] text-[#8b949e]">Saving…</span>
+                )}
+                {statusMsg === "ok" && (
+                  <span className="text-[11px] font-semibold text-[#3fb950]">✓ Saved</span>
+                )}
+                {statusMsg === "err" && (
+                  <span className="text-[11px] font-semibold text-[#f85149]">Failed to save</span>
                 )}
               </div>
 
