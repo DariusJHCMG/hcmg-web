@@ -3,6 +3,7 @@ import Link from "next/link";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
+import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { FunnelFlow } from "@/components/funnel/FunnelFlow";
 import { Calculator } from "@/components/sections/Calculator";
 import { getTeamMemberBySlug } from "@/data/team";
@@ -27,16 +28,12 @@ export const metadata: Metadata = {
 
 // ── Helpers ───────────────────────────────────────────────────────
 
-function ValuePill({ children }: { children: React.ReactNode }) {
+function CheckItem({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-white/30 bg-white/15 px-4 py-3">
-      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white">
-        <svg viewBox="0 0 12 10" className="h-3 w-3" fill="none" stroke="#F37021" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="1 5 4.5 8.5 11 1" />
-        </svg>
-      </span>
-      <span className="text-sm font-semibold text-white">{children}</span>
-    </div>
+    <li className="flex items-center gap-3 text-sm font-semibold text-muted">
+      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-white text-xs" style={{ background: "var(--ok-gradient)" }}>✓</span>
+      {children}
+    </li>
   );
 }
 
@@ -72,89 +69,99 @@ export default async function LamontPage() {
       <NavBar />
 
       {/* ══════════════════════════════════════════════════════════ */}
-      {/* HERO — branded navy bg, "Hi, I'm Lamont" style           */}
+      {/* HERO — white bg, home-page style                         */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-accent py-16 lg:py-24">
-        {/* Subtle background texture */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 80% at -10% 60%, rgba(255,255,255,0.18) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 110% -10%, rgba(195,82,19,0.45) 0%, transparent 60%)",
-          }}
-        />
+      <section className="relative overflow-hidden bg-white" style={{ paddingTop: "clamp(72px, 10vw, 120px)", paddingBottom: "clamp(64px, 8vw, 100px)" }}>
+        {/* Background glow — same as home page */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-hero-glow" />
 
-        <div className="container-shell relative max-w-6xl">
-          <div className="grid items-center gap-12 lg:grid-cols-[480px_1fr]">
-            {/* Photo — large, offset corner style */}
-            <div className="relative">
-              <div className="relative overflow-hidden rounded-3xl shadow-card">
-                <TeamPhoto photo={m.photo} name={m.name} aspect="4 / 5" />
-              </div>
-              {/* Personal NMLS badge — only shown if the member has one */}
-              {m.nmls && (
-                <div className="absolute -bottom-4 -right-3 rounded-2xl border border-white/20 bg-accent-dark px-4 py-3 shadow-lg">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">NMLS#</p>
-                  <p className="mt-0.5 text-sm font-extrabold text-white">{m.nmls}</p>
-                </div>
+        <div className="container-shell grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
+
+          {/* Left — headline + copy */}
+          <div>
+            <SectionEyebrow className="mb-6">
+              Harris Capital Mortgage Group · NMLS# 1918223
+            </SectionEyebrow>
+
+            <h1 className="font-extrabold leading-[1.08] tracking-tight text-ink" style={{ fontSize: "clamp(40px, 6vw, 72px)" }}>
+              Hi, I&apos;m{" "}
+              <span className="ok-gradient-text">{m.name.split(" ")[0]}.</span>
+            </h1>
+            <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-muted">
+              {m.role} · Harris Capital Mortgage Group
+            </p>
+
+            <p className="mt-6 max-w-xl text-lg leading-8 text-muted">
+              I started HCMG because the mortgage industry needed more transparency —
+              fewer call centers, fewer runarounds, and more real conversations about what
+              a loan actually costs and what it can do for your family.
+            </p>
+            <p className="mt-3 max-w-xl text-base leading-7 text-muted">
+              With <strong className="text-ink">15+ years in the business</strong> and
+              access to dozens of lenders and hundreds of loan programs, I shop the market
+              for you. No pressure. Just honest numbers.
+            </p>
+
+            {/* Trust row */}
+            <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+              <CheckItem>Dozens of lenders — best rate for you</CheckItem>
+              <CheckItem>No call center — your file stays with me</CheckItem>
+              <CheckItem>No hard credit check · No commitment</CheckItem>
+            </ul>
+
+            {/* CTAs */}
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="#funnel" className="primary-button !text-base !px-7 !py-4">
+                Get my free estimate →
+              </a>
+              {m.phone && (
+                <a href={`tel:${phoneDigits}`} className="secondary-button !text-base !px-7 !py-4">
+                  <span aria-hidden>📞</span> Call {m.name.split(" ")[0]}
+                </a>
               )}
-              {/* Role badge — pulls m.role from team data */}
-              <div className="absolute -left-3 top-6 max-w-[120px] rounded-2xl bg-white px-4 py-3 shadow-lg">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink/70 leading-snug">{m.role}</p>
-              </div>
+            </div>
+            <p className="mt-4 text-xs text-muted/60">
+              Your info routes directly to {m.name.split(" ")[0]} — no rotation, no call center.
+            </p>
+          </div>
+
+          {/* Right — photo card */}
+          <div className="relative">
+            {/* Role pill */}
+            <div className="absolute -top-4 left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-1.5 text-xs font-semibold text-white shadow-orange whitespace-nowrap"
+              style={{ background: "var(--ok-gradient)" }}>
+              {m.role}
             </div>
 
-            {/* Text column */}
-            <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-accent">
-                Harris Capital Mortgage Group
-              </p>
-              <h1 className="font-extrabold text-white" style={{ fontSize: "clamp(38px, 5.5vw, 64px)", lineHeight: 1.05 }}>
-                Hi,<br />I&apos;m Lamont.
-              </h1>
-              <p className="mt-1 text-sm font-semibold uppercase tracking-[0.14em] text-white/50">
-                Founder &amp; CEO
-              </p>
+            <div className="glass-card overflow-hidden">
+              <TeamPhoto photo={m.photo} name={m.name} aspect="4 / 5" />
 
-              <div className="mt-6 space-y-2 text-base leading-7 text-white/80">
-                <p>
-                  I started HCMG because the mortgage industry needed more transparency —
-                  fewer call centers, fewer runarounds, and more real conversations about what
-                  a loan actually costs and what it can do for your family.
-                </p>
-                <p>
-                  With <strong className="text-white">15+ years in the business</strong> and
-                  access to dozens of lenders and hundreds of loan programs, I shop the market
-                  for you. No pressure. Just honest numbers.
-                </p>
-              </div>
-
-              {/* Value pills */}
-              <div className="mt-7 grid gap-2 sm:grid-cols-1">
-                <ValuePill>Dozens of lenders — we shop the market for you</ValuePill>
-                <ValuePill>No call center — your file stays with me</ValuePill>
-                <ValuePill>Purchase, refinance, cash-out &amp; more</ValuePill>
-                <ValuePill>Transparent pricing, no hidden fees</ValuePill>
-              </div>
-
-              {/* CTAs — both white-filled on orange bg */}
-              <div className="mt-8 flex flex-wrap gap-3">
-                {m.phone && (
-                  <a
-                    href={`tel:${phoneDigits}`}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white bg-white px-6 py-4 text-base font-semibold text-ink transition hover:bg-white/90"
-                  >
-                    <span aria-hidden>📞</span> Call Lamont
-                  </a>
+              {/* Bottom info strip */}
+              <div className="border-t border-line bg-white px-5 py-4">
+                <p className="font-extrabold text-ink">{m.name}</p>
+                <p className="text-xs text-muted">{m.role} · HCMG</p>
+                {m.nmls && (
+                  <p className="mt-1 text-[11px] font-semibold text-accent">NMLS# {m.nmls}</p>
                 )}
-                <a href="#funnel" className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white bg-transparent px-6 py-4 text-base font-semibold text-white transition hover:bg-white/15">
-                  Get my free estimate →
-                </a>
+                <div className="mt-3 flex gap-2">
+                  {m.phone && (
+                    <a href={`tel:${phoneDigits}`}
+                      className="flex-1 rounded-xl border border-line py-2 text-center text-xs font-bold text-ink transition hover:border-accent hover:text-accent">
+                      📞 Call
+                    </a>
+                  )}
+                  {m.email && (
+                    <a href={`mailto:${m.email}`}
+                      className="flex-1 rounded-xl border border-line py-2 text-center text-xs font-bold text-ink transition hover:border-accent hover:text-accent">
+                      ✉️ Email
+                    </a>
+                  )}
+                  <a href="#funnel"
+                    className="flex-1 rounded-xl bg-accent py-2 text-center text-xs font-bold text-white transition hover:bg-accent-dark">
+                    Get Quote →
+                  </a>
+                </div>
               </div>
-              <p className="mt-3 text-xs text-white/40">
-                No hard credit check · No commitment · Your info goes directly to me
-              </p>
             </div>
           </div>
 
