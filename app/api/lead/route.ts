@@ -10,206 +10,447 @@ function getResend() {
   return RESEND_KEY ? new Resend(RESEND_KEY) : null;
 }
 
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+
 const LeadSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1).optional(),
-  email: z.string().email(),
-  phone: z.string().min(7),
-  smsConsent: z.boolean(),
-  source:     z.string().optional().default("funnel"),
-  seoSlug:    z.string().optional(),    // which seo page slug when source="seo"
-  funnelType: z.string().optional(),    // funnel catalog slug (e.g. "va-purchase")
-  goal: z.string().optional(),
-  priceRange: z.string().optional(),
-  creditRange: z.string().optional(),
-  incomeRange: z.string().optional(),
-  notes: z.string().optional(),
-  // LO routing, present when the lead originated on a per-LO profile page
-  loSlug: z.string().optional(),
-  loName: z.string().optional(),
-  loNmls: z.string().nullable().optional(),
-  // UTM attribution
-  utmSource:   z.string().optional(),
-  utmMedium:   z.string().optional(),
-  utmCampaign: z.string().optional(),
-  utmContent:  z.string().optional(),
-  utmTerm:     z.string().optional(),
-  // Session intelligence
-  sessionId:   z.string().optional(),
-  entryPage:   z.string().optional(),
-  referrer:    z.string().optional(),
-  device:      z.string().optional(),
+  firstName:               z.string().min(1),
+  lastName:                z.string().min(1).optional(),
+  email:                   z.string().email(),
+  phone:                   z.string().min(7),
+  smsConsent:              z.boolean(),
+  smsConsentText:          z.string().optional(),
+  smsConsentTimestamp:     z.string().optional(),
+  source:                  z.string().optional().default("funnel"),
+  seoSlug:                 z.string().optional(),
+  funnelType:              z.string().optional(),
+  goal:                    z.string().optional(),
+  priceRange:              z.string().optional(),
+  creditRange:             z.string().optional(),
+  incomeRange:             z.string().optional(),
+  estimatedBuyingPowerLow:  z.number().optional(),
+  estimatedBuyingPowerHigh: z.number().optional(),
+  estimatedMonthlyPayment:  z.number().optional(),
+  recommendedLoanType:      z.string().optional(),
+  notes:                   z.string().optional(),
+  loSlug:                  z.string().optional(),
+  loName:                  z.string().optional(),
+  loNmls:                  z.string().nullable().optional(),
+  utmSource:               z.string().optional(),
+  utmMedium:               z.string().optional(),
+  utmCampaign:             z.string().optional(),
+  utmContent:              z.string().optional(),
+  utmTerm:                 z.string().optional(),
+  sessionId:               z.string().optional(),
+  entryPage:               z.string().optional(),
+  referrer:                z.string().optional(),
+  device:                  z.string().optional(),
 });
 
-const confirmationHtml = (firstName: string, loName?: string, siteUrl = "https://hcmg-web.vercel.app") => `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background:#f9f9f9;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f9;padding:40px 0;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
-        <tr>
-          <td style="background:#142850;padding:32px 40px;">
-            <p style="margin:0;font-size:22px;font-weight:800;color:#fff;letter-spacing:2px;">HCMG</p>
-            <p style="margin:4px 0 0;font-size:12px;color:#F37021;letter-spacing:1px;">HARRIS CAPITAL MORTGAGE GROUP · NMLS# 1918223</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:40px;">
-            <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#1A2B42;">Hi ${firstName} 👋</p>
-            <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#5A6B7E;">
-              Thanks for reaching out, we&apos;ve received your mortgage inquiry${
-                loName ? ` and routed it directly to ${loName}` : " and a licensed loan officer"
-              } will be in touch within one business day.
-            </p>
-            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#5A6B7E;">
-              In the meantime, you can use our free mortgage calculator to explore your payment options:
-            </p>
-            <a href="${siteUrl}/get-started" style="display:inline-block;background:#F37021;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;">
-              Explore my options →
-            </a>
-            <hr style="margin:32px 0;border:none;border-top:1px solid #f0f0f0;" />
-            <p style="margin:0;font-size:12px;line-height:1.7;color:#9AABB8;">
-              This message was sent because you submitted a mortgage inquiry at hcmgloans.com.
-              Harris Capital Mortgage Group, LLC · NMLS# 1918223.
-              Equal Housing Lender.
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function fmt(n?: number | null) {
+  if (!n) return null;
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+}
+
+function goalLabel(g?: string | null) {
+  if (!g) return null;
+  return g === "buy" ? "Purchase a home" : g === "refinance" ? "Refinance" : g === "compare" ? "Compare options" : g;
+}
+
+function creditLabel(c?: string | null) {
+  if (!c) return null;
+  const map: Record<string, string> = {
+    "760-plus": "760+ (Excellent)",
+    "700-759":  "700–759 (Good)",
+    "640-699":  "640–699 (Fair)",
+    "below-640":"Below 640 (Building)",
+  };
+  return map[c] ?? c;
+}
+
+function deviceLabel(d?: string | null) {
+  if (!d) return null;
+  return d.charAt(0).toUpperCase() + d.slice(1);
+}
+
+// ── Shared email styles ───────────────────────────────────────────────────────
+
+const BASE = `
+  font-family:'Helvetica Neue',Arial,sans-serif;
+  margin:0;padding:0;background:#f4f5f7;
 `;
 
-const loNotificationHtml = (lead: ReturnType<typeof LeadSchema.parse>, loName: string) => `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background:#f9f9f9;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f9;padding:40px 0;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+const WRAP = `
+  max-width:580px;margin:0 auto;background:#fff;
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 2px 20px rgba(0,0,0,0.07);
+`;
+
+const HEADER = (sub: string) => `
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#1A2B42 0%,#142850 100%);">
+    <tr>
+      <td style="padding:32px 40px 28px;">
+        <div style="display:inline-block;background:rgba(243,112,33,0.15);border:1px solid rgba(243,112,33,0.4);border-radius:8px;padding:3px 10px;margin-bottom:10px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:2px;color:#F37021;text-transform:uppercase;">${sub}</span>
+        </div>
+        <p style="margin:0;font-size:26px;font-weight:900;color:#fff;letter-spacing:-0.5px;">HCMG</p>
+        <p style="margin:3px 0 0;font-size:11px;color:#94a3b8;letter-spacing:1.5px;">HARRIS CAPITAL MORTGAGE GROUP · NMLS# 1918223</p>
+      </td>
+    </tr>
+  </table>
+`;
+
+const FOOTER = `
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #f0f0f0;">
+    <tr>
+      <td style="padding:24px 40px;">
+        <p style="margin:0;font-size:11px;line-height:1.8;color:#9AABB8;">
+          Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender.<br/>
+          This message was sent because you submitted an inquiry at hcmgloans.com.
+          To unsubscribe from marketing emails, reply with "UNSUBSCRIBE".
+        </p>
+      </td>
+    </tr>
+  </table>
+`;
+
+// ── Estimate card block ───────────────────────────────────────────────────────
+
+function estimateBlock(lead: z.infer<typeof LeadSchema>): string {
+  const hasEstimate = lead.estimatedMonthlyPayment || lead.estimatedBuyingPowerHigh || lead.recommendedLoanType;
+  if (!hasEstimate) return "";
+
+  const rows: { label: string; value: string }[] = [];
+  if (lead.estimatedBuyingPowerLow && lead.estimatedBuyingPowerHigh) {
+    rows.push({ label: "Estimated buying power", value: `${fmt(lead.estimatedBuyingPowerLow)} – ${fmt(lead.estimatedBuyingPowerHigh)}` });
+  }
+  if (lead.estimatedMonthlyPayment) {
+    rows.push({ label: "Estimated monthly payment", value: `${fmt(lead.estimatedMonthlyPayment)}/mo` });
+  }
+  if (lead.recommendedLoanType) {
+    rows.push({ label: "Recommended loan path", value: lead.recommendedLoanType });
+  }
+
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;background:#fff8f2;border:1px solid #ffe0c4;border-radius:12px;overflow:hidden;">
+      <tr><td style="padding:14px 20px;background:#F37021;">
+        <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#fff;text-transform:uppercase;">Your Estimate Summary</p>
+      </td></tr>
+      ${rows.map(r => `
         <tr>
-          <td style="background:#142850;padding:32px 40px;">
-            <p style="margin:0;font-size:22px;font-weight:800;color:#fff;letter-spacing:2px;">HCMG</p>
-            <p style="margin:4px 0 0;font-size:12px;color:#F37021;letter-spacing:1px;">NEW LEAD ASSIGNED TO YOU</p>
+          <td style="padding:10px 20px;border-bottom:1px solid #ffe0c4;">
+            <p style="margin:0;font-size:11px;color:#9AABB8;text-transform:uppercase;letter-spacing:1px;">${r.label}</p>
+            <p style="margin:3px 0 0;font-size:16px;font-weight:800;color:#1A2B42;">${r.value}</p>
           </td>
         </tr>
-        <tr>
-          <td style="padding:40px;">
-            <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#1A2B42;">Hi ${loName.split(" ")[0]} 👋</p>
-            <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#5A6B7E;">
-              You have a new lead from your funnel link. Here are their details:
-            </p>
-            <table style="width:100%;border-collapse:collapse;font-size:14px;">
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;width:140px;">Name</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-weight:600;color:#1A2B42;">${lead.firstName} ${lead.lastName ?? ""}</td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Email</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.email}</td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Phone</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.phone}</td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Goal</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.goal ?? "—"}</td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Price Range</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.priceRange ?? "—"}</td></tr>
-              <tr><td style="padding:8px 0;color:#9AABB8;">Credit Range</td><td style="padding:8px 0;color:#1A2B42;">${lead.creditRange ?? "—"}</td></tr>
+      `).join("")}
+    </table>
+  `;
+}
+
+// ── Detail rows helper ────────────────────────────────────────────────────────
+
+function detailRow(label: string, value: string | null | undefined, last = false): string {
+  if (!value) return "";
+  return `
+    <tr>
+      <td style="padding:9px 0;${last ? "" : "border-bottom:1px solid #f0f0f0;"}color:#9AABB8;font-size:13px;width:160px;vertical-align:top;">${label}</td>
+      <td style="padding:9px 0;${last ? "" : "border-bottom:1px solid #f0f0f0;"}font-weight:600;color:#1A2B42;font-size:13px;">${value}</td>
+    </tr>
+  `;
+}
+
+// ── Email 1: Lead confirmation ────────────────────────────────────────────────
+
+function confirmationHtml(lead: z.infer<typeof LeadSchema>): string {
+  const loName = lead.loName;
+  const funnelLabel = lead.funnelType
+    ? lead.funnelType.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+    : null;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="${BASE}">
+  <div style="${WRAP}">
+    ${HEADER("Your Estimate Is Ready")}
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:36px 40px 0;">
+        <p style="margin:0 0 6px;font-size:24px;font-weight:800;color:#1A2B42;">Hi ${lead.firstName} 👋</p>
+        <p style="margin:0 0 20px;font-size:15px;line-height:1.75;color:#5A6B7E;">
+          ${loName
+            ? `We've received your mortgage inquiry and routed it directly to <strong style="color:#1A2B42;">${loName}</strong>. They'll reach out within one business day.`
+            : `We've received your mortgage inquiry. A licensed loan officer from Harris Capital Mortgage Group will reach out within one business day.`
+          }
+        </p>
+
+        ${estimateBlock(lead)}
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+          ${detailRow("Goal", goalLabel(lead.goal))}
+          ${detailRow("Price range", lead.priceRange)}
+          ${detailRow("Credit range", creditLabel(lead.creditRange))}
+          ${funnelLabel ? detailRow("Inquiry type", funnelLabel) : ""}
+          ${loName ? detailRow("Assigned to", loName + (lead.loNmls ? ` · NMLS# ${lead.loNmls}` : ""), true) : ""}
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+          <tr>
+            <td style="padding:4px 0;">
+              <a href="${SITE_URL}/get-started"
+                style="display:inline-block;background:#F37021;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;letter-spacing:0.2px;">
+                Explore more options →
+              </a>
+            </td>
+          </tr>
+        </table>
+
+        <p style="margin:20px 0 0;font-size:13px;line-height:1.75;color:#9AABB8;">
+          Questions? Reply to this email or call us at
+          <a href="tel:+18884413930" style="color:#F37021;text-decoration:none;">1-888-441-3930</a>.
+        </p>
+      </td></tr>
+    </table>
+    ${FOOTER}
+  </div>
+</body>
+</html>`;
+}
+
+// ── Email 2: LO new lead notification ────────────────────────────────────────
+
+function loNotificationHtml(lead: z.infer<typeof LeadSchema>, loName: string, loNmls: string | null): string {
+  const fullName = `${lead.firstName}${lead.lastName ? ` ${lead.lastName}` : ""}`;
+  const funnelLabel = lead.funnelType
+    ? lead.funnelType.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+    : null;
+  const portalUrl = `${SITE_URL}/portal`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="${BASE}">
+  <div style="${WRAP}">
+    ${HEADER("New Lead Assigned To You")}
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:36px 40px 0;">
+
+        <p style="margin:0 0 4px;font-size:24px;font-weight:800;color:#1A2B42;">Hi ${loName.split(" ")[0]} 👋</p>
+        <p style="margin:0 0 20px;font-size:15px;line-height:1.75;color:#5A6B7E;">
+          You have a new lead from your funnel link.
+          ${lead.utmCampaign ? `Campaign: <strong style="color:#1A2B42;">${lead.utmCampaign}</strong>.` : ""}
+          Reach out quickly — fresh leads convert best.
+        </p>
+
+        <!-- Lead contact block -->
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="margin-bottom:24px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+          <tr><td style="padding:10px 20px;background:#1A2B42;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#94a3b8;text-transform:uppercase;">Contact Details</p>
+          </td></tr>
+          <tr><td style="padding:16px 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${detailRow("Name", fullName)}
+              ${detailRow("Email", `<a href="mailto:${lead.email}" style="color:#F37021;">${lead.email}</a>`)}
+              ${detailRow("Phone", `<a href="tel:${lead.phone}" style="color:#F37021;">${lead.phone}</a>`)}
+              ${detailRow("Device", deviceLabel(lead.device))}
+              ${detailRow("Entry page", lead.entryPage, true)}
             </table>
-            <a href="https://hcmg-web.vercel.app/portal" style="display:inline-block;margin-top:28px;background:#F37021;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;">
-              View in my portal →
-            </a>
-            <hr style="margin:32px 0;border:none;border-top:1px solid #f0f0f0;" />
-            <p style="margin:0;font-size:12px;line-height:1.7;color:#9AABB8;">
-              Harris Capital Mortgage Group, LLC · NMLS# 1918223. Reply STOP to opt out.
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>
-`;
+          </td></tr>
+        </table>
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app";
-
-const companyLeadAlertHtml = (lead: ReturnType<typeof LeadSchema.parse>, fullName: string, source: string) => `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background:#f9f9f9;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f9;padding:40px 0;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
-        <tr>
-          <td style="background:#142850;padding:32px 40px;">
-            <p style="margin:0;font-size:22px;font-weight:800;color:#fff;letter-spacing:2px;">HCMG</p>
-            <p style="margin:4px 0 0;font-size:12px;color:#F37021;letter-spacing:1px;">⚠ COMPANY LEAD — NEEDS ASSIGNMENT</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:40px;">
-            <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1A2B42;">New unassigned lead</p>
-            <p style="margin:0 0 20px;font-size:13px;color:#9AABB8;">
-              Came in via <strong style="color:#1A2B42;">${source}</strong> — no loan officer assigned. Log in to the admin portal to assign or action this lead.
-            </p>
-            <table style="width:100%;border-collapse:collapse;font-size:14px;">
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;width:140px;">Name</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-weight:600;color:#1A2B42;">${fullName || "—"}</td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Email</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.email}</td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Phone</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.phone}</td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Goal</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.goal ?? "—"}</td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Price Range</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.priceRange ?? "—"}</td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#9AABB8;">Credit Range</td><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#1A2B42;">${lead.creditRange ?? "—"}</td></tr>
-              <tr><td style="padding:8px 0;color:#9AABB8;">Funnel / Source</td><td style="padding:8px 0;font-weight:600;color:#1A2B42;">${source}</td></tr>
+        <!-- Mortgage details -->
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="margin-bottom:24px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+          <tr><td style="padding:10px 20px;background:#1A2B42;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#94a3b8;text-transform:uppercase;">Mortgage Details</p>
+          </td></tr>
+          <tr><td style="padding:16px 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${detailRow("Goal", goalLabel(lead.goal))}
+              ${detailRow("Price range", lead.priceRange)}
+              ${detailRow("Credit range", creditLabel(lead.creditRange))}
+              ${detailRow("Income range", lead.incomeRange)}
+              ${funnelLabel ? detailRow("Funnel type", funnelLabel) : ""}
+              ${lead.recommendedLoanType ? detailRow("Loan path", lead.recommendedLoanType) : ""}
+              ${lead.estimatedMonthlyPayment ? detailRow("Est. monthly payment", `${fmt(lead.estimatedMonthlyPayment)}/mo`) : ""}
+              ${lead.estimatedBuyingPowerHigh ? detailRow("Est. buying power", `${fmt(lead.estimatedBuyingPowerLow)} – ${fmt(lead.estimatedBuyingPowerHigh)}`, true) : ""}
             </table>
-            <a href="${SITE_URL}/admin/leads" style="display:inline-block;margin-top:28px;background:#142850;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;">
-              View in admin portal →
-            </a>
-            <hr style="margin:32px 0;border:none;border-top:1px solid #f0f0f0;" />
-            <p style="margin:0;font-size:12px;line-height:1.7;color:#9AABB8;">
-              Harris Capital Mortgage Group, LLC · NMLS# 1918223.
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
+          </td></tr>
+        </table>
+
+        <!-- UTM attribution -->
+        ${(lead.utmSource || lead.utmCampaign) ? `
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="margin-bottom:24px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+          <tr><td style="padding:10px 20px;background:#1A2B42;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#94a3b8;text-transform:uppercase;">Lead Attribution</p>
+          </td></tr>
+          <tr><td style="padding:16px 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${detailRow("Source", lead.utmSource)}
+              ${detailRow("Medium", lead.utmMedium)}
+              ${detailRow("Campaign", lead.utmCampaign)}
+              ${detailRow("Content", lead.utmContent, true)}
+            </table>
+          </td></tr>
+        </table>` : ""}
+
+        <a href="${portalUrl}"
+          style="display:inline-block;background:#F37021;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;margin-bottom:28px;">
+          View in my portal →
+        </a>
+
+      </td></tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #f0f0f0;">
+      <tr><td style="padding:20px 40px;">
+        <p style="margin:0;font-size:11px;line-height:1.8;color:#9AABB8;">
+          Harris Capital Mortgage Group, LLC · NMLS# 1918223
+          ${loNmls ? ` · Your NMLS# ${loNmls}` : ""} · Equal Housing Lender.
+        </p>
+      </td></tr>
+    </table>
+  </div>
 </body>
-</html>
-`;
+</html>`;
+}
+
+// ── Email 3: Company / admin alert ───────────────────────────────────────────
+
+function companyLeadAlertHtml(lead: z.infer<typeof LeadSchema>, fullName: string, sourceDisplay: string, isEmployment: boolean, isContact: boolean): string {
+  const adminUrl = `${SITE_URL}/admin/leads`;
+  const funnelLabel = lead.funnelType
+    ? lead.funnelType.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+    : null;
+
+  const headerSub = isEmployment ? "Recruiting Inquiry" : isContact ? "Contact Form Inquiry" : "⚠ Company Lead — Needs Assignment";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="${BASE}">
+  <div style="${WRAP}">
+    ${HEADER(headerSub)}
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:36px 40px 0;">
+
+        <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#1A2B42;">
+          ${isEmployment ? "New recruiting inquiry" : isContact ? "New contact form submission" : "New unassigned lead"}
+        </p>
+        <p style="margin:0 0 20px;font-size:14px;color:#9AABB8;">
+          Via <strong style="color:#1A2B42;">${sourceDisplay}</strong>
+          ${!isEmployment && !isContact ? " · No loan officer assigned — log in to assign or action." : ""}
+        </p>
+
+        <!-- Contact -->
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="margin-bottom:20px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+          <tr><td style="padding:10px 20px;background:#1A2B42;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#94a3b8;text-transform:uppercase;">Contact Details</p>
+          </td></tr>
+          <tr><td style="padding:16px 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${detailRow("Name", fullName || "—")}
+              ${detailRow("Email", `<a href="mailto:${lead.email}" style="color:#F37021;">${lead.email}</a>`)}
+              ${detailRow("Phone", `<a href="tel:${lead.phone}" style="color:#F37021;">${lead.phone}</a>`)}
+              ${detailRow("Device", deviceLabel(lead.device))}
+              ${detailRow("Referrer", lead.referrer, true)}
+            </table>
+          </td></tr>
+        </table>
+
+        <!-- Mortgage details (only for non-employment, non-contact) -->
+        ${!isEmployment && !isContact ? `
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="margin-bottom:20px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+          <tr><td style="padding:10px 20px;background:#1A2B42;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#94a3b8;text-transform:uppercase;">Mortgage Details</p>
+          </td></tr>
+          <tr><td style="padding:16px 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${detailRow("Goal", goalLabel(lead.goal))}
+              ${detailRow("Price range", lead.priceRange)}
+              ${detailRow("Credit range", creditLabel(lead.creditRange))}
+              ${detailRow("Income range", lead.incomeRange)}
+              ${funnelLabel ? detailRow("Funnel type", funnelLabel) : ""}
+              ${lead.estimatedMonthlyPayment ? detailRow("Est. monthly payment", `${fmt(lead.estimatedMonthlyPayment)}/mo`) : ""}
+              ${lead.estimatedBuyingPowerHigh ? detailRow("Est. buying power", `${fmt(lead.estimatedBuyingPowerLow)} – ${fmt(lead.estimatedBuyingPowerHigh)}`, true) : ""}
+            </table>
+          </td></tr>
+        </table>
+
+        ${(lead.utmSource || lead.utmCampaign) ? `
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="margin-bottom:20px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+          <tr><td style="padding:10px 20px;background:#1A2B42;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#94a3b8;text-transform:uppercase;">Lead Attribution</p>
+          </td></tr>
+          <tr><td style="padding:16px 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${detailRow("Source", lead.utmSource)}
+              ${detailRow("Medium", lead.utmMedium)}
+              ${detailRow("Campaign", lead.utmCampaign, true)}
+            </table>
+          </td></tr>
+        </table>` : ""}` : ""}
+
+        <a href="${adminUrl}"
+          style="display:inline-block;background:#142850;color:#fff;font-size:14px;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;margin-bottom:28px;">
+          View in admin portal →
+        </a>
+
+      </td></tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #f0f0f0;">
+      <tr><td style="padding:20px 40px;">
+        <p style="margin:0;font-size:11px;line-height:1.8;color:#9AABB8;">
+          Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender.
+        </p>
+      </td></tr>
+    </table>
+  </div>
+</body>
+</html>`;
+}
+
+// ── POST handler ──────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+  try { body = await request.json(); }
+  catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const parsed = LeadSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-  }
+  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
   const lead = parsed.data;
   const lastName = lead.lastName ?? "";
   const fullName = `${lead.firstName}${lastName ? ` ${lastName}` : ""}`.trim();
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? null;
 
-  // ── 1. Persist to Supabase ────────────────────────────────
+  // ── 1. Persist to Supabase ────────────────────────────────────────────────
   const sb = createServiceClient();
   const { data: savedLead } = await sb.from("leads").insert({
-    first_name:   lead.firstName,
-    last_name:    lead.lastName ?? null,
-    email:        lead.email,
-    phone:        lead.phone,
-    sms_consent:  lead.smsConsent,
-    source:       lead.source ?? "funnel",
-    goal:         lead.goal ?? null,
-    price_range:  lead.priceRange ?? null,
-    credit_range: lead.creditRange ?? null,
-    income_range: lead.incomeRange ?? null,
-    notes:        [
+    first_name:                   lead.firstName,
+    last_name:                    lead.lastName ?? null,
+    email:                        lead.email,
+    phone:                        lead.phone,
+    sms_consent:                  lead.smsConsent,
+    source:                       lead.source ?? "funnel",
+    funnel_type:                  lead.funnelType ?? null,
+    goal:                         lead.goal ?? null,
+    price_range:                  lead.priceRange ?? null,
+    credit_range:                 lead.creditRange ?? null,
+    income_range:                 lead.incomeRange ?? null,
+    estimated_buying_power_low:   lead.estimatedBuyingPowerLow  ?? null,
+    estimated_buying_power_high:  lead.estimatedBuyingPowerHigh ?? null,
+    estimated_monthly_payment:    lead.estimatedMonthlyPayment  ?? null,
+    recommended_loan_type:        lead.recommendedLoanType      ?? null,
+    notes: [
       lead.notes,
-      lead.seoSlug   ? `SEO page: /seo/${lead.seoSlug}`      : null,
-      lead.funnelType ? `Funnel: ${lead.funnelType}`          : null,
+      lead.seoSlug    ? `SEO page: /seo/${lead.seoSlug}` : null,
     ].filter(Boolean).join("\n") || null,
     lo_slug:      lead.loSlug ?? null,
     lo_name:      lead.loName ?? null,
@@ -227,15 +468,14 @@ export async function POST(request: NextRequest) {
     device:       lead.device      ?? null,
   }).select("id").single();
 
-  // Log to audit
   logAudit("lead.created", {
-    lead_id:  savedLead?.id,
-    email:    lead.email,
-    lo_slug:  lead.loSlug,
-    source:   lead.source,
+    lead_id: savedLead?.id,
+    email:   lead.email,
+    lo_slug: lead.loSlug,
+    source:  lead.source,
   }, undefined, undefined, ip ?? undefined);
 
-  // ── 2. Fire-and-forget: Porchy Flight Deck CRM ───────────
+  // ── 2. Fire-and-forget: Porchy Flight Deck CRM ───────────────────────────
   const flightDeckUrl = process.env.FLIGHT_DECK_LEADS_URL;
   const flightDeckKey = process.env.FLIGHT_DECK_API_KEY;
   if (flightDeckUrl && flightDeckKey) {
@@ -244,7 +484,7 @@ export async function POST(request: NextRequest) {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${flightDeckKey}` },
       body: JSON.stringify({
         ...lead,
-        source_app: "orange-key-web",
+        source_app:       "orange-key-web",
         assigned_lo_slug: lead.loSlug ?? null,
         assigned_lo_name: lead.loName ?? null,
         assigned_lo_nmls: lead.loNmls ?? null,
@@ -252,69 +492,72 @@ export async function POST(request: NextRequest) {
     }).catch(() => {});
   }
 
-  // ── 3. Resolve LO notify email ────────────────────────────
+  // ── 3. Resolve LO notify email ────────────────────────────────────────────
   let loNotifyEmail: string | null = null;
+  let loNmls: string | null = null;
   if (lead.loSlug) {
     const loProfile = await getProfileBySlug(lead.loSlug);
     loNotifyEmail = loProfile?.notify_email ?? loProfile?.email ?? null;
+    loNmls        = loProfile?.nmls ?? null;
   }
 
-  // ── 4. Send emails (skipped if RESEND_API_KEY not set) ───
+  // ── 4. Send emails ────────────────────────────────────────────────────────
   const resend = getResend();
   if (resend) {
-    const emailJobs = [
-      // Confirmation to the lead submitter always fires
+    const emailJobs: Promise<unknown>[] = [
+      // Always send confirmation to the lead
       resend.emails.send({
-        from: "HCMG <noreply@hcmgloans.com>",
-        to: lead.email,
-        subject: lead.loName ? `Your HCMG estimate, routed to ${lead.loName}` : "Your HCMG estimate is ready",
-        html: confirmationHtml(lead.firstName, lead.loName, SITE_URL),
+        from:    "HCMG <noreply@hcmgloans.com>",
+        to:      lead.email,
+        subject: lead.loName
+          ? `You're connected — ${lead.loName} will be in touch shortly`
+          : "We received your inquiry — Harris Capital Mortgage Group",
+        html: confirmationHtml(lead),
       }),
     ];
 
     if (lead.loSlug && loNotifyEmail && lead.loName) {
-      // LO lead — notify the assigned LO directly
+      // Assigned LO notification
       emailJobs.push(
         resend.emails.send({
-          from: "HCMG Leads <noreply@hcmgloans.com>",
-          to: loNotifyEmail,
-          subject: `New lead: ${fullName || lead.email}`,
-          html: loNotificationHtml(lead, lead.loName),
+          from:    "HCMG Leads <noreply@hcmgloans.com>",
+          to:      loNotifyEmail,
+          subject: `🔔 New lead: ${fullName || lead.email}${lead.funnelType ? ` via ${lead.funnelType}` : ""}`,
+          html:    loNotificationHtml(lead, lead.loName, loNmls),
         })
       );
     } else if (!lead.loSlug) {
-      // Unassigned lead — pick alert email by source type
+      // Unassigned — route to correct admin inbox
       const settings = await readSettings();
-      const source = lead.source ?? "website";
+      const source   = lead.source ?? "website";
       const isEmployment = source === "employment";
       const isContact    = source === "contact";
 
       const alertEmail = isEmployment ? settings.recruiting_notify_email
-        : isContact    ? settings.contact_notify_email
-        : settings.company_notify_email;   // get-started, team, seo, etc.
+        : isContact                  ? settings.contact_notify_email
+        : settings.company_notify_email;
 
       if (alertEmail) {
         const sourceDisplay = isEmployment ? "Recruiting"
           : isContact ? "Contact form"
-          : (lead as { seoSlug?: string }).seoSlug
-            ? `SEO — ${(lead as { seoSlug?: string }).seoSlug}`
-            : source;
+          : lead.seoSlug ? `SEO — ${lead.seoSlug}`
+          : lead.funnelType ? `Funnel — ${lead.funnelType}`
+          : source;
+
         emailJobs.push(
           resend.emails.send({
-            from: "HCMG Leads <noreply@hcmgloans.com>",
-            to: alertEmail,
-            subject: isEmployment
-              ? `Recruiting inquiry — ${fullName || lead.email}`
-              : isContact
-              ? `Contact form inquiry — ${fullName || lead.email}`
-              : `Company lead — ${fullName || lead.email} via ${sourceDisplay}`,
-            html: companyLeadAlertHtml(lead, fullName, sourceDisplay),
+            from:    "HCMG Leads <noreply@hcmgloans.com>",
+            to:      alertEmail,
+            subject: isEmployment ? `Recruiting inquiry — ${fullName || lead.email}`
+              : isContact         ? `Contact form — ${fullName || lead.email}`
+              : `Company lead — ${fullName || lead.email}`,
+            html: companyLeadAlertHtml(lead, fullName, sourceDisplay, isEmployment, isContact),
           })
         );
       }
     }
 
-    await Promise.all(emailJobs).catch(() => {}); // don't fail the lead save if email fails
+    await Promise.all(emailJobs).catch(() => {}); // never fail lead save on email error
   }
 
   return NextResponse.json({ ok: true });
