@@ -12,9 +12,9 @@ import { FAQ } from "@/components/sections/FAQ";
 import { FinalCTA } from "@/components/sections/FinalCTA";
 
 export const metadata: Metadata = {
-  title: "HCMG, Find Out What You Can Afford in 60 Seconds",
+  title: "Harris Capital Mortgage Group — Home Mortgage Company | NMLS# 1918223",
   description:
-    "Instant mortgage estimates. No hard credit check. FHA, VA, Conventional, Refinance. Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender.",
+    "Harris Capital Mortgage Group is a licensed home mortgage company serving FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. FHA, VA, Conventional, Jumbo, USDA, Refinance & down payment assistance. Find out what you can afford in 60 seconds — no hard credit check.",
   alternates: { canonical: "https://hcmgloans.com" },
 };
 

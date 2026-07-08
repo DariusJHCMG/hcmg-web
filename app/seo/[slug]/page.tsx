@@ -110,7 +110,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
       </section>
 
       {/* Calculator */}
-      <Calculator />
+      <Calculator seoSlug={page.slug} />
 
       {/* Local context */}
       <section className="section-pad bg-sand">

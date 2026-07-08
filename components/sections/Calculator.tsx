@@ -13,7 +13,7 @@ import { getSessionMeta } from "@/lib/tracker";
 const SMS_CONSENT_TEXT =
   "By submitting this form, I agree to be contacted by Harris Capital Mortgage Group, LLC (NMLS# 1918223) regarding my mortgage inquiry. I consent to receive calls, texts, and emails. Message and data rates may apply. Reply STOP to opt out of texts at any time.";
 
-export function Calculator({ heading, subheading }: { heading?: string; subheading?: string } = {}) {
+export function Calculator({ heading, subheading, seoSlug }: { heading?: string; subheading?: string; seoSlug?: string } = {}) {
   const [calc, setCalc] = useState({
     homePrice: 425000,
     downPaymentPercent: 20,
@@ -67,7 +67,8 @@ export function Calculator({ heading, subheading }: { heading?: string; subheadi
       smsConsent: true,
       smsConsentText: SMS_CONSENT_TEXT,
       smsConsentTimestamp: new Date().toISOString(),
-      source: "home-calculator",
+      source: seoSlug ? "seo" : "home-calculator",
+      seoSlug: seoSlug,
       funnelType: "payment-calculator",
       estimatedMonthlyPayment: Math.round(est.totalMonthlyPayment),
       ...utmsToPayload(getStoredUtms()),
