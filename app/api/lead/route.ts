@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { createServiceClient } from "@/lib/supabase";
 import { logAudit, getProfileBySlug } from "@/lib/auth";
+import { readSettings } from "@/lib/company-settings";
 
 const RESEND_KEY = process.env.RESEND_API_KEY;
 function getResend() {
@@ -221,7 +222,7 @@ export async function POST(request: NextRequest) {
       }),
       resend.emails.send({
         from: "HCMG Leads <noreply@hcmgloans.com>",
-        to: "info@harriscapitalmortgage.com",
+        to: (await readSettings()).company_notify_email,
         subject: internalSubject,
         html: `<pre style="font-family:monospace;font-size:13px;">${JSON.stringify(lead, null, 2)}</pre>`,
       }),

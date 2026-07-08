@@ -6,6 +6,7 @@ async function getFunnelLinks(): Promise<FunnelLink[]> {
   const { data } = await sb
     .from("funnel_links")
     .select("*")
+    .neq("lo_slug", "__settings__")
     .order("lo_name");
   return (data ?? []) as FunnelLink[];
 }

@@ -10,8 +10,9 @@ const NAV = [
   { label: "Dashboard",   href: "/admin",             icon: "⊞" },
   { label: "Leads",       href: "/admin/leads",        icon: "✉" },
   { label: "Users",       href: "/admin/users",        icon: "👥" },
+  { label: "Settings",    href: "/admin/settings",     icon: "⚙" },
   { label: "Audit Log",   href: "/admin/audit",        icon: "📋" },
-  { label: "Dev Tools",   href: "/admin/dev",          icon: "⚙" },
+  { label: "Dev Tools",   href: "/admin/dev",          icon: "🛠" },
   { label: "My Profile",  href: "/admin/profile",      icon: "👤" },
 ];
 
