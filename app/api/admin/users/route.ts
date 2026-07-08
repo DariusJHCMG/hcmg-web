@@ -17,6 +17,17 @@ async function getCallerFromRequest(request: NextRequest): Promise<Profile | nul
   } catch { return null; }
 }
 
+/** Convert "Test Works" → "test-works", de-dupe against existing slugs */
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 const CreateUserSchema = z.object({
   email:        z.string().email(),
   password:     z.string().min(8),
@@ -50,35 +61,73 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid payload", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { email, password, full_name, role, lo_slug, nmls, phone, notify_email, title, short_bio, offices, linkedin } = parsed.data;
-
+  const { email, password, full_name, role, nmls, phone, notify_email, title, short_bio, offices, linkedin } = parsed.data;
   const sb = createServiceClient();
+
+  // ── Auto-generate lo_slug if not provided ────────────────────
+  let lo_slug = parsed.data.lo_slug?.trim() || generateSlug(full_name);
+
+  // Ensure slug is unique — append -2, -3, etc. if taken
+  if (lo_slug) {
+    const { data: existing } = await sb
+      .from("profiles")
+      .select("lo_slug")
+      .like("lo_slug", `${lo_slug}%`);
+    const taken = new Set((existing ?? []).map((r: { lo_slug: string | null }) => r.lo_slug));
+    if (taken.has(lo_slug)) {
+      let i = 2;
+      while (taken.has(`${lo_slug}-${i}`)) i++;
+      lo_slug = `${lo_slug}-${i}`;
+    }
+  }
 
   // ── 1. Create auth user ───────────────────────────────────────
   const { data: authData, error: authError } = await sb.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name, role, lo_slug: lo_slug || "", nmls: nmls || "", notify_email: notify_email || "" },
+    user_metadata: {
+      full_name,
+      role,
+      lo_slug:      lo_slug || "",
+      nmls:         nmls || "",
+      notify_email: notify_email || "",
+    },
   });
 
   if (authError || !authData.user) {
     return NextResponse.json({ error: authError?.message ?? "Failed to create user" }, { status: 400 });
   }
 
-  // ── 2. Update extra profile fields not covered by the trigger ─
-  const extraFields: Record<string, unknown> = {};
-  if (phone)       extraFields.phone      = phone;
-  if (title)       extraFields.title      = title;
-  if (short_bio)   extraFields.short_bio  = short_bio;
-  if (offices)     extraFields.offices    = offices;
-  if (linkedin)    extraFields.linkedin   = linkedin;
+  const uid = authData.user.id;
 
-  if (Object.keys(extraFields).length > 0) {
-    await sb.from("profiles").update(extraFields).eq("id", authData.user.id);
-  }
+  // ── 2. Wait briefly then upsert the full profile row ─────────
+  // The DB trigger fires on insert and creates the profile row.
+  // We upsert to ensure ALL fields are set correctly regardless
+  // of what the trigger did or didn't populate.
+  await new Promise((r) => setTimeout(r, 300));
 
-  // ── 3. Create funnel_link if LO slug provided ─────────────────
+  const profilePatch: Record<string, unknown> = {
+    id:           uid,
+    email,
+    full_name,
+    role,
+    is_active:    true,
+    show_on_website: false,
+    updated_at:   new Date().toISOString(),
+  };
+  if (lo_slug)      profilePatch.lo_slug      = lo_slug;
+  if (nmls)         profilePatch.nmls         = nmls;
+  if (phone)        profilePatch.phone        = phone;
+  if (notify_email) profilePatch.notify_email = notify_email;
+  if (title)        profilePatch.title        = title;
+  if (short_bio)    profilePatch.short_bio    = short_bio;
+  if (offices)      profilePatch.offices      = offices;
+  if (linkedin)     profilePatch.linkedin     = linkedin;
+
+  await sb.from("profiles").upsert(profilePatch, { onConflict: "id" });
+
+  // ── 3. Create funnel_link ─────────────────────────────────────
   if (lo_slug) {
     const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
     await sb.from("funnel_links").upsert({
@@ -90,7 +139,7 @@ export async function POST(request: NextRequest) {
     }, { onConflict: "lo_slug" });
   }
 
-  await logAudit("user.created", { email, role, lo_slug }, caller.id, caller.email);
+  await logAudit("user.created", { email, role, lo_slug, nmls }, caller.id, caller.email);
 
-  return NextResponse.json({ ok: true, id: authData.user.id });
+  return NextResponse.json({ ok: true, id: uid, lo_slug });
 }
