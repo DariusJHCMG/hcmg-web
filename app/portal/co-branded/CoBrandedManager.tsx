@@ -380,7 +380,11 @@ function PageCard({
 
       {/* Action bar */}
       <div className="flex items-center justify-between gap-2 border-t border-line/60 px-5 py-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <a href={`/portal/co-branded/${page.id}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/5 px-3 py-1.5 text-xs font-bold text-accent shadow-soft hover:bg-accent/10 transition-all">
+            View Details →
+          </a>
           <button onClick={() => onShare(page)}
             className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink shadow-soft hover:border-accent hover:text-accent transition-all">
             Share
