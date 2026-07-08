@@ -22,7 +22,7 @@ export default async function PortalPage() {
   if (!profile) redirect("/login");
 
   const leads  = profile.lo_slug ? await getMyLeads(profile.lo_slug) : [];
-  const SITE   = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+  const SITE   = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
   const myLink = profile.lo_slug ? `${SITE}/go/${profile.lo_slug}` : null;
 
   const statsCards = [

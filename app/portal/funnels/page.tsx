@@ -19,7 +19,7 @@ export default async function PortalFunnelsPage() {
     );
   }
 
-  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
 
   return (
     <PortalFunnelLibrary

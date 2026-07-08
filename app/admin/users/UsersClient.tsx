@@ -311,6 +311,7 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
   const [editId, setEditId]     = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
+  const [inviting, setInviting] = useState<string | null>(null);
 
   const fld = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -337,6 +338,22 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
       window.location.reload();
     }
     setSaving(false);
+  }
+
+  async function sendInvite(u: Profile) {
+    setInviting(u.id);
+    const token = await getToken();
+    const res = await fetch(`/api/admin/users/${u.id}/invite`, {
+      method: "POST",
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setMsg({ type: "ok", text: `✅ Invite sent to ${u.email}` });
+    } else {
+      setMsg({ type: "err", text: `Failed to send invite: ${(json as { error?: string }).error ?? res.status}` });
+    }
+    setInviting(null);
   }
 
   function handleDeleted(id: string) {
@@ -534,6 +551,13 @@ export function UsersClient({ initialUsers }: { initialUsers: Profile[] }) {
                            <button onClick={() => toggleActive(u)}
                              className={`text-xs font-bold transition-colors ${u.is_active ? "text-red-500 hover:text-red-700" : "text-green-600 hover:text-green-800"}`}>
                              {u.is_active ? "Deactivate" : "Activate"}
+                           </button>
+                           <span className="text-line">|</span>
+                           <button
+                             onClick={() => sendInvite(u)}
+                             disabled={inviting === u.id}
+                             className="text-xs font-bold text-purple-600 hover:text-purple-800 transition-colors disabled:opacity-40">
+                             {inviting === u.id ? "Sending…" : "Send Invite"}
                            </button>
                            <span className="text-line">|</span>
                            <button onClick={() => setDeleteTarget(u)}

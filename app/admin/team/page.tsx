@@ -17,7 +17,7 @@ export default async function TeamPage() {
   const team = await getTeam();
   const leaders = team.filter((p) => p.role !== "loan_officer");
   const los     = team.filter((p) => p.role === "loan_officer");
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
 
   return (
     <div className="space-y-6">

@@ -9,7 +9,7 @@ export async function POST() {
   if (!isAdmin(caller)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const sb = createServiceClient();
-  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+  const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
 
   // Fetch all active LO profiles with a slug
   const { data: profiles, error: fetchErr } = await sb

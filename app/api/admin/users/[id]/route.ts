@@ -84,7 +84,7 @@ export async function PATCH(
 
   // ── Sync funnel_link URL/name if lo_slug or full_name changed ─
   if (updates.lo_slug !== undefined || updates.full_name !== undefined) {
-    const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+    const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
     const newSlug = updates.lo_slug ?? currentSlug;
     const newName = updates.full_name ?? current?.full_name ?? "";
     if (newSlug) {

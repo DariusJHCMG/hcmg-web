@@ -10,7 +10,7 @@ function getResend() {
   return RESEND_KEY ? new Resend(RESEND_KEY) : null;
 }
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app").replace(/\/$/, "");
 
 const LeadSchema = z.object({
   firstName:               z.string().min(1),

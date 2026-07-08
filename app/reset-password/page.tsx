@@ -36,7 +36,7 @@ function ResetForm() {
     e.preventDefault();
     setStatus("loading");
     const supabase = createBrowserClient();
-    const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com";
+    const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmg-web.vercel.app";
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${SITE}/reset-password?type=recovery`,
     });
