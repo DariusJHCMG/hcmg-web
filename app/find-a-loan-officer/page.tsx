@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://getorangekey.com/find-a-loan-officer" },
 };
 
-const LICENSED_STATES = ["FL","TX","GA","NV","CO","VA","DC","MD"];
+const LICENSED_STATES = ["FL","TX","GA","NV","CO","VA","DC","MD","CA","MS"];
 const PENDING_STATES  = ["OH","MI","AL","OR","NJ","TN","NC","SC","IL","IN","OK","NM","AZ","PA"];
 
 const STATE_NAMES: Record<string,string> = {

@@ -321,9 +321,9 @@ export function getTeamMemberBySlug(slug: string): TeamMember | undefined {
   return teamMembers.find((m) => m.slug === slug);
 }
 
-export function getTeamGroupedByRole(): { role: string; members: TeamMember[] }[] {
+export function getTeamGroupedByRole(members: TeamMember[] = teamMembers): { role: string; members: TeamMember[] }[] {
   const groups = new Map<string, TeamMember[]>();
-  for (const m of teamMembers) {
+  for (const m of members) {
     const bucket = inferGroup(m.role);
     if (!groups.has(bucket)) groups.set(bucket, []);
     groups.get(bucket)!.push(m);

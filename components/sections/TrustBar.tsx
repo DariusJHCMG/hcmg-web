@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { STATE_PATHS } from "@/lib/statePaths";
 
-const LICENSED: string[] = ["FL","TX","GA","NV","CO","VA","DC","MD"];
+const LICENSED: string[] = ["FL","TX","GA","NV","CO","VA","DC","MD","CA","MS"];
 const PENDING:  string[] = ["OH","MI","AL","OR","NJ","TN","NC","SC","IL","IN","OK","NM","AZ","PA"];
 
 const STATE_NAMES: Record<string,string> = {

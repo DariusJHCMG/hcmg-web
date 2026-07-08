@@ -5,6 +5,7 @@ import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { teamMembers, getTeamGroupedByRole } from "@/data/team";
+import { createServiceClient } from "@/lib/supabase";
 
 export const revalidate = 60;
 
@@ -22,24 +23,40 @@ export const metadata: Metadata = {
   },
 };
 
-const teamSchema = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Harris Capital Mortgage Group, LLC",
-  alternateName: "HCMG",
-  url: "https://getorangekey.com",
-  employee: teamMembers.map((m) => ({
-    "@type": "Person",
-    name: m.name,
-    jobTitle: m.role,
-    url: `https://getorangekey.com/team/${m.slug}`,
-    image: `https://getorangekey.com${m.photo}`,
-    ...(m.nmls ? { identifier: { "@type": "PropertyValue", propertyID: "NMLS", value: m.nmls } } : {}),
-  })),
-};
+export default async function TeamPage() {
+  // Fetch inactive lo_slugs from Supabase so deactivated users are hidden
+  const sb = createServiceClient();
+  const { data: profiles } = await sb
+    .from("profiles")
+    .select("lo_slug, is_active")
+    .not("lo_slug", "is", null);
 
-export default function TeamPage() {
-  const groups = getTeamGroupedByRole();
+  const inactiveSlugs = new Set(
+    (profiles ?? [])
+      .filter((p) => p.is_active === false)
+      .map((p) => p.lo_slug as string)
+  );
+
+  // Filter out deactivated members before grouping
+  const activeMembers = teamMembers.filter((m) => !inactiveSlugs.has(m.slug));
+
+  const teamSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Harris Capital Mortgage Group, LLC",
+    alternateName: "HCMG",
+    url: "https://getorangekey.com",
+    employee: activeMembers.map((m) => ({
+      "@type": "Person",
+      name: m.name,
+      jobTitle: m.role,
+      url: `https://getorangekey.com/team/${m.slug}`,
+      image: `https://getorangekey.com${m.photo}`,
+      ...(m.nmls ? { identifier: { "@type": "PropertyValue", propertyID: "NMLS", value: m.nmls } } : {}),
+    })),
+  };
+
+  const groups = getTeamGroupedByRole(activeMembers);
 
   return (
     <main>
