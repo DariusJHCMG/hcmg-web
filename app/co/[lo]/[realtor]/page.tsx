@@ -187,17 +187,28 @@ export default async function CoBrandedPublicPage({ params }: Props) {
       <section id="funnel" className="bg-sand py-20 scroll-mt-20">
         <div className="container-shell max-w-3xl">
           <div className="mb-8 text-center">
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">Start Here</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">Find Out What You Can Afford</p>
             <h2 className="text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
-              See what you qualify for in 60 seconds.
+              Get pre-qualified in 60 seconds.
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base text-muted">
-              Purchase or refinance · No hard credit check · No commitment
+              Home purchase · No hard credit check · No commitment
             </p>
           </div>
           <FunnelFlow
             lo={funnelLo}
             source="co-brand"
+            funnelConfig={{
+              goalPreset: "buy",
+              steps: [2, 3, 4, 5, 6],
+              overrides: {
+                2: { title: "What price range are you targeting?", sub: "Give us a range and we'll build a real payment estimate." },
+                3: { title: "Where does your credit fall today?", sub: "No hard pull — just a ballpark to shape your options." },
+                4: { title: "What's your approximate household income?", sub: "Used only to size your buying power estimate." },
+                5: { ctaLabel: "Unlock my exact rate →" },
+              },
+              submitLabel: "Get my personalized rate →",
+            }}
           />
         </div>
       </section>
