@@ -1,24 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
-import { isAdmin } from "@/lib/auth";
-import type { Profile } from "@/lib/database.types";
+import { getCurrentProfile, isAdmin } from "@/lib/auth";
 import { teamMembers } from "@/data/team";
 
-async function getCallerFromRequest(request: NextRequest): Promise<Profile | null> {
-  try {
-    const auth = request.headers.get("authorization") ?? "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-    if (!token) return null;
-    const sb = createServiceClient();
-    const { data: { user }, error } = await sb.auth.getUser(token);
-    if (error || !user) return null;
-    const { data } = await sb.from("profiles").select("*").eq("id", user.id).single();
-    return data as Profile | null;
-  } catch { return null; }
-}
-
-export async function POST(request: NextRequest) {
-  const caller = await getCallerFromRequest(request);
+export async function POST() {
+  const caller = await getCurrentProfile();
   if (!caller) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   if (!isAdmin(caller)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
