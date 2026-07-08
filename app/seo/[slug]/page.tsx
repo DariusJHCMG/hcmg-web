@@ -116,11 +116,11 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
       <section className="section-pad bg-sand">
         <div className="container-shell max-w-4xl">
           <h2 className="mb-4 text-2xl font-extrabold text-ink">
-            Buying in {page.city}, {page.state}
+            {page.loanType} Near {page.city}, {page.state}
           </h2>
           <p className="text-base leading-8 text-muted">{localCopy}</p>
           <p className="mt-4 text-base leading-8 text-muted">
-            Harris Capital Mortgage Group (NMLS# 1918223) is licensed to serve buyers in {page.state}. Our loan officers understand the local market and will guide you through every step of the process.
+            Harris Capital Mortgage Group (NMLS# 1918223) is a licensed mortgage lender near {page.city}, {page.state} serving buyers throughout the {page.state} market. Whether you&apos;re searching for a {page.loanType.toLowerCase()} near {page.city} or anywhere in {page.state}, our loan officers know the local market and will guide you through every step of the process.
           </p>
           <Disclosure variant="estimate" className="mt-6" />
         </div>

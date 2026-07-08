@@ -1,0 +1,27 @@
+{
+  "source": ".next/types/SEO/SEO/export_research_us_domain_history_usd_2026-07_rocketmortgage.com.xlsx",
+  "contentHash": "8e030161a50421df",
+  "sheets": [
+    {
+      "name": "Sheet1",
+      "file": "Sheet1.json",
+      "rowCount": 5000,
+      "headers": [
+        "Keyword",
+        "Difficulty",
+        "Position",
+        "Previous position",
+        "Position Serp Features",
+        "Search vol.",
+        "Search intent",
+        "SERP features",
+        "Competition",
+        "CPC",
+        "URL",
+        "Traffic",
+        "Traffic share",
+        "Traffic cost"
+      ]
+    }
+  ]
+}

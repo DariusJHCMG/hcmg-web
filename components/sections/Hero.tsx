@@ -76,7 +76,7 @@ export function Hero() {
           </div>
 
           <p className={`mt-5 text-xs text-muted/60 ${entered ? "motion-rise motion-delay-4" : "motion-prep"}`}>
-            Trusted by home buyers in FL · TX · GA · NV · CO · VA · DC · MD
+            Trusted by home buyers in FL · TX · GA · NV · CO · VA · DC · MD · CA · MS
           </p>
         </div>
 

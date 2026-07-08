@@ -1,0 +1,15 @@
+{
+  "source": ".next/types/SEO/SEO/hcmgloans_com_positions_detailed_2026-07-08.xlsx",
+  "contentHash": "5fffeff300cc19e7",
+  "sheets": [
+    {
+      "name": "Sheet1",
+      "file": "Sheet1.json",
+      "rowCount": 22,
+      "headers": [
+        "Google USA, interface language: English",
+        "Google USA, interface language: English"
+      ]
+    }
+  ]
+}

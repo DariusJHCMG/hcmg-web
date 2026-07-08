@@ -15,37 +15,38 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: "HCMG, Find Out What You Can Afford in 60 Seconds",
+    default: "Harris Capital Mortgage Group — Home Mortgage Company | NMLS# 1918223",
     template: "%s | HCMG",
   },
   description:
-    "Fast, simple mortgage estimates. No hard credit check. FHA, VA, Conventional, and Refinance. Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender.",
+    "Harris Capital Mortgage Group is a licensed home mortgage company serving FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. FHA, VA, Conventional, Jumbo, USDA, Refinance & down payment assistance. No hard credit check.",
   metadataBase: new URL("https://hcmgloans.com"),
   openGraph: {
     type: "website",
     url: "https://hcmgloans.com",
     siteName: "HCMG, Harris Capital Mortgage Group",
-    title: "HCMG, Find Out What You Can Afford in 60 Seconds",
+    title: "Harris Capital Mortgage Group — Home Mortgage Company | NMLS# 1918223",
     description:
-      "Fast, simple mortgage estimates. No hard credit check. FHA, VA, Conventional, and Refinance. Harris Capital Mortgage Group, LLC · NMLS# 1918223.",
+      "Licensed mortgage lender in FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. FHA, VA, Conventional, Jumbo, USDA, Refinance. Harris Capital Mortgage Group · NMLS# 1918223.",
     images: [
       {
-        url: "/hcmg-social-square.svg",
-        width: 1000,
-        height: 1000,
-        alt: "HCMG, Harris Capital Mortgage Group",
+        url: "/hcmg-social.png",
+        width: 1200,
+        height: 630,
+        alt: "Harris Capital Mortgage Group — Licensed Mortgage Lender",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "HCMG, Find Out What You Can Afford in 60 Seconds",
+    title: "Harris Capital Mortgage Group — Home Mortgage Company | NMLS# 1918223",
     description:
-      "Fast, simple mortgage estimates. No hard credit check. Harris Capital Mortgage Group · NMLS# 1918223.",
-    images: ["/hcmg-social-square.svg"],
+      "Licensed mortgage lender in FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. FHA, VA, Conventional, Jumbo, USDA, Refinance. NMLS# 1918223.",
+    images: ["/hcmg-social.png"],
   },
   keywords: [
-    "mortgage estimate", "FHA loan", "VA loan", "conventional loan", "home buying",
+    "mortgage company", "home mortgage", "mortgage lender", "FHA loan", "VA loan",
+    "conventional loan", "jumbo loan", "USDA loan", "refinance", "down payment assistance",
     "Harris Capital Mortgage Group", "HCMG", "NMLS 1918223", "mortgage calculator",
   ],
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
@@ -53,11 +54,12 @@ export const metadata: Metadata = {
 
 const schemaOrg = {
   "@context": "https://schema.org",
-  "@type": "MortgageLender",
+  "@type": ["MortgageLender", "LocalBusiness", "FinancialService"],
   name: "Harris Capital Mortgage Group, LLC",
   alternateName: "HCMG",
+  legalName: "Harris Capital Mortgage Group, LLC",
   description:
-    "Fast mortgage estimates for home buyers across FL, TX, GA, NV, CO, VA, DC, and MD. Harris Capital Mortgage Group, LLC · NMLS# 1918223.",
+    "Harris Capital Mortgage Group (NMLS# 1918223) is a licensed mortgage lender offering FHA, VA, Conventional, Jumbo, USDA, Refinance, and down payment assistance loans. Serving home buyers in FL, TX, GA, NV, CO, VA, DC, MD, CA, and MS.",
   url: "https://hcmgloans.com",
   telephone: "+18884413930",
   faxNumber: "+14048824100",
@@ -72,9 +74,19 @@ const schemaOrg = {
   },
   sameAs: [
     "https://www.nmlsconsumeraccess.org/EntityDetails.aspx/COMPANY/1918223",
+    "https://www.facebook.com/harriscapitalmortgage",
+    "https://www.instagram.com/harriscapitalmortgage",
   ],
-  areaServed: ["FL", "TX", "GA", "NV", "CO", "VA", "DC", "MD"],
-  knowsAbout: ["FHA Loan", "VA Loan", "Conventional Loan", "Mortgage Refinance", "First-Time Homebuyer Programs"],
+  areaServed: ["FL", "TX", "GA", "NV", "CO", "VA", "DC", "MD", "CA", "MS"],
+  knowsAbout: [
+    "FHA Loan", "VA Loan", "Conventional Loan", "Jumbo Loan", "USDA Loan",
+    "Mortgage Refinance", "HELOC", "Down Payment Assistance", "First-Time Homebuyer Programs",
+  ],
+  identifier: {
+    "@type": "PropertyValue",
+    propertyID: "NMLS",
+    value: "1918223",
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

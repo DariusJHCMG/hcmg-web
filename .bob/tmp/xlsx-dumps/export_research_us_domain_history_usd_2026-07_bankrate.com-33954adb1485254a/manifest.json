@@ -1,0 +1,27 @@
+{
+  "source": ".next/types/SEO/SEO/export_research_us_domain_history_usd_2026-07_bankrate.com.xlsx",
+  "contentHash": "33954adb1485254a",
+  "sheets": [
+    {
+      "name": "Sheet1",
+      "file": "Sheet1.json",
+      "rowCount": 5000,
+      "headers": [
+        "Keyword",
+        "Difficulty",
+        "Position",
+        "Previous position",
+        "Position Serp Features",
+        "Search vol.",
+        "Search intent",
+        "SERP features",
+        "Competition",
+        "CPC",
+        "URL",
+        "Traffic",
+        "Traffic share",
+        "Traffic cost"
+      ]
+    }
+  ]
+}

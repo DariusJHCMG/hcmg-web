@@ -5,6 +5,39 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { glossaryTerms, getTermBySlug, getRelatedTerms } from "@/data/glossary";
+import { seoPages } from "@/data/seo-pages";
+
+// Map glossary slugs → matching SEO loan types so we can link to local pages
+const GLOSSARY_TO_LOAN_TYPE: Record<string, string> = {
+  "fha-loan": "FHA Loan",
+  "fha-mortgage-insurance": "FHA Loan",
+  "va-loan": "VA Loan",
+  "va-funding-fee": "VA Loan",
+  "adjustable-rate-mortgage": "ARM Loan",
+  "conventional-loan": "Conventional Loan",
+  "conforming-loan": "Conventional Loan",
+  "jumbo-loan": "Jumbo Loan",
+  "usda-loan": "USDA Loan",
+  "refinance": "Refinance",
+  "cash-out-refinance": "Refinance",
+  "rate-and-term-refinance": "Refinance",
+  "home-equity-line-of-credit": "HELOC",
+  "heloc": "HELOC",
+  "down-payment-assistance": "Down Payment Assistance",
+  "first-time-homebuyer": "First-Time Buyer",
+};
+
+// Pick up to 4 featured SEO pages for a given loan type (one per state)
+function getLinkedSeoPages(loanType: string) {
+  const matches = seoPages.filter((p) => p.loanType === loanType);
+  // One per state, pick the first city in each state
+  const seen = new Set<string>();
+  return matches.filter((p) => {
+    if (seen.has(p.state)) return false;
+    seen.add(p.state);
+    return true;
+  }).slice(0, 4);
+}
 
 export const revalidate = 86400;
 
@@ -71,6 +104,9 @@ export default async function GlossaryTermPage({
       },
     ],
   };
+
+  const linkedLoanType = GLOSSARY_TO_LOAN_TYPE[slug];
+  const linkedSeoPages = linkedLoanType ? getLinkedSeoPages(linkedLoanType) : [];
 
   return (
     <main>
@@ -142,6 +178,32 @@ export default async function GlossaryTermPage({
                 >
                   <div className="text-base font-bold text-ink">{r.term}</div>
                   <p className="mt-1.5 text-sm leading-6 text-muted">{r.shortDef}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Linked local pages — only shown for loan-type glossary terms */}
+      {linkedSeoPages.length > 0 && (
+        <section className="bg-white py-16">
+          <div className="container-shell max-w-3xl">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+              Find a lender near you
+            </h2>
+            <p className="mb-6 text-2xl font-extrabold text-ink">
+              Get a {linkedLoanType} in your state
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {linkedSeoPages.map((p) => (
+                <Link
+                  key={p.slug}
+                  href={`/seo/${p.slug}`}
+                  className="block rounded-2xl border border-line bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-soft"
+                >
+                  <div className="text-sm font-bold text-ink">{p.loanType} in {p.city}, {p.state}</div>
+                  <p className="mt-1 text-xs text-muted">Licensed lender · HCMG · NMLS# 1918223</p>
                 </Link>
               ))}
             </div>

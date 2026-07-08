@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     title: "Mortgage Glossary | HCMG",
     description: `${glossaryTerms.length}+ home loan terms defined in plain English. The complete reference for buyers, refinancers, and curious homeowners.`,
     url: "https://hcmgloans.com/glossary",
-    images: ["/hcmg-social-square.svg"],
+    images: ["/hcmg-social.png"],
   },
 };
 
