@@ -2,6 +2,15 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { isAdmin } from "@/lib/auth";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import Link from "next/link";
+
+function Initials({ name }: { name: string }) {
+  const parts = name.trim().split(/\s+/);
+  const init = parts.length >= 2
+    ? parts[0][0] + parts[parts.length - 1][0]
+    : parts[0].slice(0, 2);
+  return <>{init.toUpperCase()}</>;
+}
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const profile = await getCurrentProfile();
@@ -31,6 +40,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             >
               {profile.role}
             </span>
+            {/* Avatar chip — links to My Profile */}
+            <Link href="/admin/profile" className="group ml-1 flex items-center">
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.full_name}
+                  className="h-8 w-8 rounded-full object-cover object-top border border-line
+                             ring-2 ring-transparent transition-all group-hover:ring-accent/40"
+                />
+              ) : (
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-black text-white
+                             ring-2 ring-transparent transition-all group-hover:ring-accent/40"
+                  style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}
+                >
+                  <Initials name={profile.full_name} />
+                </span>
+              )}
+            </Link>
           </div>
         </header>
 

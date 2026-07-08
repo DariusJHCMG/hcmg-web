@@ -7,11 +7,12 @@ import { createBrowserClient } from "@/lib/supabase-browser";
 import { OrangeKeyLogo } from "@/components/ui/OrangeKeyLogo";
 
 const NAV = [
-  { label: "Dashboard",   href: "/admin",          icon: "⊞" },
-  { label: "Leads",       href: "/admin/leads",     icon: "✉" },
-  { label: "Users",       href: "/admin/users",     icon: "👥" },
-  { label: "Audit Log",   href: "/admin/audit",     icon: "📋" },
-  { label: "Dev Tools",   href: "/admin/dev",       icon: "⚙" },
+  { label: "Dashboard",   href: "/admin",             icon: "⊞" },
+  { label: "Leads",       href: "/admin/leads",        icon: "✉" },
+  { label: "Users",       href: "/admin/users",        icon: "👥" },
+  { label: "Audit Log",   href: "/admin/audit",        icon: "📋" },
+  { label: "Dev Tools",   href: "/admin/dev",          icon: "⚙" },
+  { label: "My Profile",  href: "/admin/profile",      icon: "👤" },
 ];
 
 export function AdminSidebar() {
