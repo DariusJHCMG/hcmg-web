@@ -2,15 +2,22 @@ import { NextResponse } from "next/server";
 import { google } from "googleapis";
 import { getCurrentProfile } from "@/lib/auth";
 import { readSettings } from "@/lib/company-settings";
-import { getGoogleAccessToken } from "@/lib/google-wif-auth";
+
+function getAuth(scopes: string[]) {
+  const email = process.env.GOOGLE_SA_CLIENT_EMAIL;
+  const key   = process.env.GOOGLE_SA_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  if (!email || !key) return null;
+  return new google.auth.JWT({ email, key, scopes });
+}
 
 export async function GET() {
   const caller = await getCurrentProfile();
   if (!caller) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+  const auth = getAuth(["https://www.googleapis.com/auth/webmasters.readonly"]);
+  if (!auth) {
     return NextResponse.json(
-      { error: "GOOGLE_APPLICATION_CREDENTIALS_JSON env var not set. Add the Workload Identity config JSON to Vercel environment variables." },
+      { error: "Google service account not configured. Add GOOGLE_SA_CLIENT_EMAIL and GOOGLE_SA_PRIVATE_KEY to Vercel environment variables." },
       { status: 503 },
     );
   }
@@ -24,11 +31,6 @@ export async function GET() {
   }
 
   try {
-    const accessToken = await getGoogleAccessToken("https://www.googleapis.com/auth/webmasters.readonly");
-
-    const auth = new google.auth.OAuth2();
-    auth.setCredentials({ access_token: accessToken });
-
     const searchconsole = google.searchconsole({ version: "v1", auth });
     const siteUrl = settings.gsc_property;
 
