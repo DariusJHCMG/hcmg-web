@@ -9,10 +9,10 @@ import { UtmLink } from "./UtmLink";
 const NAV_LINKS = [
   { label: "Buy", href: "/#calculator" },
   { label: "Refinance", href: "/get-started" },
-  { label: "Learn", href: "/learn" },
   { label: "Our Team", href: "/team" },
   { label: "About", href: "/about" },
   { label: "Join HCMG", href: "/careers" },
+  { label: "Learn", href: "/learn" },
 ];
 
 export function NavBar() {
