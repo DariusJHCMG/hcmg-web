@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     title: "HCMG HQ Careers",
     description:
       "Operations, marketing, technology, compliance, build the engine behind HCMG.",
-    images: ["/hcmg-social-square.svg"],
+    images: ["/hcmg-social.png"],
   },
 };
 

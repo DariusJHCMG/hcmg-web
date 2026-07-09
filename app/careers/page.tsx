@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     title: "Careers at HCMG",
     description:
       "Loan officers, producing managers, full team moves, and corporate roles. Pick your path into HCMG.",
-    images: ["/hcmg-social-square.svg"],
+    images: ["/hcmg-social.png"],
   },
 };
 

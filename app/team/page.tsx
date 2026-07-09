@@ -7,7 +7,7 @@ import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { teamMembers, getTeamGroupedByRole, type TeamMember } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 // Leadership slugs — only these get their portal photo shown on the /team roster page.
 // All other roles (LOs, operations) always show the placeholder here; their
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     description:
       "Licensed loan officers, processors, and leadership at Harris Capital Mortgage Group. NMLS# 1918223.",
     url: "https://hcmgloans.com/team",
-    images: ["/hcmg-social-square.svg"],
+    images: ["/hcmg-social.png"],
   },
 };
 

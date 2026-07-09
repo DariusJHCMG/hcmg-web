@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     title: "Become an HCMG Branch Partner",
     description:
       "Open your own HCMG branch with infrastructure built for scale. Override on every loan your team closes.",
-    images: ["/hcmg-social-square.svg"],
+    images: ["/hcmg-social.png"],
   },
 };
 

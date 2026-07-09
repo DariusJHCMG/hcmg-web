@@ -38,7 +38,11 @@ export interface Lead {
   email: string;
   phone: string;
   sms_consent: boolean;
+  sms_consent_text: string | null;
+  sms_consent_timestamp: string | null;
   source: string;
+  funnel_type: string | null;
+  property_state: string | null;
   goal: string | null;
   price_range: string | null;
   credit_range: string | null;

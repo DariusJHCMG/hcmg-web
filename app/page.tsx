@@ -26,7 +26,7 @@ const localBusinessSchema = {
   legalName: "Harris Capital Mortgage Group, LLC",
   url: "https://hcmgloans.com",
   logo: "https://hcmgloans.com/hcmg-wordmark-on-light.svg",
-  image: "https://hcmgloans.com/hcmg-social-square.svg",
+  image: "https://hcmgloans.com/hcmg-social.png",
   telephone: "+18884413930",
   email: "info@hcmgloans.com",
   address: {

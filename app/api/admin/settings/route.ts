@@ -9,6 +9,7 @@ const PatchSchema = z.object({
   contact_notify_email:    z.string().email().optional().or(z.literal("")),
   recruiting_notify_email: z.string().email().optional().or(z.literal("")),
   ga4_measurement_id:      z.string().optional(),
+  ga4_property_id:         z.string().optional(),
   gsc_property:            z.string().optional(),
 });
 

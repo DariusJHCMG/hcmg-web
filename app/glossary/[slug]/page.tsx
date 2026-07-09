@@ -61,7 +61,7 @@ export async function generateMetadata({
       title: `${term.term}, Defined`,
       description: term.shortDef,
       url: `https://hcmgloans.com/glossary/${slug}`,
-      images: ["/hcmg-social-square.svg"],
+      images: ["/hcmg-social.png"],
     },
   };
 }

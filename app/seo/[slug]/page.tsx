@@ -19,14 +19,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const page = seoPages.find((p) => p.slug === slug);
   if (!page) return {};
   return {
-    title: `${page.loanType} in ${page.city}, ${page.state} | HCMG · NMLS# 1918223`,
-    description: `Explore ${page.loanType.toLowerCase()} options for home buyers in ${page.city}, ${page.state}. Estimate your monthly payment. Harris Capital Mortgage Group · NMLS# 1918223 · Equal Housing Lender.`,
+    title: `${page.loanType}s in ${page.city}, ${page.state} | HCMG Mortgage Lender`,
+    description: page.description,
     alternates: { canonical: `https://hcmgloans.com/seo/${slug}` },
     openGraph: {
-      title: `${page.loanType} in ${page.city}, ${page.state} | HCMG`,
+      title: `${page.loanType}s in ${page.city}, ${page.state} | HCMG`,
       description: page.description,
       url: `https://hcmgloans.com/seo/${slug}`,
-      images: ["/hcmg-social-square.svg"],
+      images: ["/hcmg-social.png"],
     },
   };
 }
@@ -95,7 +95,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
             className="mt-3 font-extrabold tracking-tight text-ink"
             style={{ fontSize: "clamp(32px, 5vw, 56px)", lineHeight: 1.1 }}
           >
-            {page.loanType} in {page.city}, {page.state}
+            {page.loanType}s in {page.city}, {page.state}
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">{page.description}</p>
           <div className="mt-8 flex flex-wrap gap-3">

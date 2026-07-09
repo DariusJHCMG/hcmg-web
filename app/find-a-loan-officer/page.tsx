@@ -6,7 +6,7 @@ import { createServiceClient } from "@/lib/supabase";
 import { getTeamMemberBySlug } from "@/data/team";
 import { FindLOClient } from "./FindLOClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Find a Loan Officer | Harris Capital Mortgage Group",

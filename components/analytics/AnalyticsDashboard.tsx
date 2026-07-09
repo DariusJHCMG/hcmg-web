@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -160,17 +160,141 @@ function MiniSparkline({ data }: { data: { date: string; count: number }[] }) {
   );
 }
 
-function PlaceholderTile({ label, icon, description }: { label: string; icon: string; description: string }) {
+// ── GA4 response types ────────────────────────────────────────────────────────
+
+interface GA4Data {
+  ok: true;
+  period: string;
+  overview: {
+    sessions: number;
+    totalUsers: number;
+    pageviews: number;
+    engagementRate: number;
+    bounceRate: number;
+    avgSessionDuration: number;
+    newUsers: number;
+    returningUsers: number;
+  };
+  channels: { channel: string; sessions: number; users: number }[];
+  topPages:  { page: string; sessions: number; users: number; bounceRate: number }[];
+  devices:   { device: string; sessions: number; users: number }[];
+}
+
+interface GSCData {
+  ok: true;
+  period: string;
+  overview: {
+    clicks: number;
+    impressions: number;
+    ctr: number;
+    position: number;
+  };
+  topQueries: { query: string; clicks: number; impressions: number; ctr: number; position: number }[];
+  topPages:   { page: string; clicks: number; impressions: number; ctr: number; position: number }[];
+}
+
+// ── Shared sub-components for live panels ─────────────────────────────────────
+
+function LiveKpi({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-line bg-sand/50 p-5">
-      <div className="mb-1 flex items-center gap-2">
-        <span className="text-lg">{icon}</span>
-        <p className="text-[11px] font-bold uppercase tracking-[0.13em] text-muted/60">{label}</p>
-      </div>
-      <p className="mt-1 text-xs text-muted/50 leading-5">{description}</p>
-      <p className="mt-2 text-[10px] font-bold text-accent/60">Connect Google Search Console →</p>
+    <div className="rounded-2xl border border-line bg-white p-5">
+      <p className="text-[11px] font-bold uppercase tracking-[0.13em] text-muted/70">{label}</p>
+      <p className="mt-2 text-2xl font-extrabold text-ink">{value}</p>
+      {sub && <p className="mt-1 text-xs text-muted/60">{sub}</p>}
     </div>
   );
+}
+
+function LiveTable<T extends Record<string, string | number>>({
+  rows,
+  cols,
+  maxRows = 10,
+}: {
+  rows: T[];
+  cols: { key: keyof T; label: string; align?: "right" }[];
+  maxRows?: number;
+}) {
+  if (!rows.length)
+    return <p className="py-4 text-center text-xs text-muted/50">No data yet.</p>;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="border-b border-line">
+            {cols.map((c) => (
+              <th
+                key={String(c.key)}
+                className={`pb-2 font-bold uppercase tracking-[0.1em] text-muted/60 ${c.align === "right" ? "text-right" : "text-left"}`}
+              >
+                {c.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.slice(0, maxRows).map((r, i) => (
+            <tr key={i} className={i % 2 === 0 ? "" : "bg-sand/30"}>
+              {cols.map((c) => (
+                <td
+                  key={String(c.key)}
+                  className={`py-2 font-medium text-ink ${c.align === "right" ? "text-right tabular-nums" : ""}`}
+                >
+                  {String(r[c.key])}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function SetupCard({ scope, service }: { scope: "admin" | "portal"; service: "ga4" | "gsc" }) {
+  const settingsHref = scope === "admin" ? "/admin/settings" : null;
+  const label = service === "ga4" ? "Google Analytics (GA4)" : "Google Search Console";
+  return (
+    <div className="rounded-2xl border border-dashed border-line bg-sand/50 px-8 py-12 text-center">
+      <p className="text-base font-extrabold text-ink">{label} not configured</p>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
+        {scope === "admin"
+          ? `Add your ${service === "ga4" ? "GA4 Property ID" : "GSC Property URL"} and a Google Service Account key in Settings to see live data here.`
+          : `Live ${label} data is configured by your admin.`}
+      </p>
+      {settingsHref && (
+        <a href={settingsHref} className="mt-5 inline-block rounded-xl border border-accent px-5 py-2.5 text-sm font-bold text-accent hover:bg-accent/5">
+          Go to Settings →
+        </a>
+      )}
+    </div>
+  );
+}
+
+function LoadingPanel() {
+  return (
+    <div className="flex items-center justify-center py-16">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-accent" />
+      <span className="ml-3 text-sm text-muted">Loading live data…</span>
+    </div>
+  );
+}
+
+function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-8 text-center">
+      <p className="font-bold text-red-800">Failed to load data</p>
+      <p className="mt-1 text-sm text-red-700">{message}</p>
+      <button onClick={onRetry} className="mt-4 rounded-xl border border-red-300 px-4 py-2 text-sm font-bold text-red-800 hover:bg-red-100">
+        Retry
+      </button>
+    </div>
+  );
+}
+
+function fmtDuration(secs: number) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
 }
 
 // ── Date range filter ─────────────────────────────────────────────────────────
@@ -187,6 +311,63 @@ const RANGES = [
 export function AnalyticsDashboard({ data, scope, scopeLabel }: { data: AnalyticsData; scope: "admin" | "portal"; scopeLabel?: string }) {
   const [rangeDays, setRangeDays] = useState(30);
   const [activeTab, setActiveTab] = useState<"lead-gen" | "funnel" | "traffic" | "seo">("lead-gen");
+
+  // ── Live GA4 state ──────────────────────────────────────────────────────────
+  const [ga4State, setGa4State] = useState<
+    | { status: "idle" }
+    | { status: "loading" }
+    | { status: "ok"; d: GA4Data }
+    | { status: "error"; message: string }
+    | { status: "unconfigured" }
+  >({ status: "idle" });
+
+  // ── Live GSC state ──────────────────────────────────────────────────────────
+  const [gscState, setGscState] = useState<
+    | { status: "idle" }
+    | { status: "loading" }
+    | { status: "ok"; d: GSCData }
+    | { status: "error"; message: string }
+    | { status: "unconfigured" }
+  >({ status: "idle" });
+
+  async function fetchGa4() {
+    setGa4State({ status: "loading" });
+    try {
+      const res = await fetch("/api/analytics/ga4");
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        if (res.status === 503) { setGa4State({ status: "unconfigured" }); return; }
+        setGa4State({ status: "error", message: json.error ?? "Unknown error" });
+      } else {
+        setGa4State({ status: "ok", d: json as GA4Data });
+      }
+    } catch (e) {
+      setGa4State({ status: "error", message: String(e) });
+    }
+  }
+
+  async function fetchGsc() {
+    setGscState({ status: "loading" });
+    try {
+      const res = await fetch("/api/analytics/gsc");
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        if (res.status === 503) { setGscState({ status: "unconfigured" }); return; }
+        setGscState({ status: "error", message: json.error ?? "Unknown error" });
+      } else {
+        setGscState({ status: "ok", d: json as GSCData });
+      }
+    } catch (e) {
+      setGscState({ status: "error", message: String(e) });
+    }
+  }
+
+  // Auto-fetch when tab becomes active
+  useEffect(() => {
+    if (activeTab === "traffic" && ga4State.status === "idle") fetchGa4();
+    if (activeTab === "seo"     && gscState.status === "idle") fetchGsc();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const allLeads = data.leads;
 
@@ -455,92 +636,203 @@ export function AnalyticsDashboard({ data, scope, scopeLabel }: { data: Analytic
         </div>
       )}
 
-      {/* ── TRAFFIC TAB ───────────────────────────────────────────────────── */}
+      {/* ── TRAFFIC TAB — live GA4 Data API ───────────────────────────────── */}
       {activeTab === "traffic" && (
-        <div className="space-y-4">
-          {data.ga4Id ? (
-            <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-start gap-3">
-              <span className="text-xl mt-0.5">✓</span>
-              <div>
-                <p className="text-sm font-extrabold text-green-800">GA4 Connected — {data.ga4Id}</p>
-                <p className="mt-1 text-xs text-green-700 leading-5">
-                  Google Analytics is collecting data. View your full traffic dashboard at{" "}
-                  <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer"
-                    className="font-bold underline">analytics.google.com</a>.
-                  These tiles will show embedded data once the GA4 Data API integration is added.
-                </p>
-              </div>
+        <div className="space-y-5">
+          {/* Header bar */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted">Google Analytics · Last 30 days</p>
+              {ga4State.status === "ok" && (
+                <p className="mt-0.5 text-xs text-muted/60">{ga4State.d.period}</p>
+              )}
             </div>
-          ) : (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
-              <p className="text-sm font-extrabold text-amber-900">GA4 not configured</p>
-              <p className="mt-1 text-xs text-amber-800 leading-5">
-                Add your GA4 Measurement ID in Settings to start collecting traffic data.
-                Once added, GA4 will track all pageviews automatically.
-              </p>
-              <a href="/admin/settings" className="mt-2 inline-block text-xs font-bold text-amber-900 underline">
-                Go to Settings →
-              </a>
-            </div>
-          )}
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { label: "Unique Visitors",       icon: "👤", description: "Individual website visitors in period" },
-              { label: "Total Sessions",         icon: "🌐", description: "Total number of website visits" },
-              { label: "Organic Visitors",       icon: "🔍", description: "Visitors from unpaid search results" },
-              { label: "Paid Visitors",          icon: "💰", description: "Visitors from paid advertising" },
-              { label: "New vs Returning",       icon: "🔄", description: "Acquisition vs repeat engagement" },
-              { label: "Visitors by State/City", icon: "📍", description: "Geographic traffic breakdown" },
-              { label: "Traffic Source",         icon: "📊", description: "Google, Meta, direct, referral split" },
-              { label: "Engagement Rate",        icon: "⚡", description: "Meaningful interactions with site" },
-              { label: "Exit Pages",             icon: "🚪", description: "Where visitors leave the site" },
-            ].map((t) => (
-              <PlaceholderTile key={t.label} {...t} />
-            ))}
+            <button
+              onClick={fetchGa4}
+              disabled={ga4State.status === "loading"}
+              className="rounded-xl border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted hover:text-ink disabled:opacity-40"
+            >
+              {ga4State.status === "loading" ? "Loading…" : "↻ Refresh"}
+            </button>
           </div>
+
+          {ga4State.status === "idle"         && <LoadingPanel />}
+          {ga4State.status === "loading"      && <LoadingPanel />}
+          {ga4State.status === "unconfigured" && <SetupCard scope={scope} service="ga4" />}
+          {ga4State.status === "error"        && <ErrorPanel message={ga4State.message} onRetry={fetchGa4} />}
+
+          {ga4State.status === "ok" && (() => {
+            const d = ga4State.d;
+            const totalSessions = d.overview.sessions || 1;
+            return (
+              <div className="space-y-5">
+                {/* KPI row */}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <LiveKpi label="Sessions"        value={d.overview.sessions.toLocaleString()}  sub="last 30 days" />
+                  <LiveKpi label="Total Users"     value={d.overview.totalUsers.toLocaleString()} sub={`${d.overview.newUsers.toLocaleString()} new`} />
+                  <LiveKpi label="Pageviews"       value={d.overview.pageviews.toLocaleString()} sub={`${(d.overview.pageviews / (d.overview.sessions || 1)).toFixed(1)} per session`} />
+                  <LiveKpi label="Engagement Rate" value={`${d.overview.engagementRate}%`}       sub={`${d.overview.bounceRate}% bounce`} />
+                </div>
+
+                <div className="grid gap-5 lg:grid-cols-2">
+                  {/* New vs Returning */}
+                  <div className="rounded-2xl border border-line bg-white p-5">
+                    <SectionHeader>New vs. Returning Users</SectionHeader>
+                    <div className="mt-4 space-y-3">
+                      {[
+                        { label: "New Users",       count: d.overview.newUsers },
+                        { label: "Returning Users", count: d.overview.returningUsers },
+                      ].map((row) => (
+                        <div key={row.label}>
+                          <div className="mb-1 flex justify-between text-xs">
+                            <span className="font-semibold text-ink">{row.label}</span>
+                            <span className="text-muted">{row.count.toLocaleString()} · {pct(row.count, d.overview.totalUsers)}</span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-sand">
+                            <div className="h-full rounded-full" style={{ width: `${(row.count / (d.overview.totalUsers || 1)) * 100}%`, background: "var(--ok-gradient)" }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 border-t border-line pt-3 text-xs text-muted">
+                      Avg. session: <strong className="text-ink">{fmtDuration(d.overview.avgSessionDuration)}</strong>
+                    </div>
+                  </div>
+
+                  {/* Traffic channels */}
+                  <div className="rounded-2xl border border-line bg-white p-5">
+                    <SectionHeader>Traffic Channels</SectionHeader>
+                    <div className="mt-4 space-y-3">
+                      {d.channels.map((ch) => (
+                        <div key={ch.channel}>
+                          <div className="mb-1 flex justify-between text-xs">
+                            <span className="font-semibold text-ink capitalize">{ch.channel}</span>
+                            <span className="text-muted">{ch.sessions.toLocaleString()} · {pct(ch.sessions, totalSessions)}</span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-sand">
+                            <div className="h-full rounded-full" style={{ width: `${(ch.sessions / totalSessions) * 100}%`, background: "var(--ok-gradient)" }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Device split */}
+                  <div className="rounded-2xl border border-line bg-white p-5">
+                    <SectionHeader>Device Type</SectionHeader>
+                    <div className="mt-4 space-y-3">
+                      {d.devices.map((dv) => (
+                        <div key={dv.device}>
+                          <div className="mb-1 flex justify-between text-xs">
+                            <span className="font-semibold text-ink capitalize">{dv.device}</span>
+                            <span className="text-muted">{dv.sessions.toLocaleString()} · {pct(dv.sessions, totalSessions)}</span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-sand">
+                            <div className="h-full rounded-full" style={{ width: `${(dv.sessions / totalSessions) * 100}%`, background: "var(--ok-gradient)" }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Top landing pages */}
+                  <div className="rounded-2xl border border-line bg-white p-5">
+                    <SectionHeader>Top Landing Pages</SectionHeader>
+                    <div className="mt-4">
+                      <LiveTable
+                        rows={d.topPages}
+                        cols={[
+                          { key: "page",       label: "Page" },
+                          { key: "sessions",   label: "Sessions",   align: "right" },
+                          { key: "bounceRate", label: "Bounce %",   align: "right" },
+                        ]}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
-      {/* ── SEO TAB ───────────────────────────────────────────────────────── */}
+      {/* ── SEO TAB — live GSC Search Analytics API ───────────────────────── */}
       {activeTab === "seo" && (
-        <div className="space-y-4">
-          {data.gscProperty ? (
-            <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-start gap-3">
-              <span className="text-xl mt-0.5">✓</span>
-              <div>
-                <p className="text-sm font-extrabold text-green-800">Search Console Connected — {data.gscProperty}</p>
-                <p className="mt-1 text-xs text-green-700 leading-5">
-                  View your SEO data at{" "}
-                  <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"
-                    className="font-bold underline">search.google.com/search-console</a>.
-                  Embedded metrics will populate once the GSC API integration is added.
-                </p>
-              </div>
+        <div className="space-y-5">
+          {/* Header bar */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted">Google Search Console · Last 28 days</p>
+              {gscState.status === "ok" && (
+                <p className="mt-0.5 text-xs text-muted/60">{gscState.d.period}</p>
+              )}
             </div>
-          ) : (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
-              <p className="text-sm font-extrabold text-amber-900">Search Console not configured</p>
-              <p className="mt-1 text-xs text-amber-800 leading-5">
-                Add your GSC property URL in Settings to link your Search Console account.
-              </p>
-              <a href="/admin/settings" className="mt-2 inline-block text-xs font-bold text-amber-900 underline">
-                Go to Settings →
-              </a>
-            </div>
-          )}
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { label: "Google Impressions",        icon: "👁",  description: "How many times the site appeared in search" },
-              { label: "Organic Clicks",             icon: "🖱",  description: "Clicks generated from search results" },
-              { label: "Avg. Keyword Position",      icon: "📈",  description: "Average ranking position across all keywords" },
-              { label: "Organic CTR",                icon: "🎯",  description: "Impressions → clicks rate" },
-              { label: "Indexed Landing Pages",      icon: "📄",  description: "State, city, and loan-program pages in Google" },
-              { label: "Top Search Queries",         icon: "🔑",  description: "Keywords producing visibility and traffic" },
-              { label: "Top Organic Landing Pages",  icon: "🏆",  description: "SEO pages generating the most traffic" },
-            ].map((t) => (
-              <PlaceholderTile key={t.label} {...t} />
-            ))}
+            <button
+              onClick={fetchGsc}
+              disabled={gscState.status === "loading"}
+              className="rounded-xl border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted hover:text-ink disabled:opacity-40"
+            >
+              {gscState.status === "loading" ? "Loading…" : "↻ Refresh"}
+            </button>
           </div>
+
+          {gscState.status === "idle"         && <LoadingPanel />}
+          {gscState.status === "loading"      && <LoadingPanel />}
+          {gscState.status === "unconfigured" && <SetupCard scope={scope} service="gsc" />}
+          {gscState.status === "error"        && <ErrorPanel message={gscState.message} onRetry={fetchGsc} />}
+
+          {gscState.status === "ok" && (() => {
+            const d = gscState.d;
+            return (
+              <div className="space-y-5">
+                {/* KPI row */}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <LiveKpi label="Total Clicks"      value={d.overview.clicks.toLocaleString()}      sub="organic visits from Google" />
+                  <LiveKpi label="Impressions"       value={d.overview.impressions.toLocaleString()} sub="times appeared in search" />
+                  <LiveKpi label="Avg. CTR"          value={`${d.overview.ctr}%`}                    sub="clicks ÷ impressions" />
+                  <LiveKpi label="Avg. Position"     value={d.overview.position}                     sub="lower = higher ranking" />
+                </div>
+
+                <div className="grid gap-5 lg:grid-cols-2">
+                  {/* Top search queries */}
+                  <div className="rounded-2xl border border-line bg-white p-5 lg:col-span-2">
+                    <SectionHeader>Top Search Queries</SectionHeader>
+                    <div className="mt-4">
+                      <LiveTable
+                        rows={d.topQueries}
+                        cols={[
+                          { key: "query",       label: "Query" },
+                          { key: "clicks",      label: "Clicks",       align: "right" },
+                          { key: "impressions", label: "Impressions",   align: "right" },
+                          { key: "ctr",         label: "CTR %",        align: "right" },
+                          { key: "position",    label: "Avg. Position", align: "right" },
+                        ]}
+                        maxRows={25}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Top landing pages */}
+                  <div className="rounded-2xl border border-line bg-white p-5 lg:col-span-2">
+                    <SectionHeader>Top Organic Landing Pages</SectionHeader>
+                    <div className="mt-4">
+                      <LiveTable
+                        rows={d.topPages}
+                        cols={[
+                          { key: "page",        label: "Page" },
+                          { key: "clicks",      label: "Clicks",       align: "right" },
+                          { key: "impressions", label: "Impressions",   align: "right" },
+                          { key: "ctr",         label: "CTR %",        align: "right" },
+                          { key: "position",    label: "Avg. Position", align: "right" },
+                        ]}
+                        maxRows={25}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 

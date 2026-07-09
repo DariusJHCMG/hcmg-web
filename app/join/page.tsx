@@ -19,14 +19,14 @@ export const metadata: Metadata = {
     title: "Join HCMG, Loan Officer Careers",
     description:
       "100+ lender partners. 275 BPS lender-paid comp. Revenue share. Modern borrower tools. Built for producing loan officers and mortgage brokers who want pricing power and clarity.",
-    images: ["/hcmg-social-square.svg"],
+    images: ["/hcmg-social.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Join HCMG, Loan Officer Careers",
     description:
       "100+ lender partners. 275 BPS lender-paid comp. Built for producing LOs and mortgage brokers.",
-    images: ["/hcmg-social-square.svg"],
+    images: ["/hcmg-social.png"],
   },
   keywords: [
     "loan officer jobs",

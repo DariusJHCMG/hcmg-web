@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     title: "Migrate Your Team to HCMG",
     description:
       "Established teams deserve a migration that doesn't break what's working. HCMG handles the transition end-to-end.",
-    images: ["/hcmg-social-square.svg"],
+    images: ["/hcmg-social.png"],
   },
 };
 
