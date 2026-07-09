@@ -20,6 +20,29 @@ body {
   font-family: var(--font-montserrat), "Montserrat", sans-serif;
 }
 
+/* ── Core Web Vitals — CLS prevention ────────────────────── */
+/* Explicit aspect-ratio on images prevents height collapse before load → avoids CLS */
+img {
+  max-width: 100%;
+  height: auto;
+}
+/* Reserve height for hero images so the page doesn't reflow when they load */
+.hero-image-slot {
+  aspect-ratio: 16 / 9;
+  background: #f7f8fa;
+  overflow: hidden;
+}
+/* Prevent font-related CLS: size-adjust is handled by next/font adjustFontFallback,
+   but this ensures fallback font renders at the correct line-height too */
+@font-face {
+  font-family: 'MontserratFallback';
+  src: local('Arial');
+  size-adjust: 100.06%;
+  ascent-override: 95%;
+  descent-override: 20%;
+  line-gap-override: 0%;
+}
+
 /* ── Layout ──────────────────────────────────────────────── */
 .container-shell {
   @apply mx-auto w-full max-w-7xl px-5 lg:px-8;

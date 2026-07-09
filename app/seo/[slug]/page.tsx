@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { seoPages, STATE_COPY, LOAN_TYPE_FAQS, CITY_DATA } from "@/data/seo-pages";
+import { seoPages, STATE_COPY, LOAN_TYPE_FAQS, CITY_DATA, AEO_FAQS } from "@/data/seo-pages";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
@@ -67,17 +67,23 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
     ],
   };
 
+  const aeoFaqsForSchema = AEO_FAQS[page.loanType]?.(page.city, page.state) ?? [];
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.a,
-      },
-    })),
+    mainEntity: [
+      ...aeoFaqsForSchema.map((faq) => ({
+        "@type": "Question",
+        name: faq.q,
+        acceptedAnswer: { "@type": "Answer", text: faq.a },
+      })),
+      ...faqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.q,
+        acceptedAnswer: { "@type": "Answer", text: faq.a },
+      })),
+    ],
   };
 
   return (
@@ -126,28 +132,87 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
             const cityInfo = CITY_DATA[page.city];
             if (!cityInfo) return null;
             return (
-              <div className="mt-5 rounded-2xl border border-line bg-white p-5">
-                <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">{page.city} Market Snapshot</p>
-                <div className="grid gap-4 sm:grid-cols-3 text-sm">
-                  <div>
-                    <div className="font-extrabold text-lg text-ink">${cityInfo.medianHomePrice.toLocaleString()}</div>
-                    <div className="text-muted">Median home price</div>
+              <>
+                {/* Market snapshot */}
+                <div className="mt-5 rounded-2xl border border-line bg-white p-5">
+                  <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">{page.city} Market Snapshot</p>
+                  <div className="grid gap-4 sm:grid-cols-3 text-sm">
+                    <div>
+                      <div className="font-extrabold text-lg text-ink">${cityInfo.medianHomePrice.toLocaleString()}</div>
+                      <div className="text-muted">Median home price</div>
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-lg text-ink">{cityInfo.propertyTaxRate}%</div>
+                      <div className="text-muted">Avg. property tax rate</div>
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-lg text-ink">{cityInfo.county}</div>
+                      <div className="text-muted">County</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-extrabold text-lg text-ink">{cityInfo.propertyTaxRate}%</div>
-                    <div className="text-muted">Avg. property tax rate</div>
-                  </div>
-                  <div>
-                    <div className="font-extrabold text-lg text-ink">{cityInfo.county}</div>
-                    <div className="text-muted">County</div>
-                  </div>
+                  {/* FHA loan limit row */}
+                  {cityInfo.fhaLoanLimit && (
+                    <div className="mt-4 border-t border-line pt-4 grid gap-4 sm:grid-cols-2 text-sm">
+                      <div>
+                        <div className="font-extrabold text-lg text-ink">${cityInfo.fhaLoanLimit.toLocaleString()}</div>
+                        <div className="text-muted">2024 FHA loan limit · {cityInfo.county}</div>
+                      </div>
+                      {cityInfo.dpaProgram && (
+                        <div>
+                          <div className="font-semibold text-sm text-ink mb-1">Down Payment Assistance</div>
+                          <div className="text-xs leading-5 text-muted">{cityInfo.dpaProgram}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
+                {/* Neighborhood context */}
+                {cityInfo.neighborhoods && cityInfo.neighborhoods.length > 0 && (
+                  <div className="mt-4 rounded-2xl border border-line bg-white p-5">
+                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-muted">
+                      Areas within {page.city} we commonly serve
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {cityInfo.neighborhoods.map((n) => (
+                        <span
+                          key={n}
+                          className="rounded-xl border border-line bg-sand px-3 py-1.5 text-xs font-semibold text-ink"
+                        >
+                          {n}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             );
           })()}
           <Disclosure variant="estimate" className="mt-6" />
         </div>
       </section>
+
+      {/* AEO — high-intent conversational questions */}
+      {(() => {
+        const aeoFaqs = AEO_FAQS[page.loanType]?.(page.city, page.state) ?? [];
+        if (aeoFaqs.length === 0) return null;
+        return (
+          <section className="section-pad bg-white" style={{ paddingBottom: 0 }}>
+            <div className="container-shell max-w-4xl">
+              <h2 className="mb-6 text-2xl font-extrabold text-ink">
+                Frequently Asked Questions — {page.loanType} in {page.city}, {page.state}
+              </h2>
+              <div className="space-y-5">
+                {aeoFaqs.map((faq) => (
+                  <div key={faq.q} className="rounded-2xl border border-line bg-sand p-6">
+                    <h3 className="mb-3 font-bold text-ink">{faq.q}</h3>
+                    <p className="text-sm leading-7 text-muted">{faq.a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* FAQ */}
       <section className="section-pad bg-white">

@@ -10,7 +10,11 @@ const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "600", "700", "800"],
   variable: "--font-montserrat",
+  // `swap` prevents invisible text during load (avoids LCP delay from font blocking)
   display: "swap",
+  // Preload only the weights used above the fold — reduces render-blocking font requests
+  preload: true,
+  adjustFontFallback: true,   // Generates a metric-compatible fallback → eliminates CLS from font swap
 });
 
 export const metadata: Metadata = {
@@ -94,6 +98,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={montserrat.variable}>
       <head>
+        {/* Preconnect to Google Fonts origin — reduces DNS + TLS handshake time */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Resource hints for LCP image — ensures hero image fetch starts as early as possible */}
+        <link rel="preload" as="image" href="/hcmg-social.png" fetchPriority="high" />
+
+        {/* Viewport width — prevents horizontal-scroll CLS on mobile */}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
