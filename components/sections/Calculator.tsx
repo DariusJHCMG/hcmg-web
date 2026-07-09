@@ -282,6 +282,85 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
                 Get my exact rate →
               </Link>
               <Disclosure variant="estimate" className="mt-4 text-center" />
+
+              {/* Amortization accordion — inside the unlocked card */}
+              <div className="mt-5 rounded-2xl border border-line overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowAmortization((v) => !v)}
+                  className="flex w-full items-center justify-between px-5 py-3.5 text-left hover:bg-sand/50 transition-colors"
+                >
+                  <div>
+                    <p className="text-sm font-bold text-ink">Amortization Schedule</p>
+                    <p className="text-xs text-muted">
+                      {calc.loanTermYears * 12} payments · {formatCurrency(est.loanAmount)} · {calc.annualRatePercent.toFixed(3)}%
+                    </p>
+                  </div>
+                  <span className="text-base text-muted transition-transform duration-200" style={{ transform: showAmortization ? "rotate(180deg)" : "none" }}>▾</span>
+                </button>
+
+                {showAmortization && (
+                  <div className="border-t border-line">
+                    <div className="grid grid-cols-3 gap-3 p-4 bg-sand/30">
+                      {(() => {
+                        const totalInterest = amortRows.reduce((s, r) => s + r.interest, 0);
+                        const totalPaid = amortRows.reduce((s, r) => s + r.payment, 0);
+                        return [
+                          { label: "Loan Amount",    value: formatCurrency(est.loanAmount) },
+                          { label: "Total Interest", value: formatCurrency(Math.round(totalInterest)) },
+                          { label: "Total Cost",     value: formatCurrency(Math.round(totalPaid)) },
+                        ].map((s) => (
+                          <div key={s.label} className="text-center">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/70">{s.label}</p>
+                            <p className="mt-0.5 text-sm font-extrabold text-ink">{s.value}</p>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-line bg-sand/20">
+                            {["Month", "Payment", "Principal", "Interest", "Balance"].map((h, i) => (
+                              <th key={h} className={`px-3 py-2.5 font-bold uppercase tracking-[0.07em] text-muted/60 ${i === 0 ? "text-left" : "text-right"}`}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {amortRows.slice(0, 24).map((r) => (
+                            <tr key={r.month} className={r.month % 2 === 0 ? "bg-sand/10" : ""}>
+                              <td className="px-3 py-1.5 font-medium text-ink">Mo. {r.month}</td>
+                              <td className="px-3 py-1.5 text-right tabular-nums text-ink">{formatCurrency(Math.round(r.payment))}</td>
+                              <td className="px-3 py-1.5 text-right tabular-nums text-accent font-semibold">{formatCurrency(Math.round(r.principal))}</td>
+                              <td className="px-3 py-1.5 text-right tabular-nums text-muted">{formatCurrency(Math.round(r.interest))}</td>
+                              <td className="px-3 py-1.5 text-right tabular-nums text-ink">{formatCurrency(Math.round(r.balance))}</td>
+                            </tr>
+                          ))}
+                          {Array.from({ length: Math.floor(amortRows.length / 12) }, (_, i) => i + 1)
+                            .filter((y) => y > 2)
+                            .map((year) => {
+                              const yr = amortRows.slice((year - 1) * 12, year * 12);
+                              const end = yr[yr.length - 1];
+                              if (!end) return null;
+                              return (
+                                <tr key={`y${year}`} className="bg-sand/30 font-semibold border-t border-line/50">
+                                  <td className="px-3 py-1.5 text-muted">Yr. {year}</td>
+                                  <td className="px-3 py-1.5 text-right tabular-nums text-ink">{formatCurrency(Math.round(yr.reduce((s, r) => s + r.payment, 0)))}</td>
+                                  <td className="px-3 py-1.5 text-right tabular-nums text-accent">{formatCurrency(Math.round(yr.reduce((s, r) => s + r.principal, 0)))}</td>
+                                  <td className="px-3 py-1.5 text-right tabular-nums text-muted">{formatCurrency(Math.round(yr.reduce((s, r) => s + r.interest, 0)))}</td>
+                                  <td className="px-3 py-1.5 text-right tabular-nums text-ink">{formatCurrency(Math.round(end.balance))}</td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="px-4 py-2.5 text-[10px] text-muted/60 border-t border-line">
+                      Months 1–24 detailed; annual summaries for years 3+. Estimates only — consult your loan officer for an official schedule.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Gate overlay */}
@@ -335,98 +414,6 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
         </div>
       </div>
 
-      {/* ── Amortization Schedule ──────────────────────────────────────────── */}
-      <div className="container-shell mt-12 max-w-4xl">
-        <div className="rounded-2xl border border-line bg-white overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setShowAmortization((v) => !v)}
-            className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-sand/50 transition-colors"
-          >
-            <div>
-              <p className="font-bold text-ink">Amortization Schedule</p>
-              <p className="text-sm text-muted">
-                {calc.loanTermYears * 12} payments · Loan amount {formatCurrency(est.loanAmount)} · {calc.annualRatePercent.toFixed(3)}% rate
-              </p>
-            </div>
-            <span className="text-xl text-muted transition-transform" style={{ transform: showAmortization ? "rotate(180deg)" : "rotate(0deg)" }}>
-              ▾
-            </span>
-          </button>
-
-          {showAmortization && (
-            <div className="border-t border-line">
-              {/* Summary stats */}
-              <div className="grid grid-cols-3 gap-4 p-6 bg-sand/30">
-                {(() => {
-                  const rows = amortRows;
-                  const totalInterest = rows.reduce((s, r) => s + r.interest, 0);
-                  const totalPaid = rows.reduce((s, r) => s + r.payment, 0);
-                  return [
-                    { label: "Loan Amount",     value: formatCurrency(est.loanAmount) },
-                    { label: "Total Interest",  value: formatCurrency(Math.round(totalInterest)) },
-                    { label: "Total Cost",      value: formatCurrency(Math.round(totalPaid)) },
-                  ].map((s) => (
-                    <div key={s.label} className="text-center">
-                      <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">{s.label}</p>
-                      <p className="mt-1 text-lg font-extrabold text-ink">{s.value}</p>
-                    </div>
-                  ));
-                })()}
-              </div>
-
-              {/* Table — show first 24 rows + yearly summary for rest */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-line bg-sand/20">
-                      <th className="px-4 py-3 text-left font-bold uppercase tracking-[0.08em] text-muted/60">Month</th>
-                      <th className="px-4 py-3 text-right font-bold uppercase tracking-[0.08em] text-muted/60">Payment</th>
-                      <th className="px-4 py-3 text-right font-bold uppercase tracking-[0.08em] text-muted/60">Principal</th>
-                      <th className="px-4 py-3 text-right font-bold uppercase tracking-[0.08em] text-muted/60">Interest</th>
-                      <th className="px-4 py-3 text-right font-bold uppercase tracking-[0.08em] text-muted/60">Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {amortRows.slice(0, 24).map((r) => (
-                      <tr key={r.month} className={r.month % 2 === 0 ? "bg-sand/10" : ""}>
-                        <td className="px-4 py-2 font-medium text-ink">Month {r.month}</td>
-                        <td className="px-4 py-2 text-right tabular-nums text-ink">{formatCurrency(Math.round(r.payment))}</td>
-                        <td className="px-4 py-2 text-right tabular-nums text-accent font-semibold">{formatCurrency(Math.round(r.principal))}</td>
-                        <td className="px-4 py-2 text-right tabular-nums text-muted">{formatCurrency(Math.round(r.interest))}</td>
-                        <td className="px-4 py-2 text-right tabular-nums text-ink">{formatCurrency(Math.round(r.balance))}</td>
-                      </tr>
-                    ))}
-                    {/* Yearly summaries for year 3+ */}
-                    {Array.from({ length: Math.floor(amortRows.length / 12) }, (_, yi) => yi + 1)
-                      .filter((y) => y > 2)
-                      .map((year) => {
-                        const yearRows = amortRows.slice((year - 1) * 12, year * 12);
-                        const endRow = yearRows[yearRows.length - 1];
-                        if (!endRow) return null;
-                        const yPrincipal = yearRows.reduce((s, r) => s + r.principal, 0);
-                        const yInterest  = yearRows.reduce((s, r) => s + r.interest,  0);
-                        const yPayment   = yearRows.reduce((s, r) => s + r.payment,   0);
-                        return (
-                          <tr key={`y${year}`} className="bg-sand/30 font-semibold border-t border-line/50">
-                            <td className="px-4 py-2 text-muted">Year {year}</td>
-                            <td className="px-4 py-2 text-right tabular-nums text-ink">{formatCurrency(Math.round(yPayment))}</td>
-                            <td className="px-4 py-2 text-right tabular-nums text-accent">{formatCurrency(Math.round(yPrincipal))}</td>
-                            <td className="px-4 py-2 text-right tabular-nums text-muted">{formatCurrency(Math.round(yInterest))}</td>
-                            <td className="px-4 py-2 text-right tabular-nums text-ink">{formatCurrency(Math.round(endRow.balance))}</td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
-              </div>
-              <p className="px-6 py-3 text-[11px] text-muted/60 border-t border-line">
-                Showing detailed rows for months 1–24; annual summaries for years 3+. Actual schedule may vary. Consult your loan officer for an official amortization table.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
     </section>
   );
 }
