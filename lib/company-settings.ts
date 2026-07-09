@@ -10,6 +10,11 @@ export interface CompanySettings {
   ga4_measurement_id:      string;  // e.g. "G-XXXXXXXXXX" — used for tag injection
   ga4_property_id:         string;  // e.g. "123456789" — numeric property ID for Data API
   gsc_property:            string;  // e.g. "https://hcmgloans.com" — GSC property URL
+  // OAuth tokens for Analytics (set via /api/auth/google/callback)
+  google_access_token:     string;
+  google_refresh_token:    string;
+  google_token_expiry:     string;  // ISO timestamp
+  google_connected_email:  string;  // email of connected Google account
 }
 
 export const DEFAULT_SETTINGS: CompanySettings = {
@@ -20,6 +25,10 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   ga4_measurement_id:      "",
   ga4_property_id:         "",
   gsc_property:            "",
+  google_access_token:     "",
+  google_refresh_token:    "",
+  google_token_expiry:     "",
+  google_connected_email:  "",
 };
 
 export async function readSettings(): Promise<CompanySettings> {

@@ -2,27 +2,19 @@ import { NextResponse } from "next/server";
 import { google } from "googleapis";
 import { getCurrentProfile } from "@/lib/auth";
 import { readSettings } from "@/lib/company-settings";
-
-function getAuth(scopes: string[]) {
-  const email = process.env.GOOGLE_SA_CLIENT_EMAIL;
-  const key   = process.env.GOOGLE_SA_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  if (!email || !key) return null;
-  return new google.auth.JWT({ email, key, scopes });
-}
+import { getOAuthClient } from "@/lib/google-oauth";
 
 export async function GET() {
   const caller = await getCurrentProfile();
   if (!caller) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const auth = getAuth(["https://www.googleapis.com/auth/webmasters.readonly"]);
-  if (!auth) {
+  const settings = await readSettings();
+  if (!settings.google_refresh_token) {
     return NextResponse.json(
-      { error: "Google service account not configured. Add GOOGLE_SA_CLIENT_EMAIL and GOOGLE_SA_PRIVATE_KEY to Vercel environment variables." },
+      { error: "Google account not connected. Go to Admin → Settings and click 'Connect Google Account'." },
       { status: 503 },
     );
   }
-
-  const settings = await readSettings();
   if (!settings.gsc_property) {
     return NextResponse.json(
       { error: "GSC property URL not configured. Add it in Admin → Settings." },
@@ -31,6 +23,7 @@ export async function GET() {
   }
 
   try {
+    const auth = await getOAuthClient();
     const searchconsole = google.searchconsole({ version: "v1", auth });
     const siteUrl = settings.gsc_property;
 
