@@ -1,12 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 import { getCurrentProfile } from "@/lib/auth";
 import { readSettings } from "@/lib/company-settings";
 import { getOAuthClient } from "@/lib/google-oauth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const caller = await getCurrentProfile();
   if (!caller) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+  // Optional ?lo=slug param — filters GSC data to pages containing that slug
+  const loSlug = new URL(request.url).searchParams.get("lo") ?? null;
 
   const settings = await readSettings();
   if (!settings.google_refresh_token) {
@@ -53,18 +56,29 @@ export async function GET() {
     const endDate   = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
     const startDate = new Date(Date.now() - 31 * 86400000).toISOString().slice(0, 10);
 
+    // GSC page filter — only include pages whose URL contains the LO slug
+    const pageFilter = loSlug ? {
+      dimensionFilterGroups: [{
+        filters: [{
+          dimension:  "page",
+          operator:   "contains",
+          expression: loSlug,
+        }],
+      }],
+    } : {};
+
     const [overviewRes, topQueriesRes, topPagesRes] = await Promise.all([
       searchconsole.searchanalytics.query({
         siteUrl,
-        requestBody: { startDate, endDate, type: "web" },
+        requestBody: { startDate, endDate, type: "web", ...pageFilter },
       }),
       searchconsole.searchanalytics.query({
         siteUrl,
-        requestBody: { startDate, endDate, type: "web", dimensions: ["query"], rowLimit: 25 },
+        requestBody: { startDate, endDate, type: "web", dimensions: ["query"], rowLimit: 25, ...pageFilter },
       }),
       searchconsole.searchanalytics.query({
         siteUrl,
-        requestBody: { startDate, endDate, type: "web", dimensions: ["page"], rowLimit: 25 },
+        requestBody: { startDate, endDate, type: "web", dimensions: ["page"], rowLimit: 25, ...pageFilter },
       }),
     ]);
 

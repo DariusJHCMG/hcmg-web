@@ -350,7 +350,8 @@ export function AnalyticsDashboard({ data, scope, scopeLabel, loSlug }: { data: 
   async function fetchGsc() {
     setGscState({ status: "loading" });
     try {
-      const res = await fetch("/api/analytics/gsc");
+      const url = loSlug ? `/api/analytics/gsc?lo=${encodeURIComponent(loSlug)}` : "/api/analytics/gsc";
+      const res = await fetch(url);
       const json = await res.json();
       if (!res.ok || !json.ok) {
         if (res.status === 503) { setGscState({ status: "unconfigured" }); return; }
