@@ -1,18 +1,22 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
-import { ExternalAccountClient } from "google-auth-library";
 import { getCurrentProfile } from "@/lib/auth";
 import { readSettings } from "@/lib/company-settings";
 
 // ── Auth helper ───────────────────────────────────────────────────────────────
-// Builds a GoogleAuth client using Workload Identity Federation.
-// GOOGLE_APPLICATION_CREDENTIALS_JSON: the config JSON downloaded from GCP.
-// VERCEL_OIDC_TOKEN: injected by Vercel at runtime (must be enabled in project settings).
-function buildAuth(scopes: string[]) {
+// Uses Workload Identity Federation via manual STS token exchange.
+// GOOGLE_APPLICATION_CREDENTIALS_JSON: config JSON from GCP (external_account).
+// VERCEL_OIDC_TOKEN: injected by Vercel at runtime when OIDC is enabled.
+async function buildAccessToken(scopes: string): Promise<string | null> {
   const raw = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
-  if (!raw) return null;
+  const oidcToken = process.env.VERCEL_OIDC_TOKEN;
+  if (!raw || !oidcToken) return null;
 
-  let config: Record<string, unknown>;
+  let config: {
+    audience: string;
+    service_account_impersonation_url?: string;
+    token_url: string;
+  };
   try {
     const json = raw.startsWith("{") ? raw : Buffer.from(raw, "base64").toString("utf-8");
     config = JSON.parse(json);
@@ -20,20 +24,44 @@ function buildAuth(scopes: string[]) {
     return null;
   }
 
-  const oidcToken = process.env.VERCEL_OIDC_TOKEN;
-  if (!oidcToken) return null;
+  // Step 1: Exchange Vercel OIDC token → Google STS federated token
+  const stsBody = new URLSearchParams({
+    grant_type:           "urn:ietf:params:oauth:grant-type:token-exchange",
+    audience:             config.audience,
+    scope:                "https://www.googleapis.com/auth/cloud-platform",
+    requested_token_type: "urn:ietf:params:oauth:token-type:access_token",
+    subject_token:        oidcToken,
+    subject_token_type:   "urn:ietf:params:oauth:token-type:jwt",
+  });
 
-  const client = ExternalAccountClient.fromJSON({
-    ...config,
-    credential_source: undefined,
-    subject_token_supplier: {
-      getSubjectToken: async () => oidcToken,
+  const stsRes = await fetch(config.token_url, {
+    method:  "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body:    stsBody.toString(),
+  });
+  if (!stsRes.ok) {
+    const err = await stsRes.text();
+    throw new Error(`STS exchange failed: ${err}`);
+  }
+  const { access_token: federatedToken } = await stsRes.json() as { access_token: string };
+
+  // Step 2: Impersonate service account → scoped access token
+  if (!config.service_account_impersonation_url) return federatedToken;
+
+  const impersonateRes = await fetch(`${config.service_account_impersonation_url}`, {
+    method:  "POST",
+    headers: {
+      "Content-Type":  "application/json",
+      "Authorization": `Bearer ${federatedToken}`,
     },
-  } as Parameters<typeof ExternalAccountClient.fromJSON>[0]);
-
-  if (!client) return null;
-  client.scopes = scopes;
-  return client;
+    body: JSON.stringify({ scope: scopes.split(" "), lifetime: "3600s" }),
+  });
+  if (!impersonateRes.ok) {
+    const err = await impersonateRes.text();
+    throw new Error(`Service account impersonation failed: ${err}`);
+  }
+  const { accessToken } = await impersonateRes.json() as { accessToken: string };
+  return accessToken;
 }
 
 export async function GET() {
@@ -46,10 +74,9 @@ export async function GET() {
       { status: 503 },
     );
   }
-
   if (!process.env.VERCEL_OIDC_TOKEN) {
     return NextResponse.json(
-      { error: "VERCEL_OIDC_TOKEN not available. Enable OIDC token generation in your Vercel project settings (Settings → General → Vercel OIDC Token)." },
+      { error: "VERCEL_OIDC_TOKEN not available. Enable it in Vercel project Settings → General → Vercel OIDC Token." },
       { status: 503 },
     );
   }
@@ -62,15 +89,17 @@ export async function GET() {
     );
   }
 
-  const auth = buildAuth(["https://www.googleapis.com/auth/webmasters.readonly"]);
-  if (!auth) {
-    return NextResponse.json({ error: "Failed to build Google auth client. Check GOOGLE_APPLICATION_CREDENTIALS_JSON format." }, { status: 503 });
-  }
-
-  const siteUrl = settings.gsc_property;
-
   try {
+    const accessToken = await buildAccessToken("https://www.googleapis.com/auth/webmasters.readonly");
+    if (!accessToken) {
+      return NextResponse.json({ error: "Failed to obtain access token via Workload Identity Federation." }, { status: 503 });
+    }
+
+    const auth = new google.auth.OAuth2();
+    auth.setCredentials({ access_token: accessToken });
+
     const searchconsole = google.searchconsole({ version: "v1", auth });
+    const siteUrl = settings.gsc_property;
 
     const endDate   = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
     const startDate = new Date(Date.now() - 31 * 86400000).toISOString().slice(0, 10);
