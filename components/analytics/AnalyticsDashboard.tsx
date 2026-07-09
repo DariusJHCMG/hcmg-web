@@ -308,7 +308,7 @@ const RANGES = [
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function AnalyticsDashboard({ data, scope, scopeLabel }: { data: AnalyticsData; scope: "admin" | "portal"; scopeLabel?: string }) {
+export function AnalyticsDashboard({ data, scope, scopeLabel, loSlug }: { data: AnalyticsData; scope: "admin" | "portal"; scopeLabel?: string; loSlug?: string }) {
   const [rangeDays, setRangeDays] = useState(30);
   const [activeTab, setActiveTab] = useState<"lead-gen" | "funnel" | "traffic" | "seo">("lead-gen");
 
@@ -333,7 +333,8 @@ export function AnalyticsDashboard({ data, scope, scopeLabel }: { data: Analytic
   async function fetchGa4() {
     setGa4State({ status: "loading" });
     try {
-      const res = await fetch("/api/analytics/ga4");
+      const url = loSlug ? `/api/analytics/ga4?lo=${encodeURIComponent(loSlug)}` : "/api/analytics/ga4";
+      const res = await fetch(url);
       const json = await res.json();
       if (!res.ok || !json.ok) {
         if (res.status === 503) { setGa4State({ status: "unconfigured" }); return; }

@@ -1,12 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 import { getCurrentProfile } from "@/lib/auth";
 import { readSettings } from "@/lib/company-settings";
 import { getOAuthClient } from "@/lib/google-oauth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const caller = await getCurrentProfile();
   if (!caller) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+  // Optional ?lo=slug param — filters GA4 data to pages for that LO only
+  const loSlug = new URL(request.url).searchParams.get("lo") ?? null;
 
   const settings = await readSettings();
   if (!settings.google_refresh_token) {
@@ -21,6 +24,19 @@ export async function GET() {
       { status: 503 },
     );
   }
+
+  // Build GA4 dimension filter for LO-scoped view
+  // Matches pages like /get-started?lo=their-slug and /portal/their-slug/*
+  const loPageFilter = loSlug ? {
+    filter: {
+      fieldName: "landingPagePlusQueryString",
+      stringFilter: {
+        matchType: "CONTAINS" as const,
+        value: loSlug,
+        caseSensitive: false,
+      },
+    },
+  } : undefined;
 
   try {
     const auth = await getOAuthClient();
@@ -41,6 +57,7 @@ export async function GET() {
             { name: "averageSessionDuration" },
             { name: "newUsers" },
           ],
+          ...(loPageFilter && { dimensionFilter: loPageFilter }),
         },
       }),
       analyticsdata.properties.runReport({
@@ -50,6 +67,7 @@ export async function GET() {
           dimensions: [{ name: "sessionDefaultChannelGroup" }],
           metrics: [{ name: "sessions" }, { name: "totalUsers" }],
           limit: "10",
+          ...(loPageFilter && { dimensionFilter: loPageFilter }),
         },
       }),
       analyticsdata.properties.runReport({
@@ -59,6 +77,7 @@ export async function GET() {
           dimensions: [{ name: "landingPagePlusQueryString" }],
           metrics: [{ name: "sessions" }, { name: "totalUsers" }, { name: "bounceRate" }],
           limit: "10",
+          ...(loPageFilter && { dimensionFilter: loPageFilter }),
         },
       }),
       analyticsdata.properties.runReport({
@@ -67,6 +86,7 @@ export async function GET() {
           dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
           dimensions: [{ name: "deviceCategory" }],
           metrics: [{ name: "sessions" }, { name: "totalUsers" }],
+          ...(loPageFilter && { dimensionFilter: loPageFilter }),
         },
       }),
     ]);

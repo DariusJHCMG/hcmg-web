@@ -55,5 +55,5 @@ export default async function PortalAnalyticsPage() {
   if (!profile.lo_slug) redirect("/portal");
 
   const data = await getLoAnalyticsData(profile.lo_slug);
-  return <AnalyticsDashboard data={data} scope="portal" />;
+  return <AnalyticsDashboard data={data} scope="portal" loSlug={profile.lo_slug} />;
 }

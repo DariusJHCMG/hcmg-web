@@ -114,7 +114,7 @@ export default async function AdminAnalyticsPage({
           <p className="mt-2 text-sm text-muted">Choose a user from the dropdown to view their individual analytics.</p>
         </div>
       ) : (
-        <AnalyticsDashboard data={data} scope={view === "company" ? "admin" : "portal"} scopeLabel={scopeLabel} />
+        <AnalyticsDashboard data={data} scope={view === "company" ? "admin" : "portal"} scopeLabel={scopeLabel} loSlug={activeLo} />
       )}
     </div>
   );
