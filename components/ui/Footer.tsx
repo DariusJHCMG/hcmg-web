@@ -25,7 +25,7 @@ const LEGAL_LINKS = [
 const SOCIAL_LINKS = [
   { label: "Facebook", href: "https://www.facebook.com/harriscapitalmortgage" },
   { label: "Instagram", href: "https://www.instagram.com/harriscapitalmortgage" },
-  { label: "Twitter", href: "https://twitter.com/harriscapitalmtg" },
+  { label: "Twitter / X", href: "https://x.com/harriscapitalmtg" },
 ];
 
 export function Footer() {
