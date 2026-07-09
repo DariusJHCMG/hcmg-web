@@ -16,7 +16,7 @@ export function LocalSEO() {
             Colorado, Virginia, Washington DC, Maryland, California, and Mississippi. Find a mortgage lender
             near you below.
           </p>
-          <Link href={`/seo/${featuredCities[0].slug}`} className="primary-button mt-8 inline-flex">
+          <Link href="/areas-we-serve" className="primary-button mt-8 inline-flex">
             See all markets →
           </Link>
         </div>
@@ -35,8 +35,8 @@ export function LocalSEO() {
             ))}
           </div>
           <div className="mt-4 text-right">
-            <Link href={`/seo/${featuredCities[0].slug}`} className="text-sm font-semibold text-accent hover:underline">
-              View all 732 local pages →
+            <Link href="/areas-we-serve" className="text-sm font-semibold text-accent hover:underline">
+              View all local pages →
             </Link>
           </div>
         </div>
