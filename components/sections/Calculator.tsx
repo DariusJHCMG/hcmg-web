@@ -82,10 +82,10 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
   function switchLoanType(lt: LoanType) {
     setLoanType(lt);
     const preset = LOAN_PRESETS[lt];
-    // Clamp down payment to the minimum for that loan type
+    // Always snap to the loan type's default down payment on tab switch
     setCalc((c) => ({
       ...c,
-      downPaymentPercent: Math.max(c.downPaymentPercent, preset.defaultDown),
+      downPaymentPercent: preset.defaultDown,
     }));
   }
 

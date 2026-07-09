@@ -46,6 +46,30 @@ const faqSchema = {
     },
     {
       "@type": "Question",
+      name: "How do I figure out my mortgage payment?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Figuring out mortgage payments is straightforward with our free calculator above. Enter your home price, down payment, interest rate, and loan term. The calculator instantly shows your estimated monthly payment including principal, interest, property taxes, and insurance (PITI). For an FHA loan, it also adds the monthly MIP. For conventional loans with under 20% down, it adds PMI. You can also expand the amortization schedule to see your exact principal and interest split every month over the life of the loan.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What will my estimated mortgage payment be?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Your estimated mortgage payment depends on four main factors: home price, down payment, interest rate, and loan term. As a rough estimate: on a $400,000 home with 20% down, a 30-year loan at 7% results in a principal and interest payment of about $2,129/month. Add property taxes (~$400/mo), insurance (~$150/mo), and your total estimated mortgage payment (PITI) is around $2,679/month. Use the calculator above to get an estimate based on your exact numbers — it updates instantly as you adjust the sliders.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How do I estimate a mortgage payment on a house?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "To estimate a mortgage payment on a house: (1) Enter the home price in the calculator above. (2) Set your down payment percentage — 3.5% for FHA, 0% for VA/USDA, or 3–20% for conventional. (3) Enter the current interest rate — use the rate your lender quoted, or a market estimate. (4) Choose your loan term (usually 30 years). The calculator will show your full monthly payment estimate including taxes and insurance. For the most accurate estimate, speak with an HCMG loan officer — they can pull live rates based on your credit profile.",
+      },
+    },
+    {
+      "@type": "Question",
       name: "How much down payment do I need?",
       acceptedAnswer: {
         "@type": "Answer",
@@ -99,18 +123,21 @@ export default function MortgageCalculatorPage() {
       {/* Hero */}
       <section className="section-pad bg-white" style={{ paddingBottom: 0 }}>
         <div className="container-shell max-w-4xl text-center">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-accent">Free Tool</p>
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-accent">Free Tool · No Credit Check</p>
           <h1
             className="font-extrabold tracking-tight text-ink"
             style={{ fontSize: "clamp(34px, 5vw, 60px)", lineHeight: 1.08 }}
           >
             Mortgage Payment Calculator
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted">
-            Calculate your estimated monthly mortgage payment instantly — including principal, interest, property taxes, insurance, and HOA. No credit check. No sign-up.
+          <p className="mx-auto mt-3 text-base font-semibold text-muted/70">
+            Also called: Home Loan Calculator · House Payment Calculator · Loan Calculator · Payment Calculator
+          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-muted">
+            Free mortgage calculator and payment estimator — instantly estimate your monthly mortgage payment including principal, interest, property taxes, insurance (PITI), FHA MIP, and PMI. No credit check. No sign-up.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm font-semibold text-muted">
-            {["No credit check", "Includes taxes & insurance", "Works for purchase or refinance"].map((t) => (
+            {["FHA, VA, USDA & Conventional", "Full PITI + MIP/PMI breakdown", "Amortization schedule included"].map((t) => (
               <span key={t} className="flex items-center gap-2">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full text-white text-xs" style={{ background: "var(--ok-gradient)" }}>✓</span>
                 {t}
@@ -126,8 +153,26 @@ export default function MortgageCalculatorPage() {
         subheading="Adjust the sliders — your estimate updates instantly. Unlock your full breakdown free."
       />
 
+      {/* Keyword variant section — targets "home loan calculator", "house payment calculator", etc. */}
+      <section className="section-pad bg-sand" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
+        <div className="container-shell max-w-4xl">
+          <div className="grid gap-6 sm:grid-cols-3 text-center">
+            {[
+              { heading: "Home Loan Calculator", body: "Use this free home loan calculator to estimate your monthly mortgage payment. Supports FHA, VA, USDA, and conventional loans with full PITI breakdown." },
+              { heading: "House Payment Calculator", body: "Figuring out house payments is easy — enter your home price, down payment, and rate. Your estimated house payment updates instantly including taxes and insurance." },
+              { heading: "Loan Payment Estimator", body: "Not sure what your loan payment will be? This free mortgage loan calculator and payment estimator gives you an instant breakdown — no personal info required." },
+            ].map((item) => (
+              <div key={item.heading} className="rounded-2xl border border-line bg-white p-5">
+                <h2 className="text-base font-extrabold text-ink">{item.heading}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Loan type links */}
-      <section className="section-pad bg-sand">
+      <section className="section-pad bg-white">
         <div className="container-shell max-w-4xl">
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted">Loan-specific calculators</h2>
           <p className="mb-8 text-2xl font-extrabold text-ink">Calculate by loan type</p>
