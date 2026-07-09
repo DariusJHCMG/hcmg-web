@@ -25,7 +25,30 @@ export async function GET() {
   try {
     const auth = await getOAuthClient();
     const searchconsole = google.searchconsole({ version: "v1", auth });
-    const siteUrl = settings.gsc_property;
+
+    // Normalise: GSC requires exact match — try stored value first,
+    // then with trailing slash, then without.
+    const raw = settings.gsc_property.trim();
+    const candidates = Array.from(new Set([
+      raw,
+      raw.endsWith("/") ? raw : `${raw}/`,
+      raw.endsWith("/") ? raw.slice(0, -1) : raw,
+    ]));
+
+    // Find the first URL that GSC accepts
+    let siteUrl = raw;
+    for (const candidate of candidates) {
+      try {
+        await searchconsole.searchanalytics.query({
+          siteUrl: candidate,
+          requestBody: { startDate: "2024-01-01", endDate: "2024-01-01", type: "web" },
+        });
+        siteUrl = candidate;
+        break;
+      } catch {
+        // try next
+      }
+    }
 
     const endDate   = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
     const startDate = new Date(Date.now() - 31 * 86400000).toISOString().slice(0, 10);
