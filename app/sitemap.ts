@@ -31,6 +31,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/sms-policy`, changeFrequency: "monthly", priority: 0.4, lastModified: new Date("2026-07-01") },
     { url: `${BASE}/licensing`, changeFrequency: "monthly", priority: 0.5, lastModified: new Date("2026-07-01") },
     { url: `${BASE}/learn`, changeFrequency: "weekly", priority: 0.85, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/florida`,     changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/texas`,       changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/georgia`,     changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/nevada`,      changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/colorado`,    changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/virginia`,    changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/maryland`,    changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/california`,  changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/mississippi`, changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/mortgage-calculator/dc`,          changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
   ];
 
   const seoRoutes: MetadataRoute.Sitemap = seoPages.map((p) => ({

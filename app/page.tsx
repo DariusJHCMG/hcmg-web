@@ -59,6 +59,13 @@ const localBusinessSchema = {
     value: "1918223",
   },
   description: "Harris Capital Mortgage Group, LLC (NMLS# 1918223) is a licensed mortgage lender offering FHA, VA, Conventional, Jumbo, and Refinance loans. Instant estimates, no hard credit check.",
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "127",
+    bestRating: "5",
+    worstRating: "1",
+  },
 };
 
 const homeFaqSchema = {

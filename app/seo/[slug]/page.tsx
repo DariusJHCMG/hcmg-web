@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { seoPages, STATE_COPY, LOAN_TYPE_FAQS } from "@/data/seo-pages";
+import { seoPages, STATE_COPY, LOAN_TYPE_FAQS, CITY_DATA } from "@/data/seo-pages";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
@@ -122,6 +122,29 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
           <p className="mt-4 text-base leading-8 text-muted">
             Harris Capital Mortgage Group (NMLS# 1918223) is a licensed mortgage lender near {page.city}, {page.state} serving buyers throughout the {page.state} market. Whether you&apos;re searching for a {page.loanType.toLowerCase()} near {page.city} or anywhere in {page.state}, our loan officers know the local market and will guide you through every step of the process.
           </p>
+          {(() => {
+            const cityInfo = CITY_DATA[page.city];
+            if (!cityInfo) return null;
+            return (
+              <div className="mt-5 rounded-2xl border border-line bg-white p-5">
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">{page.city} Market Snapshot</p>
+                <div className="grid gap-4 sm:grid-cols-3 text-sm">
+                  <div>
+                    <div className="font-extrabold text-lg text-ink">${cityInfo.medianHomePrice.toLocaleString()}</div>
+                    <div className="text-muted">Median home price</div>
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-lg text-ink">{cityInfo.propertyTaxRate}%</div>
+                    <div className="text-muted">Avg. property tax rate</div>
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-lg text-ink">{cityInfo.county}</div>
+                    <div className="text-muted">County</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
           <Disclosure variant="estimate" className="mt-6" />
         </div>
       </section>

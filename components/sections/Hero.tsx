@@ -43,16 +43,16 @@ export function Hero() {
             className={`font-extrabold leading-[1.08] tracking-tight text-ink ${entered ? "motion-rise motion-delay-2" : "motion-prep"}`}
             style={{ fontSize: "clamp(40px, 6vw, 72px)" }}
           >
-            Find out what you<br />can{" "}
-            <span className="ok-gradient-text">afford</span>
-            <br />in 60 seconds.
+            Home Mortgage Lender —{" "}
+            <span className="ok-gradient-text">FHA, VA</span>
+            {" "}&amp; Conventional Loans
           </h1>
 
           <p
             className={`mt-6 max-w-xl text-lg leading-8 text-muted lg:text-xl ${entered ? "motion-rise motion-delay-3" : "motion-prep"}`}
           >
-            No hard credit check. No pressure. Just a fast, honest look at your
-            buying power, before you ever talk to a lender.
+            Find out what you can afford in 60 seconds. No hard credit check,
+            no pressure — just a fast, honest look at your buying power.
           </p>
 
           {/* Trust row */}

@@ -7,6 +7,92 @@ export type SeoPage = {
   description: string;
 };
 
+/** City-specific data used to enrich local SEO pages with unique content */
+export type CityData = {
+  county: string;
+  medianHomePrice: number;  // USD
+  propertyTaxRate: number;  // annual %, e.g. 0.89
+};
+
+export const CITY_DATA: Record<string, CityData> = {
+  // Florida
+  "Orlando":        { county: "Orange County",       medianHomePrice: 380000, propertyTaxRate: 0.86 },
+  "Miami":          { county: "Miami-Dade County",    medianHomePrice: 620000, propertyTaxRate: 0.89 },
+  "Tampa":          { county: "Hillsborough County",  medianHomePrice: 395000, propertyTaxRate: 1.05 },
+  "Jacksonville":   { county: "Duval County",          medianHomePrice: 310000, propertyTaxRate: 0.84 },
+  "Fort Lauderdale":{ county: "Broward County",        medianHomePrice: 460000, propertyTaxRate: 1.07 },
+  "St. Petersburg": { county: "Pinellas County",       medianHomePrice: 375000, propertyTaxRate: 0.87 },
+  "Hialeah":        { county: "Miami-Dade County",     medianHomePrice: 490000, propertyTaxRate: 0.89 },
+  "Tallahassee":    { county: "Leon County",           medianHomePrice: 255000, propertyTaxRate: 0.76 },
+  "Cape Coral":     { county: "Lee County",            medianHomePrice: 350000, propertyTaxRate: 0.80 },
+  "Port St. Lucie": { county: "St. Lucie County",      medianHomePrice: 340000, propertyTaxRate: 1.16 },
+  // Georgia
+  "Atlanta":        { county: "Fulton County",         medianHomePrice: 420000, propertyTaxRate: 1.08 },
+  "Savannah":       { county: "Chatham County",        medianHomePrice: 315000, propertyTaxRate: 0.93 },
+  "Augusta":        { county: "Richmond County",       medianHomePrice: 195000, propertyTaxRate: 1.01 },
+  "Columbus":       { county: "Muscogee County",       medianHomePrice: 175000, propertyTaxRate: 1.02 },
+  "Macon":          { county: "Bibb County",            medianHomePrice: 155000, propertyTaxRate: 0.98 },
+  "Athens":         { county: "Clarke County",          medianHomePrice: 285000, propertyTaxRate: 0.96 },
+  "Sandy Springs":  { county: "Fulton County",         medianHomePrice: 495000, propertyTaxRate: 1.08 },
+  "Roswell":        { county: "Fulton County",         medianHomePrice: 485000, propertyTaxRate: 1.08 },
+  // Texas
+  "Dallas":         { county: "Dallas County",         medianHomePrice: 360000, propertyTaxRate: 1.83 },
+  "Houston":        { county: "Harris County",          medianHomePrice: 320000, propertyTaxRate: 1.76 },
+  "Austin":         { county: "Travis County",          medianHomePrice: 540000, propertyTaxRate: 1.80 },
+  "San Antonio":    { county: "Bexar County",           medianHomePrice: 290000, propertyTaxRate: 1.90 },
+  "Fort Worth":     { county: "Tarrant County",         medianHomePrice: 325000, propertyTaxRate: 1.85 },
+  "El Paso":        { county: "El Paso County",         medianHomePrice: 215000, propertyTaxRate: 1.73 },
+  "Arlington":      { county: "Tarrant County",         medianHomePrice: 310000, propertyTaxRate: 1.85 },
+  "Plano":          { county: "Collin County",          medianHomePrice: 470000, propertyTaxRate: 1.63 },
+  // Nevada
+  "Las Vegas":      { county: "Clark County",           medianHomePrice: 420000, propertyTaxRate: 0.55 },
+  "Reno":           { county: "Washoe County",          medianHomePrice: 490000, propertyTaxRate: 0.56 },
+  "Henderson":      { county: "Clark County",           medianHomePrice: 450000, propertyTaxRate: 0.55 },
+  "North Las Vegas":{ county: "Clark County",           medianHomePrice: 375000, propertyTaxRate: 0.55 },
+  "Sparks":         { county: "Washoe County",          medianHomePrice: 450000, propertyTaxRate: 0.56 },
+  "Carson City":    { county: "Carson City",            medianHomePrice: 420000, propertyTaxRate: 0.57 },
+  // Colorado
+  "Denver":         { county: "Denver County",          medianHomePrice: 560000, propertyTaxRate: 0.49 },
+  "Colorado Springs":{ county: "El Paso County",        medianHomePrice: 430000, propertyTaxRate: 0.47 },
+  "Aurora":         { county: "Arapahoe County",        medianHomePrice: 435000, propertyTaxRate: 0.53 },
+  "Fort Collins":   { county: "Larimer County",         medianHomePrice: 490000, propertyTaxRate: 0.50 },
+  "Lakewood":       { county: "Jefferson County",       medianHomePrice: 490000, propertyTaxRate: 0.49 },
+  "Pueblo":         { county: "Pueblo County",          medianHomePrice: 245000, propertyTaxRate: 0.66 },
+  // Virginia
+  "Virginia Beach": { county: "Virginia Beach (City)",  medianHomePrice: 375000, propertyTaxRate: 0.99 },
+  "Richmond":       { county: "Richmond (City)",        medianHomePrice: 330000, propertyTaxRate: 1.09 },
+  "Norfolk":        { county: "Norfolk (City)",         medianHomePrice: 275000, propertyTaxRate: 1.11 },
+  "Chesapeake":     { county: "Chesapeake (City)",      medianHomePrice: 355000, propertyTaxRate: 0.95 },
+  "Alexandria":     { county: "Alexandria (City)",      medianHomePrice: 580000, propertyTaxRate: 0.93 },
+  // DC
+  "Washington":     { county: "District of Columbia",  medianHomePrice: 640000, propertyTaxRate: 0.55 },
+  // Maryland
+  "Baltimore":      { county: "Baltimore City",         medianHomePrice: 220000, propertyTaxRate: 1.72 },
+  "Silver Spring":  { county: "Montgomery County",     medianHomePrice: 510000, propertyTaxRate: 1.00 },
+  "Bowie":          { county: "Prince George's County", medianHomePrice: 415000, propertyTaxRate: 1.16 },
+  "Rockville":      { county: "Montgomery County",     medianHomePrice: 560000, propertyTaxRate: 1.00 },
+  "Gaithersburg":   { county: "Montgomery County",     medianHomePrice: 470000, propertyTaxRate: 1.00 },
+  "Frederick":      { county: "Frederick County",      medianHomePrice: 420000, propertyTaxRate: 1.05 },
+  // California
+  "Los Angeles":    { county: "Los Angeles County",    medianHomePrice: 850000, propertyTaxRate: 0.72 },
+  "San Diego":      { county: "San Diego County",      medianHomePrice: 870000, propertyTaxRate: 0.73 },
+  "San Jose":       { county: "Santa Clara County",    medianHomePrice: 1200000, propertyTaxRate: 0.65 },
+  "San Francisco":  { county: "San Francisco County",  medianHomePrice: 1300000, propertyTaxRate: 0.65 },
+  "Fresno":         { county: "Fresno County",          medianHomePrice: 360000, propertyTaxRate: 0.73 },
+  "Sacramento":     { county: "Sacramento County",     medianHomePrice: 490000, propertyTaxRate: 0.75 },
+  "Long Beach":     { county: "Los Angeles County",    medianHomePrice: 760000, propertyTaxRate: 0.72 },
+  "Oakland":        { county: "Alameda County",         medianHomePrice: 780000, propertyTaxRate: 0.77 },
+  "Bakersfield":    { county: "Kern County",            medianHomePrice: 340000, propertyTaxRate: 0.78 },
+  "Anaheim":        { county: "Orange County",          medianHomePrice: 840000, propertyTaxRate: 0.72 },
+  // Mississippi
+  "Jackson":        { county: "Hinds County",           medianHomePrice: 145000, propertyTaxRate: 0.77 },
+  "Gulfport":       { county: "Harrison County",        medianHomePrice: 195000, propertyTaxRate: 0.51 },
+  "Southaven":      { county: "DeSoto County",          medianHomePrice: 250000, propertyTaxRate: 0.52 },
+  "Hattiesburg":    { county: "Forrest County",         medianHomePrice: 180000, propertyTaxRate: 0.63 },
+  "Biloxi":         { county: "Harrison County",        medianHomePrice: 205000, propertyTaxRate: 0.51 },
+  "Meridian":       { county: "Lauderdale County",      medianHomePrice: 130000, propertyTaxRate: 0.74 },
+};
+
 const cities = [
   // Florida
   ["Orlando", "FL"], ["Miami", "FL"], ["Tampa", "FL"], ["Jacksonville", "FL"],

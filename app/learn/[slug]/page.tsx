@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { NavBar } from "@/components/ui/NavBar";
@@ -6,6 +7,7 @@ import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { learnArticles, getArticleBySlug, getRelatedArticles } from "@/data/learn";
 import { seoPages } from "@/data/seo-pages";
+import { glossaryTerms } from "@/data/glossary";
 
 export const revalidate = 86400;
 
@@ -47,6 +49,35 @@ function getLinkedSeoPages(loanType: string) {
       return true;
     })
     .slice(0, 4);
+}
+
+// Build a map of term → slug for glossary auto-linking (first mention only)
+const GLOSSARY_LINK_MAP: Record<string, string> = Object.fromEntries(
+  glossaryTerms.map((t) => [t.term.toLowerCase(), t.slug])
+);
+
+/** Wrap the first occurrence of any glossary term in a paragraph with an anchor tag.
+ *  Returns a React element array (mixed strings + anchors). */
+function linkGlossaryTerms(text: string): React.ReactNode {
+  // Sort longest first so "adjustable-rate mortgage" matches before "mortgage"
+  const terms = Object.keys(GLOSSARY_LINK_MAP).sort((a, b) => b.length - a.length);
+  for (const term of terms) {
+    const idx = text.toLowerCase().indexOf(term);
+    if (idx === -1) continue;
+    const before = text.slice(0, idx);
+    const match  = text.slice(idx, idx + term.length);
+    const after  = text.slice(idx + term.length);
+    return (
+      <>
+        {before}
+        <a href={`/glossary/${GLOSSARY_LINK_MAP[term]}`} className="text-accent underline underline-offset-2 hover:no-underline">
+          {match}
+        </a>
+        {after}
+      </>
+    );
+  }
+  return text;
 }
 
 export default async function LearnArticlePage({
@@ -166,7 +197,7 @@ export default async function LearnArticlePage({
               <div className="space-y-4">
                 {section.body.map((para, j) => (
                   <p key={j} className="text-base leading-8 text-ink/85">
-                    {para}
+                    {j === 0 ? linkGlossaryTerms(para) : para}
                   </p>
                 ))}
               </div>

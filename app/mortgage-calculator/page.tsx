@@ -113,6 +113,19 @@ const LOAN_TYPES = [
   { label: "HELOC Calculator", href: "/seo/houston-heloc", desc: "Borrow against your equity" },
 ];
 
+const STATE_CALCULATORS = [
+  { label: "Florida",        href: "/mortgage-calculator/florida" },
+  { label: "Texas",          href: "/mortgage-calculator/texas" },
+  { label: "Georgia",        href: "/mortgage-calculator/georgia" },
+  { label: "Nevada",         href: "/mortgage-calculator/nevada" },
+  { label: "Colorado",       href: "/mortgage-calculator/colorado" },
+  { label: "Virginia",       href: "/mortgage-calculator/virginia" },
+  { label: "Maryland",       href: "/mortgage-calculator/maryland" },
+  { label: "California",     href: "/mortgage-calculator/california" },
+  { label: "Mississippi",    href: "/mortgage-calculator/mississippi" },
+  { label: "Washington DC",  href: "/mortgage-calculator/dc" },
+];
+
 export default function MortgageCalculatorPage() {
   return (
     <main>
@@ -185,6 +198,25 @@ export default function MortgageCalculatorPage() {
               >
                 <div className="font-bold text-ink">{lt.label}</div>
                 <p className="mt-1 text-sm text-muted">{lt.desc}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* State-specific calculators */}
+      <section className="section-pad bg-sand">
+        <div className="container-shell max-w-4xl">
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted">Mortgage calculator by state</h2>
+          <p className="mb-6 text-2xl font-extrabold text-ink">Calculate with your state&apos;s tax rate</p>
+          <div className="flex flex-wrap gap-3">
+            {STATE_CALCULATORS.map((s) => (
+              <Link
+                key={s.label}
+                href={s.href}
+                className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition-all hover:border-accent hover:text-accent"
+              >
+                {s.label} →
               </Link>
             ))}
           </div>
