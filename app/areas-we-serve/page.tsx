@@ -6,7 +6,7 @@ import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { seoPages } from "@/data/seo-pages";
 
 export const metadata: Metadata = {
-  title: "Areas We Serve — Mortgage Lender Near You | HCMG",
+  title: "Areas We Serve: Mortgage Lender Near You | HCMG",
   description:
     "Harris Capital Mortgage Group (NMLS# 1918223) is licensed in FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. Browse state and city mortgage pages to find a licensed loan officer near you.",
   alternates: { canonical: "https://hcmgloans.com/areas-we-serve" },

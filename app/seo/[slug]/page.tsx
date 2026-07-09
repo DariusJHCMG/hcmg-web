@@ -199,7 +199,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
           <section className="section-pad bg-white" style={{ paddingBottom: 0 }}>
             <div className="container-shell max-w-4xl">
               <h2 className="mb-6 text-2xl font-extrabold text-ink">
-                Frequently Asked Questions — {page.loanType} in {page.city}, {page.state}
+                Frequently Asked Questions: {page.loanType} in {page.city}, {page.state}
               </h2>
               <div className="space-y-5">
                 {aeoFaqs.map((faq) => (

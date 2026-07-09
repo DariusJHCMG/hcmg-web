@@ -22,13 +22,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "fha-loan-requirements",
     title: "FHA Loan Requirements",
-    metaTitle: "FHA Loan Requirements 2024 — Credit Score, Down Payment & Income | HCMG",
+    metaTitle: "FHA Loan Requirements 2024: Credit Score, Down Payment & Income | HCMG",
     metaDescription:
       "Everything you need to qualify for an FHA loan: minimum credit score (580), down payment (3.5%), debt-to-income limits, property standards, and mortgage insurance. Plain-English guide from Harris Capital Mortgage Group.",
     category: "FHA Loans",
     readTime: 7,
     publishedAt: "2024-09-01",
-    headline: "FHA Loan Requirements — Everything You Need to Qualify",
+    headline: "FHA Loan Requirements: Everything You Need to Qualify",
     intro:
       "FHA loans are insured by the Federal Housing Administration and designed to make homeownership accessible for buyers with lower credit scores or limited savings. They're one of the most popular loan programs in the country — and one of the most misunderstood. This guide covers every requirement so you know exactly where you stand before you apply.",
     sections: [
@@ -120,7 +120,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "how-much-mortgage-can-i-afford",
     title: "How Much Mortgage Can I Afford?",
-    metaTitle: "How Much Mortgage Can I Afford? — 2024 Calculator Guide | HCMG",
+    metaTitle: "How Much Mortgage Can I Afford? 2024 Calculator Guide | HCMG",
     metaDescription:
       "Learn the real rules lenders use to decide how much home you can afford: DTI limits, the 28/36 rule, down payment, and how income affects your buying power. HCMG.",
     category: "Buying a Home",
@@ -206,13 +206,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "first-time-homebuyer-programs",
     title: "First-Time Homebuyer Programs",
-    metaTitle: "First-Time Homebuyer Programs 2024 — Down Payment Help by State | HCMG",
+    metaTitle: "First-Time Homebuyer Programs 2024: Down Payment Help by State | HCMG",
     metaDescription:
       "State-by-state guide to first-time homebuyer programs including down payment assistance grants, below-market rate loans, and tax credits. FL, TX, GA, NV, CO, VA, MD, CA, MS covered.",
     category: "Buying a Home",
     readTime: 8,
     publishedAt: "2024-09-01",
-    headline: "First-Time Homebuyer Programs — Down Payment Help in Every State We Serve",
+    headline: "First-Time Homebuyer Programs: Down Payment Help in Every State We Serve",
     intro:
       "Down payment assistance, below-market rates, and tax credits for first-time buyers aren't marketing gimmicks — they're real programs funded by state housing finance agencies and the federal government. Billions of dollars go unclaimed every year because buyers don't know they qualify. Here's what's available in every state HCMG serves.",
     sections: [
@@ -314,13 +314,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "va-loan-eligibility-requirements",
     title: "VA Loan Eligibility Requirements",
-    metaTitle: "VA Loan Eligibility Requirements 2024 — Service, Certificate & Benefits | HCMG",
+    metaTitle: "VA Loan Eligibility Requirements 2024: Service, Certificate & Benefits | HCMG",
     metaDescription:
       "Complete guide to VA loan eligibility: service requirements, Certificate of Eligibility, 0% down benefit, VA funding fee, and how to apply. Harris Capital Mortgage Group — licensed in FL, TX, GA, NV, CO, VA, MD, CA & MS.",
     category: "VA Loans",
     readTime: 6,
     publishedAt: "2024-09-01",
-    headline: "VA Loan Eligibility — Who Qualifies and How to Use Your Benefit",
+    headline: "VA Loan Eligibility: Who Qualifies and How to Use Your Benefit",
     intro:
       "The VA home loan benefit is one of the most powerful financial tools available to those who've served — zero down payment, no private mortgage insurance, and competitive interest rates. Yet fewer than 1 in 3 eligible veterans use it. This guide covers exactly who qualifies, what the benefit includes, and how to get started.",
     sections: [
@@ -395,13 +395,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "when-to-refinance-your-mortgage",
     title: "When to Refinance Your Mortgage",
-    metaTitle: "When to Refinance Your Mortgage — Break-Even, Rate Drop & Cash-Out Guide | HCMG",
+    metaTitle: "When to Refinance Your Mortgage: Break-Even, Rate Drop & Cash-Out Guide | HCMG",
     metaDescription:
       "How to know when refinancing makes financial sense: the break-even rule, how much rates need to drop, cash-out vs. rate/term, and when NOT to refinance. HCMG.",
     category: "Refinance",
     readTime: 6,
     publishedAt: "2024-09-01",
-    headline: "When to Refinance Your Mortgage — The Break-Even Analysis You Need",
+    headline: "When to Refinance Your Mortgage: The Break-Even Analysis You Need",
     intro:
       "Refinancing can save tens of thousands of dollars — or cost you money, depending on the timing. The difference between a smart refinance and a bad one often comes down to one calculation: the break-even point. Here's exactly how to decide if refinancing is right for your situation.",
     sections: [
@@ -470,7 +470,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "what-is-pmi",
     title: "What Is PMI? Private Mortgage Insurance Explained",
-    metaTitle: "What Is PMI? Private Mortgage Insurance Explained — When You Need It & How to Cancel | HCMG",
+    metaTitle: "What Is PMI? Private Mortgage Insurance Explained: When You Need It and How to Cancel | HCMG",
     metaDescription:
       "PMI explained: what private mortgage insurance costs, when it's required, how it differs from FHA MIP, and the 4 ways to get rid of it. Harris Capital Mortgage Group.",
     category: "Buying a Home",
@@ -537,13 +537,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "mortgage-pre-approval-vs-pre-qualification",
     title: "Pre-Approval vs. Pre-Qualification",
-    metaTitle: "Mortgage Pre-Approval vs. Pre-Qualification — What's the Difference? | HCMG",
+    metaTitle: "Mortgage Pre-Approval vs. Pre-Qualification: What's the Difference? | HCMG",
     metaDescription:
       "Pre-approval and pre-qualification are not the same thing. Learn what each means, which one sellers actually respect, and why getting the right one first saves weeks in a competitive market.",
     category: "Buying a Home",
     readTime: 5,
     publishedAt: "2024-09-01",
-    headline: "Pre-Approval vs. Pre-Qualification — Why the Difference Matters in a Competitive Market",
+    headline: "Pre-Approval vs. Pre-Qualification: Why the Difference Matters in a Competitive Market",
     intro:
       "In a competitive housing market, the gap between a pre-qualification and a pre-approval isn't just semantic — it can mean the difference between having your offer accepted and watching the home go to someone else. Here's exactly what each means, what documentation is required, and which one you need before making an offer.",
     sections: [
@@ -615,13 +615,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "how-to-calculate-mortgage-payment",
     title: "How to Calculate a Mortgage Payment",
-    metaTitle: "How to Calculate a Mortgage Payment — Formula, Examples & Calculator | HCMG",
+    metaTitle: "How to Calculate a Mortgage Payment: Formula, Examples & Calculator | HCMG",
     metaDescription:
       "Learn exactly how to calculate a mortgage payment — the formula, step-by-step examples for different loan types, and a free calculator. Includes PITI, FHA MIP, and PMI. Harris Capital Mortgage Group.",
     category: "Buying a Home",
     readTime: 6,
     publishedAt: "2024-10-01",
-    headline: "How to Calculate a Mortgage Payment — Formula, Examples & Free Calculator",
+    headline: "How to Calculate a Mortgage Payment: Formula, Examples & Free Calculator",
     intro:
       "Knowing how to calculate a mortgage payment before you apply puts you in control. You'll understand exactly what drives your monthly cost, how the math changes with different loan types, and where a lender can make a difference. This guide walks through the formula, shows worked examples, and explains every line item in your payment.",
     sections: [
@@ -769,13 +769,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "mortgage-amortization-explained",
     title: "Mortgage Amortization Explained",
-    metaTitle: "Mortgage Amortization Explained — Schedule, Calculator & How It Works | HCMG",
+    metaTitle: "Mortgage Amortization Explained: Schedule, Calculator & How It Works | HCMG",
     metaDescription:
       "What is mortgage amortization? How your payment splits between principal and interest, how to read an amortization schedule, and how to pay off your mortgage faster. Free amortization calculator included.",
     category: "Buying a Home",
     readTime: 6,
     publishedAt: "2024-10-01",
-    headline: "Mortgage Amortization Explained — How Your Payment Splits Over Time",
+    headline: "Mortgage Amortization Explained: How Your Payment Splits Over Time",
     intro:
       "Every mortgage payment you make is split between paying down your loan balance (principal) and paying the lender for the use of their money (interest). But the ratio is not constant — it changes every single month over the life of the loan. Understanding amortization helps you make smarter decisions about prepayments, refinancing, and when to sell.",
     sections: [
@@ -836,13 +836,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "how-to-apply-for-a-mortgage-online",
     title: "How to Apply for a Mortgage Online",
-    metaTitle: "How to Apply for a Mortgage Online — Step-by-Step Guide | HCMG",
+    metaTitle: "How to Apply for a Mortgage Online: Step-by-Step Guide | HCMG",
     metaDescription:
       "Step-by-step guide to applying for a mortgage online: documents needed, what to expect, how long it takes, and how to avoid common mistakes. Apply for an FHA, VA, or conventional loan with HCMG.",
     category: "Buying a Home",
     readTime: 5,
     publishedAt: "2024-10-01",
-    headline: "How to Apply for a Mortgage Online — Step-by-Step",
+    headline: "How to Apply for a Mortgage Online: Step-by-Step",
     intro:
       "Applying for a mortgage online has become the norm — most buyers can go from application to pre-approval in under 48 hours without ever visiting a branch. Here's exactly what the online mortgage application process looks like, what documents you'll need to have ready, and what happens after you submit.",
     sections: [
@@ -904,13 +904,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "conventional-loan-requirements",
     title: "Conventional Loan Requirements",
-    metaTitle: "Conventional Loan Requirements 2024 — Credit Score, Down Payment & DTI | HCMG",
+    metaTitle: "Conventional Loan Requirements 2024: Credit Score, Down Payment & DTI | HCMG",
     metaDescription:
       "Complete guide to conventional loan requirements: minimum credit score (620), down payment (3–20%), debt-to-income ratio, income documentation, and how conventional compares to FHA. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 7,
     publishedAt: "2024-10-01",
-    headline: "Conventional Loan Requirements — Credit, Down Payment, DTI & More",
+    headline: "Conventional Loan Requirements: Credit, Down Payment, DTI & More",
     intro:
       "Conventional loans are the most common mortgage in America — and for good reason. They offer flexibility in property types, no upfront mortgage insurance, and cancellable PMI. But they do have stricter qualification standards than government-backed loans. This guide covers everything you need to qualify.",
     sections: [
@@ -1051,13 +1051,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "closing-costs-explained",
     title: "Closing Costs Explained",
-    metaTitle: "Closing Costs Explained — What You'll Pay and How to Reduce Them | HCMG",
+    metaTitle: "Closing Costs Explained: What You'll Pay and How to Reduce Them | HCMG",
     metaDescription:
       "What are closing costs on a house? Typical closing costs are 2–5% of the loan amount. This guide breaks down every fee, which are negotiable, who pays what, and how to reduce your closing costs.",
     category: "Buying a Home",
     readTime: 7,
     publishedAt: "2024-10-01",
-    headline: "Closing Costs Explained — Every Fee, Who Pays, and How to Reduce Them",
+    headline: "Closing Costs Explained: Every Fee, Who Pays, and How to Reduce Them",
     intro:
       "Closing costs are the fees and expenses you pay to finalize a mortgage, on top of your down payment. Most buyers are surprised by the total — typically 2–5% of the loan amount. On a $400,000 purchase, that's $8,000–$20,000. This guide breaks down every line item, explains who is required to pay what, and shows you which costs can be negotiated or eliminated.",
     sections: [
@@ -1132,13 +1132,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "debt-to-income-ratio-mortgage",
     title: "Debt-to-Income Ratio for a Mortgage",
-    metaTitle: "Debt-to-Income Ratio for a Mortgage — What Is DTI & How to Calculate It | HCMG",
+    metaTitle: "Debt-to-Income Ratio for a Mortgage: What Is DTI & How to Calculate It | HCMG",
     metaDescription:
       "What is debt-to-income ratio (DTI) for a mortgage? How to calculate your front-end and back-end DTI, maximum DTI by loan type, and how to lower your DTI before applying. Free DTI calculator.",
     category: "Buying a Home",
     readTime: 6,
     publishedAt: "2024-10-01",
-    headline: "Debt-to-Income Ratio (DTI) for a Mortgage — How It Works and How to Improve Yours",
+    headline: "Debt-to-Income Ratio (DTI) for a Mortgage: How It Works and How to Improve Yours",
     intro:
       "Your debt-to-income ratio (DTI) is one of the most important numbers in your mortgage application — arguably more important than your credit score for determining how much you can borrow. Lenders use it to verify that you have enough income to comfortably handle a new mortgage payment. Here's how it works, what the limits are, and how to improve yours before you apply.",
     sections: [
@@ -1270,13 +1270,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "how-to-buy-a-house-step-by-step",
     title: "How to Buy a House — Step by Step",
-    metaTitle: "How to Buy a House Step by Step — Complete 2024 Guide | HCMG",
+    metaTitle: "How to Buy a House Step by Step: Complete 2024 Guide | HCMG",
     metaDescription:
       "A plain-English step-by-step guide to buying a house — from checking your credit to getting your keys. Harris Capital Mortgage Group · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 7,
     publishedAt: "2024-10-15",
-    headline: "How to Buy a House — A Complete Step-by-Step Guide",
+    headline: "How to Buy a House: A Complete Step-by-Step Guide",
     intro:
       "Buying a house is a multi-step process that takes 30–90 days once you're under contract. This guide walks through every stage in order so you know what to expect, what to prepare, and where delays typically happen.",
     sections: [
@@ -1406,13 +1406,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "usda-loan-requirements",
     title: "USDA Loan Requirements",
-    metaTitle: "USDA Loan Requirements 2024 — Eligibility, Income Limits & Property | HCMG",
+    metaTitle: "USDA Loan Requirements 2024: Eligibility, Income Limits & Property | HCMG",
     metaDescription:
       "Complete guide to USDA loan requirements — eligible areas, income limits, credit score minimums, and how to apply. 0% down payment for eligible rural and suburban buyers. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 5,
     publishedAt: "2024-10-15",
-    headline: "USDA Loan Requirements — Eligibility, Income Limits & 0% Down",
+    headline: "USDA Loan Requirements: Eligibility, Income Limits & 0% Down",
     intro:
       "USDA loans offer 100% financing — zero down payment — for buyers purchasing in eligible areas. The program is broader than most people realize: many suburban neighborhoods qualify, not just rural farms. Here's what you need to know.",
     sections: [
@@ -1474,13 +1474,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "jumbo-loan-requirements",
     title: "Jumbo Loan Requirements",
-    metaTitle: "Jumbo Loan Requirements 2024 — Credit Score, Down Payment & Limits | HCMG",
+    metaTitle: "Jumbo Loan Requirements 2024: Credit Score, Down Payment & Limits | HCMG",
     metaDescription:
       "What you need to qualify for a jumbo loan — conforming loan limits, credit score requirements, down payment, and reserves. Harris Capital Mortgage Group · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 4,
     publishedAt: "2024-10-15",
-    headline: "Jumbo Loan Requirements — What You Need to Qualify",
+    headline: "Jumbo Loan Requirements: What You Need to Qualify",
     intro:
       "A jumbo loan finances homes that exceed the conforming loan limits set by Fannie Mae and Freddie Mac. Because jumbo loans can't be sold to the agencies, lenders hold them in-portfolio and apply stricter underwriting standards. Here's what it takes to qualify.",
     sections: [
@@ -1596,13 +1596,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "mortgage-points-explained",
     title: "Mortgage Points Explained — Should You Buy Down Your Rate?",
-    metaTitle: "Mortgage Points Explained — Should You Buy Down Your Rate? | HCMG",
+    metaTitle: "Mortgage Points Explained: Should You Buy Down Your Rate? | HCMG",
     metaDescription:
       "What are mortgage discount points? How much do they cost, how much do they save, and when does buying points make financial sense? HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 4,
     publishedAt: "2024-10-15",
-    headline: "Mortgage Points Explained — Should You Buy Down Your Rate?",
+    headline: "Mortgage Points Explained: Should You Buy Down Your Rate?",
     intro:
       "Mortgage discount points let you prepay interest upfront to secure a lower interest rate. Whether buying points makes sense depends entirely on how long you'll keep the loan. Here's how to do the math.",
     sections: [
@@ -1657,13 +1657,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "arm-vs-fixed-rate-mortgage",
     title: "ARM vs. Fixed Rate Mortgage — Which Is Right for You?",
-    metaTitle: "ARM vs. Fixed Rate Mortgage — Which Should You Choose? | HCMG",
+    metaTitle: "ARM vs. Fixed Rate Mortgage: Which Should You Choose? | HCMG",
     metaDescription:
       "Adjustable-rate vs. fixed-rate mortgage comparison — how each works, the real cost difference, and when an ARM makes financial sense. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 5,
     publishedAt: "2024-10-15",
-    headline: "ARM vs. Fixed Rate Mortgage — Which Is Right for You?",
+    headline: "ARM vs. Fixed Rate Mortgage: Which Is Right for You?",
     intro:
       "An adjustable-rate mortgage (ARM) starts with a lower rate that can change after an initial fixed period. A fixed-rate mortgage holds the same rate for the entire loan term. The right choice depends on how long you plan to keep the loan.",
     sections: [
@@ -1718,13 +1718,13 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "mortgage-pre-approval-checklist",
     title: "Mortgage Pre-Approval Checklist — Documents You Need",
-    metaTitle: "Mortgage Pre-Approval Checklist 2024 — Documents You Need | HCMG",
+    metaTitle: "Mortgage Pre-Approval Checklist 2024: Documents You Need | HCMG",
     metaDescription:
       "The complete mortgage pre-approval document checklist — W-2s, tax returns, bank statements, and more. Get pre-approved faster by having these ready. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 4,
     publishedAt: "2024-10-15",
-    headline: "Mortgage Pre-Approval Checklist — Documents You Need",
+    headline: "Mortgage Pre-Approval Checklist: Documents You Need",
     intro:
       "The fastest way to get pre-approved is to have your documents ready before you apply. This checklist covers everything a lender needs — organized by borrower type so you know exactly what applies to your situation.",
     sections: [
@@ -1779,7 +1779,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "how-to-improve-credit-score-for-mortgage",
     title: "How to Improve Your Credit Score Before Getting a Mortgage",
-    metaTitle: "How to Improve Your Credit Score for a Mortgage — Fast & Proven Methods | HCMG",
+    metaTitle: "How to Improve Your Credit Score for a Mortgage: Fast & Proven Methods | HCMG",
     metaDescription:
       "Proven ways to improve your credit score before applying for a mortgage — including rapid rescore, utilization strategies, and what not to do. HCMG · NMLS# 1918223.",
     category: "Buying a Home",

@@ -6,7 +6,7 @@ import { Disclosure } from "@/components/ui/Disclosure";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Mortgage Calculator — PITI Payment, FHA, Amortization | HCMG",
+  title: "Mortgage Calculator: PITI Payment, FHA, Amortization | HCMG",
   description:
     "Free mortgage calculator with PITI breakdown — Principal, Interest, Taxes & Insurance. Includes FHA loan calculator with MIP, VA, USDA, amortization schedule, and PMI. No credit check. Harris Capital Mortgage Group · NMLS# 1918223.",
   keywords: [

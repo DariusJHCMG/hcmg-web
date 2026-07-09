@@ -6,7 +6,7 @@ import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { learnArticles, LEARN_CATEGORIES } from "@/data/learn";
 
 export const metadata: Metadata = {
-  title: "Mortgage Learning Center — Guides for Home Buyers | HCMG",
+  title: "Mortgage Learning Center: Guides for Home Buyers | HCMG",
   description:
     "Plain-English guides on FHA loans, VA loans, first-time homebuyer programs, down payments, refinancing, and more. Written by Harris Capital Mortgage Group loan officers. NMLS# 1918223.",
   alternates: { canonical: "https://hcmgloans.com/learn" },

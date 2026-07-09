@@ -19,7 +19,7 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: "Harris Capital Mortgage Group — Home Mortgage Company | NMLS# 1918223",
+    default: "Harris Capital Mortgage Group: Home Mortgage Company | NMLS# 1918223",
     template: "%s | HCMG",
   },
   description:
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://hcmgloans.com",
     siteName: "HCMG, Harris Capital Mortgage Group",
-    title: "Harris Capital Mortgage Group — Home Mortgage Company | NMLS# 1918223",
+    title: "Harris Capital Mortgage Group: Home Mortgage Company | NMLS# 1918223",
     description:
       "Licensed mortgage lender in FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. FHA, VA, Conventional, Jumbo, USDA, Refinance. Harris Capital Mortgage Group · NMLS# 1918223.",
     images: [
@@ -37,13 +37,13 @@ export const metadata: Metadata = {
         url: "/hcmg-social.png",
         width: 1200,
         height: 630,
-        alt: "Harris Capital Mortgage Group — Licensed Mortgage Lender",
+        alt: "Harris Capital Mortgage Group, Licensed Mortgage Lender",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Harris Capital Mortgage Group — Home Mortgage Company | NMLS# 1918223",
+    title: "Harris Capital Mortgage Group: Home Mortgage Company | NMLS# 1918223",
     description:
       "Licensed mortgage lender in FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. FHA, VA, Conventional, Jumbo, USDA, Refinance. NMLS# 1918223.",
     images: ["/hcmg-social.png"],

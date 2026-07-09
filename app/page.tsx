@@ -12,7 +12,7 @@ import { FAQ } from "@/components/sections/FAQ";
 import { FinalCTA } from "@/components/sections/FinalCTA";
 
 export const metadata: Metadata = {
-  title: "Harris Capital Mortgage Group — Home Mortgage Company | NMLS# 1918223",
+  title: "Harris Capital Mortgage Group: Home Mortgage Company | NMLS# 1918223",
   description:
     "Harris Capital Mortgage Group is a licensed home mortgage company serving FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. FHA, VA, Conventional, Jumbo, USDA, Refinance & down payment assistance. Find out what you can afford in 60 seconds — no hard credit check.",
   alternates: { canonical: "https://hcmgloans.com" },

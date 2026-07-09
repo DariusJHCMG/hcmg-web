@@ -81,8 +81,8 @@ export async function generateMetadata({
   const data = STATE_DATA[state as StateSlug];
   if (!data) return {};
   return {
-    title: `${data.name} Mortgage Calculator — Estimate Your Payment | HCMG`,
-    description: `Free ${data.name} mortgage calculator — estimate your monthly payment with ${data.name}'s property tax rates pre-filled. Includes FHA, VA, USDA & conventional. HCMG · NMLS# 1918223.`,
+    title: `${data.name} Mortgage Calculator: Estimate Your Payment | HCMG`,
+    description: `Free ${data.name} mortgage calculator: estimate your monthly payment with ${data.name}'s property tax rates pre-filled. Includes FHA, VA, USDA & conventional. HCMG · NMLS# 1918223.`,
     alternates: { canonical: `https://hcmgloans.com/mortgage-calculator/${state}` },
     openGraph: {
       title: `${data.name} Mortgage Calculator | HCMG`,
