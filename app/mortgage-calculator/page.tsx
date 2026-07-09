@@ -6,14 +6,19 @@ import { Disclosure } from "@/components/ui/Disclosure";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Mortgage Calculator — Estimate Your Monthly Payment | HCMG",
+  title: "Mortgage Calculator — PITI Payment, FHA, Amortization | HCMG",
   description:
-    "Free mortgage payment calculator. Enter your home price, down payment, interest rate, and loan term to see your estimated monthly payment including taxes and insurance. Harris Capital Mortgage Group · NMLS# 1918223.",
+    "Free mortgage calculator with PITI breakdown — Principal, Interest, Taxes & Insurance. Includes FHA loan calculator with MIP, VA, USDA, amortization schedule, and PMI. No credit check. Harris Capital Mortgage Group · NMLS# 1918223.",
+  keywords: [
+    "mortgage calculator", "fha loan calculator", "mortgage calculator with pmi taxes and insurance",
+    "amortization calculator mortgage", "piti mortgage calculator", "mortgage payment calculator",
+    "how to calculate mortgage payment", "down payment calculator", "va loan calculator",
+  ],
   alternates: { canonical: "https://hcmgloans.com/mortgage-calculator" },
   openGraph: {
-    title: "Mortgage Calculator | HCMG",
+    title: "Mortgage Calculator with PITI, FHA & Amortization | HCMG",
     description:
-      "Calculate your estimated monthly mortgage payment instantly. Includes principal, interest, taxes, insurance, and HOA. Free — no credit check required.",
+      "Calculate your full monthly mortgage payment — PITI breakdown, FHA MIP, amortization schedule, PMI. Free, no credit check. Works for purchase or refinance.",
     url: "https://hcmgloans.com/mortgage-calculator",
     images: ["/hcmg-social.png"],
   },
