@@ -4,6 +4,7 @@ import { OrangeKeyLogo } from "./OrangeKeyLogo";
 const COMPANY_LINKS = [
   { label: "Buy a Home", href: "/get-started" },
   { label: "Refinance", href: "/get-started" },
+  { label: "For Real Estate Agents", href: "/agents" },
   { label: "Calculator", href: "/#calculator" },
   { label: "Contact", href: "/contact" },
   { label: "Team Login", href: "/login" },
