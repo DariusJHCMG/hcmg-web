@@ -5,7 +5,7 @@ import { teamMembers } from "@/data/team";
 import { learnArticles } from "@/data/learn";
 import { isPrioritySeoPage } from "@/lib/seo-strategy";
 
-const BASE = "https://www.hcmgloans.com";
+const BASE = "https://hcmgloans.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const SEO_DATE   = new Date("2026-07-08");

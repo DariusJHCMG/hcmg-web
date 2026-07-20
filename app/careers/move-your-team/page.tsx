@@ -9,10 +9,10 @@ export const metadata: Metadata = {
   title: "Migrate Your Mortgage Team to HCMG, Onboarding Without a Beat Skipped",
   description:
     "Move your full mortgage team to Harris Capital Mortgage Group with dedicated migration support. Preserve your culture, your pipeline, and your people. 100+ lenders. NMLS# 1918223.",
-  alternates: { canonical: "https://hcmgloans.com/careers/team-migration" },
+  alternates: { canonical: "https://hcmgloans.com/careers/move-your-team" },
   openGraph: {
     type: "website",
-    url: "https://hcmgloans.com/careers/team-migration",
+    url: "https://hcmgloans.com/careers/move-your-team",
     title: "Migrate Your Team to HCMG",
     description:
       "Established teams deserve a migration that doesn't break what's working. HCMG handles the transition end-to-end.",

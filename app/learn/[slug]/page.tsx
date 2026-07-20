@@ -26,11 +26,11 @@ export async function generateMetadata({
   return {
     title: article.metaTitle,
     description: article.metaDescription,
-    alternates: { canonical: `https://www.hcmgloans.com/learn/${slug}` },
+    alternates: { canonical: `https://hcmgloans.com/learn/${slug}` },
     openGraph: {
       title: article.title,
       description: article.metaDescription,
-      url: `https://www.hcmgloans.com/learn/${slug}`,
+      url: `https://hcmgloans.com/learn/${slug}`,
       type: "article",
       images: ["/hcmg-social.png"],
       publishedTime: article.publishedAt,
@@ -97,20 +97,20 @@ export default async function LearnArticlePage({
     "@type": "Article",
     headline: article.headline,
     description: article.metaDescription,
-    url: `https://www.hcmgloans.com/learn/${slug}`,
+    url: `https://hcmgloans.com/learn/${slug}`,
     datePublished: article.publishedAt,
     author: {
       "@type": "Organization",
       name: "Harris Capital Mortgage Group, LLC",
-      url: "https://www.hcmgloans.com",
+      url: "https://hcmgloans.com",
     },
     publisher: {
       "@type": "Organization",
       name: "Harris Capital Mortgage Group, LLC",
-      url: "https://www.hcmgloans.com",
+      url: "https://hcmgloans.com",
       logo: {
         "@type": "ImageObject",
-        url: "https://www.hcmgloans.com/hcmg-wordmark-on-light.svg",
+        url: "https://hcmgloans.com/hcmg-wordmark-on-light.svg",
       },
     },
   };
@@ -119,13 +119,13 @@ export default async function LearnArticlePage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.hcmgloans.com" },
-      { "@type": "ListItem", position: 2, name: "Learn", item: "https://www.hcmgloans.com/learn" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://hcmgloans.com" },
+      { "@type": "ListItem", position: 2, name: "Learn", item: "https://hcmgloans.com/learn" },
       {
         "@type": "ListItem",
         position: 3,
         name: article.title,
-        item: `https://www.hcmgloans.com/learn/${slug}`,
+        item: `https://hcmgloans.com/learn/${slug}`,
       },
     ],
   };
