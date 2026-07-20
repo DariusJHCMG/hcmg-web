@@ -10,6 +10,10 @@ import { TrustSection } from "@/components/sections/TrustSection";
 import { LocalSEO } from "@/components/sections/LocalSEO";
 import { FAQ } from "@/components/sections/FAQ";
 import { FinalCTA } from "@/components/sections/FinalCTA";
+import { readSettings } from "@/lib/company-settings";
+import { licenseStateLists } from "@/lib/license-states";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Harris Capital Mortgage Group: Home Mortgage Company | NMLS# 1918223",
@@ -119,7 +123,9 @@ const howToSchema = {
   ],
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const settings = await readSettings();
+  const licenses = licenseStateLists(settings.license_states);
   return (
     <main className="overflow-x-hidden pb-24 md:pb-0">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
@@ -127,7 +133,7 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }} />
       <NavBar />
       <Hero />
-      <TrustBar />
+      <TrustBar licensedStates={licenses.active} pendingStates={licenses.comingSoon} />
       <ValueProps />
       <Calculator />
       <HowItWorks />

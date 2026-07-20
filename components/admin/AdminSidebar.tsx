@@ -12,6 +12,7 @@ const NAV = [
   { label: "Leads",       href: "/admin/leads",        icon: "✉" },
   { label: "Reviews",     href: "/admin/reviews",      icon: "⭐" },
   { label: "Users",       href: "/admin/users",        icon: "👥" },
+  { label: "Licenses",    href: "/admin/licenses",     icon: "◈" },
   { label: "My Funnels",  href: "/admin/my-funnels",   icon: "🔗" },
   { label: "Co-Branded",  href: "/admin/co-branded",   icon: "🤝" },
   { label: "Mobile App",  href: "/admin/mobile-app",   icon: "📱" },

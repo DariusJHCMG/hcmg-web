@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { submitLead } from "@/lib/lead";
 
 type FormState = {
   firstName: string;
@@ -66,10 +67,7 @@ export function RecruitingForm() {
     ].filter(Boolean).join("\n");
 
     try {
-      const res = await fetch("/api/lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const result = await submitLead({
           firstName:   state.firstName.trim(),
           lastName:    state.lastName.trim(),
           email:       state.email.trim(),
@@ -77,9 +75,8 @@ export function RecruitingForm() {
           smsConsent:  false,
           source:      "employment",
           notes:       notesLines || undefined,
-        }),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!result.success) throw new Error(result.error);
       setSubmitted(true);
     } catch {
       setError("Something went wrong. Please try again or email recruiting@hcmg.com.");

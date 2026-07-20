@@ -5,8 +5,10 @@ import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { createServiceClient } from "@/lib/supabase";
 import { getTeamMemberBySlug } from "@/data/team";
 import { FindLOClient } from "./FindLOClient";
+import { readSettings } from "@/lib/company-settings";
+import { licenseStateLists, STATE_NAMES } from "@/lib/license-states";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Find a Loan Officer | Harris Capital Mortgage Group",
@@ -15,30 +17,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://hcmgloans.com/find-a-loan-officer" },
 };
 
-// Company-level licensed + pending states (used for map colouring)
-const LICENSED_STATES = ["FL","TX","GA","NV","CO","VA","DC","MD","CA","MS","MI","OH","IN","IL","WI"];
-const PENDING_STATES  = ["AL","OR","NJ","TN","NC","SC","OK","NM","AZ","PA"];
-
-const STATE_NAMES: Record<string,string> = {
-  AL:"Alabama", AK:"Alaska", AZ:"Arizona", AR:"Arkansas", CA:"California",
-  CO:"Colorado", CT:"Connecticut", DC:"Washington D.C.", DE:"Delaware",
-  FL:"Florida", GA:"Georgia", HI:"Hawaii", ID:"Idaho", IL:"Illinois",
-  IN:"Indiana", IA:"Iowa", KS:"Kansas", KY:"Kentucky", LA:"Louisiana",
-  ME:"Maine", MD:"Maryland", MA:"Massachusetts", MI:"Michigan", MN:"Minnesota",
-  MS:"Mississippi", MO:"Missouri", MT:"Montana", NE:"Nebraska", NV:"Nevada",
-  NH:"New Hampshire", NJ:"New Jersey", NM:"New Mexico", NY:"New York",
-  NC:"North Carolina", ND:"North Dakota", OH:"Ohio", OK:"Oklahoma",
-  OR:"Oregon", PA:"Pennsylvania", RI:"Rhode Island", SC:"South Carolina",
-  SD:"South Dakota", TN:"Tennessee", TX:"Texas", UT:"Utah", VT:"Vermont",
-  VA:"Virginia", WA:"Washington", WV:"West Virginia", WI:"Wisconsin", WY:"Wyoming",
-};
-
 export default async function FindALoanOfficerPage({
   searchParams,
 }: {
   searchParams: Promise<{ state?: string }>;
 }) {
   const { state } = await searchParams;
+  const settings = await readSettings();
+  const licenses = licenseStateLists(settings.license_states);
+  const LICENSED_STATES = licenses.active;
+  const PENDING_STATES = licenses.comingSoon;
   const initialState = state && [...LICENSED_STATES, ...PENDING_STATES].includes(state)
     ? state : null;
 

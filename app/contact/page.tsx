@@ -4,6 +4,7 @@ import { useState } from "react";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { Disclosure } from "@/components/ui/Disclosure";
+import { submitLead } from "@/lib/lead";
 
 function ContactInfo() {
   return (
@@ -90,10 +91,7 @@ export default function ContactPage() {
     setStateError("");
     setState("loading");
     try {
-      const res = await fetch("/api/lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const result = await submitLead({
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
@@ -102,9 +100,8 @@ export default function ContactPage() {
           source: "contact",
           propertyState,
           notes: formData.message,
-        }),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!result.success) throw new Error(result.error);
       setState("success");
     } catch {
       setState("error");

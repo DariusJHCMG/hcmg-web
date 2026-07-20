@@ -4,21 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { STATE_PATHS } from "@/lib/statePaths";
-
-const LICENSED: string[] = ["FL","TX","GA","NV","CO","VA","DC","MD","CA","MS"];
-const PENDING:  string[] = ["OH","MI","AL","OR","NJ","TN","NC","SC","IL","IN","OK","NM","AZ","PA"];
-
-const STATE_NAMES: Record<string,string> = {
-  AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",
-  CT:"Connecticut",DC:"Washington D.C.",DE:"Delaware",FL:"Florida",GA:"Georgia",
-  HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",
-  LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",
-  MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",
-  NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",
-  OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",
-  SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",
-  WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",
-};
+import { STATE_NAMES } from "@/lib/license-states";
 
 // Real centroids — us-atlas Albers USA 975×610
 const CENTROIDS: Record<string,[number,number]> = {
@@ -35,7 +21,7 @@ const CENTROIDS: Record<string,[number,number]> = {
   WY:[306,194],
 };
 
-function getStateFill(s: string, hov: string|null, sel: string|null) {
+function getStateFill(s: string, hov: string|null, sel: string|null, LICENSED: string[], PENDING: string[]) {
   const isLic = LICENSED.includes(s);
   const isPen = PENDING.includes(s);
   if (s === sel)  return isLic ? "#FF9847" : "#27406D";
@@ -45,7 +31,9 @@ function getStateFill(s: string, hov: string|null, sel: string|null) {
   return "#CBD5E1";
 }
 
-export function TrustBar() {
+export function TrustBar({ licensedStates, pendingStates }: { licensedStates: string[]; pendingStates: string[] }) {
+  const LICENSED = licensedStates;
+  const PENDING = pendingStates;
   const router = useRouter();
   const [hovered, setHovered] = useState<string|null>(null);
   const [selected, setSelected] = useState<string|null>(null);
@@ -59,7 +47,7 @@ export function TrustBar() {
   }
 
   return (
-    <section className="bg-white border-y border-line py-20">
+    <section id="where-we-lend" className="bg-white border-y border-line py-20">
       <div className="container-shell max-w-7xl">
 
         {/* Header */}
@@ -153,7 +141,7 @@ export function TrustBar() {
                   <g key={abbr} style={{ cursor: isActive ? "pointer" : "default" }}>
                     <path
                       d={STATE_PATHS[abbr]}
-                      fill={getStateFill(abbr, hovered, selected)}
+                      fill={getStateFill(abbr, hovered, selected, LICENSED, PENDING)}
                       stroke="#fff"
                       strokeWidth={isActive ? 1.5 : 0.6}
                       strokeLinejoin="round"

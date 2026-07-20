@@ -16,16 +16,20 @@ function getResend() {
 }
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
+const ALLOWED_SOURCES = new Set(["funnel", "get-started", "team", "seo", "home-calculator", "contact", "employment", "co-brand", "co-branded"]);
+const LICENSED_STATES = new Set(["FL", "TX", "GA", "NV", "CO", "VA", "DC", "MD", "CA", "MS"]);
+const NAME_RE = /^[\p{L}][\p{L}\p{M}' .-]{0,49}$/u;
 
 const LeadSchema = z.object({
-  firstName:               z.string().min(1),
-  lastName:                z.string().min(1).optional(),
-  email:                   z.string().email(),
-  phone:                   z.string().min(7),
+  firstName:               z.string().trim().min(1).max(50).regex(NAME_RE),
+  lastName:                z.string().trim().min(1).max(50).regex(NAME_RE).optional(),
+  email:                   z.string().trim().email().max(254).transform(v => v.toLowerCase()),
+  phone:                   z.string().trim().min(10).max(30).refine(v => { const n = v.replace(/\D/g, ""); return n.length === 10 || (n.length === 11 && n.startsWith("1")); }).transform(v => { const n = v.replace(/\D/g, ""); return n.length === 11 ? n.slice(1) : n; }),
   smsConsent:              z.boolean(),
   smsConsentText:          z.string().optional(),
   smsConsentTimestamp:     z.string().optional(),
-  source:                  z.string().optional().default("funnel"),
+  source:                  z.string().max(50).optional().default("funnel").refine(v => ALLOWED_SOURCES.has(v) || v.startsWith("funnel:")),
   seoSlug:                 z.string().optional(),
   funnelType:              z.string().optional(),
   propertyState:           z.string().length(2).toUpperCase().optional(),
@@ -37,7 +41,7 @@ const LeadSchema = z.object({
   estimatedBuyingPowerHigh: z.number().optional(),
   estimatedMonthlyPayment:  z.number().optional(),
   recommendedLoanType:      z.string().optional(),
-  notes:                   z.string().optional(),
+  notes:                   z.string().max(4000).optional(),
   loSlug:                  z.string().optional(),
   loName:                  z.string().optional(),
   loNmls:                  z.string().nullable().optional(),
@@ -50,7 +54,33 @@ const LeadSchema = z.object({
   entryPage:               z.string().optional(),
   referrer:                z.string().optional(),
   device:                  z.string().optional(),
+  website:                 z.literal(""),
+  formStartedAt:           z.number().int().positive(),
+  turnstileToken:          z.string().max(2048).optional(),
 });
+
+function clientIp(request: NextRequest) {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    ?? request.headers.get("x-real-ip")
+    ?? null;
+}
+
+function suspiciousName(value: string) {
+  return value.length > 20 && !/[ '\-.]/.test(value);
+}
+
+async function verifyTurnstile(token: string | undefined, ip: string | null) {
+  if (!TURNSTILE_SECRET) return true;
+  if (!token) return false;
+  const form = new FormData();
+  form.set("secret", TURNSTILE_SECRET);
+  form.set("response", token);
+  if (ip) form.set("remoteip", ip);
+  const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
+  if (!response.ok) return false;
+  const result = await response.json() as { success?: boolean };
+  return result.success === true;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -425,6 +455,13 @@ function companyLeadAlertHtml(lead: z.infer<typeof LeadSchema>, fullName: string
 // ── POST handler ──────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  const origin = request.headers.get("origin");
+  const expectedOrigin = new URL(SITE_URL).origin;
+  const requestOrigin = request.nextUrl.origin;
+  if (process.env.NODE_ENV === "production" && origin !== expectedOrigin && origin !== requestOrigin) {
+    return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
+  }
+
   let body: unknown;
   try { body = await request.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
@@ -433,12 +470,38 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
   const lead = parsed.data;
+  const ip = clientIp(request);
+  const elapsed = Date.now() - lead.formStartedAt;
+  if (elapsed < 2500 || elapsed > 24 * 60 * 60 * 1000 || suspiciousName(lead.firstName) || (lead.lastName && suspiciousName(lead.lastName))) {
+    return NextResponse.json({ error: "Submission rejected" }, { status: 422 });
+  }
+  if (lead.propertyState && !LICENSED_STATES.has(lead.propertyState)) {
+    return NextResponse.json({ error: "Unsupported property state" }, { status: 422 });
+  }
+  if (lead.source !== "employment" && !lead.smsConsent) {
+    return NextResponse.json({ error: "Consent is required" }, { status: 422 });
+  }
+  if (!(await verifyTurnstile(lead.turnstileToken, ip))) {
+    return NextResponse.json({ error: "Bot verification failed" }, { status: 403 });
+  }
   const lastName = lead.lastName ?? "";
   const fullName = `${lead.firstName}${lastName ? ` ${lastName}` : ""}`.trim();
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? null;
 
   // ── 1. Persist to Supabase ────────────────────────────────────────────────
   const sb = createServiceClient();
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const [recentIp, recentEmail, duplicate] = await Promise.all([
+    ip ? sb.from("leads").select("id", { count: "exact", head: true }).eq("ip_address", ip).gte("created_at", tenMinutesAgo) : Promise.resolve({ count: 0 }),
+    sb.from("leads").select("id", { count: "exact", head: true }).ilike("email", lead.email).gte("created_at", oneDayAgo),
+    sb.from("leads").select("id").ilike("email", lead.email).eq("phone", lead.phone).gte("created_at", oneDayAgo).limit(1),
+  ]);
+  if ((recentIp.count ?? 0) >= 3 || (recentEmail.count ?? 0) >= 2) {
+    return NextResponse.json({ error: "Too many submissions. Please try again later." }, { status: 429 });
+  }
+  if ("data" in duplicate && duplicate.data?.length) {
+    return NextResponse.json({ ok: true, duplicate: true });
+  }
   const { data: savedLead } = await sb.from("leads").insert({
     first_name:                   lead.firstName,
     last_name:                    lead.lastName ?? null,

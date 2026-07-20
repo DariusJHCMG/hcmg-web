@@ -18,6 +18,7 @@ export interface SessionMeta {
   entryPage:  string;
   referrer:   string;
   device:     "mobile" | "tablet" | "desktop";
+  startedAt:  number;
 }
 
 // ── Session ID ────────────────────────────────────────────────────
@@ -46,7 +47,7 @@ function detectDevice(): "mobile" | "tablet" | "desktop" {
 
 export function initSessionMeta(): SessionMeta {
   if (typeof window === "undefined") {
-    return { sessionId: "", entryPage: "", referrer: "", device: "desktop" };
+    return { sessionId: "", entryPage: "", referrer: "", device: "desktop", startedAt: Date.now() };
   }
   const existing = sessionStorage.getItem(META_KEY);
   if (existing) return JSON.parse(existing) as SessionMeta;
@@ -58,6 +59,7 @@ export function initSessionMeta(): SessionMeta {
       ? new URL(document.referrer).hostname
       : "direct",
     device: detectDevice(),
+    startedAt: Date.now(),
   };
   sessionStorage.setItem(META_KEY, JSON.stringify(meta));
   return meta;
@@ -65,10 +67,13 @@ export function initSessionMeta(): SessionMeta {
 
 export function getSessionMeta(): SessionMeta {
   if (typeof window === "undefined") {
-    return { sessionId: "", entryPage: "", referrer: "", device: "desktop" };
+    return { sessionId: "", entryPage: "", referrer: "", device: "desktop", startedAt: Date.now() };
   }
   const raw = sessionStorage.getItem(META_KEY);
-  if (raw) return JSON.parse(raw) as SessionMeta;
+  if (raw) {
+    const parsed = JSON.parse(raw) as SessionMeta;
+    return { ...parsed, startedAt: parsed.startedAt ?? Date.now() };
+  }
   return initSessionMeta();
 }
 

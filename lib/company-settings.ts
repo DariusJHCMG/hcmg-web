@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase";
+import { normalizeLicenseStates, type LicenseStatus } from "@/lib/license-states";
 
 const SETTINGS_SLUG = "__settings__";
 
@@ -15,6 +16,7 @@ export interface CompanySettings {
   google_refresh_token:    string;
   google_token_expiry:     string;  // ISO timestamp
   google_connected_email:  string;  // email of connected Google account
+  license_states:          Record<string, LicenseStatus>;
 }
 
 export const DEFAULT_SETTINGS: CompanySettings = {
@@ -29,6 +31,7 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   google_refresh_token:    "",
   google_token_expiry:     "",
   google_connected_email:  "",
+  license_states:          normalizeLicenseStates(),
 };
 
 export async function readSettings(): Promise<CompanySettings> {
@@ -42,7 +45,7 @@ export async function readSettings(): Promise<CompanySettings> {
   if (!data?.lo_name) return DEFAULT_SETTINGS;
   try {
     const parsed = JSON.parse(data.lo_name);
-    return { ...DEFAULT_SETTINGS, ...parsed };
+    return { ...DEFAULT_SETTINGS, ...parsed, license_states: normalizeLicenseStates(parsed.license_states) };
   } catch {
     return DEFAULT_SETTINGS;
   }
