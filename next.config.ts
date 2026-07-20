@@ -3,7 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      { source: "/:path*", has: [{ type: "host", value: "www.hcmgloans.com" }], destination: "https://hcmgloans.com/:path*", permanent: true },
       { source: "/contact-us", destination: "/contact", permanent: true },
       { source: "/fha-loans", destination: "/loans/fha", permanent: true },
       { source: "/fha", destination: "/loans/fha", permanent: true },
