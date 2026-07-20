@@ -1,3 +1,5 @@
+import { growthArticles } from "./learn-growth";
+
 export type LearnArticle = {
   slug: string;
   title: string;
@@ -16,9 +18,12 @@ export type LearnArticle = {
   relatedSlugs: string[];
   /** SEO loan type to link to local pages */
   loanType?: string;
+  productSlug?: string;
+  sources?: { label: string; url: string }[];
 };
 
 export const learnArticles: LearnArticle[] = [
+  ...growthArticles,
   {
     slug: "fha-loan-requirements",
     title: "FHA Loan Requirements",

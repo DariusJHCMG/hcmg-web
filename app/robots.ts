@@ -17,6 +17,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: "https://hcmgloans.com/sitemap.xml",
+    sitemap: "https://www.hcmgloans.com/sitemap.xml",
   };
 }

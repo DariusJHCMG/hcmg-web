@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
       { source: "/calculators", destination: "/mortgage-calculator", permanent: true },
       { source: "/mortgage-affordability-calculator", destination: "/mortgage-calculator", permanent: true },
       { source: "/mortgage-faqs", destination: "/learn", permanent: true },
+      { source: "/guides/savannah-mortgage", destination: "/learn/savannah-ga-mortgage-guide", permanent: true },
       { source: "/privacy-policy", destination: "/privacy", permanent: true },
       // Old SEO slug — 301 to correct URL
       {

@@ -5,7 +5,7 @@ import { teamMembers } from "@/data/team";
 import { learnArticles } from "@/data/learn";
 import { isPrioritySeoPage } from "@/lib/seo-strategy";
 
-const BASE = "https://hcmgloans.com";
+const BASE = "https://www.hcmgloans.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const SEO_DATE   = new Date("2026-07-08");
@@ -44,7 +44,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/areas-we-serve/mississippi`, changeFrequency: "monthly", priority: 0.85, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/learn`, changeFrequency: "weekly", priority: 0.85, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/compare-loans`, changeFrequency: "monthly", priority: 0.9, lastModified: new Date("2026-07-20") },
-    { url: `${BASE}/guides/savannah-mortgage`, changeFrequency: "monthly", priority: 0.85, lastModified: new Date("2026-07-20") },
     { url: `${BASE}/mortgage-calculator/florida`,     changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/mortgage-calculator/texas`,       changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/mortgage-calculator/georgia`,     changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },

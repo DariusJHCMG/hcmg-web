@@ -9,12 +9,12 @@ export const metadata: Metadata = {
   title: "Mortgage Learning Center: Guides for Home Buyers | HCMG",
   description:
     "Plain-English guides on FHA loans, VA loans, first-time homebuyer programs, down payments, refinancing, and more. Written by Harris Capital Mortgage Group loan officers. NMLS# 1918223.",
-  alternates: { canonical: "https://hcmgloans.com/learn" },
+  alternates: { canonical: "https://www.hcmgloans.com/learn" },
   openGraph: {
     title: "Mortgage Learning Center | HCMG",
     description:
       "Free guides on FHA loans, VA loans, first-time homebuyer programs, refinancing, PMI, and more. Harris Capital Mortgage Group · NMLS# 1918223.",
-    url: "https://hcmgloans.com/learn",
+    url: "https://www.hcmgloans.com/learn",
     images: ["/hcmg-social.png"],
   },
 };
@@ -25,16 +25,16 @@ const learnSchema = {
   name: "HCMG Mortgage Learning Center",
   description:
     "Plain-English mortgage guides for home buyers, covering FHA loans, VA loans, down payment assistance, refinancing, PMI, and pre-approval.",
-  url: "https://hcmgloans.com/learn",
+  url: "https://www.hcmgloans.com/learn",
   hasPart: learnArticles.map((a) => ({
     "@type": "Article",
     headline: a.headline,
     description: a.metaDescription,
-    url: `https://hcmgloans.com/learn/${a.slug}`,
+    url: `https://www.hcmgloans.com/learn/${a.slug}`,
     author: {
       "@type": "Organization",
       name: "Harris Capital Mortgage Group, LLC",
-      url: "https://hcmgloans.com",
+      url: "https://www.hcmgloans.com",
     },
   })),
 };

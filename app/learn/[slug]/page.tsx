@@ -26,11 +26,11 @@ export async function generateMetadata({
   return {
     title: article.metaTitle,
     description: article.metaDescription,
-    alternates: { canonical: `https://hcmgloans.com/learn/${slug}` },
+    alternates: { canonical: `https://www.hcmgloans.com/learn/${slug}` },
     openGraph: {
       title: article.title,
       description: article.metaDescription,
-      url: `https://hcmgloans.com/learn/${slug}`,
+      url: `https://www.hcmgloans.com/learn/${slug}`,
       type: "article",
       images: ["/hcmg-social.png"],
       publishedTime: article.publishedAt,
@@ -97,20 +97,20 @@ export default async function LearnArticlePage({
     "@type": "Article",
     headline: article.headline,
     description: article.metaDescription,
-    url: `https://hcmgloans.com/learn/${slug}`,
+    url: `https://www.hcmgloans.com/learn/${slug}`,
     datePublished: article.publishedAt,
     author: {
       "@type": "Organization",
       name: "Harris Capital Mortgage Group, LLC",
-      url: "https://hcmgloans.com",
+      url: "https://www.hcmgloans.com",
     },
     publisher: {
       "@type": "Organization",
       name: "Harris Capital Mortgage Group, LLC",
-      url: "https://hcmgloans.com",
+      url: "https://www.hcmgloans.com",
       logo: {
         "@type": "ImageObject",
-        url: "https://hcmgloans.com/hcmg-wordmark-on-light.svg",
+        url: "https://www.hcmgloans.com/hcmg-wordmark-on-light.svg",
       },
     },
   };
@@ -119,13 +119,13 @@ export default async function LearnArticlePage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://hcmgloans.com" },
-      { "@type": "ListItem", position: 2, name: "Learn", item: "https://hcmgloans.com/learn" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.hcmgloans.com" },
+      { "@type": "ListItem", position: 2, name: "Learn", item: "https://www.hcmgloans.com/learn" },
       {
         "@type": "ListItem",
         position: 3,
         name: article.title,
-        item: `https://hcmgloans.com/learn/${slug}`,
+        item: `https://www.hcmgloans.com/learn/${slug}`,
       },
     ],
   };
@@ -187,6 +187,18 @@ export default async function LearnArticlePage({
           <p className="mt-5 text-base leading-8 text-muted">{article.intro}</p>
         </div>
       </section>
+
+      {(article.productSlug || article.sources?.length) && (
+        <section className="border-y border-line bg-sand py-10">
+          <div className="container-shell grid max-w-3xl gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div>
+              <h2 className="text-xl font-extrabold text-ink">Verify the details for your scenario</h2>
+              {article.sources?.length ? <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">{article.sources.map(source => <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="text-sm font-bold text-accent underline underline-offset-2">{source.label} ↗</a>)}</div> : null}
+            </div>
+            {article.productSlug ? <Link href={`/loans/${article.productSlug}`} className="primary-button whitespace-nowrap">Compare this loan →</Link> : null}
+          </div>
+        </section>
+      )}
 
       {/* Article body */}
       <section className="bg-white pb-16">
