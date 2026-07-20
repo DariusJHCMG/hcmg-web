@@ -12,7 +12,7 @@ export type CityData = {
   county: string;
   medianHomePrice: number;   // USD
   propertyTaxRate: number;   // annual %, e.g. 0.89
-  fhaLoanLimit?: number;     // 2024 FHA conforming loan limit for the county
+  fhaLoanLimit?: number;     // legacy value; live pages use current HUD data
   dpaProgram?: string;       // State / local DPA program name and key detail
   neighborhoods?: string[];  // 2–4 recognizable sub-neighborhoods for hyper-local copy
 };
@@ -207,7 +207,7 @@ export const LOAN_TYPE_FAQS: Record<string, { q: string; a: string }[]> = {
     { q: "How much should I save before buying?", a: "Aim for 3–5% for down payment, plus 2–3% for closing costs, plus 1–2% for move-in expenses and immediate repairs. Your loan officer will give you a precise cash-to-close estimate." },
   ],
   "Jumbo Loan": [
-    { q: "What is a jumbo loan?", a: "A jumbo loan is a mortgage that exceeds the conforming loan limit set by the FHFA — $766,550 in most areas for 2024, and higher in designated high-cost markets. Jumbo loans are not backed by Fannie Mae or Freddie Mac." },
+    { q: "What is a jumbo loan?", a: "A jumbo loan exceeds the conforming loan limit that applies to the property. For 2026, the baseline one-unit limit is $832,750 and the high-cost ceiling is $1,249,125. Jumbo loans are not eligible for purchase by Fannie Mae or Freddie Mac." },
     { q: "What credit score do I need for a jumbo loan?", a: "Most jumbo programs require a minimum score of 700–720. Reserves (cash in the bank after closing) are also evaluated more heavily than on conforming loans." },
     { q: "What down payment is required for a jumbo loan?", a: "Down payments typically range from 10–20% for jumbo loans, depending on the loan size and borrower profile. Some high-balance programs allow less with strong compensating factors." },
   ],
@@ -255,8 +255,8 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
       a: `A 620 credit score qualifies you for a 3.5% down payment FHA loan in ${city}, ${state}. You will also need a debt-to-income ratio at or below 43%, a steady 2-year employment history, and the property must be your primary residence. Harris Capital Mortgage Group's loan officers in ${state} can review your full profile and confirm eligibility in minutes — no hard credit check required for an initial estimate.`,
     },
     {
-      q: `What is the FHA loan limit in ${city}, ${state} for 2024?`,
-      a: `The 2024 FHA loan limit in most ${state} counties is $498,257 for a single-family home. High-cost areas have higher limits — up to $1,149,825. Your Harris Capital loan officer will confirm the exact limit for your target property's county before you start shopping. Staying below the limit means a lower down payment and no jumbo qualification requirements.`,
+      q: `What is the FHA loan limit in ${city}, ${state} for 2026?`,
+      a: `HUD's 2026 FHA one-unit limits range from $541,287 to $1,249,125 nationally, but the exact limit is county-specific. Your Harris Capital loan officer will confirm the applicable limit for the property county.`,
     },
     {
       q: `Can I buy a home in ${city} with no money down if I have an FHA loan?`,
@@ -287,8 +287,8 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
       a: `A 20% down payment eliminates private mortgage insurance (PMI) on a conventional loan. In ${city} where the median home price is higher, that can be a significant hurdle. Programs like Fannie Mae HomeReady and Freddie Mac Home Possible allow as little as 3% down for qualifying buyers — though PMI will apply until you reach 20% equity. Your Harris Capital loan officer will calculate the exact PMI cost and break-even point for your price range.`,
     },
     {
-      q: `What is the conforming loan limit for a conventional loan in ${state} in 2024?`,
-      a: `The 2024 conforming loan limit in most ${state} counties is $766,550 for a single-family home. In high-cost areas, the limit can be higher. Loans below this limit are "conforming" and typically have lower rates than jumbo loans. If your target home price in ${city} exceeds this limit, ask your HCMG loan officer about jumbo loan options — rates have become more competitive in recent years.`,
+      q: `What is the conforming loan limit for a conventional loan in ${state} in 2026?`,
+      a: `The 2026 baseline conforming limit for a one-unit property is $832,750, with a high-cost ceiling of $1,249,125. The applicable limit depends on the property county and unit count.`,
     },
   ],
   "Refinance": (city, state) => [
@@ -335,8 +335,8 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
   ],
   "Jumbo Loan": (city, state) => [
     {
-      q: `What is the jumbo loan threshold in ${city}, ${state} for 2024?`,
-      a: `In most ${state} counties, any loan above $766,550 is considered a jumbo loan in 2024. High-cost areas like some California counties have higher conforming limits before the jumbo threshold kicks in. If you are purchasing a home in the upper price ranges of ${city}, your HCMG loan officer will tell you exactly where the jumbo line falls for that specific property and what rate difference to expect.`,
+      q: `What is the jumbo loan threshold in ${city}, ${state} for 2026?`,
+      a: `A loan becomes jumbo when its amount exceeds the conforming limit that applies to the property. The 2026 one-unit baseline is $832,750 and some high-cost counties have higher limits, up to $1,249,125.`,
     },
     {
       q: `What credit score and down payment do I need for a jumbo loan in ${city}?`,

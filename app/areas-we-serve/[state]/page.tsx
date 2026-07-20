@@ -61,7 +61,7 @@ const STATE_META: Record<string, {
   california: {
     name: "California", abbr: "CA",
     headline: "Mortgage Lender in California: Los Angeles, San Diego, San Jose & More",
-    intro: "California has some of the most competitive real estate markets in the nation. Conforming loan limits in many California counties are higher than the national baseline — up to $1,149,825 in high-cost areas like Los Angeles, Santa Clara, and San Francisco counties — meaning more buyers qualify for conventional rather than jumbo financing.",
+    intro: "California has some of the most competitive real estate markets in the nation. For 2026, the one-unit conforming ceiling in high-cost counties is $1,249,125, while the national baseline is $832,750. The exact limit depends on the property county and unit count.",
     programs: "CalHFA (California Housing Finance Agency) offers MyHome Assistance for down payment and closing cost help, and the CalHFA Zero Interest Program (ZIP) as a deferred second mortgage. CalVet Home Loans are available for eligible California veterans. HCMG's California-licensed loan officers can assess your eligibility quickly.",
   },
   dc: {

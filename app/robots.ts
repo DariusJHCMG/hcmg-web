@@ -10,6 +10,8 @@ export default function robots(): MetadataRoute.Robots {
           "/api/",
           "/admin/",
           "/portal/",
+          "/login",
+          "/reset-password",
           "/find-a-loan-officer?*",
           "/get-started?source=seo*",
         ],

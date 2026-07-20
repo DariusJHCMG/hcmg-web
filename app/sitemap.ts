@@ -3,6 +3,7 @@ import { seoPages } from "@/data/seo-pages";
 import { glossaryTerms } from "@/data/glossary";
 import { teamMembers } from "@/data/team";
 import { learnArticles } from "@/data/learn";
+import { isPrioritySeoPage } from "@/lib/seo-strategy";
 
 const BASE = "https://hcmgloans.com";
 
@@ -42,6 +43,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/areas-we-serve/dc`,          changeFrequency: "monthly", priority: 0.85, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/areas-we-serve/mississippi`, changeFrequency: "monthly", priority: 0.85, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/learn`, changeFrequency: "weekly", priority: 0.85, lastModified: new Date("2026-07-08") },
+    { url: `${BASE}/compare-loans`, changeFrequency: "monthly", priority: 0.9, lastModified: new Date("2026-07-20") },
+    { url: `${BASE}/guides/savannah-mortgage`, changeFrequency: "monthly", priority: 0.85, lastModified: new Date("2026-07-20") },
     { url: `${BASE}/mortgage-calculator/florida`,     changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/mortgage-calculator/texas`,       changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/mortgage-calculator/georgia`,     changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
@@ -54,11 +57,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/mortgage-calculator/dc`,          changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-08") },
   ];
 
-  const seoRoutes: MetadataRoute.Sitemap = seoPages.map((p) => ({
+  const seoRoutes: MetadataRoute.Sitemap = seoPages.filter(isPrioritySeoPage).map((p) => ({
     url: `${BASE}/seo/${p.slug}`,
     changeFrequency: "weekly",
     priority: 0.7,
     lastModified: SEO_DATE,
+  }));
+
+  const productRoutes: MetadataRoute.Sitemap = ["fha", "va", "conventional", "jumbo", "usda", "refinance", "first-time-buyer", "down-payment-assistance", "heloc", "arm"].map(slug => ({
+    url: `${BASE}/loans/${slug}`, changeFrequency: "monthly" as const, priority: 0.9, lastModified: new Date("2026-07-20"),
   }));
 
   const glossaryRoutes: MetadataRoute.Sitemap = glossaryTerms.map((t) => ({
@@ -82,5 +89,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: TEAM_DATE,
   }));
 
-  return [...staticRoutes, ...learnRoutes, ...seoRoutes, ...glossaryRoutes, ...teamRoutes];
+  return [...staticRoutes, ...productRoutes, ...learnRoutes, ...seoRoutes, ...glossaryRoutes, ...teamRoutes];
 }

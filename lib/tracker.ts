@@ -79,6 +79,12 @@ export function getSessionMeta(): SessionMeta {
 
 // ── Event dispatch ────────────────────────────────────────────────
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 function fire(eventType: EventType, data?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   const sessionId = getSessionId();
@@ -91,6 +97,13 @@ function fire(eventType: EventType, data?: Record<string, unknown>) {
     body: JSON.stringify({ sessionId, eventType, pathname, data: data ?? {} }),
     keepalive: true, // survives page unload
   }).catch(() => {});
+
+  // Mirror first-party events into GA4 so acquisition and conversion reports
+  // use the same event names as the portal analytics.
+  window.gtag?.("event", eventType, {
+    page_path: pathname,
+    ...data,
+  });
 }
 
 // ── Public tracking helpers ───────────────────────────────────────
@@ -104,7 +117,25 @@ export function trackFunnelStep(
   choice: string,
   durationMs?: number,
 ) {
+  if (typeof window !== "undefined" && step === 1 && !sessionStorage.getItem("hcmg_funnel_started")) {
+    sessionStorage.setItem("hcmg_funnel_started", "1");
+    window.gtag?.("event", "funnel_start", { page_path: window.location.pathname, choice });
+  }
   fire("funnel_step", { step, choice, duration_ms: durationMs ?? null });
+}
+
+export function trackFunnelComplete(source?: string, funnelType?: string) {
+  if (typeof window === "undefined") return;
+  window.gtag?.("event", "funnel_complete", {
+    page_path: window.location.pathname,
+    lead_source: source ?? "unknown",
+    funnel_type: funnelType ?? "unknown",
+  });
+}
+
+export function trackContactAction(action: "phone_click" | "email_click" | "officer_profile_click", target: string) {
+  if (typeof window === "undefined") return;
+  window.gtag?.("event", action, { page_path: window.location.pathname, target });
 }
 
 export function trackCtaClick(label: string) {

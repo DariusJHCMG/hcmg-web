@@ -1,5 +1,5 @@
 import type { UtmParams } from "./utm";
-import { getSessionMeta } from "./tracker";
+import { getSessionMeta, trackFunnelComplete } from "./tracker";
 
 export interface LeadPayload {
   firstName: string;
@@ -118,6 +118,7 @@ export async function submitLead(payload: LeadPayload): Promise<{ success: boole
       const data = await res.json().catch(() => ({}));
       return { success: false, error: (data as { error?: string }).error ?? "Submission failed." };
     }
+    trackFunnelComplete(payload.source, payload.funnelType);
     return { success: true };
   } catch {
     return { success: false, error: "Verification or network error. Please try again." };

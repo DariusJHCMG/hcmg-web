@@ -3,6 +3,9 @@ import { getCurrentProfile } from "@/lib/auth";
 import { isAdmin } from "@/lib/auth";
 import { AdminLayoutClient } from "@/components/admin/AdminLayoutClient";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 function Initials({ name }: { name: string }) {
   const parts = name.trim().split(/\s+/);

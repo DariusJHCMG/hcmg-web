@@ -52,7 +52,7 @@ const STATE_DATA: Record<string, {
   california: {
     name: "California", abbr: "CA", taxRate: 0.73,
     conformingLimit: 1149825,
-    blurb: "California has a higher conforming loan limit of up to $1,149,825 in many counties, meaning more buyers qualify for conventional rather than jumbo financing. Property taxes are capped at 1% of purchase price under Proposition 13, though special assessments add to the total. CalHFA offers down payment assistance for qualifying first-time buyers.",
+    blurb: "For 2026, California's one-unit conforming limit can reach $1,249,125 in high-cost counties, while the national baseline is $832,750. Property taxes are generally based on assessed value, with special assessments potentially adding to the total. CalHFA offers assistance programs for qualifying buyers.",
   },
   mississippi: {
     name: "Mississippi", abbr: "MS", taxRate: 0.65,
@@ -119,7 +119,7 @@ export default async function StateMortgageCalculatorPage({
         name: `What is the conforming loan limit in ${data.name}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `The 2024 conforming loan limit in most of ${data.name} is $${data.conformingLimit.toLocaleString()}. Loans below this amount qualify for conventional (Fannie/Freddie) financing. Amounts above this limit are jumbo loans and have different qualification requirements.`,
+          text: `For 2026, the national baseline conforming limit for a one-unit property is $832,750 and the high-cost ceiling is $1,249,125. The applicable limit in ${data.name} depends on the property's county and unit count.`,
         },
       },
       {

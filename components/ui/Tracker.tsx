@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { initSessionMeta, trackPageView } from "@/lib/tracker";
+import { initSessionMeta, trackContactAction, trackPageView } from "@/lib/tracker";
 import { initPostHog, getPostHog } from "@/lib/posthog";
 
 /**
@@ -19,6 +19,17 @@ export function Tracker() {
   useEffect(() => {
     initPostHog();
     initSessionMeta();
+
+    const trackHighIntentClick = (event: MouseEvent) => {
+      const link = (event.target as Element | null)?.closest("a");
+      if (!link) return;
+      const href = link.getAttribute("href") ?? "";
+      if (href.startsWith("tel:")) trackContactAction("phone_click", href.slice(4));
+      else if (href.startsWith("mailto:")) trackContactAction("email_click", href.slice(7));
+      else if (/^\/team\/[^/]+/.test(href)) trackContactAction("officer_profile_click", href);
+    };
+    document.addEventListener("click", trackHighIntentClick);
+    return () => document.removeEventListener("click", trackHighIntentClick);
   }, []);
 
   useEffect(() => {

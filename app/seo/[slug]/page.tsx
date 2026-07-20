@@ -7,21 +7,26 @@ import { Footer } from "@/components/ui/Footer";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { Calculator } from "@/components/sections/Calculator";
 import { Disclosure } from "@/components/ui/Disclosure";
+import { isPrioritySeoPage } from "@/lib/seo-strategy";
 
 export const revalidate = 86400;
 
 export function generateStaticParams() {
-  return seoPages.map((p) => ({ slug: p.slug }));
+  // Pre-render only pages selected for organic search. Legacy generated URLs
+  // remain available on demand with noindex so existing links do not break.
+  return seoPages.filter(isPrioritySeoPage).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const page = seoPages.find((p) => p.slug === slug);
   if (!page) return {};
+  const isLasVegasArm = page.city === "Las Vegas" && page.loanType === "Adjustable Rate Mortgage";
   return {
-    title: `${page.loanType}s in ${page.city}, ${page.state} | HCMG Mortgage Lender`,
-    description: page.description,
+    title: isLasVegasArm ? "Adjustable-Rate Mortgages in Las Vegas: ARM Caps & Options | HCMG" : `${page.loanType}s in ${page.city}, ${page.state} | HCMG Mortgage Lender`,
+    description: isLasVegasArm ? "Compare adjustable-rate mortgage options in Las Vegas, including fixed periods, rate caps, payment planning, and questions to ask a licensed loan officer." : page.description,
     alternates: { canonical: `https://hcmgloans.com/seo/${slug}` },
+    robots: isPrioritySeoPage(page) ? { index: true, follow: true } : { index: false, follow: true },
     openGraph: {
       title: `${page.loanType}s in ${page.city}, ${page.state} | HCMG`,
       description: page.description,
@@ -38,6 +43,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
 
   const localCopy = STATE_COPY[page.state] ?? `Explore ${page.loanType.toLowerCase()} options in ${page.city}, ${page.state} with Harris Capital Mortgage Group.`;
   const faqs = LOAN_TYPE_FAQS[page.loanType] ?? LOAN_TYPE_FAQS["Conventional Loan"];
+  const isLasVegasArm = page.city === "Las Vegas" && page.loanType === "Adjustable Rate Mortgage";
 
   const relatedPages = seoPages
     .filter((p) => p.slug !== slug && (p.state === page.state || p.loanType === page.loanType))
@@ -118,6 +124,12 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
       {/* Calculator */}
       <Calculator seoSlug={page.slug} />
 
+      {isLasVegasArm && <section className="border-y border-line bg-white py-12"><div className="container-shell grid max-w-4xl gap-5 md:grid-cols-3">{[
+        ["Initial fixed period", "Ask how long the introductory rate is fixed and what index and margin determine later adjustments."],
+        ["Adjustment caps", "Compare the initial, periodic, and lifetime caps—not only the starting rate or first payment."],
+        ["Ownership horizon", "Stress-test the maximum permitted payment if you may still own the Las Vegas property after the fixed period."],
+      ].map(([heading,body]) => <article key={heading} className="rounded-2xl border border-line bg-sand p-5"><h2 className="font-extrabold text-ink">{heading}</h2><p className="mt-3 text-sm leading-7 text-muted">{body}</p></article>)}</div></section>}
+
       {/* Local context */}
       <section className="section-pad bg-sand">
         <div className="container-shell max-w-4xl">
@@ -151,11 +163,11 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
                     </div>
                   </div>
                   {/* FHA loan limit row */}
-                  {cityInfo.fhaLoanLimit && (
+                  {page.loanType === "FHA Loan" && (
                     <div className="mt-4 border-t border-line pt-4 grid gap-4 sm:grid-cols-2 text-sm">
                       <div>
-                        <div className="font-extrabold text-lg text-ink">${cityInfo.fhaLoanLimit.toLocaleString()}</div>
-                        <div className="text-muted">2024 FHA loan limit · {cityInfo.county}</div>
+                        <div className="font-extrabold text-lg text-ink">$541,287–$1,249,125</div>
+                        <div className="text-muted">2026 FHA one-unit national range · county limit varies</div>
                       </div>
                       {cityInfo.dpaProgram && (
                         <div>

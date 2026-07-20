@@ -17,7 +17,7 @@ function getResend() {
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
-const ALLOWED_SOURCES = new Set(["funnel", "get-started", "team", "seo", "home-calculator", "contact", "employment", "co-brand", "co-branded"]);
+const ALLOWED_SOURCES = new Set(["funnel", "get-started", "team", "seo", "product", "home-calculator", "contact", "employment", "co-brand", "co-branded"]);
 const LICENSED_STATES = new Set(["FL", "TX", "GA", "NV", "CO", "VA", "DC", "MD", "CA", "MS"]);
 const NAME_RE = /^[\p{L}][\p{L}\p{M}' .-]{0,49}$/u;
 

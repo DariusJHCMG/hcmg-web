@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "HCMG Portal",
+  robots: { index: false, follow: false },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

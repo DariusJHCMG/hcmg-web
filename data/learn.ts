@@ -22,7 +22,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "fha-loan-requirements",
     title: "FHA Loan Requirements",
-    metaTitle: "FHA Loan Requirements 2024: Credit Score, Down Payment & Income | HCMG",
+    metaTitle: "FHA Loan Requirements 2026: Credit Score, Down Payment & Income | HCMG",
     metaDescription:
       "Everything you need to qualify for an FHA loan: minimum credit score (580), down payment (3.5%), debt-to-income limits, property standards, and mortgage insurance. Plain-English guide from Harris Capital Mortgage Group.",
     category: "FHA Loans",
@@ -90,7 +90,7 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "FHA Loan Limits",
         body: [
-          "The FHA sets county-level loan limits each year. For 2024, the baseline limit for a single-family home is $498,257 in most of the country, rising to $1,149,825 in high-cost areas like Los Angeles, San Francisco, and parts of Maryland and Virginia.",
+          "The FHA sets county-level loan limits each year. For 2026, the one-unit floor is $541,287 and the high-cost ceiling is $1,249,125. Verify the exact county limit with HUD before relying on it.",
           "If the home you want exceeds the FHA limit in your county, you'll need a conventional or jumbo loan instead. Your loan officer can pull the exact limit for any zip code.",
         ],
       },
@@ -120,7 +120,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "how-much-mortgage-can-i-afford",
     title: "How Much Mortgage Can I Afford?",
-    metaTitle: "How Much Mortgage Can I Afford? 2024 Calculator Guide | HCMG",
+    metaTitle: "How Much Mortgage Can I Afford? Calculator Guide | HCMG",
     metaDescription:
       "Learn the real rules lenders use to decide how much home you can afford: DTI limits, the 28/36 rule, down payment, and how income affects your buying power. HCMG.",
     category: "Buying a Home",
@@ -206,7 +206,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "first-time-homebuyer-programs",
     title: "First-Time Homebuyer Programs",
-    metaTitle: "First-Time Homebuyer Programs 2024: Down Payment Help by State | HCMG",
+    metaTitle: "First-Time Homebuyer Programs: Down Payment Help by State | HCMG",
     metaDescription:
       "State-by-state guide to first-time homebuyer programs including down payment assistance grants, below-market rate loans, and tax credits. FL, TX, GA, NV, CO, VA, MD, CA, MS covered.",
     category: "Buying a Home",
@@ -314,7 +314,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "va-loan-eligibility-requirements",
     title: "VA Loan Eligibility Requirements",
-    metaTitle: "VA Loan Eligibility Requirements 2024: Service, Certificate & Benefits | HCMG",
+    metaTitle: "VA Loan Eligibility Requirements: Service, Certificate & Benefits | HCMG",
     metaDescription:
       "Complete guide to VA loan eligibility: service requirements, Certificate of Eligibility, 0% down benefit, VA funding fee, and how to apply. Harris Capital Mortgage Group — licensed in FL, TX, GA, NV, CO, VA, MD, CA & MS.",
     category: "VA Loans",
@@ -904,7 +904,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "conventional-loan-requirements",
     title: "Conventional Loan Requirements",
-    metaTitle: "Conventional Loan Requirements 2024: Credit Score, Down Payment & DTI | HCMG",
+    metaTitle: "Conventional Loan Requirements 2026: Credit Score, Down Payment & DTI | HCMG",
     metaDescription:
       "Complete guide to conventional loan requirements: minimum credit score (620), down payment (3–20%), debt-to-income ratio, income documentation, and how conventional compares to FHA. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
@@ -1202,7 +1202,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "what-credit-score-do-you-need-to-buy-a-house",
     title: "What Credit Score Do You Need to Buy a House?",
-    metaTitle: "What Credit Score Do You Need to Buy a House? 2024 Guide | HCMG",
+    metaTitle: "What Credit Score Do You Need to Buy a House? | HCMG",
     metaDescription:
       "Minimum credit scores by loan type — FHA, VA, USDA, and conventional — plus how to improve your score before applying. Harris Capital Mortgage Group · NMLS# 1918223.",
     category: "Buying a Home",
@@ -1270,7 +1270,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "how-to-buy-a-house-step-by-step",
     title: "How to Buy a House — Step by Step",
-    metaTitle: "How to Buy a House Step by Step: Complete 2024 Guide | HCMG",
+    metaTitle: "How to Buy a House Step by Step: Complete Guide | HCMG",
     metaDescription:
       "A plain-English step-by-step guide to buying a house — from checking your credit to getting your keys. Harris Capital Mortgage Group · NMLS# 1918223.",
     category: "Buying a Home",
@@ -1406,7 +1406,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "usda-loan-requirements",
     title: "USDA Loan Requirements",
-    metaTitle: "USDA Loan Requirements 2024: Eligibility, Income Limits & Property | HCMG",
+    metaTitle: "USDA Loan Requirements: Eligibility, Income Limits & Property | HCMG",
     metaDescription:
       "Complete guide to USDA loan requirements — eligible areas, income limits, credit score minimums, and how to apply. 0% down payment for eligible rural and suburban buyers. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
@@ -1474,7 +1474,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "jumbo-loan-requirements",
     title: "Jumbo Loan Requirements",
-    metaTitle: "Jumbo Loan Requirements 2024: Credit Score, Down Payment & Limits | HCMG",
+    metaTitle: "Jumbo Loan Requirements 2026: Credit Score, Down Payment & Limits | HCMG",
     metaDescription:
       "What you need to qualify for a jumbo loan — conforming loan limits, credit score requirements, down payment, and reserves. Harris Capital Mortgage Group · NMLS# 1918223.",
     category: "Buying a Home",
@@ -1487,8 +1487,8 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "What Is the Jumbo Loan Limit?",
         body: [
-          "For 2024, the conforming loan limit is $766,550 for a single-family home in most U.S. counties. In designated high-cost areas (much of California, New York City, and other expensive metros), the limit is higher — up to $1,149,825. Any loan amount above the applicable limit is a jumbo loan.",
-          "Note: it's the loan amount that determines jumbo status, not the home price. If you're buying a $900,000 home with $200,000 down, your loan amount is $700,000 — which is below the 2024 conforming limit in most areas and qualifies as conventional.",
+          "For 2026, the baseline conforming loan limit for a one-unit property is $832,750. In designated high-cost areas, the limit can be higher — up to $1,249,125. A loan above the applicable county and unit-count limit is a jumbo loan.",
+          "Note: the loan amount—not the home price—determines jumbo status. Verify the current limit for the property's county and unit count before selecting a program.",
         ],
       },
       {
@@ -1718,7 +1718,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "mortgage-pre-approval-checklist",
     title: "Mortgage Pre-Approval Checklist — Documents You Need",
-    metaTitle: "Mortgage Pre-Approval Checklist 2024: Documents You Need | HCMG",
+    metaTitle: "Mortgage Pre-Approval Checklist: Documents You Need | HCMG",
     metaDescription:
       "The complete mortgage pre-approval document checklist — W-2s, tax returns, bank statements, and more. Get pre-approved faster by having these ready. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
