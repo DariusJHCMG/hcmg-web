@@ -17,7 +17,7 @@ function getResend() {
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
-const ALLOWED_SOURCES = new Set(["funnel", "get-started", "team", "seo", "product", "home-calculator", "contact", "employment", "co-brand", "co-branded", "real-estate-agent"]);
+const ALLOWED_SOURCES = new Set(["funnel", "get-started", "team", "seo", "product", "home-calculator", "contact", "employment", "co-brand", "co-branded", "real-estate-agent", "corporate-benefits"]);
 const LICENSED_STATES = new Set(["FL", "TX", "GA", "NV", "CO", "VA", "DC", "MD", "CA", "MS"]);
 const NAME_RE = /^[\p{L}][\p{L}\p{M}' .-]{0,49}$/u;
 
@@ -637,16 +637,19 @@ export async function POST(request: NextRequest) {
       const isEmployment = source === "employment";
       const isContact    = source === "contact";
       const isAgent      = source === "real-estate-agent";
+      const isCorporate  = source === "corporate-benefits";
 
       const alertEmail = isEmployment ? settings.recruiting_notify_email
         : isContact                  ? settings.contact_notify_email
         : isAgent                    ? settings.agent_notify_email
+        : isCorporate                ? settings.corporate_notify_email
         : settings.company_notify_email;
 
       if (alertEmail) {
         const sourceDisplay = isEmployment ? "Recruiting"
           : isContact ? "Contact form"
           : isAgent ? `Real Estate Agent — ${lead.funnelType ?? "inquiry"}`
+          : isCorporate ? "Corporate Home Benefits Program"
           : lead.seoSlug ? `SEO — ${lead.seoSlug}`
           : lead.funnelType ? `Funnel — ${lead.funnelType}`
           : source;
@@ -658,6 +661,7 @@ export async function POST(request: NextRequest) {
             subject: isEmployment ? `Recruiting inquiry — ${fullName || lead.email}`
               : isContact         ? `Contact form — ${fullName || lead.email}`
               : isAgent           ? `Agent partner inquiry — ${fullName || lead.email}`
+              : isCorporate       ? `Corporate benefits inquiry — ${fullName || lead.email}`
               : `Company lead — ${fullName || lead.email}`,
             html: buildCompanyAlertEmail({
               leadFullName:  fullName,
