@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/mortgage-calculator`, changeFrequency: "monthly", priority: 0.95, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/get-started`, changeFrequency: "monthly", priority: 0.9, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/contact`, changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-01") },
+    { url: `${BASE}/agents`, changeFrequency: "monthly", priority: 0.9, lastModified: new Date("2026-07-20") },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-01") },
     { url: `${BASE}/find-a-loan-officer`, changeFrequency: "weekly", priority: 0.8, lastModified: new Date("2026-07-08") },
     { url: `${BASE}/glossary`, changeFrequency: "monthly", priority: 0.8, lastModified: new Date("2026-07-01") },

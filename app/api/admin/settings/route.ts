@@ -8,6 +8,7 @@ const PatchSchema = z.object({
   company_funnel_label:    z.string().min(1).optional(),
   contact_notify_email:    z.string().email().optional().or(z.literal("")),
   recruiting_notify_email: z.string().email().optional().or(z.literal("")),
+  agent_notify_email:      z.string().email().optional().or(z.literal("")),
   ga4_measurement_id:      z.string().optional(),
   ga4_property_id:         z.string().optional(),
   gsc_property:            z.string().optional(),

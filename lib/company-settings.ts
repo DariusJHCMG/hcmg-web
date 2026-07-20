@@ -8,6 +8,7 @@ export interface CompanySettings {
   company_funnel_label:    string;  // display label in leads table
   contact_notify_email:    string;  // alert for /contact form submissions
   recruiting_notify_email: string;  // alert for /join and /careers recruiting leads
+  agent_notify_email:      string;  // alert for /agents funnels
   ga4_measurement_id:      string;  // e.g. "G-XXXXXXXXXX" — used for tag injection
   ga4_property_id:         string;  // e.g. "123456789" — numeric property ID for Data API
   gsc_property:            string;  // e.g. "https://hcmgloans.com" — GSC property URL
@@ -24,6 +25,7 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   company_funnel_label:    "HCMG Company",
   contact_notify_email:    "",
   recruiting_notify_email: "",
+  agent_notify_email:      "",
   ga4_measurement_id:      "",
   ga4_property_id:         "",
   gsc_property:            "",

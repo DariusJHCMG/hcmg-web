@@ -7,6 +7,7 @@ interface Settings {
   company_funnel_label:    string;
   contact_notify_email:    string;
   recruiting_notify_email: string;
+  agent_notify_email:      string;
   ga4_measurement_id:      string;
   ga4_property_id:         string;
   gsc_property:            string;
@@ -15,6 +16,7 @@ interface Settings {
 }
 
 const COMPANY_PAGES = [
+  { label: "Real Estate Agents", path: "/agents", desc: "Partnership, meeting, and Realtor Portal access funnels", type: "agent" },
   { label: "Get Started",        path: "/get-started",               desc: "Mortgage estimate funnel — no LO assigned",         type: "funnel"      },
   { label: "Team page",          path: "/team",                      desc: "Leads from team page without clicking an LO link",   type: "funnel"      },
   { label: "SEO / Local pages",  path: "/seo/[slug]",                desc: "100+ local pages (e.g. /seo/orlando-fha-loan) — all link to /get-started with source=seo", type: "funnel" },
@@ -29,11 +31,12 @@ const TYPE_BADGE: Record<string, { label: string; cls: string }> = {
   funnel:     { label: "Funnel",     cls: "border-amber-200 bg-amber-50 text-amber-700" },
   contact:    { label: "Contact",    cls: "border-orange-200 bg-orange-50 text-orange-700" },
   employment: { label: "Employment", cls: "border-blue-200 bg-blue-50 text-blue-700" },
+  agent:      { label: "Agent",      cls: "border-emerald-200 bg-emerald-50 text-emerald-700" },
 };
 
 export default function SettingsPage() {
   const [settings, setSettings]   = useState<Settings | null>(null);
-  const [form,     setForm]       = useState<Settings>({ company_notify_email: "", company_funnel_label: "", contact_notify_email: "", recruiting_notify_email: "", ga4_measurement_id: "", ga4_property_id: "", gsc_property: "", google_connected_email: "", google_refresh_token: "" });
+  const [form,     setForm]       = useState<Settings>({ company_notify_email: "", company_funnel_label: "", contact_notify_email: "", recruiting_notify_email: "", agent_notify_email: "", ga4_measurement_id: "", ga4_property_id: "", gsc_property: "", google_connected_email: "", google_refresh_token: "" });
   const [saving,   setSaving]     = useState(false);
   const [msg,      setMsg]        = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -123,6 +126,13 @@ export default function SettingsPage() {
               <p className="mt-1 text-[11px] text-amber-800/70">
                 Leads from /get-started, /team, /seo/* (no LO assigned). Leave blank to disable.
               </p>
+            </div>
+
+            {/* Real estate agent leads */}
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <label className="mb-1 block text-xs font-bold text-emerald-900">🟢 Real Estate Agent Lead Alert Email</label>
+              <input type="email" className={IC} placeholder="partners@hcmgloans.com — or leave blank" value={form.agent_notify_email} onChange={(e) => setForm((p) => ({ ...p, agent_notify_email: e.target.value }))} />
+              <p className="mt-1 text-[11px] text-emerald-800/70">Partnership inquiries, meeting requests, and Realtor Portal access requests from /agents.</p>
             </div>
 
             {/* Contact leads */}
