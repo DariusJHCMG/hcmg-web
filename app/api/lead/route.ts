@@ -8,6 +8,7 @@ import {
   buildLeadConfirmationEmail,
   buildLoNotificationEmail,
   buildCompanyAlertEmail,
+  buildDscrLeadEmail,
 } from "@/lib/email-templates";
 
 const RESEND_KEY = process.env.RESEND_API_KEY;
@@ -576,9 +577,39 @@ export async function POST(request: NextRequest) {
   // ── 4. Send emails ────────────────────────────────────────────────────────
   const resend = getResend();
   if (resend) {
+    // Parse DSCR notes into key/value map (pipe-separated "Key: Value | Key: Value")
+    function parseDscrNotes(notes: string | undefined): Record<string, string> {
+      if (!notes) return {};
+      return Object.fromEntries(
+        notes.split("|").map(s => s.trim()).filter(Boolean).map(s => {
+          const idx = s.indexOf(":");
+          return idx > -1 ? [s.slice(0, idx).trim(), s.slice(idx + 1).trim()] as [string, string] : null;
+        }).filter((e): e is [string, string] => e !== null)
+      );
+    }
+
+    const isDscr = lead.source === "dscr-landing";
+    const dscrNotes = isDscr ? parseDscrNotes(lead.notes) : {};
+    const loSendEmail = isDscr && lead.loName && loNotifyEmail;
+
     const emailJobs: Promise<unknown>[] = [
-      // Always send confirmation to the lead
-      resend.emails.send({
+      // Confirmation email to the lead
+      resend.emails.send(isDscr && loSendEmail ? {
+        // DSCR: personalised outreach from Darius, CC Darius
+        from:    `${lead.loName} at HCMG <noreply@hcmgloans.com>`,
+        to:      lead.email,
+        cc:      loNotifyEmail!,
+        replyTo: loNotifyEmail!,
+        subject: `Your DSCR Loan Inquiry`,
+        html: buildDscrLeadEmail({
+          firstName:   lead.firstName,
+          loName:      lead.loName!,
+          loPhone:     loPhone,
+          loNmls:      loNmls,
+          calendarUrl: loCalendarUrl,
+          dscrNotes,
+        }),
+      } : {
         from:    "HCMG <noreply@hcmgloans.com>",
         to:      lead.email,
         subject: lead.loName
@@ -600,8 +631,8 @@ export async function POST(request: NextRequest) {
       }),
     ];
 
-    if (lead.loSlug && loNotifyEmail && lead.loName) {
-      // Assigned LO notification
+    if (lead.loSlug && loNotifyEmail && lead.loName && !isDscr) {
+      // Assigned LO notification (DSCR already CCs the LO on the lead email)
       emailJobs.push(
         resend.emails.send({
           from:    "HCMG Leads <noreply@hcmgloans.com>",

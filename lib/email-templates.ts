@@ -418,3 +418,59 @@ export function buildCompanyAlertEmail({
     ${emailFooter()}
   `);
 }
+
+// ── 7. DSCR lead outreach (from LO to lead, CC LO) ───────────────────────────
+
+export function buildDscrLeadEmail({
+  firstName, loName, loPhone, loNmls, calendarUrl, dscrNotes,
+}: {
+  firstName: string;
+  loName: string;
+  loPhone: string | null;
+  loNmls: string | null;
+  calendarUrl: string | null;
+  dscrNotes: Record<string, string>;
+}): string {
+  const propertyType  = dscrNotes["Property Type"]  ?? null;
+  const loanAmount    = dscrNotes["Loan Amount"]     ?? null;
+  const timeline      = dscrNotes["Timeline"]        ?? null;
+
+  const detailsRows = [
+    propertyType ? infoRow("Property type", propertyType) : "",
+    loanAmount   ? infoRow("Estimated loan amount", loanAmount) : "",
+    timeline     ? infoRow("Timeline", timeline, true) : "",
+  ].join("");
+
+  const calendarBlock = calendarUrl
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
+         <tr><td>${ctaButton("Book a 10-Minute Call →", calendarUrl)}</td></tr>
+       </table>`
+    : "";
+
+  return emailWrap(`
+    ${emailHeader("DSCR Loan Inquiry", `Hi ${firstName},`, "Thanks for reaching out about DSCR financing.")}
+    <tr><td style="padding:32px 36px 0;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#5A6B7E;">
+        I specialize in investment property loans where you qualify based on the
+        <strong style="color:#1A2B42;">property&apos;s rental income</strong> — not your personal income or tax returns.
+        Based on what you shared:
+      </p>
+      ${detailsRows.trim() ? emailSection("Your Details", detailsRows) : ""}
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#5A6B7E;">
+        I&apos;d like to learn more about your deal and see if we&apos;re a good fit.
+        Are you available for a quick 10-minute call today or tomorrow?
+      </p>
+      ${calendarBlock}
+      <p style="margin:0 0 8px;font-size:14px;line-height:1.75;color:#5A6B7E;">
+        Or just reply to this email with a good time.
+      </p>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.75;color:#5A6B7E;">
+        Talk soon,<br/>
+        <strong style="color:#1A2B42;">${loName}</strong><br/>
+        ${loPhone ? `${loPhone}<br/>` : ""}
+        ${loNmls ? `NMLS# ${loNmls}` : ""}
+      </p>
+    </td></tr>
+    ${emailFooter("This message was sent because you submitted a DSCR loan inquiry at hcmgloans.com.")}
+  `);
+}

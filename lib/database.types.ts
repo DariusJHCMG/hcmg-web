@@ -27,6 +27,7 @@ export interface Profile {
   specialties: string[] | null;
   created_at: string;
   updated_at: string;
+  calendar_url: string | null;
   // Activity tracking
   last_seen_at: string | null;
 }
