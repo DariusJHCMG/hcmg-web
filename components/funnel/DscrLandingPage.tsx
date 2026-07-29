@@ -754,12 +754,12 @@ function FormStepView({ step, totalSteps, form, set, onNext, onBack }: StepProps
         )}
 
         {step === 7 && ([
-          ["under-200k", "Under $200,000"],
-          ["200-400k", "$200,000 – $400,000"],
-          ["400-600k", "$400,000 – $600,000"],
-          ["600k-plus", "$600,000+"],
-        ] as [LoanAmount, string][]).map(([v, label]) => (
-          <Option key={v} value={v} selected={form.loanAmount === v} onClick={() => { set("loanAmount", v); onNext(); }}>{label}</Option>
+          ["under-1500",  "Under $1,500 / mo"],
+          ["1500-2500",   "$1,500 – $2,500 / mo"],
+          ["2500-4000",   "$2,500 – $4,000 / mo"],
+          ["4000-plus",   "$4,000+ / mo"],
+        ] as [string, string][]).map(([v, label]) => (
+          <Option key={v} value={v} selected={form.monthlyRentalIncome === v} onClick={() => { set("monthlyRentalIncome", v); onNext(); }}>{label}</Option>
         ))}
 
         {/* Step 8 — credit score. Value passed to onNext so parent checks it
