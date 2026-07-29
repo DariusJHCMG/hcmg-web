@@ -87,9 +87,10 @@ interface Props {
   sourceLabel?: string;
   hideLoColumn?: boolean;
   patchEndpoint?: "admin" | "portal";
+  dscrData?: Record<string, string>;
 }
 
-export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint = "admin" }: Props) {
+export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint = "admin", dscrData }: Props) {
   const [open, setOpen]           = useState(false);
   const [events, setEvents]       = useState<LeadEvent[]>([]);
   const [loading, setLoading]     = useState(false);
@@ -455,6 +456,21 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                   {lead.income_range && <span className="rounded-full border border-line bg-white px-2.5 py-1">{lead.income_range}</span>}
                 </div>
               </div>
+
+              {/* ── DSCR answers ── */}
+              {dscrData && Object.keys(dscrData).length > 0 && (
+                <div className="mt-4 rounded-xl border border-line bg-surface p-4">
+                  <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted">DSCR Loan Details</p>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
+                    {Object.entries(dscrData).map(([k, v]) => (
+                      <div key={k}>
+                        <p className="text-[10px] uppercase tracking-wider text-muted">{k}</p>
+                        <p className="text-xs font-semibold text-ink">{v}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             </div>
           </td>
