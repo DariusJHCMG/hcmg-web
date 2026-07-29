@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface Props {
   loSlug: string;
@@ -32,12 +32,6 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [calReady, setCalReady] = useState(false);
-  useEffect(() => {
-    if (calMounted.current) return;
-    calMounted.current = true;
-    setCalReady(true);
-  }, []);
 
   const STEPS = [
     { n: "1", title: "We review your details",       body: "Your property scenario is reviewed — usually within 1 hour." },
@@ -134,27 +128,26 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
           </div>
         </div>
 
-        {/* ── Cal.com booking ── */}
-        <div className="rounded-2xl bg-white border border-line overflow-hidden">
-          <div className="px-6 pt-6 pb-3 border-b border-line">
-            <p className="text-sm font-extrabold text-ink">Book Your 30-Minute Strategy Call</p>
-            <p className="text-xs text-muted mt-1">Pick a time — you&apos;ll speak directly with {firstName}.</p>
-          </div>
-          <div id="my-cal-inline-dscr-strategy-call" style={{ width: "100%", height: "100%", overflow: "scroll" }} />
-          {calReady && (
-            <script
-              dangerouslySetInnerHTML={{ __html: `
-                (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-                Cal("init", "dscr-strategy-call", {origin:"https://app.cal.com"});
-                Cal.ns["dscr-strategy-call"]("inline", {
-                  elementOrSelector:"#my-cal-inline-dscr-strategy-call",
-                  config: {"layout":"month_view","useSlotsViewOnSmallScreen":"true"},
-                  calLink: "darius-james/dscr-strategy-call",
-                });
-                Cal.ns["dscr-strategy-call"]("ui", {"cssVarsPerTheme":{"light":{"cal-brand":"#142850"}},"hideEventTypeDetails":false,"layout":"month_view"});
-              ` }}
-            />
-          )}
+        {/* ── Book a call ── */}
+        <div className="rounded-2xl bg-white border border-line p-6">
+          <p className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: "#142850" }}>
+            Schedule a Call
+          </p>
+          <p className="text-xs text-muted mb-4">
+            Book a free 30-minute strategy call with {firstName} — no pressure, just answers.
+          </p>
+          <a
+            href="https://cal.com/darius-james/dscr-strategy-call"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full rounded-xl py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            style={{ background: "#142850" }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Book a 30-Minute Strategy Call
+          </a>
         </div>
 
         {/* ── NMLS disclaimer ── */}
