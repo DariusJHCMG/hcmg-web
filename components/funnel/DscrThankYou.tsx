@@ -23,7 +23,7 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
     });
     const convLabel =
       process.env.NEXT_PUBLIC_GADS_DSCR_CONVERSION_LABEL ||
-      "AW-18350208109/4G_RCLH9otgcEO3oh65E";
+      "AW-7701315249/4G_RCLH9otgcEO3oh65E";
     window.gtag?.("event", "conversion", {
       send_to: convLabel,
       value: 1.0,

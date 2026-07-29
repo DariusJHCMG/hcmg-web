@@ -3,7 +3,7 @@
 import Script from "next/script";
 
 // Google Ads account ID for HCMG — Darius James
-const GADS_ACCOUNT_ID = "AW-18350208109";
+const GADS_ACCOUNT_ID = "AW-7701315249";
 
 /**
  * Injects the GA4 gtag.js script + the Google Ads account config.
