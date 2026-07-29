@@ -39,15 +39,15 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
     });
 
     // ── Google Ads conversion ping ───────────────────────────────
-    // Fires only when the env var is set — safe to deploy without it.
-    const convLabel = process.env.NEXT_PUBLIC_GADS_DSCR_CONVERSION_LABEL;
-    if (convLabel) {
-      window.gtag?.("event", "conversion", {
-        send_to: convLabel,       // e.g. "AW-123456789/AbCdEfGhIjKlMnOp"
-        value: 1.0,
-        currency: "USD",
-      });
-    }
+    // Env var takes precedence; falls back to the hardcoded label.
+    const convLabel =
+      process.env.NEXT_PUBLIC_GADS_DSCR_CONVERSION_LABEL ||
+      "AW-18350208109/4G_RCLH9otgcEO3oh65E";
+    window.gtag?.("event", "conversion", {
+      send_to: convLabel,
+      value: 1.0,
+      currency: "USD",
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

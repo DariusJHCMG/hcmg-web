@@ -2,8 +2,12 @@
 
 import Script from "next/script";
 
+// Google Ads account ID for HCMG — Darius James
+const GADS_ACCOUNT_ID = "AW-18350208109";
+
 /**
- * Injects the GA4 gtag.js script.
+ * Injects the GA4 gtag.js script + the Google Ads account config.
+ * Both tags share the same gtag.js loader — only one script request.
  * id prop takes precedence; falls back to NEXT_PUBLIC_GA_MEASUREMENT_ID env var.
  */
 export function GoogleAnalytics({ id: idProp }: { id?: string | null }) {
@@ -22,6 +26,7 @@ export function GoogleAnalytics({ id: idProp }: { id?: string | null }) {
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', '${id}', { page_path: window.location.pathname });
+          gtag('config', '${GADS_ACCOUNT_ID}');
         `}
       </Script>
     </>
