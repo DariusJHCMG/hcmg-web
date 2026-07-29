@@ -34,36 +34,62 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
 
   useEffect(() => {
     if (calMounted.current) return;
+    calMounted.current = true;
 
-    // Inject the Cal.com embed script manually so we fully control timing
-    const script = document.createElement("script");
-    script.src = "https://app.cal.com/embed/embed.js";
-    script.async = true;
-    script.onload = () => {
-      if (calMounted.current) return;
-      const w = window as unknown as Record<string, unknown>;
-      const Cal = w["Cal"] as ((...args: unknown[]) => void) & {
-        ns: Record<string, (...args: unknown[]) => void>;
-        config?: Record<string, unknown>;
+    // Cal.com official inline bootstrap — sets up queue before script loads
+    (function (C: Window & { Cal?: unknown }, A: string, L: string) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const p = (a: any, ar: any) => { a.q.push(ar); };
+      const d = C.document as Document;
+      type CalFn = ((...args: unknown[]) => void) & { loaded?: boolean; ns: Record<string, unknown>; q: unknown[]; };
+      const CalCtor = function (this: unknown) {
+        const cal = (C as unknown as Record<string, unknown>)[L] as CalFn;
+        // eslint-disable-next-line prefer-rest-params
+        const ar = arguments;
+        if (!cal.loaded) {
+          cal.ns = {};
+          cal.q = cal.q || [];
+          const s = d.createElement("script");
+          s.src = A;
+          d.head.appendChild(s);
+          cal.loaded = true;
+        }
+        if (ar[0] === L) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const api: any = function () { p(api, arguments); };
+          const ns = ar[1] as string;
+          api.q = api.q || [];
+          if (typeof ns === "string") {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (cal.ns as any)[ns] = (cal.ns as any)[ns] || api;
+            p((cal.ns as Record<string, unknown>)[ns], ar);
+            p(cal, ["initNamespace", ns]);
+          } else { p(cal, ar); }
+          return;
+        }
+        p(cal, ar);
       };
-      if (!Cal) return;
-      calMounted.current = true;
-      Cal("init", "dscr-strategy-call", { origin: "https://app.cal.com" });
-      Cal.config = Cal.config || {};
-      Cal.config.forwardQueryParams = true;
-      Cal.ns["dscr-strategy-call"]("inline", {
-        elementOrSelector: "#cal-embed-dscr",
-        config: { layout: "month_view", useSlotsViewOnSmallScreen: "true" },
-        calLink: "darius-james/dscr-strategy-call",
-      });
-      Cal.ns["dscr-strategy-call"]("ui", {
-        cssVarsPerTheme: { light: { "cal-brand": "#142850" } },
-        hideEventTypeDetails: false,
-        layout: "month_view",
-      });
-    };
-    document.head.appendChild(script);
-    return () => { script.onload = null; };
+      if (!(C as unknown as Record<string, unknown>)[L]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (C as unknown as Record<string, unknown>)[L] = CalCtor as any;
+        ((C as unknown as Record<string, unknown>)[L] as CalFn).q = [];
+        ((C as unknown as Record<string, unknown>)[L] as CalFn).ns = {};
+      }
+    })(window, "https://app.cal.com/embed/embed.js", "Cal");
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Cal = (window as unknown as Record<string, any>)["Cal"];
+    Cal("init", "dscr-strategy-call", { origin: "https://app.cal.com" });
+    Cal.ns["dscr-strategy-call"]("inline", {
+      elementOrSelector: "#cal-embed-dscr",
+      config: { layout: "month_view", useSlotsViewOnSmallScreen: "true" },
+      calLink: "darius-james/dscr-strategy-call",
+    });
+    Cal.ns["dscr-strategy-call"]("ui", {
+      cssVarsPerTheme: { light: { "cal-brand": "#142850" } },
+      hideEventTypeDetails: false,
+      layout: "month_view",
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
