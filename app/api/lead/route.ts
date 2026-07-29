@@ -599,7 +599,7 @@ export async function POST(request: NextRequest) {
         from:    `${lead.loName} at HCMG <noreply@hcmgloans.com>`,
         to:      lead.email,
         cc:      loNotifyEmail!,
-        replyTo: loNotifyEmail!,
+        reply_to: loNotifyEmail!,
         subject: `Your DSCR Loan Inquiry`,
         html: buildDscrLeadEmail({
           firstName:   lead.firstName,
