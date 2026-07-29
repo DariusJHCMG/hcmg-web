@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Script from "next/script";
 import Link from "next/link";
 
 interface Props {
@@ -146,6 +147,43 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
             </p>
 
           </div>
+
+          {/* ── Cal.com inline booking ── */}
+          <div className="mt-8 rounded-3xl border border-line bg-white shadow-card overflow-hidden">
+            <div className="px-6 pt-6 pb-2 text-center">
+              <p className="text-base font-extrabold text-ink">Book Your Strategy Call</p>
+              <p className="text-xs text-muted mt-1">Pick a time that works — 30 minutes with {firstName} directly.</p>
+            </div>
+            <div
+              id="my-cal-inline-dscr-strategy-call"
+              style={{ width: "100%", height: "100%", overflow: "scroll" }}
+            />
+          </div>
+          <Script
+            src="https://app.cal.com/embed/embed.js"
+            strategy="lazyOnload"
+            onLoad={() => {
+              const w = window as unknown as Record<string, unknown>;
+              const Cal = w["Cal"] as ((...args: unknown[]) => void) & {
+                ns: Record<string, (...args: unknown[]) => void>;
+                config?: Record<string, unknown>;
+              };
+              if (!Cal) return;
+              Cal("init", "dscr-strategy-call", { origin: "https://app.cal.com" });
+              Cal.config = Cal.config || {};
+              Cal.config.forwardQueryParams = true;
+              Cal.ns["dscr-strategy-call"]("inline", {
+                elementOrSelector: "#my-cal-inline-dscr-strategy-call",
+                config: { layout: "month_view", useSlotsViewOnSmallScreen: "true" },
+                calLink: "darius-james/dscr-strategy-call",
+              });
+              Cal.ns["dscr-strategy-call"]("ui", {
+                cssVarsPerTheme: { light: { "cal-brand": "#f18800" } },
+                hideEventTypeDetails: false,
+                layout: "month_view",
+              });
+            }}
+          />
 
           {/* NMLS disclaimer */}
           <p className="mt-8 text-center text-xs text-muted leading-relaxed">
