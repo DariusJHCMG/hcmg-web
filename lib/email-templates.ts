@@ -419,7 +419,57 @@ export function buildCompanyAlertEmail({
   `);
 }
 
-// ── 7. DSCR lead outreach (from LO to lead, CC LO) ───────────────────────────
+// ── Label maps for DSCR slug → readable text ─────────────────────────────────
+
+const DSCR_PROPERTY_TYPE: Record<string, string> = {
+  "single-family":  "Single-Family Home",
+  "multi-family":   "Multi-Family (2–4 units)",
+  "condo":          "Condo",
+  "townhouse":      "Townhouse",
+  "commercial":     "Commercial",
+};
+const DSCR_PROPERTY_USE: Record<string, string> = {
+  "long-term":      "Long-Term Rental",
+  "short-term":     "Short-Term Rental (STR/Airbnb)",
+  "mixed":          "Mixed Use",
+};
+const DSCR_TRANSACTION: Record<string, string> = {
+  "purchase":       "Purchase",
+  "refinance":      "Refinance",
+  "cash-out":       "Cash-Out Refinance",
+};
+const DSCR_LOAN_AMOUNT: Record<string, string> = {
+  "under-200k":     "Under $200,000",
+  "200-400k":       "$200,000 – $400,000",
+  "400-600k":       "$400,000 – $600,000",
+  "600k-plus":      "$600,000+",
+};
+const DSCR_CREDIT: Record<string, string> = {
+  "760-plus":       "720+",
+  "680-719":        "680–719",
+  "640-679":        "640–679",
+  "620-639":        "620–639",
+  "below-620":      "Below 620",
+};
+const DSCR_TIMELINE: Record<string, string> = {
+  "ready-now":      "Ready Now",
+  "1-3-months":     "1–3 Months",
+  "3-6-months":     "3–6 Months",
+  "just-exploring": "Just Exploring",
+};
+const DSCR_RENTAL_INCOME: Record<string, string> = {
+  "under-1500":     "Under $1,500 / mo",
+  "1500-2500":      "$1,500 – $2,500 / mo",
+  "2500-4000":      "$2,500 – $4,000 / mo",
+  "4000-plus":      "$4,000+ / mo",
+};
+
+function dscrLabel(map: Record<string, string>, val: string | null | undefined): string | null {
+  if (!val) return null;
+  return map[val] ?? val.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// ── 7. DSCR lead outreach (to lead, CC LO) ───────────────────────────────────
 
 export function buildDscrLeadEmail({
   firstName, loName, loPhone, loNmls, calendarUrl, dscrNotes,
@@ -431,46 +481,136 @@ export function buildDscrLeadEmail({
   calendarUrl: string | null;
   dscrNotes: Record<string, string>;
 }): string {
-  const propertyType  = dscrNotes["Property Type"]  ?? null;
-  const loanAmount    = dscrNotes["Loan Amount"]     ?? null;
-  const timeline      = dscrNotes["Timeline"]        ?? null;
+  const propertyType   = dscrLabel(DSCR_PROPERTY_TYPE,   dscrNotes["Property Type"]);
+  const propertyUse    = dscrLabel(DSCR_PROPERTY_USE,    dscrNotes["Property Use"]);
+  const transactionType = dscrLabel(DSCR_TRANSACTION,    dscrNotes["Transaction Type"]);
+  const loanAmount     = dscrLabel(DSCR_LOAN_AMOUNT,     dscrNotes["Loan Amount"]);
+  const creditScore    = dscrLabel(DSCR_CREDIT,          dscrNotes["Credit Score"]);
+  const timeline       = dscrLabel(DSCR_TIMELINE,        dscrNotes["Timeline"]);
+  const rentalIncome   = dscrLabel(DSCR_RENTAL_INCOME,   dscrNotes["Monthly Rental Income"]);
+  const location       = dscrNotes["Property Location"]  ?? null;
 
   const detailsRows = [
-    propertyType ? infoRow("Property type", propertyType) : "",
-    loanAmount   ? infoRow("Estimated loan amount", loanAmount) : "",
-    timeline     ? infoRow("Timeline", timeline, true) : "",
+    infoRow("Property type",    propertyType),
+    infoRow("Property use",     propertyUse),
+    infoRow("Transaction",      transactionType),
+    infoRow("Location",         location),
+    infoRow("Loan amount",      loanAmount),
+    infoRow("Est. rental income", rentalIncome),
+    infoRow("Credit score",     creditScore),
+    infoRow("Timeline",         timeline, true),
   ].join("");
 
+  const loFirstName = loName.split(" ")[0];
+  const phoneFormatted = loPhone
+    ? loPhone.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3")
+    : null;
+
   const calendarBlock = calendarUrl
-    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
-         <tr><td>${ctaButton("Book a 10-Minute Call →", calendarUrl)}</td></tr>
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 20px;">
+         <tr><td>${ctaButton("Book a 30-Minute Strategy Call →", calendarUrl)}</td></tr>
        </table>`
     : "";
 
   return emailWrap(`
-    ${emailHeader("DSCR Loan Inquiry", `Hi ${firstName},`, "Thanks for reaching out about DSCR financing.")}
+    ${emailHeader("DSCR Loan Inquiry", `Hi ${firstName},`, `${loFirstName} from Harris Capital Mortgage Group will be in touch shortly.`)}
     <tr><td style="padding:32px 36px 0;">
-      <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#5A6B7E;">
-        I specialize in investment property loans where you qualify based on the
-        <strong style="color:#1A2B42;">property&apos;s rental income</strong> — not your personal income or tax returns.
-        Based on what you shared:
+
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.8;color:#5A6B7E;">
+        Thanks for taking the time to share your investment property details.
+        I specialize in <strong style="color:#1A2B42;">DSCR loans</strong> — where you qualify based on the
+        property&apos;s rental income, not W-2s or tax returns.
       </p>
-      ${detailsRows.trim() ? emailSection("Your Details", detailsRows) : ""}
-      <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#5A6B7E;">
-        I&apos;d like to learn more about your deal and see if we&apos;re a good fit.
-        Are you available for a quick 10-minute call today or tomorrow?
+
+      ${detailsRows.trim() ? emailSection("What You Shared", detailsRows) : ""}
+
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.8;color:#5A6B7E;">
+        Based on your scenario, I&apos;d love to hop on a quick call to walk through your options
+        and confirm you&apos;re getting the best terms available.
       </p>
+
       ${calendarBlock}
-      <p style="margin:0 0 8px;font-size:14px;line-height:1.75;color:#5A6B7E;">
-        Or just reply to this email with a good time.
+
+      <p style="margin:0 0 6px;font-size:13px;line-height:1.7;color:#9AABB8;">
+        Or just reply to this email with a good time — I&apos;ll make it work.
       </p>
-      <p style="margin:0 0 28px;font-size:14px;line-height:1.75;color:#5A6B7E;">
-        Talk soon,<br/>
-        <strong style="color:#1A2B42;">${loName}</strong><br/>
-        ${loPhone ? `${loPhone}<br/>` : ""}
-        ${loNmls ? `NMLS# ${loNmls}` : ""}
+
+    </td></tr>
+
+    <!-- Signature -->
+    <tr><td style="padding:0 36px 32px;">
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="border-top:1px solid #f0f0f0;padding-top:24px;margin-top:8px;">
+        <tr>
+          <td>
+            <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#1A2B42;">${loName}</p>
+            <p style="margin:0 0 2px;font-size:12px;color:#9AABB8;">Chief Lending Officer · Harris Capital Mortgage Group</p>
+            ${phoneFormatted ? `<p style="margin:0 0 2px;font-size:13px;color:#5A6B7E;">${phoneFormatted}</p>` : ""}
+            ${loNmls ? `<p style="margin:0;font-size:12px;color:#9AABB8;">NMLS# ${loNmls}</p>` : ""}
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+
+    ${emailFooter("You received this because you submitted a DSCR loan inquiry at hcmgloans.com.")}
+  `);
+}
+
+// ── 8. DSCR LO alert (internal — sent to LO inbox on every new DSCR lead) ────
+
+export function buildDscrLoAlertEmail({
+  loFirstName, leadFullName, email, phone, dscrNotes, portalUrl, utmSource, utmCampaign,
+}: {
+  loFirstName: string;
+  leadFullName: string;
+  email: string;
+  phone: string;
+  dscrNotes: Record<string, string>;
+  portalUrl: string;
+  utmSource?: string | null;
+  utmCampaign?: string | null;
+}): string {
+  const phoneFormatted = phone.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
+
+  const detailRows = [
+    infoRow("Name",              leadFullName),
+    infoRow("Email",             `<a href="mailto:${email}" style="color:#F37021;">${email}</a>`),
+    infoRow("Phone",             `<a href="tel:${phone}" style="color:#F37021;">${phoneFormatted}</a>`),
+  ].join("") + [
+    infoRow("Property type",     dscrLabel(DSCR_PROPERTY_TYPE,  dscrNotes["Property Type"])),
+    infoRow("Property use",      dscrLabel(DSCR_PROPERTY_USE,   dscrNotes["Property Use"])),
+    infoRow("Transaction",       dscrLabel(DSCR_TRANSACTION,    dscrNotes["Transaction Type"])),
+    infoRow("Location",          dscrNotes["Property Location"] ?? null),
+    infoRow("Property value",    dscrNotes["Property Value"]    ?? null),
+    infoRow("Down payment",      dscrNotes["Down Payment"]      ?? null),
+    infoRow("Loan amount",       dscrLabel(DSCR_LOAN_AMOUNT,    dscrNotes["Loan Amount"])),
+    infoRow("Est. rental income",dscrLabel(DSCR_RENTAL_INCOME,  dscrNotes["Monthly Rental Income"])),
+    infoRow("Credit score",      dscrLabel(DSCR_CREDIT,         dscrNotes["Credit Score"])),
+    infoRow("Timeline",          dscrLabel(DSCR_TIMELINE,       dscrNotes["Timeline"]), true),
+  ].join("");
+
+  const utmBlock = (utmSource || utmCampaign)
+    ? emailSection("Lead Source",
+        infoRow("UTM Source",   utmSource) +
+        infoRow("UTM Campaign", utmCampaign, true)
+      )
+    : "";
+
+  return emailWrap(`
+    ${emailHeader("🔔 New DSCR Lead", `New lead, ${loFirstName}!`, "Someone just completed your DSCR funnel — reach out within the hour.")}
+    <tr><td style="padding:32px 36px 0;">
+      ${emailSection("Lead Details", detailRows)}
+      ${utmBlock}
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+        <tr>
+          <td style="padding-right:10px;">${ctaButton("View in Portal →", portalUrl)}</td>
+          <td>${ctaButton(`Call ${leadFullName.split(" ")[0]} →`, `tel:${phone}`, true)}</td>
+        </tr>
+      </table>
+      <p style="margin:0 0 28px;font-size:12px;color:#9AABB8;line-height:1.6;">
+        Fresh leads convert best — call or text within the first hour for the highest close rate.
       </p>
     </td></tr>
-    ${emailFooter("This message was sent because you submitted a DSCR loan inquiry at hcmgloans.com.")}
+    ${emailFooter()}
   `);
 }

@@ -9,6 +9,7 @@ import {
   buildLoNotificationEmail,
   buildCompanyAlertEmail,
   buildDscrLeadEmail,
+  buildDscrLoAlertEmail,
 } from "@/lib/email-templates";
 
 const RESEND_KEY = process.env.RESEND_API_KEY;
@@ -635,8 +636,29 @@ export async function POST(request: NextRequest) {
       }),
     ];
 
+    if (isDscr && loNotifyEmail && lead.loName) {
+      // DSCR: send Darius a dedicated internal alert with all lead details
+      emailJobs.push(
+        resend.emails.send({
+          from:    "HCMG Leads <noreply@hcmgloans.com>",
+          to:      loNotifyEmail,
+          subject: `🔔 New DSCR Lead: ${fullName} — ${dscrNotes["Property Type"] ?? "Investment Property"}`,
+          html: buildDscrLoAlertEmail({
+            loFirstName:  lead.loName.split(" ")[0],
+            leadFullName: fullName,
+            email:        lead.email,
+            phone:        lead.phone,
+            dscrNotes,
+            portalUrl:    `${SITE_URL}/portal`,
+            utmSource:    lead.utmSource,
+            utmCampaign:  lead.utmCampaign,
+          }),
+        })
+      );
+    }
+
     if (lead.loSlug && loNotifyEmail && lead.loName && !isDscr) {
-      // Assigned LO notification (DSCR already CCs the LO on the lead email)
+      // Standard LO notification for non-DSCR leads
       emailJobs.push(
         resend.emails.send({
           from:    "HCMG Leads <noreply@hcmgloans.com>",
