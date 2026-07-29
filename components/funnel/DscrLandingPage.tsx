@@ -234,10 +234,10 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
       {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 bg-white border-b border-line shadow-sm">
         <div className="container-shell flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2">
+          <div className="flex items-center gap-2 select-none">
             <span className="text-lg font-extrabold text-brand tracking-tight">HCMG</span>
             <span className="hidden sm:block text-xs text-muted border-l border-line pl-2">Harris Capital Mortgage Group</span>
-          </Link>
+          </div>
           <a
             href={`tel:${lo.phone ?? "7027659800"}`}
             className="text-brand font-bold text-sm hover:text-accent transition-colors"

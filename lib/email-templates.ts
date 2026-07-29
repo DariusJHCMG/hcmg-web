@@ -512,48 +512,160 @@ export function buildDscrLeadEmail({
        </table>`
     : "";
 
-  return emailWrap(`
-    ${emailHeader("DSCR Loan Inquiry", `Hi ${firstName},`, `${loFirstName} from Harris Capital Mortgage Group will be in touch shortly.`)}
-    <tr><td style="padding:32px 36px 0;">
+  // Rows for the "What You Shared" card — only non-empty values
+  const detailItems = [
+    { label: "Property Type",      value: propertyType },
+    { label: "Property Use",       value: propertyUse },
+    { label: "Transaction",        value: transactionType },
+    { label: "Location",           value: location },
+    { label: "Loan Amount",        value: loanAmount },
+    { label: "Est. Rental Income", value: rentalIncome },
+    { label: "Credit Score",       value: creditScore },
+    { label: "Timeline",           value: timeline },
+  ].filter(r => r.value);
 
-      <p style="margin:0 0 20px;font-size:15px;line-height:1.8;color:#5A6B7E;">
-        Thanks for taking the time to share your investment property details.
-        I specialize in <strong style="color:#1A2B42;">DSCR loans</strong> — where you qualify based on the
-        property&apos;s rental income, not W-2s or tax returns.
-      </p>
+  const detailRowsHtml = detailItems.map((r, i) => `
+    <tr>
+      <td style="padding:11px 20px;${i < detailItems.length - 1 ? "border-bottom:1px solid #f3f4f6;" : ""}width:44%;font-size:12px;color:#6b7280;font-weight:500;">${r.label}</td>
+      <td style="padding:11px 20px;${i < detailItems.length - 1 ? "border-bottom:1px solid #f3f4f6;" : ""}font-size:13px;color:#111827;font-weight:600;">${r.value}</td>
+    </tr>`).join("");
 
-      ${detailsRows.trim() ? emailSection("What You Shared", detailsRows) : ""}
+  const calBlock = calendarUrl ? `
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0 24px;">
+      <tr>
+        <td>
+          <a href="${calendarUrl}"
+            style="display:inline-block;background:#142850;color:#ffffff;font-size:14px;font-weight:700;
+                   padding:15px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.2px;">
+            Book a 30-Minute Strategy Call &rarr;
+          </a>
+        </td>
+      </tr>
+    </table>` : "";
 
-      <p style="margin:0 0 20px;font-size:15px;line-height:1.8;color:#5A6B7E;">
-        Based on your scenario, I&apos;d love to hop on a quick call to walk through your options
-        and confirm you&apos;re getting the best terms available.
-      </p>
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="color-scheme" content="light"/>
+</head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:0;">
+    <tr><td align="center" style="padding:40px 16px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
-      ${calendarBlock}
-
-      <p style="margin:0 0 6px;font-size:13px;line-height:1.7;color:#9AABB8;">
-        Or just reply to this email with a good time — I&apos;ll make it work.
-      </p>
-
-    </td></tr>
-
-    <!-- Signature -->
-    <tr><td style="padding:0 36px 32px;">
-      <table width="100%" cellpadding="0" cellspacing="0"
-        style="border-top:1px solid #f0f0f0;padding-top:24px;margin-top:8px;">
+        <!-- Logo bar -->
         <tr>
-          <td>
-            <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#1A2B42;">${loName}</p>
-            <p style="margin:0 0 2px;font-size:12px;color:#9AABB8;">Chief Lending Officer · Harris Capital Mortgage Group</p>
-            ${phoneFormatted ? `<p style="margin:0 0 2px;font-size:13px;color:#5A6B7E;">${phoneFormatted}</p>` : ""}
-            ${loNmls ? `<p style="margin:0;font-size:12px;color:#9AABB8;">NMLS# ${loNmls}</p>` : ""}
+          <td style="padding:0 0 28px;">
+            <table cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="background:#142850;border-radius:6px;padding:6px 10px;">
+                  <span style="font-family:Arial Black,Arial,sans-serif;font-weight:900;font-size:15px;color:#ffffff;letter-spacing:1px;">HCMG</span>
+                </td>
+                <td style="padding-left:10px;font-size:11px;color:#9ca3af;font-weight:500;letter-spacing:0.3px;">
+                  HARRIS CAPITAL MORTGAGE GROUP
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
+
+        <!-- Greeting -->
+        <tr>
+          <td style="padding:0 0 20px;">
+            <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:#111827;line-height:1.2;">Hi ${firstName},</p>
+            <p style="margin:0;font-size:15px;color:#6b7280;line-height:1.6;">
+              Thanks for sharing your investment property details.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Body text -->
+        <tr>
+          <td style="padding:0 0 24px;">
+            <p style="margin:0;font-size:15px;line-height:1.75;color:#374151;">
+              I specialize in <strong style="color:#142850;">DSCR loans</strong> — where you qualify based on the
+              property&apos;s rental income, not W-2s or tax returns. Here&apos;s a summary of what you shared:
+            </p>
+          </td>
+        </tr>
+
+        <!-- Details card -->
+        ${detailRowsHtml.trim() ? `
+        <tr>
+          <td style="padding:0 0 24px;">
+            <table width="100%" cellpadding="0" cellspacing="0"
+              style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+              <tr>
+                <td colspan="2" style="background:#142850;padding:10px 20px;">
+                  <span style="font-size:10px;font-weight:700;letter-spacing:2px;color:#94a3b8;text-transform:uppercase;">What You Shared</span>
+                </td>
+              </tr>
+              ${detailRowsHtml}
+            </table>
+          </td>
+        </tr>` : ""}
+
+        <!-- CTA text -->
+        <tr>
+          <td style="padding:0 0 8px;">
+            <p style="margin:0;font-size:15px;line-height:1.75;color:#374151;">
+              Based on your scenario, I&apos;d love to walk you through your options and
+              confirm you&apos;re getting the best terms available. Pick a time below:
+            </p>
+          </td>
+        </tr>
+
+        <!-- Calendar button -->
+        ${calBlock}
+
+        <!-- Reply fallback -->
+        <tr>
+          <td style="padding:0 0 36px;">
+            <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6;">
+              Or just reply to this email with a good time &mdash; I&apos;ll make it work.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Signature -->
+        <tr>
+          <td style="border-top:1px solid #e5e7eb;padding:28px 0 0;">
+            <table cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="padding-right:16px;vertical-align:top;">
+                  <div style="width:48px;height:48px;border-radius:50%;background:#142850;display:flex;align-items:center;justify-content:center;">
+                    <span style="font-size:18px;font-weight:900;color:#ffffff;font-family:Arial Black,Arial,sans-serif;">D</span>
+                  </div>
+                </td>
+                <td style="vertical-align:top;">
+                  <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#111827;">${loName}</p>
+                  <p style="margin:0 0 4px;font-size:12px;color:#6b7280;">Chief Lending Officer &middot; Harris Capital Mortgage Group</p>
+                  ${phoneFormatted ? `<p style="margin:0 0 2px;font-size:13px;color:#374151;">${phoneFormatted}</p>` : ""}
+                  ${loNmls ? `<p style="margin:0;font-size:11px;color:#9ca3af;">NMLS# ${loNmls}</p>` : ""}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Legal footer -->
+        <tr>
+          <td style="padding:32px 0 40px;">
+            <p style="margin:0;font-size:10px;color:#d1d5db;line-height:1.7;">
+              Harris Capital Mortgage Group, LLC &middot; NMLS# 1918223 &middot; Equal Housing Lender<br/>
+              You received this because you submitted a DSCR loan inquiry at hcmgloans.com.<br/>
+              Not a commitment to lend. Subject to credit approval.
+            </p>
+          </td>
+        </tr>
+
       </table>
     </td></tr>
-
-    ${emailFooter("You received this because you submitted a DSCR loan inquiry at hcmgloans.com.")}
-  `);
+  </table>
+</body>
+</html>`;
 }
 
 // ── 8. DSCR LO alert (internal — sent to LO inbox on every new DSCR lead) ────

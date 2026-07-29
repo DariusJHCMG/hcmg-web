@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Script from "next/script";
 
 interface Props {
   loSlug: string;
@@ -33,29 +32,40 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function mountCal() {
+  useEffect(() => {
     if (calMounted.current) return;
-    const w = window as unknown as Record<string, unknown>;
-    const Cal = w["Cal"] as ((...args: unknown[]) => void) & {
-      ns: Record<string, (...args: unknown[]) => void>;
-      config?: Record<string, unknown>;
+
+    // Inject the Cal.com embed script manually so we fully control timing
+    const script = document.createElement("script");
+    script.src = "https://app.cal.com/embed/embed.js";
+    script.async = true;
+    script.onload = () => {
+      if (calMounted.current) return;
+      const w = window as unknown as Record<string, unknown>;
+      const Cal = w["Cal"] as ((...args: unknown[]) => void) & {
+        ns: Record<string, (...args: unknown[]) => void>;
+        config?: Record<string, unknown>;
+      };
+      if (!Cal) return;
+      calMounted.current = true;
+      Cal("init", "dscr-strategy-call", { origin: "https://app.cal.com" });
+      Cal.config = Cal.config || {};
+      Cal.config.forwardQueryParams = true;
+      Cal.ns["dscr-strategy-call"]("inline", {
+        elementOrSelector: "#cal-embed-dscr",
+        config: { layout: "month_view", useSlotsViewOnSmallScreen: "true" },
+        calLink: "darius-james/dscr-strategy-call",
+      });
+      Cal.ns["dscr-strategy-call"]("ui", {
+        cssVarsPerTheme: { light: { "cal-brand": "#142850" } },
+        hideEventTypeDetails: false,
+        layout: "month_view",
+      });
     };
-    if (!Cal) return;
-    calMounted.current = true;
-    Cal("init", "dscr-strategy-call", { origin: "https://app.cal.com" });
-    Cal.config = Cal.config || {};
-    Cal.config.forwardQueryParams = true;
-    Cal.ns["dscr-strategy-call"]("inline", {
-      elementOrSelector: "#cal-embed-dscr",
-      config: { layout: "month_view", useSlotsViewOnSmallScreen: "true" },
-      calLink: "darius-james/dscr-strategy-call",
-    });
-    Cal.ns["dscr-strategy-call"]("ui", {
-      cssVarsPerTheme: { light: { "cal-brand": "#142850" } },
-      hideEventTypeDetails: false,
-      layout: "month_view",
-    });
-  }
+    document.head.appendChild(script);
+    return () => { script.onload = null; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const STEPS = [
     { n: "1", title: "We review your details",       body: "Your property scenario is reviewed — usually within 1 hour." },
@@ -187,12 +197,6 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
         </div>
       </footer>
 
-      {/* Cal.com script — loads after page is interactive */}
-      <Script
-        src="https://app.cal.com/embed/embed.js"
-        strategy="afterInteractive"
-        onLoad={mountCal}
-      />
     </div>
   );
 }
