@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 interface Props {
   loSlug: string;
@@ -12,8 +12,6 @@ interface Props {
 export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
   const phone = loPhone ?? "(702) 765-9800";
   const firstName = loName.split(" ")[0];
-  const calMounted = useRef(false);
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.gtag?.("event", "dscr_lead_submitted", {
