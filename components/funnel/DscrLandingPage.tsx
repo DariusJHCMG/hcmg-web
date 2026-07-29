@@ -231,11 +231,6 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
   return (
     <div className="min-h-screen bg-white font-sans">
 
-      {/* ── Top bar ── */}
-      <div className="bg-ink py-2 px-4 text-center text-xs text-white/80">
-        Spent $242k on Google Ads for Mortgage Leads. (DSCR Won) &mdash; Now helping investors qualify without W-2s or tax returns.
-      </div>
-
       {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 bg-white border-b border-line shadow-sm">
         <div className="container-shell flex items-center justify-between h-16">

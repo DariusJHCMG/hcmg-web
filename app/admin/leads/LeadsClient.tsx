@@ -7,15 +7,37 @@ import { LeadIntelPanel } from "@/components/portal/LeadIntelPanel";
 const ALL_STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "closed", "lost"];
 
 const SOURCE_LABELS: Record<string, string> = {
-  "funnel":      "LO Funnel",
-  "get-started": "Get Started",
-  "team":        "Team Page",
-  "seo":         "SEO / Local Page",
-  "calculator":  "Calculator",
-  "contact":     "Contact Form",
-  "join":        "Join Page",
-  "employment":  "Recruiting / Employment",
+  "funnel":        "LO Funnel",
+  "get-started":   "Get Started",
+  "team":          "Team Page",
+  "seo":           "SEO / Local Page",
+  "calculator":    "Calculator",
+  "contact":       "Contact Form",
+  "join":          "Join Page",
+  "employment":    "Recruiting / Employment",
+  "dscr-landing":  "DSCR Landing Page",
 };
+
+// ── Parse DSCR notes field into structured data ───────────────────────────────
+function parseDscrNotes(notes: string | null): Record<string, string> {
+  if (!notes) return {};
+  return Object.fromEntries(
+    notes.split(" | ").flatMap((part) => {
+      const idx = part.indexOf(": ");
+      if (idx === -1) return [];
+      return [[part.slice(0, idx).trim(), part.slice(idx + 2).trim()]];
+    })
+  );
+}
+
+function DscrBadge({ label, value }: { label: string; value: string | null | undefined }) {
+  if (!value) return null;
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-line bg-white px-2.5 py-0.5 text-[11px] font-semibold text-ink">
+      <span className="text-muted/60 font-normal">{label}:</span> {value}
+    </span>
+  );
+}
 
 function sourceLabel(s: string | null): string {
   return SOURCE_LABELS[s ?? ""] ?? s ?? "Unknown";
@@ -23,13 +45,14 @@ function sourceLabel(s: string | null): string {
 
 const EMPLOYMENT_SOURCES = new Set(["employment"]);
 const CONTACT_SOURCES    = new Set(["contact"]);
+const DSCR_SOURCES       = new Set(["dscr-landing"]);
 const COMPANY_SOURCES    = new Set(["get-started", "team", "seo", "calculator", "funnel"]);
 
 export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   const [leads, setLeads]               = useState<Lead[]>(initialLeads);
   const [search, setSearch]             = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">("");
-  const [loFilter, setLoFilter]         = useState<"all" | "company" | "contact" | "employment" | "lo">("all");
+  const [loFilter, setLoFilter]         = useState<"all" | "company" | "contact" | "employment" | "lo" | "dscr">("all");
 
   function exportCSV() {
     const cols: (keyof Lead)[] = ["first_name","last_name","email","phone","source","lo_name","status","goal","price_range","credit_range","utm_source","utm_medium","utm_campaign","created_at"];
@@ -58,11 +81,13 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   const allFiltered = applySearch(applyStatus(leads));
 
   // Split by source type
+  const dscrLeads       = allFiltered.filter((l) => DSCR_SOURCES.has(l.source ?? ""));
   const employmentLeads = allFiltered.filter((l) => !l.lo_slug && EMPLOYMENT_SOURCES.has(l.source ?? ""));
   const contactLeads    = allFiltered.filter((l) => !l.lo_slug && CONTACT_SOURCES.has(l.source ?? ""));
-  const companyLeads    = allFiltered.filter((l) => !l.lo_slug && !EMPLOYMENT_SOURCES.has(l.source ?? "") && !CONTACT_SOURCES.has(l.source ?? ""));
-  const loLeads         = allFiltered.filter((l) => !!l.lo_slug);
+  const companyLeads    = allFiltered.filter((l) => !l.lo_slug && !EMPLOYMENT_SOURCES.has(l.source ?? "") && !CONTACT_SOURCES.has(l.source ?? "") && !DSCR_SOURCES.has(l.source ?? ""));
+  const loLeads         = allFiltered.filter((l) => !!l.lo_slug && !DSCR_SOURCES.has(l.source ?? ""));
 
+  const newDscrCount       = leads.filter((l) => DSCR_SOURCES.has(l.source ?? "") && l.status === "new").length;
   const newCompanyCount    = leads.filter((l) => !l.lo_slug && COMPANY_SOURCES.has(l.source ?? "") && l.status === "new").length;
   const newContactCount    = leads.filter((l) => !l.lo_slug && CONTACT_SOURCES.has(l.source ?? "") && l.status === "new").length;
   const newEmploymentCount = leads.filter((l) => !l.lo_slug && EMPLOYMENT_SOURCES.has(l.source ?? "") && l.status === "new").length;
@@ -74,7 +99,12 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
         <div>
           <h1 className="text-2xl font-extrabold text-ink">Leads</h1>
           <p className="mt-0.5 text-sm text-muted">
-            {leads.length} total · {companyLeads.length} funnel · {contactLeads.length} contact · {employmentLeads.length} recruiting · {loLeads.length} LO
+            {leads.length} total · {dscrLeads.length} DSCR · {companyLeads.length} funnel · {contactLeads.length} contact · {employmentLeads.length} recruiting · {loLeads.length} LO
+              {newDscrCount > 0 && (
+                <span className="ml-2 inline-flex items-center rounded-full border border-brand/30 bg-brand/5 px-2 py-0.5 text-[11px] font-bold text-brand">
+                  ⚡ {newDscrCount} DSCR
+                </span>
+              )}
               {newCompanyCount > 0 && (
                 <span className="ml-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700">
                   ⚠ {newCompanyCount} funnel
@@ -116,17 +146,27 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
         </select>
         {/* View filter toggle */}
         <div className="flex rounded-xl border border-line bg-white overflow-hidden text-sm font-semibold">
-          {(["all", "company", "contact", "employment", "lo"] as const).map((v) => (
+          {(["all", "dscr", "company", "contact", "employment", "lo"] as const).map((v) => (
             <button
               key={v}
-              onClick={() => setLoFilter(v as typeof loFilter)}
-              className={`px-3 py-2.5 transition-colors ${loFilter === v ? "bg-accent text-white" : "text-muted hover:bg-sand"}`}
+              onClick={() => setLoFilter(v)}
+              className={`px-3 py-2.5 transition-colors ${
+                loFilter === v
+                  ? v === "dscr" ? "bg-brand text-white" : "bg-accent text-white"
+                  : "text-muted hover:bg-sand"
+              }`}
             >
-              {v === "all" ? "All"
+              {v === "all"        ? "All"
+                : v === "dscr"       ? "DSCR"
                 : v === "company"    ? "Funnel"
                 : v === "contact"    ? "Contact"
                 : v === "employment" ? "Recruiting"
                 : "LO-assigned"}
+              {v === "dscr" && newDscrCount > 0 && (
+                <span className="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 rounded-full bg-white text-[10px] font-black text-brand px-1">
+                  {newDscrCount}
+                </span>
+              )}
               {v === "company" && newCompanyCount > 0 && (
                 <span className="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 rounded-full bg-amber-400 text-[10px] font-black text-white px-1">
                   {newCompanyCount}
@@ -146,6 +186,59 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
           ))}
         </div>
       </div>
+
+      {/* ── DSCR Leads section — navy/brand ── */}
+      {(loFilter === "all" || loFilter === "dscr") && (
+        <div className="rounded-2xl border border-brand/20 bg-brand/5 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-brand/20 bg-brand px-5 py-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/80">
+                ⚡ DSCR Leads — Darius James · {newDscrCount} new
+              </p>
+              <p className="mt-0.5 text-[11px] text-white/60">
+                Submitted via hcmgloans.com/dscr/darius-james · 640+ credit qualified
+              </p>
+            </div>
+            <span className="text-xs font-bold text-white/80">{dscrLeads.length} total</span>
+          </div>
+
+          {dscrLeads.length === 0 ? (
+            <div className="px-6 py-10 text-center text-sm text-muted/60">
+              No DSCR leads yet. Once your Google Ads campaign sends traffic, leads will appear here.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-brand/20 text-xs font-semibold uppercase tracking-[0.1em] text-brand/70 bg-brand/10">
+                    <th className="px-5 py-3 text-left">Lead</th>
+                    <th className="px-5 py-3 text-left">Contact</th>
+                    <th className="px-5 py-3 text-left">Property Details</th>
+                    <th className="px-5 py-3 text-left">Credit / Loan</th>
+                    <th className="px-5 py-3 text-left">Google Ads Attribution</th>
+                    <th className="px-5 py-3 text-left">Status</th>
+                    <th className="px-5 py-3 text-left">Date</th>
+                    <th className="px-5 py-3 text-left"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dscrLeads.map((lead) => {
+                    const dscr = parseDscrNotes(lead.notes);
+                    return (
+                      <LeadIntelPanel
+                        key={lead.id}
+                        lead={lead}
+                        sourceLabel="DSCR Landing Page"
+                        dscrData={dscr}
+                      />
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Contact leads section — orange */}
       {(loFilter === "all" || loFilter === "contact") && contactLeads.length > 0 && (
