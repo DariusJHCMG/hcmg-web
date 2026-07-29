@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Script from "next/script";
-import Link from "next/link";
 
 interface Props {
   loSlug: string;
@@ -11,36 +10,18 @@ interface Props {
   loPhone: string | null;
 }
 
-/**
- * Fires GA4 + Google Ads conversion events once on mount.
- *
- * Google Ads conversion action:
- *   - Set your conversion label in NEXT_PUBLIC_GADS_DSCR_CONVERSION_LABEL env var
- *     e.g.  AW-123456789/AbCdEfGhIjKlMnOp
- *   - In Google Ads → Tools → Conversions → create a "Website" conversion,
- *     choose "Page load" trigger, and point it at /dscr/[lo]/thank-you
- *     OR use the gtag event name "dscr_lead_submitted" as the trigger.
- *
- * GA4 custom event:
- *   - Event name: dscr_lead_submitted
- *   - Parameters: lo_slug, funnel_type
- */
 export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
   const phone = loPhone ?? "(702) 765-9800";
   const firstName = loName.split(" ")[0];
+  const calMounted = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    // ── GA4 custom conversion event ──────────────────────────────
     window.gtag?.("event", "dscr_lead_submitted", {
       lo_slug: loSlug,
       funnel_type: "dscr-purchase",
       page_path: window.location.pathname,
     });
-
-    // ── Google Ads conversion ping ───────────────────────────────
-    // Env var takes precedence; falls back to the hardcoded label.
     const convLabel =
       process.env.NEXT_PUBLIC_GADS_DSCR_CONVERSION_LABEL ||
       "AW-18350208109/4G_RCLH9otgcEO3oh65E";
@@ -52,160 +33,166 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return (
-    <div className="min-h-screen bg-white font-sans">
+  function mountCal() {
+    if (calMounted.current) return;
+    const w = window as unknown as Record<string, unknown>;
+    const Cal = w["Cal"] as ((...args: unknown[]) => void) & {
+      ns: Record<string, (...args: unknown[]) => void>;
+      config?: Record<string, unknown>;
+    };
+    if (!Cal) return;
+    calMounted.current = true;
+    Cal("init", "dscr-strategy-call", { origin: "https://app.cal.com" });
+    Cal.config = Cal.config || {};
+    Cal.config.forwardQueryParams = true;
+    Cal.ns["dscr-strategy-call"]("inline", {
+      elementOrSelector: "#cal-embed-dscr",
+      config: { layout: "month_view", useSlotsViewOnSmallScreen: "true" },
+      calLink: "darius-james/dscr-strategy-call",
+    });
+    Cal.ns["dscr-strategy-call"]("ui", {
+      cssVarsPerTheme: { light: { "cal-brand": "#142850" } },
+      hideEventTypeDetails: false,
+      layout: "month_view",
+    });
+  }
 
-      {/* ── Nav ── */}
+  const STEPS = [
+    { n: "1", title: "We review your details",       body: "Your property scenario is reviewed — usually within 1 hour." },
+    { n: "2", title: `${firstName} reaches out`,     body: `${firstName} calls or texts to confirm your deal and answer questions.` },
+    { n: "3", title: "Pre-approval in 24–48 hrs",    body: "No W-2s. No tax returns. Just the property details you provided." },
+    { n: "4", title: "Close in 7–21 days",           body: "Our streamlined process gets you to the closing table fast." },
+  ];
+
+  return (
+    <div className="min-h-screen font-sans" style={{ background: "#f7f8fa" }}>
+
+      {/* ── Nav — no link, not clickable ── */}
       <nav className="sticky top-0 z-50 bg-white border-b border-line shadow-sm">
-        <div className="container-shell flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-lg font-extrabold text-brand tracking-tight">HCMG</span>
-            <span className="hidden sm:block text-xs text-muted border-l border-line pl-2">
-              Harris Capital Mortgage Group
-            </span>
-          </Link>
+        <div className="container-shell flex items-center justify-between h-14">
+          {/* Plain div — intentionally not a link */}
+          <div className="flex items-center gap-2 select-none">
+            <span className="text-base font-extrabold tracking-tight" style={{ color: "#142850" }}>HCMG</span>
+            <span className="hidden sm:block text-xs text-muted border-l border-line pl-2">Harris Capital Mortgage Group</span>
+          </div>
           <a
             href={`tel:${phone.replace(/\D/g, "")}`}
-            className="text-brand font-bold text-sm hover:text-accent transition-colors"
+            className="text-sm font-bold transition-colors"
+            style={{ color: "#142850" }}
           >
             {phone}
           </a>
         </div>
       </nav>
 
-      {/* ── Confirmation card ── */}
-      <section className="section-pad bg-sand">
-        <div className="container-shell max-w-xl">
-          <div className="rounded-3xl border border-line bg-white shadow-card p-8 sm:p-10 text-center">
+      {/* ── Hero banner ── */}
+      <div className="py-8 px-4 text-center" style={{ background: "#142850" }}>
+        <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+          style={{ background: "rgba(255,255,255,0.1)", border: "2px solid rgba(255,255,255,0.25)" }}>
+          <svg className="w-8 h-8" fill="none" stroke="#ffffff" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">You&apos;re All Set!</h1>
+        <p className="text-sm text-white/70 max-w-sm mx-auto leading-relaxed">
+          Your DSCR eligibility request has been received.{" "}
+          <span className="text-white font-semibold">{loName}</span> will reach out within 2 hours.
+        </p>
+      </div>
 
-            {/* Check icon */}
-            <div className="w-16 h-16 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center mx-auto mb-6">
-              <svg className="w-9 h-9 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
+      <div className="px-4 py-8 max-w-2xl mx-auto space-y-5">
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-ink mb-3">
-              You&apos;re All Set!
-            </h1>
-            <p className="text-muted text-sm leading-relaxed mb-8 max-w-sm mx-auto">
-              Your DSCR eligibility request has been received.{" "}
-              <strong className="text-ink">{loName}</strong> will reach out within
-              2 hours to review your investment property scenario and confirm your options.
-            </p>
+        {/* ── What happens next ── */}
+        <div className="rounded-2xl bg-white border border-line p-6">
+          <p className="text-[11px] font-bold uppercase tracking-widest mb-5" style={{ color: "#142850" }}>
+            What Happens Next
+          </p>
+          <ol className="space-y-5">
+            {STEPS.map(({ n, title, body }) => (
+              <li key={n} className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: "#142850" }}>
+                  <span className="text-xs font-extrabold text-white">{n}</span>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-ink">{title}</p>
+                  <p className="text-xs text-muted leading-relaxed mt-0.5">{body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
 
-            {/* What happens next */}
-            <div className="rounded-2xl bg-brand/5 border border-brand/10 p-5 text-left mb-8">
-              <p className="text-xs font-bold text-brand uppercase tracking-wider mb-4">
-                What Happens Next
-              </p>
-              <ol className="space-y-4">
-                {[
-                  {
-                    n: "1",
-                    title: "We review your details",
-                    body: "Our team reviews your property scenario — usually within 1 hour.",
-                  },
-                  {
-                    n: "2",
-                    title: `${firstName} reaches out`,
-                    body: `${firstName} calls or texts to confirm your scenario and answer any questions.`,
-                  },
-                  {
-                    n: "3",
-                    title: "Pre-approval in 24–48 hours",
-                    body: "No W-2s. No tax returns. Just the property details you already provided.",
-                  },
-                  {
-                    n: "4",
-                    title: "Close in 7–21 days",
-                    body: "Once approved, our streamlined process gets you to the closing table fast.",
-                  },
-                ].map(({ n, title, body }) => (
-                  <li key={n} className="flex items-start gap-4">
-                    <div className="w-7 h-7 rounded-full bg-brand flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-extrabold text-white">{n}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-ink">{title}</p>
-                      <p className="text-xs text-muted leading-relaxed">{body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            {/* Call CTA */}
+        {/* ── Call / text CTAs ── */}
+        <div className="rounded-2xl bg-white border border-line p-6">
+          <p className="text-[11px] font-bold uppercase tracking-widest mb-4" style={{ color: "#142850" }}>
+            Can&apos;t Wait? Reach Out Now
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
             <a
               href={`tel:${phone.replace(/\D/g, "")}`}
-              className="primary-button w-full justify-center mb-3"
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              style={{ background: "#142850" }}
             >
-              Call {firstName} Now: {phone}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              Call {firstName}: {phone}
             </a>
-            <p className="text-xs text-muted">
-              Can&apos;t wait? Call or text anytime — no hold music, no call center.
-            </p>
-
+            <a
+              href={`sms:${phone.replace(/\D/g, "")}`}
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold transition-opacity hover:opacity-90"
+              style={{ background: "#f0f4ff", color: "#142850", border: "1px solid #c7d2fe" }}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              Text {firstName}
+            </a>
           </div>
-
-          {/* ── Cal.com inline booking ── */}
-          <div className="mt-8 rounded-3xl border border-line bg-white shadow-card overflow-hidden">
-            <div className="px-6 pt-6 pb-2 text-center">
-              <p className="text-base font-extrabold text-ink">Book Your Strategy Call</p>
-              <p className="text-xs text-muted mt-1">Pick a time that works — 30 minutes with {firstName} directly.</p>
-            </div>
-            <div
-              id="my-cal-inline-dscr-strategy-call"
-              style={{ width: "100%", height: "100%", overflow: "scroll" }}
-            />
-          </div>
-          <Script
-            src="https://app.cal.com/embed/embed.js"
-            strategy="lazyOnload"
-            onLoad={() => {
-              const w = window as unknown as Record<string, unknown>;
-              const Cal = w["Cal"] as ((...args: unknown[]) => void) & {
-                ns: Record<string, (...args: unknown[]) => void>;
-                config?: Record<string, unknown>;
-              };
-              if (!Cal) return;
-              Cal("init", "dscr-strategy-call", { origin: "https://app.cal.com" });
-              Cal.config = Cal.config || {};
-              Cal.config.forwardQueryParams = true;
-              Cal.ns["dscr-strategy-call"]("inline", {
-                elementOrSelector: "#my-cal-inline-dscr-strategy-call",
-                config: { layout: "month_view", useSlotsViewOnSmallScreen: "true" },
-                calLink: "darius-james/dscr-strategy-call",
-              });
-              Cal.ns["dscr-strategy-call"]("ui", {
-                cssVarsPerTheme: { light: { "cal-brand": "#f18800" } },
-                hideEventTypeDetails: false,
-                layout: "month_view",
-              });
-            }}
-          />
-
-          {/* NMLS disclaimer */}
-          <p className="mt-8 text-center text-xs text-muted leading-relaxed">
-            Harris Capital Mortgage Group, LLC · NMLS# 1918223 ·{" "}
-            <strong className="text-ink">{loName}</strong>
-            {loNmls ? ` · NMLS# ${loNmls}` : ""} · Licensed in FL, TX, GA, NV, CO, VA, DC, MD, CA, MS.
-            This is not a commitment to lend.
-          </p>
         </div>
-      </section>
 
-      {/* ── Footer links ── */}
-      <footer className="bg-white border-t border-line py-6">
+        {/* ── Cal.com booking ── */}
+        <div className="rounded-2xl bg-white border border-line overflow-hidden">
+          <div className="px-6 pt-6 pb-3 border-b border-line">
+            <p className="text-sm font-extrabold text-ink">Book Your 30-Minute Strategy Call</p>
+            <p className="text-xs text-muted mt-1">Pick a time — you&apos;ll speak directly with {firstName}.</p>
+          </div>
+          {/* Fixed height so the embed has room to render */}
+          <div
+            id="cal-embed-dscr"
+            style={{ minHeight: "600px", width: "100%" }}
+          />
+        </div>
+
+        {/* ── NMLS disclaimer ── */}
+        <p className="text-center text-[11px] text-muted leading-relaxed pb-4">
+          Harris Capital Mortgage Group, LLC · NMLS# 1918223 ·{" "}
+          <strong className="text-ink">{loName}</strong>
+          {loNmls ? ` · NMLS# ${loNmls}` : ""} · Licensed in FL, TX, GA, NV, CO, VA, DC, MD, CA, MS.{" "}
+          Not a commitment to lend. Subject to credit approval.
+        </p>
+
+      </div>
+
+      {/* ── Footer ── */}
+      <footer className="bg-white border-t border-line py-5">
         <div className="container-shell text-center">
-          <div className="flex justify-center gap-6 text-xs">
-            <Link href="/privacy"           className="text-muted hover:text-ink">Privacy Policy</Link>
-            <Link href="/terms"             className="text-muted hover:text-ink">Terms</Link>
-            <Link href="/licensing"         className="text-muted hover:text-ink">Licensing</Link>
-            <Link href="/legal-disclaimer"  className="text-muted hover:text-ink">Legal</Link>
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-[11px] text-muted">
+            <a href="/privacy"          className="hover:text-ink">Privacy Policy</a>
+            <a href="/terms"            className="hover:text-ink">Terms of Use</a>
+            <a href="/licensing"        className="hover:text-ink">Licensing</a>
+            <a href="/legal-disclaimer" className="hover:text-ink">Legal Disclaimer</a>
           </div>
         </div>
       </footer>
+
+      {/* Cal.com script — loads after page is interactive */}
+      <Script
+        src="https://app.cal.com/embed/embed.js"
+        strategy="afterInteractive"
+        onLoad={mountCal}
+      />
     </div>
   );
 }
