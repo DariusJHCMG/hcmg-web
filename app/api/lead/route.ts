@@ -568,10 +568,14 @@ export async function POST(request: NextRequest) {
   // ── 3. Resolve LO notify email ────────────────────────────────────────────
   let loNotifyEmail: string | null = null;
   let loNmls: string | null = null;
+  let loPhone: string | null = null;
+  let loCalendarUrl: string | null = null;
   if (lead.loSlug) {
     const loProfile = await getProfileBySlug(lead.loSlug);
     loNotifyEmail = loProfile?.notify_email ?? loProfile?.email ?? null;
     loNmls        = loProfile?.nmls ?? null;
+    loPhone       = loProfile?.phone ?? null;
+    loCalendarUrl = loProfile?.calendar_url ?? null;
   }
 
   // ── 4. Send emails ────────────────────────────────────────────────────────
