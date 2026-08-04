@@ -28,6 +28,18 @@ function generateSlug(name: string): string {
     .replace(/^-|-$/g, "");
 }
 
+function isLeadershipTitle(title: string | undefined): boolean {
+  const normalized = title?.trim().toLowerCase() ?? "";
+  return (
+    normalized.includes("founder") ||
+    normalized.includes("ceo") ||
+    normalized.includes("chief executive") ||
+    normalized.includes("president") ||
+    normalized.includes("chief") ||
+    normalized.includes("national director")
+  );
+}
+
 async function findAuthUserByEmail(
   sb: ReturnType<typeof createServiceClient>,
   email: string,
@@ -160,8 +172,8 @@ export async function POST(request: NextRequest) {
     full_name,
     role,
     is_active:       true,
-    // LOs are shown on the public team page by default; admins/devs are not
-    show_on_website: role === "loan_officer",
+    // Loan officers and leadership titles are shown on the public team page by default.
+    show_on_website: role === "loan_officer" || isLeadershipTitle(title),
     updated_at:      new Date().toISOString(),
   };
   if (lo_slug)      profilePatch.lo_slug      = lo_slug;

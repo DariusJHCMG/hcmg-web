@@ -12,17 +12,17 @@ export const revalidate = 3600;
 // Leadership slugs — only these get their portal photo shown on the /team roster page.
 // All other roles (LOs, operations) always show the placeholder here; their
 // uploaded photo only appears on their personal /team/[slug] page and funnels.
-const LEADERSHIP_SLUGS = new Set([
-  "lamont-harris-jr",
-  "astrine-covington",
-  "ranada-harris",
-  "aysha-randall",
-  "mesia-crews",
-  "adam-demarco",
-  "darius-james",
-  "juan-ramon-garcia-johnny",
-  "aaron-clark",
-]);
+function isLeadershipTitle(title: string | null | undefined) {
+  const normalized = title?.trim().toLowerCase() ?? "";
+  return (
+    normalized.includes("founder") ||
+    normalized.includes("ceo") ||
+    normalized.includes("chief executive") ||
+    normalized.includes("president") ||
+    normalized.includes("chief") ||
+    normalized.includes("national director")
+  );
+}
 
 export const metadata: Metadata = {
   title: "Meet the HCMG Team, Loan Officers, Processors & Leadership | Harris Capital Mortgage Group",
@@ -75,7 +75,8 @@ export default async function TeamPage() {
     .map((m) => {
       const overrides: Partial<TeamMember> = {};
       // Photo: only swap for leadership slugs (LOs keep placeholder on roster)
-      if (LEADERSHIP_SLUGS.has(m.slug) && dbAvatars.has(m.slug)) {
+      const title = dbTitles.get(m.slug) ?? m.role;
+      if (isLeadershipTitle(title) && dbAvatars.has(m.slug)) {
         overrides.photo = dbAvatars.get(m.slug)!;
       }
       // Title: use DB value for everyone if set
@@ -91,11 +92,11 @@ export default async function TeamPage() {
 
   // Portal-only users: active profiles with a lo_slug NOT already in the static list
   const portalMembers = (profiles ?? [])
-    .filter((p) => p.full_name && p.lo_slug && !staticSlugs.has(p.lo_slug))
+    .filter((p) => p.full_name && p.lo_slug && p.show_on_website && !staticSlugs.has(p.lo_slug))
     .map((p) => {
       const slug = p.lo_slug as string;
       // Leadership portal-only users get their DB photo shown on the roster
-      const photo = LEADERSHIP_SLUGS.has(slug) && p.avatar_url
+      const photo = isLeadershipTitle(p.title) && p.avatar_url
         ? p.avatar_url
         : "/team/placeholder.svg";
       return {
