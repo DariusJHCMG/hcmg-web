@@ -21,6 +21,7 @@ const LEADERSHIP_SLUGS = new Set([
   "adam-demarco",
   "darius-james",
   "juan-ramon-garcia-johnny",
+  "aaron-clark",
 ]);
 
 export const metadata: Metadata = {
