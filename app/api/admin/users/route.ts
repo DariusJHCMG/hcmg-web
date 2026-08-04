@@ -28,6 +28,15 @@ function generateSlug(name: string): string {
     .replace(/^-|-$/g, "");
 }
 
+async function findAuthUserByEmail(
+  sb: ReturnType<typeof createServiceClient>,
+  email: string,
+) {
+  const { data, error } = await sb.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (error) throw error;
+  return data.users.find((user) => user.email?.toLowerCase() === email.toLowerCase()) ?? null;
+}
+
 const CreateUserSchema = z.object({
   email:        z.string().email(),
   password:     z.string().min(8),
@@ -61,7 +70,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid payload", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { email, password, full_name, role, nmls, phone, notify_email, title, short_bio, offices, linkedin } = parsed.data;
+  const { password, full_name, role, nmls, phone, notify_email, title, short_bio, offices, linkedin } = parsed.data;
+  const email = parsed.data.email.trim().toLowerCase();
   const sb = createServiceClient();
 
   // ── Auto-generate lo_slug if not provided ────────────────────
@@ -82,24 +92,61 @@ export async function POST(request: NextRequest) {
   }
 
   // ── 1. Create auth user ───────────────────────────────────────
-  const { data: authData, error: authError } = await sb.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: {
-      full_name,
-      role,
-      lo_slug:      lo_slug || "",
-      nmls:         nmls || "",
-      notify_email: notify_email || "",
-    },
+  const existingAuthUser = await findAuthUserByEmail(sb, email).catch((error) => {
+    console.error("Could not check for an existing authentication user", error);
+    return null;
   });
+  const { data: existingProfile } = existingAuthUser
+    ? await sb.from("profiles").select("id").eq("id", existingAuthUser.id).maybeSingle()
+    : { data: null };
 
-  if (authError || !authData.user) {
-    return NextResponse.json({ error: authError?.message ?? "Failed to create user" }, { status: 400 });
+  if (existingProfile) {
+    return NextResponse.json(
+      { error: "A user with this email address already exists in the Users list." },
+      { status: 409 },
+    );
   }
 
-  const uid = authData.user.id;
+  let uid: string;
+  let restored = false;
+  if (existingAuthUser) {
+    // An earlier failed request may have created the login but not its profile.
+    // Reuse that login instead of making the admin delete it in Supabase first.
+    uid = existingAuthUser.id;
+    restored = true;
+    const { error } = await sb.auth.admin.updateUserById(uid, {
+      password,
+      email_confirm: true,
+      user_metadata: {
+        ...existingAuthUser.user_metadata,
+        full_name,
+        role,
+        lo_slug: lo_slug || "",
+        nmls: nmls || "",
+        notify_email: notify_email || "",
+      },
+    });
+    if (error) {
+      return NextResponse.json({ error: "Could not restore the existing login: " + error.message }, { status: 500 });
+    }
+  } else {
+    const { data: authData, error: authError } = await sb.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name,
+        role,
+        lo_slug:      lo_slug || "",
+        nmls:         nmls || "",
+        notify_email: notify_email || "",
+      },
+    });
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: authError?.message ?? "Failed to create user" }, { status: 400 });
+    }
+    uid = authData.user.id;
+  }
 
   // ── 2. Wait briefly then upsert the full profile row ─────────
   // The DB trigger fires on insert and creates the profile row.
@@ -126,7 +173,15 @@ export async function POST(request: NextRequest) {
   if (offices)      profilePatch.offices      = offices;
   if (linkedin)     profilePatch.linkedin     = linkedin;
 
-  await sb.from("profiles").upsert(profilePatch, { onConflict: "id" });
+  const { error: profileError } = await sb.from("profiles").upsert(profilePatch, { onConflict: "id" });
+  if (profileError) {
+    // Avoid leaving a new login that is invisible in the Users list.
+    if (!restored) await sb.auth.admin.deleteUser(uid);
+    return NextResponse.json(
+      { error: "The login was created, but its user profile could not be saved: " + profileError.message },
+      { status: 500 },
+    );
+  }
 
   // ── 3. Create base funnel_link (one row per LO) ───────────────
   if (lo_slug) {
@@ -143,5 +198,5 @@ export async function POST(request: NextRequest) {
   await logAudit("user.created", { email, role, lo_slug, nmls }, caller.id, caller.email);
 
   // Welcome email is NOT sent automatically — admin clicks "Send Invite" in the UI
-  return NextResponse.json({ ok: true, id: uid, lo_slug });
+  return NextResponse.json({ ok: true, id: uid, lo_slug, restored });
 }
