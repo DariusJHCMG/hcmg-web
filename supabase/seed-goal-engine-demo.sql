@@ -42,13 +42,14 @@ DECLARE
   i INT;
 
   -- Demo production data per LO (funded_volume, funded_units, app_volume, app_units)
-  volumes NUMERIC[]   := ARRAY[1820000, 1540000, 1390000, 980000, 720000, 410000];
-  units   INTEGER[]   := ARRAY[7, 6, 5, 4, 3, 2];
-  apps    NUMERIC[]   := ARRAY[3200000, 2800000, 2400000, 1900000, 1400000, 900000];
-  appunts INTEGER[]   := ARRAY[12, 10, 9, 7, 5, 3];
+  volumes     NUMERIC[]  := ARRAY[1820000, 1540000, 1390000, 980000, 720000, 410000];
+  units       INTEGER[]  := ARRAY[7, 6, 5, 4, 3, 2];
+  apps        NUMERIC[]  := ARRAY[3200000, 2800000, 2400000, 1900000, 1400000, 900000];
+  appunts     INTEGER[]  := ARRAY[12, 10, 9, 7, 5, 3];
 
   commit_vols  NUMERIC[]  := ARRAY[2200000, 1750000, 1500000, 1250000, 1000000, 750000];
   commit_units INTEGER[]  := ARRAY[8, 7, 6, 5, 4, 3];
+  conf_pcts    INTEGER[]  := ARRAY[70, 75, 80, 85, 90, 95];
 
   focuses TEXT[] := ARRAY[
     'Doubling down on my realtor referral network — targeting 4 new partners this month.',
@@ -94,7 +95,7 @@ BEGIN
       commit_vols[i], commit_units[i],
       commit_vols[i] * 2, commit_units[i] * 2,
       focuses[i], challenges[i],
-      ARRAY[70,75,80,85,90,95][i],
+      conf_pcts[i],
       true, true, NOW() - (INTERVAL '1 day' * (7 - i))
     )
     ON CONFLICT (goal_month_id, profile_id) DO UPDATE SET
