@@ -123,6 +123,109 @@ export interface AuditLog {
   created_at: string;
 }
 
+// ── Goal Engine Types ─────────────────────────────────────────
+
+export interface GoalMonth {
+  id: string;
+  month_label: string;
+  month_year: number;
+  month_num: number;
+  funded_volume_goal: number;
+  funded_units_goal: number;
+  app_volume_goal: number;
+  app_units_goal: number;
+  clo_message: string | null;
+  awards_enabled: boolean;
+  start_date: string;
+  end_date: string;
+  email_send_at: string | null;
+  emails_sent: boolean;
+  is_published: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoalCommitment {
+  id: string;
+  goal_month_id: string;
+  profile_id: string;
+  funded_volume_commitment: number;
+  funded_units_commitment: number;
+  app_volume_commitment: number;
+  app_units_commitment: number;
+  biggest_focus: string | null;
+  biggest_challenge: string | null;
+  confidence_pct: number | null;
+  comments: string | null;
+  digital_agreement: boolean;
+  locked: boolean;
+  submitted_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoalProduction {
+  id: string;
+  profile_id: string;
+  goal_month_id: string | null;
+  loan_id: string | null;
+  funded_date: string | null;
+  funded_volume: number | null;
+  funded_unit: number;
+  app_date: string | null;
+  app_volume: number | null;
+  app_unit: number;
+  source: string;
+  raw_payload: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoalAward {
+  id: string;
+  goal_month_id: string;
+  profile_id: string;
+  award_type: string;
+  award_label: string;
+  award_emoji: string | null;
+  stats_snapshot: Record<string, unknown> | null;
+  certificate_url: string | null;
+  email_sent: boolean;
+  issued_at: string;
+  created_at: string;
+}
+
+export interface GoalNotification {
+  id: string;
+  profile_id: string;
+  title: string;
+  body: string | null;
+  type: "info" | "success" | "warning" | "award";
+  read: boolean;
+  link: string | null;
+  created_at: string;
+}
+
+/** Joined leaderboard row from goal_leaderboard view */
+export interface LeaderboardRow {
+  goal_month_id: string;
+  profile_id: string;
+  full_name: string;
+  avatar_url: string | null;
+  nmls: string | null;
+  funded_volume_commitment: number;
+  funded_units_commitment: number;
+  app_volume_commitment: number;
+  app_units_commitment: number;
+  confidence_pct: number | null;
+  submitted_at: string | null;
+  funded_volume_actual: number;
+  funded_units_actual: number;
+  app_volume_actual: number;
+  app_units_actual: number;
+}
+
 // Supabase Database type map used by createClient<Database>
 export interface Database {
   public: {
@@ -147,8 +250,30 @@ export interface Database {
         Insert: Omit<AuditLog, "id" | "created_at"> & { id?: string; created_at?: string };
         Update: Partial<AuditLog>;
       };
+      goal_months: {
+        Row:    GoalMonth;
+        Insert: Omit<GoalMonth, "id" | "created_at" | "updated_at"> & { id?: string; created_at?: string; updated_at?: string };
+        Update: Partial<GoalMonth>;
+      };
+      goal_commitments: {
+        Row:    GoalCommitment;
+        Insert: Omit<GoalCommitment, "id" | "created_at" | "updated_at"> & { id?: string; created_at?: string; updated_at?: string };
+        Update: Partial<GoalCommitment>;
+      };
+      goal_production: {
+        Row:    GoalProduction;
+        Insert: Omit<GoalProduction, "id" | "created_at" | "updated_at"> & { id?: string; created_at?: string; updated_at?: string };
+        Update: Partial<GoalProduction>;
+      };
+      goal_awards: {
+        Row:    GoalAward;
+        Insert: Omit<GoalAward, "id" | "created_at"> & { id?: string; created_at?: string };
+        Update: Partial<GoalAward>;
+      };
     };
-    Views:     Record<string, never>;
+    Views: {
+      goal_leaderboard: { Row: LeaderboardRow };
+    };
     Functions: Record<string, never>;
     Enums:     Record<string, never>;
   };

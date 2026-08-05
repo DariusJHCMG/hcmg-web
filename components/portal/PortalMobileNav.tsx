@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 const NAV_LINKS = [
-  { label: "Dashboard",   href: "/portal" },
+  { label: "Dashboard",    href: "/portal" },
   { label: "Analytics",   href: "/portal/analytics" },
   { label: "My Funnels",  href: "/portal/funnels" },
   { label: "Co-Branded",  href: "/portal/co-branded" },

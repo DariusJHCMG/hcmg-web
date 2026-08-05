@@ -30,9 +30,11 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user ?? null;
 
-  const isAdminRoute  = pathname.startsWith("/admin");
-  const isPortalRoute = pathname.startsWith("/portal");
-  const isLoginRoute  = pathname === "/login";
+  const isAdminRoute      = pathname.startsWith("/admin");
+  const isPortalRoute     = pathname.startsWith("/portal");
+  // Only the actual /goal-engine/* pages — NOT /goal-engine-login
+  const isGoalEngineRoute = pathname.startsWith("/goal-engine/");
+  const isLoginRoute      = pathname === "/login";
 
   // Not logged in → redirect to login
   if ((isAdminRoute || isPortalRoute) && !user) {
@@ -42,7 +44,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Logged in + trying to access login → redirect to their dashboard
+  // Goal Engine pages: not logged in → send to Goal Engine login
+  if (isGoalEngineRoute && !user) {
+    return NextResponse.redirect(new URL(`/goal-engine-login?next=${encodeURIComponent(pathname)}`, request.url));
+  }
+
+  // Already logged in + hitting main login → redirect to admin dashboard
   if (isLoginRoute && user) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
@@ -51,5 +58,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/portal/:path*", "/login"],
+  matcher: [
+    "/admin/:path*",
+    "/portal/:path*",
+    "/login",
+    "/goal-engine/:path*",
+  ],
 };

@@ -7,21 +7,22 @@ import { createBrowserClient } from "@/lib/supabase-browser";
 import { OrangeKeyLogo } from "@/components/ui/OrangeKeyLogo";
 
 const NAV = [
-  { label: "Dashboard",   href: "/admin",              icon: "⊞" },
-  { label: "Analytics",   href: "/admin/analytics",    icon: "📊" },
-  { label: "Leads",       href: "/admin/leads",        icon: "✉" },
-  { label: "Agent Partners", href: "/admin/agent-leads", icon: "🤝" },
+  { label: "Dashboard",       href: "/admin",                    icon: "⊞" },
+  { label: "Analytics",       href: "/admin/analytics",          icon: "📊" },
+  { label: "Goal Engine",     href: "/goal-engine/admin",        icon: "🥧" },
+  { label: "Leads",           href: "/admin/leads",              icon: "✉" },
+  { label: "Agent Partners",  href: "/admin/agent-leads",        icon: "🤝" },
   { label: "Corporate Benefits", href: "/admin/corporate-leads", icon: "▦" },
-  { label: "Reviews",     href: "/admin/reviews",      icon: "⭐" },
-  { label: "Users",       href: "/admin/users",        icon: "👥" },
-  { label: "Licenses",    href: "/admin/licenses",     icon: "◈" },
-  { label: "My Funnels",  href: "/admin/my-funnels",   icon: "🔗" },
-  { label: "Co-Branded",  href: "/admin/co-branded",   icon: "🤝" },
-  { label: "Mobile App",  href: "/admin/mobile-app",   icon: "📱" },
-  { label: "Settings",    href: "/admin/settings",     icon: "⚙" },
-  { label: "Audit Log",   href: "/admin/audit",        icon: "📋" },
-  { label: "Dev Tools",   href: "/admin/dev",          icon: "🛠" },
-  { label: "My Profile",  href: "/admin/profile",      icon: "👤" },
+  { label: "Reviews",         href: "/admin/reviews",            icon: "⭐" },
+  { label: "Users",           href: "/admin/users",              icon: "👥" },
+  { label: "Licenses",        href: "/admin/licenses",           icon: "◈" },
+  { label: "My Funnels",      href: "/admin/my-funnels",         icon: "🔗" },
+  { label: "Co-Branded",      href: "/admin/co-branded",         icon: "🤝" },
+  { label: "Mobile App",      href: "/admin/mobile-app",         icon: "📱" },
+  { label: "Settings",        href: "/admin/settings",           icon: "⚙" },
+  { label: "Audit Log",       href: "/admin/audit",              icon: "📋" },
+  { label: "Dev Tools",       href: "/admin/dev",                icon: "🛠" },
+  { label: "My Profile",      href: "/admin/profile",            icon: "👤" },
 ];
 
 function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
