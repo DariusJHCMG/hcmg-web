@@ -1,18 +1,13 @@
 /**
- * PATCH /api/goal-engine/goals/[id]
- * Admin: update a goal (including publishing/unpublishing)
- *
- * DELETE /api/goal-engine/goals/[id]
- * Admin: delete a goal
- *
- * GET /api/goal-engine/goals/[id]
- * Get a single goal
+ * GET    /api/goal-engine/goals/[id]  — fetch a single goal
+ * PATCH  /api/goal-engine/goals/[id]  — update (publish/unpublish)
+ * DELETE /api/goal-engine/goals/[id]  — delete
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
-import { sendAnnouncementEmails } from "../route";
+import { sendAnnouncementEmails } from "@/lib/goal-engine-announce";
 
 export async function GET(
   _req: NextRequest,
@@ -38,10 +33,10 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  const body   = await req.json();
-  const sb     = createServiceClient();
+  const body = await req.json();
+  const sb   = createServiceClient();
 
-  // Fetch existing to check if we're publishing for the first time
+  // Check if we're publishing for the first time
   const { data: existing } = await sb.from("goal_months").select("*").eq("id", id).single();
   const wasUnpublished = existing && !existing.is_published;
   const isNowPublished = body.is_published === true;
@@ -57,7 +52,7 @@ export async function PATCH(
 
   // If just published and emails not yet sent → send now
   if (wasUnpublished && isNowPublished && data && !data.emails_sent) {
-    await sendAnnouncementEmails(data);
+    await sendAnnouncementEmails(data as Record<string, unknown>);
   }
 
   return NextResponse.json({ goal: data });
