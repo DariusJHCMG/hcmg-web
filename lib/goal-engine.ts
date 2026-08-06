@@ -269,16 +269,33 @@ export interface GoalSummary {
 export async function computeGoalSummary(
   goal: GoalMonth,
 ): Promise<GoalSummary> {
-  const [rows, totalLOs] = await Promise.all([
+  const sb = createServiceClient();
+
+  const [rows, allLOs, assignmentsResult] = await Promise.all([
     getLeaderboard(goal.id),
     getActiveLoanOfficers(),
+    sb.from("goal_assignments").select("profile_id").eq("goal_month_id", goal.id),
   ]);
+
+  const assignments = assignmentsResult.data ?? [];
+
+  // If assignments exist, participation is measured only against assigned LOs.
+  // If no assignments have been made yet, fall back to all active LOs (legacy behaviour).
+  const assignedIds = assignments.map((a) => a.profile_id);
+  const effectiveLOCount =
+    assignedIds.length > 0 ? assignedIds.length : allLOs.length;
+
+  // Participation = committed rows that belong to assigned LOs (or all LOs if none assigned)
+  const eligibleCommitted = rows.filter((r) =>
+    r.submitted_at &&
+    (assignedIds.length === 0 || assignedIds.includes(r.profile_id))
+  );
 
   const totalCommittedVolume = rows.reduce((s, r) => s + r.funded_volume_commitment, 0);
   const totalActualVolume    = rows.reduce((s, r) => s + r.funded_volume_actual,     0);
   const totalCommittedUnits  = rows.reduce((s, r) => s + r.funded_units_commitment,  0);
   const totalActualUnits     = rows.reduce((s, r) => s + r.funded_units_actual,      0);
-  const participationCount   = rows.filter((r) => r.submitted_at).length;
+  const participationCount   = eligibleCommitted.length;
 
   return {
     totalCommittedVolume,
@@ -286,10 +303,10 @@ export async function computeGoalSummary(
     totalCommittedUnits,
     totalActualUnits,
     participationCount,
-    totalLOs: totalLOs.length,
-    volumePct:      goal.funded_volume_goal > 0 ? (totalActualVolume    / goal.funded_volume_goal)    * 100 : 0,
-    unitsPct:       goal.funded_units_goal  > 0 ? (totalActualUnits     / goal.funded_units_goal)     * 100 : 0,
-    commitVsGoalPct: goal.funded_volume_goal > 0 ? (totalCommittedVolume / goal.funded_volume_goal)   * 100 : 0,
+    totalLOs: effectiveLOCount,
+    volumePct:       goal.funded_volume_goal > 0 ? (totalActualVolume    / goal.funded_volume_goal)  * 100 : 0,
+    unitsPct:        goal.funded_units_goal  > 0 ? (totalActualUnits     / goal.funded_units_goal)   * 100 : 0,
+    commitVsGoalPct: goal.funded_volume_goal > 0 ? (totalCommittedVolume / goal.funded_volume_goal)  * 100 : 0,
   };
 }
 

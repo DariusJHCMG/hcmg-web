@@ -55,6 +55,8 @@ export function GoalCreateForm() {
   const cr    = Number(convRate)   || 60;
   const harry = calcHarry(fv, al, cr);
 
+  const [newGoalId, setNewGoalId] = useState<string | null>(null);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setResult(null);
@@ -80,6 +82,7 @@ export function GoalCreateForm() {
       if (!res.ok) { setResult({ error: data.error ?? "Failed to create goal." }); }
       else {
         setResult({ success: true });
+        setNewGoalId(data.goal?.id ?? null);
         setFundedVol(""); setAvgLoan("350000"); setConvRate("60");
         setCloMsg(""); setStart(""); setEnd(""); setPublish(false);
       }
@@ -233,8 +236,24 @@ export function GoalCreateForm() {
       </div>
 
       {result?.success && (
-        <div style={{ marginBottom:16, padding:"12px 16px", borderRadius:10, background:"#dcfce7", border:"1px solid #86efac", fontSize:13, color:"#166534", fontWeight:600 }}>
-          ✅ Goal {publish ? "published and emails sent" : "saved as draft"} successfully!
+        <div style={{ marginBottom:16, padding:"16px 18px", borderRadius:12, background:"#f0fdf4", border:"1.5px solid #86efac" }}>
+          <p style={{ margin:"0 0 6px", fontSize:13, fontWeight:800, color:"#166534" }}>
+            ✅ Goal {publish ? "published and emails sent" : "saved as draft"} successfully!
+          </p>
+          <p style={{ margin:"0 0 10px", fontSize:12, color:"#166534", lineHeight:1.6 }}>
+            Next step: assign which Loan Officers are expected to produce for this goal. Participation rate is calculated only against assigned LOs — non-production staff won&apos;t affect your numbers.
+          </p>
+          {newGoalId && (
+            <a href={`/goal-engine/admin/goals/${newGoalId}/assignments`} style={{
+              display:"inline-flex", alignItems:"center", gap:6,
+              padding:"9px 18px", borderRadius:10, textDecoration:"none",
+              background:"linear-gradient(135deg,#FF9847,#F37021)",
+              color:"#fff", fontSize:12, fontWeight:800,
+              boxShadow:"0 4px 12px rgba(243,112,33,0.3)",
+            }}>
+              👥 Assign LOs to This Goal →
+            </a>
+          )}
         </div>
       )}
       {result?.error && (

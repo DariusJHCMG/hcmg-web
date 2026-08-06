@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { GoalMonth } from "@/lib/database.types";
 
 const C = {
@@ -9,9 +9,17 @@ const C = {
 };
 
 export function GoalAdminCard({ goal }: { goal: GoalMonth }) {
-  const [loading,   setLoading]   = useState(false);
-  const [message,   setMessage]   = useState<string | null>(null);
-  const [published, setPublished] = useState(goal.is_published);
+  const [loading,          setLoading]          = useState(false);
+  const [message,          setMessage]          = useState<string | null>(null);
+  const [published,        setPublished]        = useState(goal.is_published);
+  const [assignedCount,    setAssignedCount]    = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/goal-engine/goal-assignments?goal_month_id=${goal.id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setAssignedCount(d.assignments?.length ?? 0); })
+      .catch(() => {});
+  }, [goal.id]);
 
   async function toggle() {
     setLoading(true); setMessage(null);
@@ -64,9 +72,24 @@ export function GoalAdminCard({ goal }: { goal: GoalMonth }) {
             }
             {goal.emails_sent && <span style={{ padding:"2px 10px", borderRadius:99, background:"#ede9fe", color:"#5b21b6", fontSize:10, fontWeight:700 }}>Emails Sent</span>}
           </div>
-          <p style={{ margin:0, fontSize:12, color:C.muted }}>{volFmt} · {goal.funded_units_goal} loans · {dateRange}</p>
+          <p style={{ margin:0, fontSize:12, color:C.muted }}>
+            {volFmt} · {goal.funded_units_goal} loans · {dateRange}
+            {assignedCount !== null && (
+              <span style={{ marginLeft:8, padding:"1px 8px", borderRadius:99, background: assignedCount === 0 ? "#fef9c3" : "#eff6ff", color: assignedCount === 0 ? "#854d0e" : "#1e40af", fontSize:10, fontWeight:700 }}>
+                {assignedCount === 0 ? "⚠ No assignees" : `👥 ${assignedCount} assigned`}
+              </span>
+            )}
+          </p>
         </div>
         <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+          <a href={`/goal-engine/admin/goals/${goal.id}/assignments`} style={{
+            ...BTN,
+            background:"#eff6ff", color:"#1e40af",
+            border:"1px solid #bfdbfe",
+            textDecoration:"none", display:"inline-flex", alignItems:"center", gap:4,
+          }}>
+            👥 Assignees{assignedCount !== null ? ` (${assignedCount})` : ""}
+          </a>
           <button onClick={toggle} disabled={loading} style={{
             ...BTN,
             background: published ? "#fef9c3" : "linear-gradient(135deg,#FF9847,#F37021)",
