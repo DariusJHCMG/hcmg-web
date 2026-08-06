@@ -102,6 +102,7 @@ export function HarryWidget({ insightType = "lo_coaching", targetProfileId, comp
 
   if (dismissed) return null;
 
+  // Always render — show the header with Ask HARRY button even when there's no insight yet.
   return (
     <div style={{
       background: C.white,
@@ -159,15 +160,26 @@ export function HarryWidget({ insightType = "lo_coaching", targetProfileId, comp
       {/* Body */}
       <div style={{ padding: compact ? "16px 18px" : "20px 24px" }}>
         {loading ? (
-          <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+          <div style={{ display:"flex", gap:6, alignItems:"center", padding:"8px 0" }}>
             {[1,2,3].map(i => (
               <div key={i} style={{ height:8, flex:i===2?2:1, background:C.line, borderRadius:4, animation:`pulse 1.5s ${i*0.3}s infinite` }} />
             ))}
           </div>
+        ) : generating ? (
+          <div style={{ textAlign:"center", padding:"20px 0" }}>
+            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:C.ink }}>HARRY is analyzing your data…</p>
+            <div style={{ display:"flex", gap:6, alignItems:"center", justifyContent:"center" }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{ height:8, width:8, borderRadius:"50%", background:C.orange, animation:`pulse 1.5s ${i*0.3}s infinite` }} />
+              ))}
+            </div>
+          </div>
         ) : !insight ? (
-          <div style={{ textAlign:"center", padding:"16px 0" }}>
-            <p style={{ margin:0, fontSize:13, color:C.muted, lineHeight:1.7 }}>
-              Click <strong style={{ color:C.ink }}>Ask HARRY</strong> to get a personalized insight based on your current production data.
+          <div style={{ textAlign:"center", padding:"20px 0" }}>
+            <p style={{ margin:"0 0 6px", fontSize:22 }}>🤖</p>
+            <p style={{ margin:"0 0 4px", fontSize:14, fontWeight:800, color:C.ink }}>Ask HARRY for a personalized insight</p>
+            <p style={{ margin:0, fontSize:13, color:C.muted, lineHeight:1.7, maxWidth:380, marginLeft:"auto", marginRight:"auto" }}>
+              HARRY AI analyzes your current production pace, commitment, and standings to give you a tailored coaching recommendation.
             </p>
           </div>
         ) : (

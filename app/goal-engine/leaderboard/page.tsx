@@ -188,7 +188,22 @@ export default async function GoalEngineLeaderboard() {
                       return (
                         <tr key={row.profile_id} style={{ background: isMe?"rgba(243,112,33,0.05)":C.white, borderBottom:`1px solid ${C.line}` }}>
                           <td style={{ padding:"14px 20px", textAlign:"right", fontSize:18 }}>{medals[i] ?? `#${i+1}`}</td>
-                          <td style={{ padding:"14px 20px", fontSize:14, fontWeight:800, color: isMe?C.orange:C.ink }}>{row.full_name}</td>
+                          <td style={{ padding:"14px 20px" }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                              {row.avatar_url
+                                ? <img src={row.avatar_url} alt="" style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover", border:`2px solid ${C.line}`, flexShrink:0 }} />
+                                : <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#FF9847,#F37021)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:900, color:"#fff", flexShrink:0 }}>
+                                    {row.full_name.split(" ").map((n:string)=>n[0]).slice(0,2).join("")}
+                                  </div>
+                              }
+                              <div>
+                                <p style={{ margin:0, fontSize:14, fontWeight:800, color: isMe?C.orange:C.ink }}>
+                                  {row.full_name} {isMe && <span style={{ fontSize:11, color:C.muted, fontWeight:400 }}>(you)</span>}
+                                </p>
+                                {row.nmls && <p style={{ margin:"1px 0 0", fontSize:10, color:C.muted }}>NMLS# {row.nmls}</p>}
+                              </div>
+                            </div>
+                          </td>
                           <td style={{ padding:"14px 20px", textAlign:"right", fontSize:14, fontWeight:800, color: C.ink }}>{fmt$(row.app_volume_actual)}</td>
                           <td style={{ padding:"14px 20px", textAlign:"right", fontSize:14, fontWeight:800, color: C.ink }}>{row.app_units_actual}</td>
                           <td style={{ padding:"14px 20px", textAlign:"right", fontSize:14, fontWeight:800, color: C.ink }}>{row.funded_units_actual}</td>

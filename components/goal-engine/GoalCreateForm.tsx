@@ -21,6 +21,15 @@ const LABEL: React.CSSProperties = {
   textTransform:"uppercase", color:C.muted,
 };
 
+// app_volume_goal = funded_volume_goal / 0.60
+// app_units_goal  = funded_volume_goal / 350,000
+function autoAppGoals(fv: number) {
+  return {
+    vol:   fv > 0 ? String(Math.round(fv / 0.60)) : "",
+    units: fv > 0 ? String(Math.round(fv / 350_000)) : "",
+  };
+}
+
 export function GoalCreateForm() {
   const currentYear = new Date().getFullYear();
   const [monthNum,  setMonthNum]  = useState(new Date().getMonth() + 1);
@@ -29,6 +38,17 @@ export function GoalCreateForm() {
   const [fundedU,   setFundedU]   = useState("");
   const [appVol,    setAppVol]    = useState("");
   const [appU,      setAppU]      = useState("");
+
+  // When funded vol changes, auto-fill app goals
+  function handleFundedVolChange(val: string) {
+    setFundedVol(val);
+    const n = Number(val);
+    if (n > 0) {
+      const { vol, units } = autoAppGoals(n);
+      setAppVol(vol);
+      setAppU(units);
+    }
+  }
   const [cloMsg,    setCloMsg]    = useState("");
   const [start,     setStart]     = useState("");
   const [end,       setEnd]       = useState("");
@@ -90,19 +110,29 @@ export function GoalCreateForm() {
         <div><label style={LABEL}>End Date</label><input type="date" required value={end} onChange={e=>setEnd(e.target.value)} style={INPUT} /></div>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:20 }}>
-        <div><label style={LABEL}>Company Funded Volume ($)</label><input type="number" required min={0} placeholder="e.g. 20000000" value={fundedVol} onChange={e=>setFundedVol(e.target.value)} style={INPUT} /></div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:8 }}>
+        <div><label style={LABEL}>Company Funded Volume ($)</label><input type="number" required min={0} placeholder="e.g. 20000000" value={fundedVol} onChange={e=>handleFundedVolChange(e.target.value)} style={INPUT} /></div>
         <div><label style={LABEL}>Company Funded Units</label><input type="number" required min={0} placeholder="e.g. 60" value={fundedU} onChange={e=>setFundedU(e.target.value)} style={INPUT} /></div>
       </div>
 
+      {/* App goal auto-calc info */}
+      {Number(fundedVol) > 0 && (
+        <div style={{ marginBottom:20, padding:"10px 14px", borderRadius:10, background:"rgba(243,112,33,0.05)", border:"1px solid rgba(243,112,33,0.2)", fontSize:12, color:C.muted }}>
+          📊 <strong style={{ color:C.orange }}>Auto-calculated:</strong>{" "}
+          App Volume Goal = ${Number(fundedVol).toLocaleString()} ÷ 0.60 = <strong style={{ color:C.ink }}>${Math.round(Number(fundedVol)/0.60).toLocaleString()}</strong>
+          {" · "}App Units Goal = ${Number(fundedVol).toLocaleString()} ÷ 350,000 = <strong style={{ color:C.ink }}>{Math.round(Number(fundedVol)/350_000)} loans</strong>
+          <span style={{ marginLeft:8, color:C.muted }}>— editable below</span>
+        </div>
+      )}
+
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:20 }}>
         <div>
-          <label style={LABEL}>App Volume Goal ($) <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></label>
-          <input type="number" min={0} placeholder="e.g. 40000000" value={appVol} onChange={e=>setAppVol(e.target.value)} style={INPUT} />
+          <label style={LABEL}>App Volume Goal ($)</label>
+          <input type="number" min={0} placeholder="Auto-calculated from funded vol ÷ 0.60" value={appVol} onChange={e=>setAppVol(e.target.value)} style={INPUT} />
         </div>
         <div>
-          <label style={LABEL}>App Units Goal <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></label>
-          <input type="number" min={0} placeholder="e.g. 120" value={appU} onChange={e=>setAppU(e.target.value)} style={INPUT} />
+          <label style={LABEL}>App Units Goal</label>
+          <input type="number" min={0} placeholder="Auto-calculated from funded vol ÷ 350k" value={appU} onChange={e=>setAppU(e.target.value)} style={INPUT} />
         </div>
       </div>
 

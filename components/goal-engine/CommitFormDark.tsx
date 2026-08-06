@@ -19,6 +19,16 @@ const LABEL: React.CSSProperties = { display:"block", marginBottom:8, fontSize:1
 const INPUT: React.CSSProperties = { width:"100%", padding:"13px 16px", borderRadius:12, border:`2px solid ${C.line}`, background:C.white, fontSize:14, color:C.ink, outline:"none", fontFamily:"Montserrat,system-ui,sans-serif", boxSizing:"border-box" as const };
 const TEXTAREA: React.CSSProperties = { ...INPUT, resize:"none" as const };
 
+// App goal rules:
+//   app_volume_goal = funded_volume_goal / 0.60  (apps must be 60% higher than funding goal)
+//   app_units_goal  = funded_volume_goal / 350_000
+function calcAppGoals(fundedVolumeGoal: number) {
+  return {
+    appVolGoal:  Math.round(fundedVolumeGoal / 0.60),
+    appUnitGoal: Math.round(fundedVolumeGoal / 350_000),
+  };
+}
+
 interface Props {
   goalMonthId: string; monthLabel: string;
   fundedVolumeGoal: number; fundedUnitsGoal: number;
@@ -40,8 +50,20 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
   );
   const [customVol,  setCustomVol]  = useState(existingCommitment?.funded_volume_commitment?.toString() ?? "");
   const [units,      setUnits]      = useState(existingCommitment?.funded_units_commitment ?? 3);
-  const [appVol,     setAppVol]     = useState(existingCommitment?.app_volume_commitment?.toString() ?? "");
-  const [appUnits,   setAppUnits]   = useState(existingCommitment?.app_units_commitment ?? 0);
+  // Auto-calculate app commitments from funded volume commitment
+  // app_vol = funded_vol / 0.60, app_units = funded_vol / 350,000
+  function autoCalcApp(vol: number) {
+    if (vol <= 0) return;
+    setAppVol(String(Math.round(vol / 0.60)));
+    setAppUnits(Math.round(vol / 350_000));
+  }
+
+  const [appVol,     setAppVol]     = useState(existingCommitment?.app_volume_commitment
+    ? existingCommitment.app_volume_commitment.toString()
+    : existingCommitment?.funded_volume_commitment ? String(Math.round(existingCommitment.funded_volume_commitment / 0.60)) : "");
+  const [appUnits,   setAppUnits]   = useState(existingCommitment?.app_units_commitment
+    ? existingCommitment.app_units_commitment
+    : existingCommitment?.funded_volume_commitment ? Math.round(existingCommitment.funded_volume_commitment / 350_000) : 0);
   const [focus,      setFocus]      = useState(existingCommitment?.biggest_focus ?? "");
   const [challenge,  setChallenge]  = useState(existingCommitment?.biggest_challenge ?? "");
   const [confidence, setConfidence] = useState(existingCommitment?.confidence_pct ?? 80);
@@ -51,6 +73,7 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
   const [error,      setError]      = useState<string|null>(null);
 
   const resolvedVol = selVol === 0 ? Number(customVol)||0 : selVol ?? 0;
+  const { appVolGoal, appUnitGoal } = calcAppGoals(fundedVolumeGoal);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setError(null);
@@ -104,13 +127,16 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
         <p style={{ ...LABEL }}>Funded Volume Commitment</p>
         <p style={{ margin:"0 0 18px", fontSize:13, color:C.muted }}>How much funded volume are you committing to this month?</p>
         <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:16 }}>
-          {VOLUMES.map(o => <Opt key={o.v} label={o.l} active={selVol===o.v} onClick={()=>setSelVol(o.v)} />)}
+          {VOLUMES.map(o => (
+            <Opt key={o.v} label={o.l} active={selVol===o.v} onClick={()=>{ setSelVol(o.v); if (o.v > 0) autoCalcApp(o.v); }} />
+          ))}
         </div>
         {selVol === 0 && (
           <div>
             <label style={LABEL}>Custom Amount ($)</label>
             <input type="number" min={1} placeholder="e.g. 875000" value={customVol} onChange={e=>setCustomVol(e.target.value)} style={INPUT}
-              onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=C.line} />
+              onFocus={e=>e.target.style.borderColor=C.orange}
+              onBlur={e=>{ e.target.style.borderColor=C.line; const v=Number(e.target.value); if(v>0) autoCalcApp(v); }} />
           </div>
         )}
         {resolvedVol > 0 && (
@@ -131,19 +157,65 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
         {units > 0 && <p style={{ marginTop:12, fontSize:12, color:C.muted }}>{units} loans = {Math.round((units/fundedUnitsGoal)*100)}% of company unit goal</p>}
       </div>
 
-      {/* Applications */}
+      {/* Applications — auto-calculated, editable */}
       <div style={CARD}>
-        <p style={LABEL}>Application Commitment <span style={{ fontWeight:500, textTransform:"none", letterSpacing:0, color:C.muted }}>(optional)</span></p>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginTop:12 }}>
+        <p style={LABEL}>Application Commitment</p>
+
+        {/* Auto-calc notice — shows when funded vol is selected */}
+        {resolvedVol > 0 && (
+          <div style={{ marginBottom:16, padding:"10px 14px", borderRadius:10, background:"rgba(243,112,33,0.06)", border:"1px solid rgba(243,112,33,0.2)" }}>
+            <p style={{ margin:"0 0 4px", fontSize:11, fontWeight:800, color:C.orange, textTransform:"uppercase", letterSpacing:".1em" }}>Auto-calculated from your funded commitment</p>
+            <p style={{ margin:0, fontSize:12, color:C.muted, lineHeight:1.7 }}>
+              App Vol = ${resolvedVol.toLocaleString()} ÷ 0.60 = <strong style={{ color:C.ink }}>${Math.round(resolvedVol/0.60).toLocaleString()}</strong>
+              <span style={{ margin:"0 10px", color:C.line }}>|</span>
+              App Units = ${resolvedVol.toLocaleString()} ÷ 350,000 = <strong style={{ color:C.ink }}>{Math.round(resolvedVol/350_000)} loans</strong>
+              <span style={{ marginLeft:8, color:C.muted }}>— editable below</span>
+            </p>
+          </div>
+        )}
+
+        {/* Company app goals for reference */}
+        <div style={{ marginBottom:16, display:"flex", gap:16 }}>
+          <div style={{ flex:1, padding:"10px 14px", borderRadius:10, background:C.sand, border:`1px solid ${C.line}` }}>
+            <p style={{ margin:"0 0 2px", fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:C.muted }}>Company App Vol Goal</p>
+            <p style={{ margin:0, fontSize:16, fontWeight:900, color:C.navy }}>${appVolGoal.toLocaleString()}</p>
+            <p style={{ margin:"2px 0 0", fontSize:10, color:C.muted }}>${fundedVolumeGoal.toLocaleString()} ÷ 0.60</p>
+          </div>
+          <div style={{ flex:1, padding:"10px 14px", borderRadius:10, background:C.sand, border:`1px solid ${C.line}` }}>
+            <p style={{ margin:"0 0 2px", fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:C.muted }}>Company App Unit Goal</p>
+            <p style={{ margin:0, fontSize:16, fontWeight:900, color:C.navy }}>{appUnitGoal} loans</p>
+            <p style={{ margin:"2px 0 0", fontSize:10, color:C.muted }}>${fundedVolumeGoal.toLocaleString()} ÷ 350,000</p>
+          </div>
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
           <div>
-            <label style={LABEL}>App Volume ($)</label>
-            <input type="number" min={0} placeholder="e.g. 2000000" value={appVol} onChange={e=>setAppVol(e.target.value)} style={INPUT}
-              onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=C.line} />
+            <label style={LABEL}>Your App Volume ($)</label>
+            <input type="number" min={0} value={appVol}
+              onChange={e=>setAppVol(e.target.value)}
+              placeholder={resolvedVol > 0 ? String(Math.round(resolvedVol/0.60)) : "e.g. 1666000"}
+              style={INPUT}
+              onFocus={e=>e.target.style.borderColor=C.orange}
+              onBlur={e=>e.target.style.borderColor=C.line} />
+            {appVol && appVolGoal > 0 && (
+              <p style={{ margin:"6px 0 0", fontSize:11, color:C.muted }}>
+                {Math.round((Number(appVol)/appVolGoal)*100)}% of company app vol goal
+              </p>
+            )}
           </div>
           <div>
-            <label style={LABEL}>App Units</label>
-            <input type="number" min={0} placeholder="e.g. 6" value={appUnits||""} onChange={e=>setAppUnits(Number(e.target.value))} style={INPUT}
-              onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=C.line} />
+            <label style={LABEL}>Your App Units</label>
+            <input type="number" min={0} value={appUnits||""}
+              onChange={e=>setAppUnits(Number(e.target.value))}
+              placeholder={resolvedVol > 0 ? String(Math.round(resolvedVol/350_000)) : "e.g. 3"}
+              style={INPUT}
+              onFocus={e=>e.target.style.borderColor=C.orange}
+              onBlur={e=>e.target.style.borderColor=C.line} />
+            {appUnits > 0 && appUnitGoal > 0 && (
+              <p style={{ margin:"6px 0 0", fontSize:11, color:C.muted }}>
+                {Math.round((appUnits/appUnitGoal)*100)}% of company app unit goal
+              </p>
+            )}
           </div>
         </div>
       </div>
