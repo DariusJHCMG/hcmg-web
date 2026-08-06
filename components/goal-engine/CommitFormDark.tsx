@@ -19,14 +19,26 @@ const LABEL: React.CSSProperties = { display:"block", marginBottom:8, fontSize:1
 const INPUT: React.CSSProperties = { width:"100%", padding:"13px 16px", borderRadius:12, border:`2px solid ${C.line}`, background:C.white, fontSize:14, color:C.ink, outline:"none", fontFamily:"Montserrat,system-ui,sans-serif", boxSizing:"border-box" as const };
 const TEXTAREA: React.CSSProperties = { ...INPUT, resize:"none" as const };
 
-// App goal rules:
-//   app_volume_goal = funded_volume_goal / 0.60  (apps must be 60% higher than funding goal)
-//   app_units_goal  = funded_volume_goal / 350_000
+// HARRY AI Goal Calculation Engine — 3-step formula
+//   Step 1. Funded Loan Goal   = CEILING(fundedVol / avgLoan)
+//   Step 2. App Units Goal     = CEILING(fundedLoanGoal / conversionRate)
+//   Step 3. App Volume Goal    = appUnitsGoal × avgLoan
+//
+// These are CALCULATED values — LOs cannot edit them.
+const AVG_LOAN   = 350_000;   // $350,000 default
+const CONV_RATE  = 0.60;      // 60% pull-through default
+
+function calcHarry(fundedVol: number) {
+  if (fundedVol <= 0) return { fundedLoanGoal: 0, appUnitsGoal: 0, appVolGoal: 0 };
+  const fundedLoanGoal = Math.ceil(fundedVol / AVG_LOAN);
+  const appUnitsGoal   = Math.ceil(fundedLoanGoal / CONV_RATE);
+  const appVolGoal     = appUnitsGoal * AVG_LOAN;
+  return { fundedLoanGoal, appUnitsGoal, appVolGoal };
+}
+
 function calcAppGoals(fundedVolumeGoal: number) {
-  return {
-    appVolGoal:  Math.round(fundedVolumeGoal / 0.60),
-    appUnitGoal: Math.round(fundedVolumeGoal / 350_000),
-  };
+  const { appVolGoal, appUnitsGoal } = calcHarry(fundedVolumeGoal);
+  return { appVolGoal, appUnitGoal: appUnitsGoal };
 }
 
 interface Props {
@@ -50,20 +62,9 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
   );
   const [customVol,  setCustomVol]  = useState(existingCommitment?.funded_volume_commitment?.toString() ?? "");
   const [units,      setUnits]      = useState(existingCommitment?.funded_units_commitment ?? 3);
-  // Auto-calculate app commitments from funded volume commitment
-  // app_vol = funded_vol / 0.60, app_units = funded_vol / 350,000
-  function autoCalcApp(vol: number) {
-    if (vol <= 0) return;
-    setAppVol(String(Math.round(vol / 0.60)));
-    setAppUnits(Math.round(vol / 350_000));
-  }
-
-  const [appVol,     setAppVol]     = useState(existingCommitment?.app_volume_commitment
-    ? existingCommitment.app_volume_commitment.toString()
-    : existingCommitment?.funded_volume_commitment ? String(Math.round(existingCommitment.funded_volume_commitment / 0.60)) : "");
-  const [appUnits,   setAppUnits]   = useState(existingCommitment?.app_units_commitment
-    ? existingCommitment.app_units_commitment
-    : existingCommitment?.funded_volume_commitment ? Math.round(existingCommitment.funded_volume_commitment / 350_000) : 0);
+  // App values are always derived — never editable by LO
+  // They are recalculated whenever funded vol changes
+  function autoCalcApp(_vol: number) { /* no-op — values derived at render time from resolvedVol */ }
   const [focus,      setFocus]      = useState(existingCommitment?.biggest_focus ?? "");
   const [challenge,  setChallenge]  = useState(existingCommitment?.biggest_challenge ?? "");
   const [confidence, setConfidence] = useState(existingCommitment?.confidence_pct ?? 80);
@@ -80,10 +81,12 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
     if (!agreed) { setError("You must agree to the digital commitment."); return; }
     if (resolvedVol <= 0) { setError("Please select a funded volume commitment."); return; }
     setLoading(true);
+    // Derive app values from HARRY AI formula at submit time
+    const { appUnitsGoal: submitAppUnits, appVolGoal: submitAppVol } = calcHarry(resolvedVol);
     try {
       const res = await fetch("/api/goal-engine/commit", {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ goal_month_id:goalMonthId, funded_volume_commitment:resolvedVol, funded_units_commitment:units, app_volume_commitment:Number(appVol)||0, app_units_commitment:appUnits, biggest_focus:focus||null, biggest_challenge:challenge||null, confidence_pct:confidence, comments:comments||null, digital_agreement:true }),
+        body:JSON.stringify({ goal_month_id:goalMonthId, funded_volume_commitment:resolvedVol, funded_units_commitment:units, app_volume_commitment:submitAppVol, app_units_commitment:submitAppUnits, biggest_focus:focus||null, biggest_challenge:challenge||null, confidence_pct:confidence, comments:comments||null, digital_agreement:true }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed."); return; }
@@ -157,68 +160,100 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
         {units > 0 && <p style={{ marginTop:12, fontSize:12, color:C.muted }}>{units} loans = {Math.round((units/fundedUnitsGoal)*100)}% of company unit goal</p>}
       </div>
 
-      {/* Applications — auto-calculated, editable */}
-      <div style={CARD}>
-        <p style={LABEL}>Application Commitment</p>
+      {/* Applications — HARRY AI calculated, read-only */}
+      {resolvedVol > 0 && (() => {
+        const { fundedLoanGoal, appUnitsGoal, appVolGoal: myAppVol } = calcHarry(resolvedVol);
+        const { appVolGoal: coAppVol, appUnitGoal: coAppUnits } = calcAppGoals(fundedVolumeGoal);
+        return (
+          <div style={CARD}>
+            {/* Header */}
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+              <div style={{ width:32, height:32, borderRadius:10, background:`linear-gradient(135deg,#FF9847,${C.orange})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:900, color:"#fff", flexShrink:0 }}>H</div>
+              <div>
+                <p style={{ margin:0, fontSize:13, fontWeight:900, color:C.navy }}>HARRY AI Application Goals</p>
+                <p style={{ margin:0, fontSize:10, color:C.muted }}>Auto-calculated · read-only · based on your funded commitment</p>
+              </div>
+            </div>
 
-        {/* Auto-calc notice — shows when funded vol is selected */}
-        {resolvedVol > 0 && (
-          <div style={{ marginBottom:16, padding:"10px 14px", borderRadius:10, background:"rgba(243,112,33,0.06)", border:"1px solid rgba(243,112,33,0.2)" }}>
-            <p style={{ margin:"0 0 4px", fontSize:11, fontWeight:800, color:C.orange, textTransform:"uppercase", letterSpacing:".1em" }}>Auto-calculated from your funded commitment</p>
-            <p style={{ margin:0, fontSize:12, color:C.muted, lineHeight:1.7 }}>
-              App Vol = ${resolvedVol.toLocaleString()} ÷ 0.60 = <strong style={{ color:C.ink }}>${Math.round(resolvedVol/0.60).toLocaleString()}</strong>
-              <span style={{ margin:"0 10px", color:C.line }}>|</span>
-              App Units = ${resolvedVol.toLocaleString()} ÷ 350,000 = <strong style={{ color:C.ink }}>{Math.round(resolvedVol/350_000)} loans</strong>
-              <span style={{ marginLeft:8, color:C.muted }}>— editable below</span>
-            </p>
-          </div>
-        )}
-
-        {/* Company app goals for reference */}
-        <div style={{ marginBottom:16, display:"flex", gap:16 }}>
-          <div style={{ flex:1, padding:"10px 14px", borderRadius:10, background:C.sand, border:`1px solid ${C.line}` }}>
-            <p style={{ margin:"0 0 2px", fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:C.muted }}>Company App Vol Goal</p>
-            <p style={{ margin:0, fontSize:16, fontWeight:900, color:C.navy }}>${appVolGoal.toLocaleString()}</p>
-            <p style={{ margin:"2px 0 0", fontSize:10, color:C.muted }}>${fundedVolumeGoal.toLocaleString()} ÷ 0.60</p>
-          </div>
-          <div style={{ flex:1, padding:"10px 14px", borderRadius:10, background:C.sand, border:`1px solid ${C.line}` }}>
-            <p style={{ margin:"0 0 2px", fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:C.muted }}>Company App Unit Goal</p>
-            <p style={{ margin:0, fontSize:16, fontWeight:900, color:C.navy }}>{appUnitGoal} loans</p>
-            <p style={{ margin:"2px 0 0", fontSize:10, color:C.muted }}>${fundedVolumeGoal.toLocaleString()} ÷ 350,000</p>
-          </div>
-        </div>
-
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
-          <div>
-            <label style={LABEL}>Your App Volume ($)</label>
-            <input type="number" min={0} value={appVol}
-              onChange={e=>setAppVol(e.target.value)}
-              placeholder={resolvedVol > 0 ? String(Math.round(resolvedVol/0.60)) : "e.g. 1666000"}
-              style={INPUT}
-              onFocus={e=>e.target.style.borderColor=C.orange}
-              onBlur={e=>e.target.style.borderColor=C.line} />
-            {appVol && appVolGoal > 0 && (
-              <p style={{ margin:"6px 0 0", fontSize:11, color:C.muted }}>
-                {Math.round((Number(appVol)/appVolGoal)*100)}% of company app vol goal
+            {/* 3-step formula breakdown */}
+            <div style={{ marginBottom:16, padding:"14px 16px", borderRadius:12, background:"rgba(243,112,33,0.05)", border:"1px solid rgba(243,112,33,0.18)" }}>
+              <p style={{ margin:"0 0 10px", fontSize:9, fontWeight:800, letterSpacing:".14em", textTransform:"uppercase", color:C.orange }}>
+                HARRY AI Calculation Engine
               </p>
-            )}
-          </div>
-          <div>
-            <label style={LABEL}>Your App Units</label>
-            <input type="number" min={0} value={appUnits||""}
-              onChange={e=>setAppUnits(Number(e.target.value))}
-              placeholder={resolvedVol > 0 ? String(Math.round(resolvedVol/350_000)) : "e.g. 3"}
-              style={INPUT}
-              onFocus={e=>e.target.style.borderColor=C.orange}
-              onBlur={e=>e.target.style.borderColor=C.line} />
-            {appUnits > 0 && appUnitGoal > 0 && (
-              <p style={{ margin:"6px 0 0", fontSize:11, color:C.muted }}>
-                {Math.round((appUnits/appUnitGoal)*100)}% of company app unit goal
+              {[
+                {
+                  step: "1",
+                  label: "Funded Loan Goal",
+                  formula: `CEILING($${resolvedVol.toLocaleString()} ÷ $${AVG_LOAN.toLocaleString()})`,
+                  result: `${fundedLoanGoal} loans`,
+                  color: C.navy,
+                },
+                {
+                  step: "2",
+                  label: "Application Goal",
+                  formula: `CEILING(${fundedLoanGoal} ÷ ${(CONV_RATE * 100).toFixed(0)}%)`,
+                  result: `${appUnitsGoal} applications`,
+                  color: C.ink,
+                },
+                {
+                  step: "3",
+                  label: "Application Volume Goal",
+                  formula: `${appUnitsGoal} × $${AVG_LOAN.toLocaleString()}`,
+                  result: `$${myAppVol.toLocaleString()}`,
+                  color: C.orange,
+                },
+              ].map(s => (
+                <div key={s.step} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8, padding:"8px 0", borderBottom:`1px solid rgba(243,112,33,0.1)` }}>
+                  <div style={{ width:22, height:22, borderRadius:"50%", background:s.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:900, color:"#fff", flexShrink:0 }}>
+                    {s.step}
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <p style={{ margin:0, fontSize:10, fontWeight:800, color:C.muted, letterSpacing:".08em" }}>{s.label}</p>
+                    <p style={{ margin:"1px 0 0", fontSize:11, color:C.ink, fontFamily:"monospace" }}>{s.formula}</p>
+                  </div>
+                  <p style={{ margin:0, fontSize:14, fontWeight:900, color:s.color, flexShrink:0 }}>{s.result}</p>
+                </div>
+              ))}
+              <p style={{ margin:"8px 0 0", fontSize:10, color:C.muted, lineHeight:1.6 }}>
+                Avg loan: ${AVG_LOAN.toLocaleString()} · Conversion rate: {(CONV_RATE * 100).toFixed(0)}%
               </p>
-            )}
+            </div>
+
+            {/* Read-only result cards */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:12 }}>
+              {[
+                { l:"Your Funded Loans", v:`${fundedLoanGoal}`, sub:"loans to fund" },
+                { l:"Your App Goal",     v:`${appUnitsGoal}`,   sub:"applications needed", accent:true },
+                { l:"Your App Volume",   v:`$${myAppVol >= 1_000_000 ? (myAppVol/1_000_000).toFixed(1)+"M" : Math.round(myAppVol/1_000)+"K"}`, sub:"total app volume" },
+              ].map(s => (
+                <div key={s.l} style={{ padding:"12px 14px", borderRadius:12, background: s.accent ? C.navy : C.sand, border:`1px solid ${s.accent ? "transparent" : C.line}` }}>
+                  <p style={{ margin:"0 0 4px", fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color: s.accent ? "rgba(255,255,255,0.5)" : C.muted }}>{s.l}</p>
+                  <p style={{ margin:0, fontSize:18, fontWeight:900, color: s.accent ? "#fff" : C.navy, lineHeight:1 }}>{s.v}</p>
+                  <p style={{ margin:"3px 0 0", fontSize:9, color: s.accent ? "rgba(255,255,255,0.4)" : C.muted }}>{s.sub}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Company reference row */}
+            <div style={{ display:"flex", gap:10, padding:"10px 14px", borderRadius:10, background:C.sand, border:`1px solid ${C.line}` }}>
+              <span style={{ fontSize:11, color:C.muted, fontWeight:600 }}>Company goals for reference:</span>
+              <span style={{ fontSize:11, fontWeight:800, color:C.ink }}>App Vol: ${coAppVol >= 1_000_000 ? (coAppVol/1_000_000).toFixed(1)+"M" : Math.round(coAppVol/1_000)+"K"}</span>
+              <span style={{ fontSize:11, color:C.muted }}>·</span>
+              <span style={{ fontSize:11, fontWeight:800, color:C.ink }}>App Units: {coAppUnits}</span>
+              <span style={{ fontSize:11, color:C.muted }}>·</span>
+              <span style={{ fontSize:11, color:C.muted }}>Your share: {fundedVolumeGoal > 0 ? Math.round((resolvedVol/fundedVolumeGoal)*100) : 0}%</span>
+            </div>
+
+            {/* Lock notice */}
+            <div style={{ marginTop:12, display:"flex", alignItems:"center", gap:6 }}>
+              <span style={{ fontSize:12 }}>🔒</span>
+              <p style={{ margin:0, fontSize:11, color:C.muted, lineHeight:1.5 }}>
+                Application goals are calculated by HARRY AI and cannot be edited. They update automatically when you change your funded commitment above.
+              </p>
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Strategy */}
       <div style={CARD}>
