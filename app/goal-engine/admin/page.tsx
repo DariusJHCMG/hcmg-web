@@ -7,6 +7,7 @@ import { getCurrentProfile, isAdmin } from "@/lib/auth";
 import { getAllGoals } from "@/lib/goal-engine";
 import { GoalCreateForm } from "@/components/goal-engine/GoalCreateForm";
 import { GoalAdminCard } from "@/components/goal-engine/GoalAdminCard";
+import { SeedDemoButton } from "@/components/goal-engine/SeedDemoButton";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -35,14 +36,23 @@ export default async function GoalEngineAdmin() {
           <h1 style={{ margin:"6px 0 0", fontSize:28, fontWeight:900, color:C.ink }}>Manage Goals</h1>
           <p style={{ margin:"4px 0 0", fontSize:13, color:C.muted }}>Create monthly goals, manage emails, run awards.</p>
         </div>
-        <Link href="/goal-engine/admin/dashboard" style={{
-          padding:"10px 20px", borderRadius:12, textDecoration:"none",
-          background:C.white, border:`1.5px solid ${C.line}`,
-          color:C.ink, fontSize:13, fontWeight:700,
-          boxShadow:"0 1px 4px rgba(15,23,42,0.06)",
-        }}>
-          📊 Manager View
-        </Link>
+        <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+          <Link href="/goal-engine/admin/arive" style={{
+            padding:"10px 20px", borderRadius:12, textDecoration:"none",
+            background:"linear-gradient(135deg,#FF9847,#F37021)",
+            color:"#fff", fontSize:13, fontWeight:700,
+          }}>
+            🔗 ARIVE Setup
+          </Link>
+          <Link href="/goal-engine/admin/dashboard" style={{
+            padding:"10px 20px", borderRadius:12, textDecoration:"none",
+            background:C.white, border:`1.5px solid ${C.line}`,
+            color:C.ink, fontSize:13, fontWeight:700,
+            boxShadow:"0 1px 4px rgba(15,23,42,0.06)",
+          }}>
+            📊 Manager View
+          </Link>
+        </div>
       </div>
 
       {/* Quick stats */}
@@ -62,6 +72,18 @@ export default async function GoalEngineAdmin() {
           </div>
         ))}
       </div>
+
+      {/* Seed Demo Data */}
+      {goals.length === 0 && (
+        <div style={{ background:"#fffbeb", border:"1.5px solid #fed7aa", borderRadius:16, padding:"20px 24px", marginBottom:24 }}>
+          <p style={{ margin:"0 0 6px", fontSize:14, fontWeight:800, color:"#92400e" }}>🌱 No goals yet — seed demo data to get started</p>
+          <p style={{ margin:"0 0 14px", fontSize:12, color:"#92400e" }}>
+            Creates a current-month goal with $20M target and sample commitment + production data for your account.
+            Run the <strong>Supabase migration first</strong>.
+          </p>
+          <SeedDemoButton />
+        </div>
+      )}
 
       {/* Create form */}
       <div style={{ background:C.white, border:`1px solid ${C.line}`, borderRadius:20, padding:28, marginBottom:24, boxShadow:"0 1px 6px rgba(15,23,42,0.06)" }}>
