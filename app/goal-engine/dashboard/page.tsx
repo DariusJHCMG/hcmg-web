@@ -12,6 +12,7 @@ import {
 } from "@/lib/goal-engine";
 import type { GoalNotification } from "@/lib/database.types";
 import { GoalNotificationBell } from "@/components/goal-engine/GoalNotificationBell";
+import { HarryWidget } from "@/components/goal-engine/HarryWidget";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -355,6 +356,9 @@ export default async function GoalEngineDashboard() {
               })
             }
           </Card>
+
+          {/* ── HARRY AI Coaching Widget ── */}
+          <HarryWidget insightType="lo_coaching" />
 
           {/* ── Awards ── */}
           {awards.length > 0 && (

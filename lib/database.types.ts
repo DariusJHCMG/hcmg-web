@@ -1,4 +1,7 @@
 export type Role = "admin" | "developer" | "loan_officer";
+
+/** SLICE-specific role — more granular than the portal Role */
+export type SliceRole = "super_admin" | "clo" | "executive" | "branch_manager" | "loan_officer";
 export type LeadStatus = "new" | "contacted" | "qualified" | "closed" | "lost";
 
 export interface Profile {
@@ -30,6 +33,14 @@ export interface Profile {
   calendar_url: string | null;
   // Activity tracking
   last_seen_at: string | null;
+  // SLICE v3 additions
+  tenant_id: string;
+  slice_role: SliceRole;
+  branch_id: string | null;
+  manager_id: string | null;
+  arive_lo_id: string | null;
+  porchy_user_id: string | null;
+  last_login_at: string | null;
 }
 
 export interface Lead {
@@ -125,8 +136,11 @@ export interface AuditLog {
 
 // ── Goal Engine Types ─────────────────────────────────────────
 
+export type GoalStatus = "draft" | "scheduled" | "published" | "closed" | "archived";
+
 export interface GoalMonth {
   id: string;
+  tenant_id: string;
   month_label: string;
   month_year: number;
   month_num: number;
@@ -141,6 +155,14 @@ export interface GoalMonth {
   email_send_at: string | null;
   emails_sent: boolean;
   is_published: boolean;
+  goal_status: GoalStatus;
+  commitment_deadline: string | null;
+  award_calc_date: string | null;
+  milestone_25_sent: boolean;
+  milestone_50_sent: boolean;
+  milestone_75_sent: boolean;
+  milestone_90_sent: boolean;
+  milestone_100_sent: boolean;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -198,12 +220,90 @@ export interface GoalAward {
 
 export interface GoalNotification {
   id: string;
+  tenant_id: string;
   profile_id: string;
   title: string;
   body: string | null;
   type: "info" | "success" | "warning" | "award";
   read: boolean;
   link: string | null;
+  expires_at: string | null;
+  actioned_at: string | null;
+  dismissed_at: string | null;
+  created_at: string;
+}
+
+export interface CoachingNote {
+  id: string;
+  tenant_id: string;
+  employee_id: string;
+  manager_id: string;
+  goal_month_id: string | null;
+  coaching_date: string;
+  note_type: "general" | "performance" | "encouragement" | "action_required" | "follow_up";
+  is_private: boolean;
+  note: string;
+  follow_up_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CoachingAction {
+  id: string;
+  tenant_id: string;
+  coaching_note_id: string | null;
+  employee_id: string;
+  manager_id: string;
+  action_text: string;
+  due_date: string | null;
+  completed: boolean;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type HarryInsightType =
+  | "lo_coaching"
+  | "executive_briefing"
+  | "branch_insight"
+  | "pace_explanation"
+  | "focus_recommendation"
+  | "off_pace_alert"
+  | "milestone_summary";
+
+export interface HarryAiInsight {
+  id: string;
+  tenant_id: string;
+  requester_id: string;
+  target_profile_id: string | null;
+  insight_type: HarryInsightType;
+  reporting_period: string | null;
+  goal_month_id: string | null;
+  input_snapshot: Record<string, unknown> | null;
+  result_text: string | null;
+  result_structured: Record<string, unknown> | null;
+  model_provider: string;
+  prompt_version: string;
+  feedback: "helpful" | "not_helpful" | "inaccurate" | null;
+  dismissed_at: string | null;
+  actioned_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+}
+
+export interface SliceAuditEntry {
+  id: string;
+  tenant_id: string;
+  actor_id: string | null;
+  actor_email: string | null;
+  action: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  before_val: Record<string, unknown> | null;
+  after_val: Record<string, unknown> | null;
+  reason: string | null;
+  ip_address: string | null;
+  request_id: string | null;
   created_at: string;
 }
 

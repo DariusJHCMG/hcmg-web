@@ -11,6 +11,7 @@ import {
 } from "@/lib/goal-engine";
 import Link from "next/link";
 import type { LeaderboardRow } from "@/lib/database.types";
+import { HarryWidget } from "@/components/goal-engine/HarryWidget";
 
 export const dynamic = "force-dynamic";
 
@@ -283,6 +284,11 @@ export default async function GoalEngineManagerDashboard() {
           </div>
         </div>
       )}
+
+      {/* ── HARRY AI Executive Briefing ── */}
+      <div style={{ marginTop:28 }}>
+        <HarryWidget insightType="executive_briefing" />
+      </div>
 
       <style>{`
         @media (max-width:700px) { .ge-grid-4 { grid-template-columns:repeat(2,1fr) !important; } }

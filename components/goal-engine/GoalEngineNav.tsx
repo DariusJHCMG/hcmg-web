@@ -16,12 +16,18 @@ const LO_NAV = [
   { label: "Dashboard",   href: "/goal-engine/dashboard"  },
   { label: "My Slice",    href: "/goal-engine/commit"      },
   { label: "Leaderboard", href: "/goal-engine/leaderboard" },
+  { label: "History",     href: "/goal-engine/history"     },
+  { label: "🏆 Awards",   href: "/goal-engine/awards"      },
 ];
 const ADMIN_NAV = [
   { label: "Dashboard",    href: "/goal-engine/dashboard"       },
   { label: "Leaderboard",  href: "/goal-engine/leaderboard"     },
+  { label: "History",      href: "/goal-engine/history"         },
+  { label: "🏆 Awards",    href: "/goal-engine/awards"          },
+  { label: "📺 War Room",  href: "/goal-engine/war-room"        },
   { label: "Manage Goals", href: "/goal-engine/admin"           },
   { label: "Manager View", href: "/goal-engine/admin/dashboard" },
+  { label: "📧 Email Log", href: "/goal-engine/admin/email-log" },
   { label: "👥 Users",      href: "/goal-engine/admin/users"    },
   { label: "🧪 Test Panel", href: "/goal-engine/admin/test"     },
 ];
