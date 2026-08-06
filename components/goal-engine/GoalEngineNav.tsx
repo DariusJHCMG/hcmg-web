@@ -47,12 +47,14 @@ const ADMIN_NAV = [
 ];
 
 const ADMIN_SECTION = [
-  { label: "Manage Goals",  href: "/goal-engine/admin",           icon: "🎯" },
-  { label: "Manager View",  href: "/goal-engine/admin/dashboard", icon: "📊" },
-  { label: "Email Log",     href: "/goal-engine/admin/email-log", icon: "📧" },
-  { label: "Team Members",  href: "/goal-engine/admin/users",     icon: "👥" },
-  { label: "ARIVE Setup",   href: "/goal-engine/admin/arive",     icon: "🔗" },
-  { label: "Test Panel",    href: "/goal-engine/admin/test",      icon: "🧪" },
+  { label: "Manage Goals",   href: "/goal-engine/admin",              icon: "🎯" },
+  { label: "Manager View",   href: "/goal-engine/admin/dashboard",    icon: "📊" },
+  { label: "Forecast Center",href: "/goal-engine/forecast",          icon: "📈" },
+  { label: "Production",     href: "/goal-engine/admin/production",  icon: "🔧" },
+  { label: "Email Log",      href: "/goal-engine/admin/email-log",   icon: "📧" },
+  { label: "Team Members",   href: "/goal-engine/admin/users",        icon: "👥" },
+  { label: "ARIVE Setup",    href: "/goal-engine/admin/arive",        icon: "🔗" },
+  { label: "Test Panel",     href: "/goal-engine/admin/test",         icon: "🧪" },
 ];
 
 function Initials({ name }: { name: string }) {
