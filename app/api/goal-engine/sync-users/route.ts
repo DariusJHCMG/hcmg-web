@@ -1,20 +1,16 @@
 /**
  * POST /api/goal-engine/sync-users
- * Admin-only. Reads all active HCMG users from the Prisma "User" +
- * "TenantMembership" tables and syncs them into Supabase auth.users
- * + public.profiles.
+ * Syncs all active HCMG team members into Supabase auth.users + public.profiles.
+ *
+ * Auth: accepts either
+ *   - A valid SLICE session (admin role), OR
+ *   - x-cron-secret header matching CRON_SECRET env var (for bootstrap/automation)
  *
  * For each user:
- *   - If no Supabase auth user exists → creates one + sends password-reset
- *     email so they can set their own SLICE password.
- *   - If already exists → updates their profile row (name, role, nmls, avatar).
+ *   - No Supabase auth account → creates one + sends invite email
+ *   - Already exists           → updates profile row (name, role, avatar)
  *
- * Safe to run multiple times. Idempotent.
- *
- * Role mapping from TenantMembership.primaryWireRole:
- *   isTenantAdmin=true OR primaryWireRole in (clo,ceo,president,vp,branch_manager) → "admin"
- *   primaryWireRole = lo, loan_officer, or loNmls is present → "loan_officer"
- *   anything else → "loan_officer" (default — can be changed in /admin/users)
+ * Safe to run multiple times. Fully idempotent.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -22,10 +18,11 @@ import { getCurrentProfile, isAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import { createClient } from "@supabase/supabase-js";
 
-const HCMG_TENANT_ID = "cmrss19yi000fysf83wcom9th";
+const HCMG_TENANT_ID = process.env.HCMG_TENANT_ID ?? "cmrss19yi000fysf83wcom9th";
+const SITE           = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+const CRON_SECRET    = process.env.CRON_SECRET ?? "";
 
-// Admin-role client — needed for auth.admin.createUser
-function createAdminAuthClient() {
+function makeAdminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -35,108 +32,189 @@ function createAdminAuthClient() {
 
 type SliceRole = "admin" | "loan_officer";
 
-function deriveRole(
-  isTenantAdmin: boolean,
-  primaryWireRole: string | null,
-  loNmls: string | null,
-): SliceRole {
+function deriveRole(isTenantAdmin: boolean, primaryWireRole: string | null, loNmls: string | null): SliceRole {
   if (isTenantAdmin) return "admin";
   const r = (primaryWireRole ?? "").toLowerCase();
-  if (["clo", "ceo", "president", "vp", "branch_manager", "manager"].includes(r)) return "admin";
-  if (r === "lo" || r === "loan_officer" || loNmls) return "loan_officer";
-  return "loan_officer"; // safe default
+  if (["clo", "ceo", "president", "vp", "branch_manager", "manager", "ops_manager"].includes(r)) return "admin";
+  return "loan_officer";
 }
 
 export async function POST(req: NextRequest) {
-  const profile = await getCurrentProfile();
-  if (!profile || !isAdmin(profile)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  // ── Auth: admin session OR cron secret ───────────────────────
+  const cronHeader = req.headers.get("x-cron-secret");
+  const isCronCall = CRON_SECRET && cronHeader === CRON_SECRET;
+
+  if (!isCronCall) {
+    const profile = await getCurrentProfile();
+    if (!profile || !isAdmin(profile)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
   }
 
-  const { sendInvites = true } = await req.json().catch(() => ({}));
+  const body = await req.json().catch(() => ({}));
+  const sendInvites: boolean = body.sendInvites !== false; // default true
 
-  const sb    = createServiceClient();   // for profiles table
-  const admin = createAdminAuthClient(); // for auth.admin.*
+  const sb    = createServiceClient();
+  const admin = makeAdminClient();
 
-  // ── 1. Fetch all active HCMG users from Prisma ─────────────
-  const { data: memberships, error: membErr } = await sb
+  // ── 1. Load all existing Supabase auth users once ─────────────
+  const { data: authData } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  const existingAuthUsers  = authData?.users ?? [];
+  const authByEmail        = new Map<string | undefined, Record<string, unknown>>(
+    existingAuthUsers.map(u => [u.email?.toLowerCase(), u as unknown as Record<string, unknown>])
+  );
+
+  // ── 2. Fetch HCMG team members via TenantMembership JOIN User ─
+  // Using .from() with service role — PostgREST exposes public schema tables.
+  // TenantMembership and User are Prisma-generated tables in the public schema
+  // of the hcmg-web Supabase database.
+  const { data: rows, error: rowsErr } = await sb
     .from("TenantMembership")
     .select(`
-      userId,
       isTenantAdmin,
       primaryWireRole,
       loNmls,
-      isActive
+      User:userId (
+        id,
+        email,
+        name,
+        avatarUrl
+      )
     `)
     .eq("tenantId", HCMG_TENANT_ID)
     .eq("isActive", true);
 
-  if (membErr || !memberships) {
-    return NextResponse.json({ error: membErr?.message ?? "Could not fetch memberships" }, { status: 500 });
+  if (rowsErr) {
+    // PostgREST can't do the join — fall back to two separate queries
+    return syncFallback(sb, admin, authByEmail, sendInvites);
   }
 
-  // Get User details for each membership
-  const userIds = memberships.map((m) => m.userId);
-  const { data: users, error: usersErr } = await sb
-    .from("User")
-    .select("id, email, name, avatarUrl, isActive")
-    .in("id", userIds)
+  if (!rows || rows.length === 0) {
+    // Try fallback in case join returned nothing
+    return syncFallback(sb, admin, authByEmail, sendInvites);
+  }
+
+  // ── 3. Process each member ────────────────────────────────────
+  const results = await processUsers(
+    rows.map((r: Record<string, unknown>) => {
+      const u = r.User as Record<string, string | null> | null;
+      return {
+        id:              u?.id ?? "",
+        email:           (u?.email ?? "").toLowerCase(),
+        name:            u?.name ?? "",
+        avatarUrl:       u?.avatarUrl ?? null,
+        isTenantAdmin:   Boolean(r.isTenantAdmin),
+        primaryWireRole: r.primaryWireRole as string | null,
+        loNmls:          r.loNmls as string | null,
+      };
+    }).filter(u => u.email && u.id),
+    sb, admin, authByEmail, sendInvites,
+  );
+
+  return buildResponse(results, sendInvites);
+}
+
+// ── Fallback: two separate queries if join fails ──────────────
+async function syncFallback(
+  sb: ReturnType<typeof createServiceClient>,
+  admin: ReturnType<typeof makeAdminClient>,
+  authByEmail: Map<string | undefined, Record<string, unknown>>,
+  sendInvites: boolean,
+) {
+  const HCMG_TENANT_ID_LOCAL = process.env.HCMG_TENANT_ID ?? "cmrss19yi000fysf83wcom9th";
+
+  const { data: memberships, error: membErr } = await sb
+    .from("TenantMembership")
+    .select("userId, isTenantAdmin, primaryWireRole, loNmls")
+    .eq("tenantId", HCMG_TENANT_ID_LOCAL)
     .eq("isActive", true);
 
-  if (usersErr || !users) {
-    return NextResponse.json({ error: usersErr?.message ?? "Could not fetch users" }, { status: 500 });
+  if (membErr || !memberships?.length) {
+    return NextResponse.json({
+      error: membErr?.message ?? "No team members found. Check TenantMembership table access.",
+      hint: "Ensure the hcmg-web Supabase service role can read TenantMembership and User tables.",
+    }, { status: 500 });
   }
 
-  const results: Array<{
-    email: string;
-    name: string;
-    role: SliceRole;
-    action: "created" | "updated" | "skipped";
-    error?: string;
-  }> = [];
+  const userIds = memberships.map((m: Record<string, string>) => m.userId);
+  const { data: users, error: usersErr } = await sb
+    .from("User")
+    .select("id, email, name, avatarUrl")
+    .in("id", userIds);
+
+  if (usersErr || !users?.length) {
+    return NextResponse.json({
+      error: usersErr?.message ?? "Could not fetch User rows.",
+    }, { status: 500 });
+  }
+
+  const combined = users.map((u: Record<string, string | null>) => {
+    const m = memberships.find((mb: Record<string, string>) => mb.userId === u.id);
+    return {
+      id:              u.id ?? "",
+      email:           (u.email ?? "").toLowerCase(),
+      name:            u.name ?? "",
+      avatarUrl:       u.avatarUrl ?? null,
+      isTenantAdmin:   Boolean(m?.isTenantAdmin),
+      primaryWireRole: m?.primaryWireRole ?? null,
+      loNmls:          m?.loNmls ?? null,
+    };
+  }).filter(u => u.email && u.id);
+
+  const results = await processUsers(combined, sb, admin, authByEmail, sendInvites);
+  return buildResponse(results, sendInvites);
+}
+
+// ── Core user processing ──────────────────────────────────────
+type UserRow = {
+  id: string; email: string; name: string; avatarUrl: string | null;
+  isTenantAdmin: boolean; primaryWireRole: string | null; loNmls: string | null;
+};
+
+type SyncResult = { email: string; name: string; role: SliceRole; action: "created" | "updated" | "skipped"; error?: string };
+
+async function processUsers(
+  users: UserRow[],
+  sb: ReturnType<typeof createServiceClient>,
+  admin: ReturnType<typeof makeAdminClient>,
+  authByEmail: Map<string | undefined, Record<string, unknown>>,
+  sendInvites: boolean,
+): Promise<SyncResult[]> {
+  const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
+  const results: SyncResult[] = [];
 
   for (const user of users) {
-    const membership = memberships.find((m) => m.userId === user.id);
-    if (!membership) continue;
-
-    const role   = deriveRole(membership.isTenantAdmin, membership.primaryWireRole, membership.loNmls);
+    const role   = deriveRole(user.isTenantAdmin, user.primaryWireRole, user.loNmls);
     const email  = user.email;
-    const name   = user.name ?? email.split("@")[0];
-    const nmls   = membership.loNmls ?? null;
+    const name   = user.name || email.split("@")[0];
+    const nmls   = user.loNmls ?? null;
     const avatar = user.avatarUrl ?? null;
 
     try {
-      // ── Check if Supabase auth user already exists ──────────
-      const { data: existingList } = await admin.auth.admin.listUsers();
-      const existing = existingList?.users?.find((u) => u.email === email);
-
+      const existing   = authByEmail.get(email) as { id: string } | undefined;
       let supabaseUid: string;
 
       if (!existing) {
-        // ── Create new Supabase auth user ────────────────────
-        const createResult = await admin.auth.admin.createUser({
+        // Create Supabase auth account
+        const { data: created, error: createErr } = await admin.auth.admin.createUser({
           email,
           email_confirm: true,
           user_metadata: { full_name: name, role },
         });
 
-        if (createResult.error || !createResult.data?.user) {
-          results.push({ email, name, role, action: "skipped", error: createResult.error?.message });
+        if (createErr || !created?.user) {
+          results.push({ email, name, role, action: "skipped", error: createErr?.message ?? "create failed" });
           continue;
         }
 
-        supabaseUid = createResult.data.user.id;
+        supabaseUid = created.user.id;
+        // Add to cache so duplicates in same run don't re-create
+        authByEmail.set(email, created.user as unknown as Record<string, unknown>);
 
-        // Send password reset (invite) email if requested
+        // Send invite email
         if (sendInvites) {
-          await admin.auth.admin.generateLink({
-            type: "recovery",
-            email,
-            options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/goal-engine/dashboard` },
-          });
-          // Alternatively use inviteUserByEmail which sends the email automatically
           await admin.auth.admin.inviteUserByEmail(email, {
-            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/goal-engine-login`,
+            redirectTo: `${SITE_URL}/goal-engine-login`,
             data: { full_name: name, role },
           });
         }
@@ -147,16 +225,16 @@ export async function POST(req: NextRequest) {
         results.push({ email, name, role, action: "updated" });
       }
 
-      // ── Upsert profiles row ──────────────────────────────────
+      // Upsert profile
       await sb.from("profiles").upsert({
-        id:           supabaseUid,
+        id:         supabaseUid,
         email,
-        full_name:    name,
+        full_name:  name,
         role,
         nmls,
-        avatar_url:   avatar,
-        is_active:    true,
-        updated_at:   new Date().toISOString(),
+        avatar_url: avatar,
+        is_active:  true,
+        updated_at: new Date().toISOString(),
       }, { onConflict: "id" });
 
     } catch (err) {
@@ -164,10 +242,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const created = results.filter((r) => r.action === "created").length;
-  const updated = results.filter((r) => r.action === "updated").length;
-  const skipped = results.filter((r) => r.action === "skipped").length;
+  return results;
+}
 
+function buildResponse(results: SyncResult[], sendInvites: boolean) {
+  const created = results.filter(r => r.action === "created").length;
+  const updated = results.filter(r => r.action === "updated").length;
+  const skipped = results.filter(r => r.action === "skipped").length;
   return NextResponse.json({
     success: true,
     message: `Sync complete: ${created} created, ${updated} updated, ${skipped} skipped`,

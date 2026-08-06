@@ -1,5 +1,6 @@
 /**
- * /goal-engine layout — HCMG design system (white/navy/orange, matches existing portal)
+ * /goal-engine layout — SLICE by HCMG
+ * Left dock sidebar + main content area
  */
 
 import { redirect } from "next/navigation";
@@ -17,13 +18,13 @@ export default async function GoalEngineLayout({ children }: { children: React.R
   if (!profile) redirect("/goal-engine-login");
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F8FAFC" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#F8FAFC" }}>
       <GoalEngineNav
         fullName={profile.full_name}
         role={profile.role}
         avatarUrl={profile.avatar_url}
       />
-      <main>
+      <main style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
         {children}
       </main>
     </div>

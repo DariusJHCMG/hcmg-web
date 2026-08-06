@@ -49,20 +49,30 @@ function wrap(body: string): string {
 // ── Top nav bar ───────────────────────────────────────────────────────────────
 function topBar(): string {
   return `
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:${NAVY};border-bottom:3px solid ${ORANGE};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:${WHITE};">
     <tr>
-      <td style="padding:18px 32px;">
-        <table cellpadding="0" cellspacing="0">
+      <td style="padding:0;">
+        <!-- Orange accent line at very top -->
+        <div style="height:4px;background:linear-gradient(90deg,${ORANGE} 0%,#FF9847 60%,rgba(243,112,33,0.15) 100%);"></div>
+        <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="vertical-align:middle;padding-right:14px;">
-              <img src="${SLICE_LOGO_URL}" alt="SLICE" width="52" height="auto" style="display:block;height:52px;width:auto;" />
-            </td>
-            <td style="vertical-align:middle;">
-              <div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${ORANGE};text-transform:uppercase;line-height:1;margin-bottom:4px;">by</div>
-              <img src="${HCMG_DARK_URL}" alt="HCMG" width="80" height="auto" style="display:block;height:14px;width:auto;" />
+            <td style="padding:20px 32px 18px;">
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="vertical-align:middle;padding-right:14px;">
+                    <img src="${SLICE_LOGO_URL}" alt="SLICE" width="52" height="auto" style="display:block;height:52px;width:auto;" />
+                  </td>
+                  <td style="vertical-align:middle;border-left:1px solid ${LINE};padding-left:14px;">
+                    <div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${ORANGE};text-transform:uppercase;line-height:1;margin-bottom:5px;">by</div>
+                    <img src="${HCMG_LOGO_URL}" alt="HCMG" width="80" height="auto" style="display:block;height:14px;width:auto;" />
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
         </table>
+        <!-- Bottom separator -->
+        <div style="height:1px;background:${LINE};"></div>
       </td>
     </tr>
   </table>`;
@@ -142,22 +152,31 @@ function cta(label: string, href: string): string {
 // ── Footer ────────────────────────────────────────────────────────────────────
 function footer(): string {
   return `
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:${NAVY};margin-top:0;">
-    <tr><td style="padding:24px 32px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:${WHITE};margin-top:0;">
+    <tr><td style="padding:0;">
+      <!-- Top fade line -->
+      <div style="height:1px;background:${LINE};"></div>
+      <div style="height:3px;background:linear-gradient(90deg,${ORANGE} 0%,#FF9847 50%,rgba(243,112,33,0.0) 100%);"></div>
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td style="vertical-align:middle;padding-right:12px;">
-            <img src="${SLICE_LOGO_URL}" alt="SLICE" width="36" height="auto" style="display:block;height:36px;width:auto;" />
-          </td>
-          <td style="vertical-align:middle;">
-            <img src="${HCMG_DARK_URL}" alt="HCMG" width="70" height="auto" style="display:block;height:12px;width:auto;" />
+          <td style="padding:22px 32px 20px;">
+            <table cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+              <tr>
+                <td style="vertical-align:middle;padding-right:12px;">
+                  <img src="${SLICE_LOGO_URL}" alt="SLICE" width="36" height="auto" style="display:block;height:36px;width:auto;" />
+                </td>
+                <td style="vertical-align:middle;border-left:1px solid ${LINE};padding-left:12px;">
+                  <img src="${HCMG_LOGO_URL}" alt="HCMG" width="70" height="auto" style="display:block;height:12px;width:auto;" />
+                </td>
+              </tr>
+            </table>
+            <p style="margin:0;font-size:11px;color:${MUTED};line-height:1.8;">
+              Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender<br/>
+              6375 S Pecos Rd, Suite 208 · Las Vegas, NV 89120
+            </p>
           </td>
         </tr>
       </table>
-      <p style="margin:14px 0 0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.8;">
-        Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender<br/>
-        6375 S Pecos Rd, Suite 208 · Las Vegas, NV 89120
-      </p>
     </td></tr>
   </table>`;
 }

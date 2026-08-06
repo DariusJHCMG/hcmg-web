@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ * GoalEngineNav — Left dock sidebar navigation for SLICE by HCMG
+ */
+
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,34 +16,72 @@ interface Props {
   avatarUrl: string | null;
 }
 
+const C = {
+  navy:    "#142850",
+  navyL:   "#1e3a6e",
+  orange:  "#F37021",
+  white:   "#ffffff",
+  muted:   "rgba(255,255,255,0.45)",
+  line:    "rgba(255,255,255,0.1)",
+  active:  "rgba(243,112,33,0.15)",
+};
+
 const LO_NAV = [
-  { label: "Dashboard",   href: "/goal-engine/dashboard"  },
-  { label: "My Slice",    href: "/goal-engine/commit"      },
-  { label: "Leaderboard", href: "/goal-engine/leaderboard" },
-  { label: "History",     href: "/goal-engine/history"     },
-  { label: "🏆 Awards",   href: "/goal-engine/awards"      },
+  { label: "Dashboard",    href: "/goal-engine/dashboard",  icon: "⊞" },
+  { label: "My Slice",     href: "/goal-engine/commit",      icon: "🥧" },
+  { label: "Leaderboard",  href: "/goal-engine/leaderboard", icon: "🏅" },
+  { label: "History",      href: "/goal-engine/history",     icon: "📈" },
+  { label: "Trophy Room",  href: "/goal-engine/awards",      icon: "🏆" },
 ];
+
 const ADMIN_NAV = [
-  { label: "Dashboard",    href: "/goal-engine/dashboard"       },
-  { label: "Leaderboard",  href: "/goal-engine/leaderboard"     },
-  { label: "History",      href: "/goal-engine/history"         },
-  { label: "🏆 Awards",    href: "/goal-engine/awards"          },
-  { label: "📺 War Room",  href: "/goal-engine/war-room"        },
-  { label: "Manage Goals", href: "/goal-engine/admin"           },
-  { label: "Manager View", href: "/goal-engine/admin/dashboard" },
-  { label: "📧 Email Log", href: "/goal-engine/admin/email-log" },
-  { label: "👥 Users",      href: "/goal-engine/admin/users"    },
-  { label: "🧪 Test Panel", href: "/goal-engine/admin/test"     },
+  { label: "Dashboard",    href: "/goal-engine/dashboard",       icon: "⊞"  },
+  { label: "My Slice",     href: "/goal-engine/commit",           icon: "🥧" },
+  { label: "Leaderboard",  href: "/goal-engine/leaderboard",     icon: "🏅" },
+  { label: "History",      href: "/goal-engine/history",         icon: "📈" },
+  { label: "Trophy Room",  href: "/goal-engine/awards",          icon: "🏆" },
+  { label: "THE SLICE",    href: "/goal-engine/the-slice",       icon: "📺" },
+];
+
+const ADMIN_SECTION = [
+  { label: "Manage Goals",  href: "/goal-engine/admin",           icon: "🎯" },
+  { label: "Manager View",  href: "/goal-engine/admin/dashboard", icon: "📊" },
+  { label: "Email Log",     href: "/goal-engine/admin/email-log", icon: "📧" },
+  { label: "Team Members",  href: "/goal-engine/admin/users",     icon: "👥" },
+  { label: "Test Panel",    href: "/goal-engine/admin/test",      icon: "🧪" },
 ];
 
 function Initials({ name }: { name: string }) {
   return <>{name.trim().split(/\s+/).map(n => n[0]).slice(0, 2).join("").toUpperCase()}</>;
 }
 
+function NavItem({ href, icon, label, active }: { href: string; icon: string; label: string; active: boolean }) {
+  return (
+    <Link href={href} style={{ textDecoration: "none" }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "9px 14px", borderRadius: 10,
+        background: active ? C.active : "transparent",
+        borderLeft: active ? `3px solid ${C.orange}` : "3px solid transparent",
+        transition: "all .15s",
+      }}>
+        <span style={{ fontSize: 15, width: 20, textAlign: "center", flexShrink: 0 }}>{icon}</span>
+        <span style={{
+          fontSize: 13, fontWeight: active ? 800 : 600,
+          color: active ? C.white : C.muted,
+          whiteSpace: "nowrap",
+        }}>
+          {label}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const isAdmin  = role === "admin" || role === "developer";
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const isAdmin = role === "admin" || role === "developer";
   const navLinks = isAdmin ? ADMIN_NAV : LO_NAV;
 
   async function signOut() {
@@ -48,110 +90,158 @@ export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
     window.location.href = "/goal-engine-login";
   }
 
-  return (
-    <header className="sticky top-0 z-40 bg-white shadow-sm" style={{ borderBottom: "3px solid #F37021" }}>
-      <div className="max-w-7xl mx-auto px-5 lg:px-8 flex h-20 items-center justify-between gap-6">
+  function isActive(href: string) {
+    if (href === "/goal-engine/dashboard") return pathname === href;
+    return pathname.startsWith(href);
+  }
 
-        {/* SLICE logo — big, clear, no ghost */}
-        <Link href="/goal-engine/dashboard" style={{ display:"flex", alignItems:"center", gap:12, textDecoration:"none", flexShrink:0 }}>
-          <img src="/SLICE.png" alt="SLICE" style={{ height: 64, width: "auto", display:"block", imageRendering:"auto" }} />
-          <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: "#F37021", lineHeight:1 }}>by</span>
-            <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 16, width: "auto", display:"block" }} />
-          </span>
-        </Link>
-
-        {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-1 flex-1">
-          {navLinks.map(l => {
-            const active = pathname === l.href || (l.href !== "/goal-engine/dashboard" && pathname.startsWith(l.href));
-            return (
-              <Link key={l.href} href={l.href}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all duration-150 ${
-                  active
-                    ? "bg-[#F37021] text-white shadow-sm"
-                    : "text-[#1A2B42] hover:bg-orange-50 hover:text-[#F37021]"
-                }`}>
-                {l.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Right side */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2.5">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={fullName}
-                className="h-9 w-9 rounded-full object-cover object-top border-2 border-[#F37021]" />
-            ) : (
-              <span className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-black text-white border-2 border-[#F37021]"
-                style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
-                <Initials name={fullName} />
-              </span>
-            )}
-            <div className="hidden sm:block">
-              <p className="text-sm font-bold text-[#1A2B42] leading-tight">{fullName.split(" ")[0]}</p>
-              <p className="text-[10px] font-bold text-[#F37021] uppercase tracking-wider leading-tight">
-                {isAdmin ? "Admin" : "Loan Officer"}
-              </p>
-            </div>
+  const sidebar = (
+    <nav style={{
+      width: 220, flexShrink: 0,
+      background: C.navy,
+      display: "flex", flexDirection: "column",
+      minHeight: "100vh",
+      position: "sticky", top: 0,
+      overflowY: "auto",
+    }}>
+      {/* Logo */}
+      <div style={{ padding: "22px 16px 18px", borderBottom: `1px solid ${C.line}` }}>
+        <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <img src="/SLICE.png" alt="SLICE" style={{ height: 44, width: "auto", display: "block" }} />
+          <div>
+            <div style={{ fontSize: 7, fontWeight: 800, letterSpacing: ".2em", textTransform: "uppercase", color: C.orange, lineHeight: 1 }}>by</div>
+            <img src="/hcmg-wordmark-on-dark.svg" alt="HCMG" style={{ height: 11, width: "auto", display: "block", marginTop: 3 }} />
           </div>
+        </Link>
+      </div>
 
-          <button onClick={signOut}
-            className="hidden lg:block text-xs font-bold text-gray-400 hover:text-red-500 transition-colors border border-gray-200 rounded-lg px-3 py-1.5 hover:border-red-300">
-            Sign out
-          </button>
-
-          {/* Mobile hamburger */}
-          <button onClick={() => setOpen(o => !o)}
-            className="lg:hidden h-9 w-9 flex items-center justify-center rounded-lg border-2 border-gray-200 text-[#1A2B42]">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              {open
-                ? <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                : <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-              }
-            </svg>
-          </button>
+      {/* Main nav */}
+      <div style={{ padding: "12px 8px", flex: 1 }}>
+        <div style={{ marginBottom: 4 }}>
+          <p style={{ margin: "0 0 6px 14px", fontSize: 9, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+            Navigation
+          </p>
+          {navLinks.map(l => (
+            <NavItem key={l.href} {...l} active={isActive(l.href)} />
+          ))}
         </div>
+
+        {isAdmin && (
+          <div style={{ marginTop: 20 }}>
+            <p style={{ margin: "0 0 6px 14px", fontSize: 9, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+              Admin
+            </p>
+            {ADMIN_SECTION.map(l => (
+              <NavItem key={l.href} {...l} active={isActive(l.href)} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* User profile + sign out */}
+      <div style={{ padding: "14px 12px", borderTop: `1px solid ${C.line}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={fullName} style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: `2px solid ${C.orange}`, flexShrink: 0 }} />
+          ) : (
+            <span style={{
+              width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 11, fontWeight: 900, color: "#fff",
+              background: `linear-gradient(135deg,#FF9847,${C.orange})`,
+              border: `2px solid ${C.orange}`,
+            }}>
+              <Initials name={fullName} />
+            </span>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {fullName.split(" ")[0]}
+            </p>
+            <p style={{ margin: "1px 0 0", fontSize: 9, fontWeight: 700, color: C.orange, textTransform: "uppercase", letterSpacing: ".1em" }}>
+              {isAdmin ? "Admin" : "Loan Officer"}
+            </p>
+          </div>
+        </div>
+        <button onClick={signOut} style={{
+          width: "100%", padding: "8px 0", borderRadius: 8,
+          border: "1px solid rgba(255,255,255,0.15)",
+          background: "transparent", color: "rgba(255,255,255,0.45)",
+          fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+          transition: "all .15s",
+        }}>
+          Sign out
+        </button>
+      </div>
+    </nav>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <div className="ge-sidebar-desktop">
+        {sidebar}
+      </div>
+
+      {/* Mobile top bar */}
+      <div className="ge-mobile-bar" style={{
+        display: "none", position: "sticky", top: 0, zIndex: 40,
+        background: C.navy, borderBottom: `3px solid ${C.orange}`,
+        padding: "0 16px", height: 60,
+        alignItems: "center", justifyContent: "space-between",
+      }}>
+        <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+          <img src="/SLICE.png" alt="SLICE" style={{ height: 36, width: "auto" }} />
+          <img src="/hcmg-wordmark-on-dark.svg" alt="HCMG" style={{ height: 10, width: "auto" }} />
+        </Link>
+        <button onClick={() => setMobileOpen(o => !o)} style={{
+          background: "transparent", border: "none", color: "#fff",
+          fontSize: 22, cursor: "pointer", lineHeight: 1,
+        }}>
+          {mobileOpen ? "✕" : "☰"}
+        </button>
       </div>
 
       {/* Mobile drawer */}
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="fixed inset-y-0 right-0 z-50 w-72 bg-white shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-6 py-5 border-b-2 border-[#F37021]">
-              <div className="flex items-center gap-2">
-                <img src="/SLICE.png" alt="SLICE" style={{ height: 44, width: "auto" }} />
-                <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
-                  <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "#F37021" }}>by</span>
-                  <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 13, width: "auto" }} />
-                </span>
-              </div>
-              <button onClick={() => setOpen(false)} className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-[#1A2B42]">✕</button>
+      {mobileOpen && (
+        <div className="ge-mobile-bar" style={{ display: "block", position: "fixed", inset: 0, zIndex: 50 }}>
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} onClick={() => setMobileOpen(false)} />
+          <div style={{
+            position: "absolute", top: 0, left: 0, bottom: 0, width: 240,
+            background: C.navy, display: "flex", flexDirection: "column",
+          }}>
+            <div style={{ padding: "18px 14px", borderBottom: `1px solid ${C.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <img src="/SLICE.png" alt="SLICE" style={{ height: 36, width: "auto" }} />
+              <button onClick={() => setMobileOpen(false)} style={{ background: "none", border: "none", color: "#fff", fontSize: 20, cursor: "pointer" }}>✕</button>
             </div>
-            <nav className="flex-1 px-4 py-5 space-y-1">
-              {navLinks.map(l => {
-                const active = pathname === l.href || (l.href !== "/goal-engine/dashboard" && pathname.startsWith(l.href));
-                return (
-                  <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
-                    className={`flex items-center px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                      active ? "bg-[#F37021] text-white" : "text-[#1A2B42] hover:bg-orange-50 hover:text-[#F37021]"
-                    }`}>
-                    {l.label}
-                  </Link>
-                );
-              })}
-            </nav>
-            <div className="px-4 py-5 border-t border-gray-100">
-              <button onClick={signOut} className="w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold text-red-500 border border-red-200 hover:bg-red-50">
-                Sign out
-              </button>
+            <div style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }} onClick={() => setMobileOpen(false)}>
+              {navLinks.map(l => <NavItem key={l.href} {...l} active={isActive(l.href)} />)}
+              {isAdmin && (
+                <>
+                  <div style={{ height: 1, background: C.line, margin: "12px 8px" }} />
+                  {ADMIN_SECTION.map(l => <NavItem key={l.href} {...l} active={isActive(l.href)} />)}
+                </>
+              )}
+            </div>
+            <div style={{ padding: "12px 10px", borderTop: `1px solid ${C.line}` }}>
+              <button onClick={signOut} style={{
+                width: "100%", padding: "10px 0", borderRadius: 8,
+                border: "1px solid rgba(255,255,255,0.15)", background: "transparent",
+                color: "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 700,
+                cursor: "pointer", fontFamily: "inherit",
+              }}>Sign out</button>
             </div>
           </div>
-        </>
+        </div>
       )}
-    </header>
+
+      <style>{`
+        .ge-sidebar-desktop { display: flex; }
+        @media (max-width: 768px) {
+          .ge-sidebar-desktop { display: none !important; }
+          .ge-mobile-bar { display: flex !important; }
+        }
+      `}</style>
+    </>
   );
 }
