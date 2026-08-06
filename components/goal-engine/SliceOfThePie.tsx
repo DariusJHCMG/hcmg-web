@@ -222,6 +222,8 @@ function SlicePopover({ slice, rank, onClose, anchorX, anchorY, containerW, cont
 
 // ── Main component ───────────────────────────────────────────────
 export function SliceOfThePie({ goalVol, slices, compact = false }: Props) {
+  // hovered = slice under mouse (SVG pointer events only — no translate)
+  // popover = clicked slice (sticky until dismissed)
   const [hovered,  setHovered]  = useState<string | null>(null);
   const [popover,  setPopover]  = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -423,21 +425,20 @@ export function SliceOfThePie({ goalVol, slices, compact = false }: Props) {
             <circle cx={cx} cy={cy} r={OR + 40} fill="url(#glow)" />
 
             {/* ── Commitment arcs (outer ring) ── */}
+            {/* IMPORTANT: slices NEVER translate/move — doing so causes a hover loop
+                because the path physically leaves the cursor, firing onMouseLeave,
+                then snapping back and re-firing onMouseEnter infinitely.
+                Active state is shown via a separate highlight ring drawn on top. */}
             {arcs.map(arc => {
-              const isActive  = hovered === arc.id || popover === arc.id;
+              const isActive    = hovered === arc.id || popover === arc.id;
               const isUnclaimed = arc.id === "__unclaimed__";
-              const sweep = arc.endDeg - arc.startDeg;
+              const sweep       = arc.endDeg - arc.startDeg;
               if (sweep < 0.05) return null;
-
-              // Expand active slice outward
-              const expandR = isActive && !isUnclaimed ? 12 : 0;
-              const lp = polar(cx, cy, expandR, arc.midDeg);
 
               return (
                 <g
                   key={arc.id}
-                  transform={isActive && !isUnclaimed ? `translate(${lp.x}, ${lp.y})` : undefined}
-                  style={{ cursor: isUnclaimed ? "default" : "pointer", transition: "transform .2s ease" }}
+                  style={{ cursor: isUnclaimed ? "default" : "pointer" }}
                   role="img"
                   aria-label={
                     isUnclaimed
@@ -452,16 +453,26 @@ export function SliceOfThePie({ goalVol, slices, compact = false }: Props) {
                     setPopover(p => p === arc.id ? null : arc.id);
                   }}
                 >
-                  {/* Commitment arc */}
+                  {/* Base commitment arc — never moves */}
                   <path
                     d={arcPath(cx, cy, OR, IR, arc.startDeg, arc.endDeg)}
                     fill={isUnclaimed ? C.line : arc.color}
-                    opacity={isUnclaimed ? 0.5 : isActive ? 1 : hovered || popover ? 0.72 : 0.92}
-                    filter={isActive ? "url(#drop)" : undefined}
-                    strokeWidth={isActive ? 2 : 1}
-                    stroke={isActive ? "#fff" : "rgba(255,255,255,0.6)"}
-                    style={{ transition: "opacity .18s, stroke-width .18s" }}
+                    opacity={isUnclaimed ? 0.5 : isActive ? 1 : (hovered || popover) ? 0.65 : 0.9}
+                    strokeWidth={1.5}
+                    stroke="#fff"
+                    style={{ transition: "opacity .15s" }}
                   />
+
+                  {/* Active highlight: slightly wider outer ring drawn on top — no movement */}
+                  {isActive && !isUnclaimed && (
+                    <path
+                      d={arcPath(cx, cy, OR + 10, OR, arc.startDeg, arc.endDeg)}
+                      fill={arc.color}
+                      opacity={0.35}
+                      strokeWidth={0}
+                      style={{ pointerEvents: "none" }}
+                    />
+                  )}
 
                   {/* Funded-actual inner arc overlay */}
                   {!isUnclaimed && arc.slice!.funded_volume_actual > 0 && (
@@ -476,10 +487,11 @@ export function SliceOfThePie({ goalVol, slices, compact = false }: Props) {
                       opacity={0.9}
                       stroke="#fff"
                       strokeWidth={1}
+                      style={{ pointerEvents: "none" }}
                     />
                   )}
 
-                  {/* Outer percentage label */}
+                  {/* Outer name label — pointer-events none so it doesn't interfere */}
                   {(() => {
                     const anchor = labelAnchor(arc);
                     if (!anchor) return null;
@@ -487,10 +499,10 @@ export function SliceOfThePie({ goalVol, slices, compact = false }: Props) {
                       <text
                         x={anchor.x} y={anchor.y}
                         textAnchor="middle" dominantBaseline="middle"
-                        fontSize={isActive ? 13 : 11}
-                        fontWeight={800}
+                        fontSize={11}
+                        fontWeight={isActive ? 900 : 700}
                         fill={isUnclaimed ? C.muted : arc.color}
-                        style={{ pointerEvents: "none", transition: "font-size .15s" }}
+                        style={{ pointerEvents: "none" }}
                       >
                         {isUnclaimed
                           ? `${arc.pct.toFixed(0)}%`
