@@ -38,8 +38,12 @@ function LoginForm() {
         display:"flex", flexDirection:"column", justifyContent:"space-between",
         padding:"48px 52px",
       }} className="hidden lg:flex">
-        <div>
-          <img src="/SLICE.png" alt="SLICE by HCMG" style={{ height:52, width:"auto" }} />
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:10 }}>
+          <img src="/SLICE.png" alt="SLICE" style={{ height:90, width:"auto" }} />
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <span style={{ fontSize:11, fontWeight:700, letterSpacing:"0.2em", textTransform:"uppercase", color:"#F37021" }}>by</span>
+            <img src="/hcmg-wordmark-on-dark.svg" alt="HCMG" style={{ height:16, width:"auto" }} />
+          </div>
         </div>
         <div>
           <h2 style={{ margin:"0 0 16px", fontSize:44, fontWeight:900, color:"#fff", lineHeight:1.1 }}>
@@ -79,8 +83,12 @@ function LoginForm() {
         background:"#F8FAFC", padding:"48px 32px",
       }}>
         {/* Mobile logo */}
-        <div style={{ marginBottom:32, textAlign:"center" }} className="lg:hidden">
-          <img src="/SLICE.png" alt="SLICE by HCMG" style={{ height:48, width:"auto", margin:"0 auto" }} />
+        <div style={{ marginBottom:36, textAlign:"center" }} className="lg:hidden">
+          <img src="/SLICE.png" alt="SLICE" style={{ height:80, width:"auto", margin:"0 auto 10px" }} />
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+            <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.2em", textTransform:"uppercase", color:"#F37021" }}>by</span>
+            <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height:13, width:"auto" }} />
+          </div>
         </div>
 
         <div style={{ width:"100%", maxWidth:420 }}>

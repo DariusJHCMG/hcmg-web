@@ -17,9 +17,10 @@ const TEST_EMAIL    = process.env.GOAL_ENGINE_TEST_EMAIL ?? "darius@hcmgloans.co
 const FROM_ADDRESS  = "Darius James <darius@hcmgloans.com>";
 
 export interface SendEmailOptions {
-  to:      string;   // real recipient
-  subject: string;
-  html:    string;
+  to:          string;   // real recipient
+  subject:     string;
+  html:        string;
+  attachments?: Array<{ filename: string; content: string }>; // base64 content
 }
 
 export interface SendEmailResult {
@@ -40,10 +41,11 @@ export async function sendGoalEmail(opts: SendEmailOptions): Promise<SendEmailRe
     : opts.subject;
 
   const { data } = await resend.emails.send({
-    from:    FROM_ADDRESS,
-    to:      sentTo,
+    from:        FROM_ADDRESS,
+    to:          sentTo,
     subject,
-    html:    opts.html,
+    html:        opts.html,
+    ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
   });
 
   return { id: data?.id ?? null, intercepted, sentTo };

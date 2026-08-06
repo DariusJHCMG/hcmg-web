@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import { sendGoalEmail } from "@/lib/goal-engine-mailer";
-import { AWARD_CATALOG, buildAwardEmail, fmt$ } from "@/lib/goal-engine-server";
+import { AWARD_CATALOG, buildAwardEmail, buildCertificateHtml, certStat, fmt$ } from "@/lib/goal-engine-server";
 
 export async function GET(req: NextRequest) {
   const profile = await getCurrentProfile();
@@ -172,11 +172,12 @@ export async function POST(req: NextRequest) {
     if (!loProfile) continue;
 
     const email = loProfile.notify_email ?? loProfile.email;
-    const statsHtml = `
-      <p style="margin:0 0 4px;font-size:13px;"><strong>Funded Volume:</strong> ${fmt$(lo.funded_volume_actual)}</p>
-      <p style="margin:0 0 4px;font-size:13px;"><strong>Funded Units:</strong> ${lo.funded_units_actual} loans</p>
-      <p style="margin:0;font-size:13px;"><strong>Month:</strong> ${goal.month_label}</p>
-    `;
+
+    // Stats panel — used in both the email body and the certificate
+    const statsHtml =
+      certStat("Funded Volume", fmt$(lo.funded_volume_actual)) +
+      certStat("Funded Units",  `${lo.funded_units_actual} loans`) +
+      certStat("Month",         goal.month_label);
 
     const html = buildAwardEmail(
       loProfile.full_name,
@@ -186,9 +187,26 @@ export async function POST(req: NextRequest) {
       statsHtml,
     );
 
+    // Build printable certificate HTML attachment
+    const certHtml = buildCertificateHtml(
+      loProfile.full_name,
+      award.award_label,
+      award.award_emoji,
+      goal.month_label,
+      statsHtml,
+    );
+    const certBytes   = Buffer.from(certHtml, "utf-8");
+    const certBase64  = certBytes.toString("base64");
+    const certFilename = `HCMG-${award.award_label.replace(/[^a-z0-9]+/gi, "-")}-${goal.month_label.replace(/\s+/g, "-")}.html`;
+
     try {
       const subject = `${award.award_emoji} You've Earned: ${award.award_label} — ${goal.month_label}`;
-      const { id: resendId } = await sendGoalEmail({ to: email, subject, html });
+      const { id: resendId } = await sendGoalEmail({
+        to: email,
+        subject,
+        html,
+        attachments: [{ filename: certFilename, content: certBase64 }],
+      });
 
       await sb.from("goal_awards")
         .update({ email_sent: true })
