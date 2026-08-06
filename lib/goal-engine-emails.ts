@@ -537,6 +537,7 @@ export function buildAwardEmail(
   awardEmoji: string | null,
   monthLabel: string,
   statsHtml: string,
+  awardId?: string,
 ): string {
   const emoji = awardEmoji ?? "🏆";
 
@@ -563,11 +564,19 @@ export function buildAwardEmail(
 
         <!-- Certificate callout -->
         <div style="background:linear-gradient(135deg,${NAVY},#1e3a6e);border-radius:14px;padding:20px 28px;margin-bottom:28px;">
-          <p style="margin:0 0 6px;font-size:11px;font-weight:800;letter-spacing:2px;color:${ORANGE};text-transform:uppercase;">Official Certificate Attached</p>
-          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">
-            Your certificate of recognition is attached to this email as an HTML file.
-            Open it in any browser to view, print, or save as PDF.
+          <p style="margin:0 0 6px;font-size:11px;font-weight:800;letter-spacing:2px;color:${ORANGE};text-transform:uppercase;">🏅 Your Official Certificate</p>
+          <p style="margin:0 0 16px;font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">
+            View, download, and print your certificate of recognition. Share it on LinkedIn or keep it for your records.
           </p>
+          ${awardId ? `
+          <a href="${SITE}/goal-engine/certificate/${awardId}"
+            style="display:inline-block;background:${ORANGE};color:#fff;padding:11px 24px;border-radius:10px;font-size:13px;font-weight:800;text-decoration:none;letter-spacing:0.03em;">
+            🎓 View &amp; Download Certificate →
+          </a>` : `
+          <a href="${SITE}/goal-engine/awards"
+            style="display:inline-block;background:${ORANGE};color:#fff;padding:11px 24px;border-radius:10px;font-size:13px;font-weight:800;text-decoration:none;letter-spacing:0.03em;">
+            🏆 View Your Awards →
+          </a>`}
         </div>
 
         <p style="margin:0 0 28px;font-size:14px;color:${MUTED};line-height:1.8;max-width:440px;margin-left:auto;margin-right:auto;">
@@ -575,7 +584,7 @@ export function buildAwardEmail(
           Congratulations on this well-earned recognition.
         </p>
 
-        ${cta("View My Awards", `${SITE}/goal-engine/dashboard`)}
+        ${cta("View My Trophy Room", `${SITE}/goal-engine/awards`)}
         ${cloSig()}
       </td></tr>
     </table>

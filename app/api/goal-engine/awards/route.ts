@@ -266,40 +266,34 @@ export async function POST(req: NextRequest) {
 
     const email = loProfile.notify_email ?? loProfile.email;
 
-    // Stats panel — used in both the email body and the certificate
+    // Stats panel
     const statsHtml =
       certStat("Funded Volume", fmt$(lo.funded_volume_actual)) +
       certStat("Funded Units",  `${lo.funded_units_actual} loans`) +
       certStat("Month",         goal.month_label);
 
-    const html = buildAwardEmail(
-      loProfile.full_name,
-      award.award_label,
-      award.award_emoji,
-      goal.month_label,
-      statsHtml,
-    );
+    // Fetch the just-inserted award ID so the email can link to the certificate page
+    const { data: awardRow } = await sb
+      .from("goal_awards")
+      .select("id")
+      .eq("goal_month_id", goal_month_id)
+      .eq("profile_id", award.profile_id)
+      .eq("award_type", award.award_type)
+      .maybeSingle();
 
-    // Build printable certificate HTML attachment
-    const certHtml = buildCertificateHtml(
-      loProfile.full_name,
+    const html = buildAwardEmail(
+      loProfile.full_name,       // full name — first + last
       award.award_label,
       award.award_emoji,
       goal.month_label,
       statsHtml,
+      awardRow?.id,              // link to /goal-engine/certificate/[id]
     );
-    const certBytes   = Buffer.from(certHtml, "utf-8");
-    const certBase64  = certBytes.toString("base64");
-    const certFilename = `HCMG-${award.award_label.replace(/[^a-z0-9]+/gi, "-")}-${goal.month_label.replace(/\s+/g, "-")}.html`;
 
     try {
       const subject = `${award.award_emoji} You've Earned: ${award.award_label} — ${goal.month_label}`;
-      const { id: resendId } = await sendGoalEmail({
-        to: email,
-        subject,
-        html,
-        attachments: [{ filename: certFilename, content: certBase64 }],
-      });
+      // No attachment — certificate is served as a web page instead
+      const { id: resendId } = await sendGoalEmail({ to: email, subject, html });
 
       await sb.from("goal_awards")
         .update({ email_sent: true })

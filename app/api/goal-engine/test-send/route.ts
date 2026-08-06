@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
   const sb          = createServiceClient();
   const realGoal    = await getActiveGoal();
   const goal        = realGoal ?? (DEMO_GOAL as any);
-  const name        = profile.full_name.split(" ")[0];
+  const name        = profile.full_name;
   const commitUrl   = `${SITE}/goal-engine/commit`;
 
   // Try to get real commitment for the current user
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
       <p style="margin:0 0 4px;font-size:13px;"><strong>Funded Units:</strong> 7 loans</p>
       <p style="margin:0;font-size:13px;"><strong>Month:</strong> ${goal.month_label}</p>
     `;
-    const html = buildAwardEmail(name, "Funded Volume Champion", "🏆", goal.month_label, statsHtml);
+    const html = buildAwardEmail(profile.full_name, "Funded Volume Champion", "🏆", goal.month_label, statsHtml);
     const id   = await send(`🏆 You've Earned: Funded Volume Champion — ${goal.month_label}`, html, "7/7 AWARD");
     results.push({ template: "award", id, to: TEST_EMAIL });
   });
