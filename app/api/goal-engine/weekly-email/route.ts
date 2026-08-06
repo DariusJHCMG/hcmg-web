@@ -49,12 +49,14 @@ export async function POST(req: NextRequest) {
 
     if (!commitment) continue; // no commitment = no email
 
-    // Compute actual production
+    // Compute actual production — only funded rows that are not excluded
     const { data: prodRows } = await sb
       .from("goal_production")
       .select("funded_volume, funded_unit")
       .eq("goal_month_id", goal.id)
-      .eq("profile_id", lo.id);
+      .eq("profile_id", lo.id)
+      .eq("is_excluded", false)
+      .in("event_type", ["funded", "correction"]);
 
     const actualVolume = (prodRows ?? []).reduce((s, r) => s + (r.funded_volume ?? 0), 0);
     const actualUnits  = (prodRows ?? []).reduce((s, r) => s + (r.funded_unit  ?? 0), 0);

@@ -9,6 +9,7 @@ import { getActiveLoanOfficers } from "@/lib/goal-engine";
 import { isTestMode, TEST_EMAIL } from "@/lib/goal-engine-mailer";
 import Link from "next/link";
 import { TestEmailPanel } from "@/components/goal-engine/TestEmailPanel";
+import { SystemStatusWidget } from "@/components/goal-engine/SystemStatusWidget";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,9 @@ export default async function GoalEngineTestPage() {
           <p style={{ margin:"4px 0 0", fontSize:13, color:C.muted }}>Preview emails, impersonate LOs, and control test mode.</p>
         </div>
       </div>
+
+      {/* ── System Status ── */}
+      <SystemStatusWidget />
 
       {/* Test Mode Banner */}
       <div style={{

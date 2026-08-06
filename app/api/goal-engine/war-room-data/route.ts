@@ -26,7 +26,7 @@ export async function GET() {
   const [summary, board, todayProd] = await Promise.all([
     computeGoalSummary(goal),
     sb.from("goal_leaderboard")
-      .select("profile_id, full_name, funded_volume_commitment, funded_volume_actual, funded_units_actual, app_volume_actual")
+      .select("profile_id, full_name, avatar_url, funded_volume_commitment, funded_volume_actual, funded_units_actual, app_volume_actual, app_units_actual")
       .eq("goal_month_id", goal.id)
       .order("funded_volume_actual", { ascending: false })
       .limit(15),
@@ -58,8 +58,8 @@ export async function GET() {
     summary: {
       totalActualVolume:    summary.totalActualVolume,
       totalActualUnits:     summary.totalActualUnits,
-      totalActualAppVolume: 0, // Will be populated from leaderboard
-      totalActualAppUnits:  0,
+      totalActualAppVolume: (board.data ?? []).reduce((s, r) => s + ((r as {app_volume_actual?:number}).app_volume_actual ?? 0), 0),
+      totalActualAppUnits:  (board.data ?? []).reduce((s, r) => s + ((r as {app_units_actual?:number}).app_units_actual ?? 0), 0),
       totalCommittedVolume: summary.totalCommittedVolume,
       participationCount:   summary.participationCount,
       totalLOs:             summary.totalLOs,

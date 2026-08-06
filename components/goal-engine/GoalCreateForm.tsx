@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 const C = {
   navy: "#142850", orange: "#F37021", ink: "#1A2B42",
   muted: "#64748B", line: "#E2E8F0", sand: "#F8FAFC", white: "#ffffff",
+  green: "#16a34a", red: "#dc2626",
 };
 
 const INPUT: React.CSSProperties = {
@@ -21,10 +22,7 @@ const LABEL: React.CSSProperties = {
   textTransform:"uppercase", color:C.muted,
 };
 
-// ── HARRY AI Goal Calculation Engine — 3-step formula ─────────────
-//   Step 1. Funded Loan Goal   = CEILING(fundedVol / avgLoan)
-//   Step 2. App Units Goal     = CEILING(fundedLoanGoal / conversionRate)
-//   Step 3. App Volume Goal    = appUnitsGoal × avgLoan
+// ── HARRY AI Goal Calculation Engine ──────────────────────────────
 function calcHarry(fundedVol: number, avgLoan: number, convRate: number) {
   if (fundedVol <= 0 || avgLoan <= 0 || convRate <= 0) {
     return { fundedLoanGoal: 0, appUnitsGoal: 0, appVolGoal: 0 };
@@ -35,8 +33,26 @@ function calcHarry(fundedVol: number, avgLoan: number, convRate: number) {
   return { fundedLoanGoal, appUnitsGoal, appVolGoal };
 }
 
+type LORow = {
+  id: string;
+  full_name: string;
+  email: string;
+  avatar_url: string | null;
+  nmls: string | null;
+};
+
+function Avatar({ name, url }: { name: string; url?: string | null }) {
+  return url
+    ? <img src={url} alt={name} style={{ width:30, height:30, borderRadius:"50%", objectFit:"cover", flexShrink:0, border:`2px solid ${C.line}` }} />
+    : <div style={{ width:30, height:30, borderRadius:"50%", background:`linear-gradient(135deg,#FF9847,${C.orange})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:900, color:"#fff", flexShrink:0 }}>
+        {name.trim().split(/\s+/).map(n=>n[0]).slice(0,2).join("").toUpperCase()}
+      </div>;
+}
+
 export function GoalCreateForm() {
   const currentYear = new Date().getFullYear();
+
+  // ── Goal fields ──────────────────────────────────────────────────
   const [monthNum,  setMonthNum]  = useState(new Date().getMonth() + 1);
   const [year,      setYear]      = useState(currentYear);
   const [fundedVol, setFundedVol] = useState("");
@@ -48,22 +64,62 @@ export function GoalCreateForm() {
   const [publish,   setPublish]   = useState(false);
   const [loading,   setLoading]   = useState(false);
   const [result,    setResult]    = useState<{ success?: boolean; error?: string } | null>(null);
+  const [newGoalId, setNewGoalId] = useState<string | null>(null);
 
-  // Derived HARRY AI values — computed fresh every render, no separate state
+  // ── Assignee picker state ────────────────────────────────────────
+  const [allLOs,       setAllLOs]       = useState<LORow[]>([]);
+  const [losLoading,   setLosLoading]   = useState(true);
+  const [assigned,     setAssigned]     = useState<Set<string>>(new Set());
+  const [loSearch,     setLoSearch]     = useState("");
+
+  // Fetch all active LOs once on mount
+  useEffect(() => {
+    fetch("/api/goal-engine/profiles-list")
+      .then(r => r.ok ? r.json() : { profiles: [] })
+      .then(d => {
+        const los: LORow[] = (d.profiles ?? []).filter((p: LORow & { role?: string }) =>
+          p.role === "loan_officer" || !p.role  // include if role is LO or not set
+        );
+        setAllLOs(d.profiles ?? []);
+        // Default: all LOs assigned
+        setAssigned(new Set((d.profiles ?? []).map((p: LORow) => p.id)));
+      })
+      .catch(() => {})
+      .finally(() => setLosLoading(false));
+  }, []);
+
+  // ── HARRY AI derived values ──────────────────────────────────────
   const fv    = Number(fundedVol)  || 0;
   const al    = Number(avgLoan)    || 350_000;
   const cr    = Number(convRate)   || 60;
   const harry = calcHarry(fv, al, cr);
 
-  const [newGoalId, setNewGoalId] = useState<string | null>(null);
+  // ── Filtered LO list for the picker ─────────────────────────────
+  const filteredLOs = allLOs.filter(lo =>
+    lo.full_name.toLowerCase().includes(loSearch.toLowerCase()) ||
+    lo.email.toLowerCase().includes(loSearch.toLowerCase())
+  );
 
+  function toggleLO(id: string) {
+    setAssigned(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+  function addAll()   { setAssigned(new Set(allLOs.map(lo => lo.id))); }
+  function clearAll() { setAssigned(new Set()); }
+
+  // ── Submit ───────────────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setResult(null);
     try {
-      const res = await fetch("/api/goal-engine/goals", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
+      // 1. Create the goal
+      const goalRes = await fetch("/api/goal-engine/goals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           month_label:        `${MONTHS[monthNum-1]} ${year}`,
           month_year:         year,
           month_num:          monthNum,
@@ -71,28 +127,51 @@ export function GoalCreateForm() {
           funded_units_goal:  harry.fundedLoanGoal,
           app_volume_goal:    harry.appVolGoal,
           app_units_goal:     harry.appUnitsGoal,
-          clo_message:        cloMsg||null,
+          clo_message:        cloMsg || null,
           awards_enabled:     true,
           start_date:         start,
           end_date:           end,
           is_published:       publish,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) { setResult({ error: data.error ?? "Failed to create goal." }); }
-      else {
-        setResult({ success: true });
-        setNewGoalId(data.goal?.id ?? null);
-        setFundedVol(""); setAvgLoan("350000"); setConvRate("60");
-        setCloMsg(""); setStart(""); setEnd(""); setPublish(false);
+      const goalData = await goalRes.json();
+      if (!goalRes.ok) {
+        setResult({ error: goalData.error ?? "Failed to create goal." });
+        return;
       }
-    } catch { setResult({ error:"Network error." }); }
-    finally { setLoading(false); }
+
+      const goalId = goalData.goal?.id ?? null;
+
+      // 2. Save assignees (always, even if none selected)
+      if (goalId) {
+        await fetch("/api/goal-engine/goal-assignments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            goal_month_id: goalId,
+            profile_ids:   Array.from(assigned),
+          }),
+        });
+      }
+
+      setResult({ success: true });
+      setNewGoalId(goalId);
+      // Reset form
+      setFundedVol(""); setAvgLoan("350000"); setConvRate("60");
+      setCloMsg(""); setStart(""); setEnd(""); setPublish(false);
+      setAssigned(new Set(allLOs.map(lo => lo.id)));
+      setLoSearch("");
+    } catch {
+      setResult({ error: "Network error." });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Month / Year */}
+
+      {/* ── Month / Year ── */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:20 }}>
         <div>
           <label style={LABEL}>Month</label>
@@ -112,13 +191,13 @@ export function GoalCreateForm() {
         </div>
       </div>
 
-      {/* Dates */}
+      {/* ── Dates ── */}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:20 }}>
         <div><label style={LABEL}>Start Date</label><input type="date" required value={start} onChange={e=>setStart(e.target.value)} style={INPUT} /></div>
         <div><label style={LABEL}>End Date</label><input type="date" required value={end} onChange={e=>setEnd(e.target.value)} style={INPUT} /></div>
       </div>
 
-      {/* HARRY AI inputs */}
+      {/* ── HARRY AI inputs ── */}
       <div style={{ marginBottom:8, padding:"16px 18px", borderRadius:14, background:"rgba(20,40,80,0.03)", border:`1.5px solid ${C.line}` }}>
         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
           <div style={{ width:28, height:28, borderRadius:8, background:`linear-gradient(135deg,#FF9847,${C.orange})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:900, color:"#fff", flexShrink:0 }}>H</div>
@@ -127,59 +206,34 @@ export function GoalCreateForm() {
             <p style={{ margin:0, fontSize:10, color:C.muted }}>All goals auto-calculated from these three inputs</p>
           </div>
         </div>
-
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:14 }}>
           <div>
             <label style={LABEL}>Company Funded Volume ($)</label>
-            <input type="number" required min={0} placeholder="e.g. 20000000"
-              value={fundedVol} onChange={e=>setFundedVol(e.target.value)} style={INPUT} />
+            <input type="number" required min={0} placeholder="e.g. 20000000" value={fundedVol} onChange={e=>setFundedVol(e.target.value)} style={INPUT} />
           </div>
           <div>
             <label style={LABEL}>Average Loan Amount ($)</label>
-            <input type="number" min={50000} placeholder="e.g. 350000"
-              value={avgLoan} onChange={e=>setAvgLoan(e.target.value)} style={INPUT} />
+            <input type="number" min={50000} placeholder="e.g. 350000" value={avgLoan} onChange={e=>setAvgLoan(e.target.value)} style={INPUT} />
           </div>
           <div>
             <label style={LABEL}>App → Funded Conversion (%)</label>
-            <input type="number" min={1} max={100} placeholder="e.g. 60"
-              value={convRate} onChange={e=>setConvRate(e.target.value)} style={INPUT} />
+            <input type="number" min={1} max={100} placeholder="e.g. 60" value={convRate} onChange={e=>setConvRate(e.target.value)} style={INPUT} />
           </div>
         </div>
       </div>
 
-      {/* HARRY AI 3-step output */}
+      {/* ── HARRY AI output ── */}
       {fv > 0 && (
         <div style={{ marginBottom:20, borderRadius:14, border:"1.5px solid rgba(243,112,33,0.3)", overflow:"hidden" }}>
-          {/* Header */}
           <div style={{ background:`linear-gradient(135deg,${C.navy},#1e3a5f)`, padding:"12px 18px", display:"flex", alignItems:"center", gap:8 }}>
             <span style={{ fontSize:12, fontWeight:900, color:"#fff", letterSpacing:".04em" }}>HARRY AI</span>
             <span style={{ fontSize:9, fontWeight:700, color:"rgba(255,255,255,0.45)", letterSpacing:".12em", textTransform:"uppercase" }}>Forecast & Goal Calculation</span>
           </div>
-
-          {/* 3 steps */}
           <div style={{ background:C.white, padding:"16px 18px" }}>
             {[
-              {
-                step:"1", label:"Funded Loan Goal",
-                formula:`CEILING($${fv.toLocaleString()} ÷ $${al.toLocaleString()})`,
-                result:`${harry.fundedLoanGoal} funded loans`,
-                note:`Company must fund ${harry.fundedLoanGoal} loans at avg $${al.toLocaleString()}`,
-                color:C.navy,
-              },
-              {
-                step:"2", label:"Application Goal",
-                formula:`CEILING(${harry.fundedLoanGoal} ÷ ${cr}%)`,
-                result:`${harry.appUnitsGoal} applications`,
-                note:`At ${cr}% pull-through, need ${harry.appUnitsGoal} apps to fund ${harry.fundedLoanGoal}`,
-                color:C.ink,
-              },
-              {
-                step:"3", label:"Application Volume Goal",
-                formula:`${harry.appUnitsGoal} × $${al.toLocaleString()}`,
-                result:`$${harry.appVolGoal.toLocaleString()}`,
-                note:`Total dollar value of all required applications`,
-                color:C.orange,
-              },
+              { step:"1", label:"Funded Loan Goal",      formula:`CEILING($${fv.toLocaleString()} ÷ $${al.toLocaleString()})`,       result:`${harry.fundedLoanGoal} funded loans`, note:`Company must fund ${harry.fundedLoanGoal} loans at avg $${al.toLocaleString()}`, color:C.navy },
+              { step:"2", label:"Application Goal",      formula:`CEILING(${harry.fundedLoanGoal} ÷ ${cr}%)`,                         result:`${harry.appUnitsGoal} applications`,   note:`At ${cr}% pull-through, need ${harry.appUnitsGoal} apps to fund ${harry.fundedLoanGoal}`, color:C.ink },
+              { step:"3", label:"Application Volume",    formula:`${harry.appUnitsGoal} × $${al.toLocaleString()}`,                   result:`$${harry.appVolGoal.toLocaleString()}`, note:`Total dollar value of all required applications`, color:C.orange },
             ].map((s, i, arr) => (
               <div key={s.step} style={{ display:"flex", gap:14, alignItems:"flex-start", paddingBottom: i < arr.length-1 ? 12 : 0, marginBottom: i < arr.length-1 ? 12 : 0, borderBottom: i < arr.length-1 ? `1px solid ${C.line}` : "none" }}>
                 <div style={{ width:24, height:24, borderRadius:"50%", background:s.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:900, color:"#fff", flexShrink:0, marginTop:2 }}>{s.step}</div>
@@ -192,11 +246,9 @@ export function GoalCreateForm() {
               </div>
             ))}
           </div>
-
-          {/* Summary result cards */}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", background:C.sand, borderTop:`1px solid ${C.line}` }}>
             {[
-              { l:"Funded Goal",    v:`$${fv >= 1_000_000 ? (fv/1_000_000).toFixed(1)+"M" : Math.round(fv/1_000)+"K"}`, dark:true },
+              { l:"Funded Goal",   v:`$${fv >= 1_000_000 ? (fv/1_000_000).toFixed(1)+"M" : Math.round(fv/1_000)+"K"}`, dark:true },
               { l:"Funded Loans",  v:`${harry.fundedLoanGoal}` },
               { l:"App Goal",      v:`${harry.appUnitsGoal} apps`, accent:true },
               { l:"App Volume",    v:`$${harry.appVolGoal >= 1_000_000 ? (harry.appVolGoal/1_000_000).toFixed(1)+"M" : Math.round(harry.appVolGoal/1_000)+"K"}` },
@@ -210,7 +262,7 @@ export function GoalCreateForm() {
         </div>
       )}
 
-      {/* Leadership message */}
+      {/* ── Leadership message ── */}
       <div style={{ marginBottom:20 }}>
         <label style={LABEL}>Message from Leadership</label>
         <textarea rows={3} value={cloMsg} onChange={e=>setCloMsg(e.target.value)}
@@ -218,7 +270,104 @@ export function GoalCreateForm() {
           style={{ ...INPUT, resize:"none" }} />
       </div>
 
-      {/* Publish toggle */}
+      {/* ══════════════════════════════════════════════════════════
+          ASSIGNEES PICKER
+          Who receives the announcement and counts toward participation %
+          ══════════════════════════════════════════════════════════ */}
+      <div style={{ marginBottom:20, border:`1.5px solid ${C.line}`, borderRadius:14, overflow:"hidden" }}>
+
+        {/* Header */}
+        <div style={{ padding:"14px 18px", background:C.sand, borderBottom:`1px solid ${C.line}`, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
+          <div>
+            <p style={{ margin:0, fontSize:13, fontWeight:800, color:C.ink }}>
+              👥 Assignees
+              {assigned.size > 0 && (
+                <span style={{ marginLeft:8, padding:"2px 10px", borderRadius:99, background:`linear-gradient(135deg,#FF9847,${C.orange})`, color:"#fff", fontSize:11, fontWeight:800 }}>
+                  {assigned.size} selected
+                </span>
+              )}
+            </p>
+            <p style={{ margin:"2px 0 0", fontSize:11, color:C.muted }}>
+              Only these LOs receive the announcement email and count toward participation %.
+            </p>
+          </div>
+          <div style={{ display:"flex", gap:8 }}>
+            <button type="button" onClick={addAll} style={{ padding:"6px 14px", borderRadius:8, border:`1px solid ${C.line}`, background:`linear-gradient(135deg,#FF9847,${C.orange})`, color:"#fff", fontSize:11, fontWeight:800, cursor:"pointer", fontFamily:"inherit" }}>
+              + Add All
+            </button>
+            <button type="button" onClick={clearAll} style={{ padding:"6px 14px", borderRadius:8, border:`1px solid ${C.line}`, background:C.white, color:C.muted, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
+              Clear All
+            </button>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div style={{ padding:"10px 14px", borderBottom:`1px solid ${C.line}`, background:C.white }}>
+          <input
+            type="text"
+            placeholder="Search by name or email…"
+            value={loSearch}
+            onChange={e => setLoSearch(e.target.value)}
+            style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:`1.5px solid ${C.line}`, background:C.sand, fontSize:13, color:C.ink, fontFamily:"inherit", outline:"none", boxSizing:"border-box" as const }}
+          />
+        </div>
+
+        {/* LO list */}
+        <div style={{ maxHeight:280, overflowY:"auto", background:C.white }}>
+          {losLoading ? (
+            <p style={{ padding:"20px", textAlign:"center", fontSize:13, color:C.muted }}>Loading team members…</p>
+          ) : allLOs.length === 0 ? (
+            <p style={{ padding:"20px", textAlign:"center", fontSize:13, color:C.muted }}>
+              No active loan officers found. Add team members first.
+            </p>
+          ) : filteredLOs.length === 0 ? (
+            <p style={{ padding:"20px", textAlign:"center", fontSize:13, color:C.muted }}>No results for &ldquo;{loSearch}&rdquo;</p>
+          ) : (
+            filteredLOs.map(lo => {
+              const checked = assigned.has(lo.id);
+              return (
+                <label
+                  key={lo.id}
+                  style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 16px", borderBottom:`1px solid ${C.line}`, cursor:"pointer", background: checked ? "rgba(243,112,33,0.04)" : C.white }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleLO(lo.id)}
+                    style={{ width:16, height:16, accentColor:C.orange, flexShrink:0 }}
+                  />
+                  <Avatar name={lo.full_name} url={lo.avatar_url} />
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <p style={{ margin:0, fontSize:13, fontWeight:800, color: checked ? C.orange : C.ink, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                      {lo.full_name}
+                    </p>
+                    <p style={{ margin:"1px 0 0", fontSize:11, color:C.muted }}>
+                      {lo.email}{lo.nmls ? ` · NMLS# ${lo.nmls}` : ""}
+                    </p>
+                  </div>
+                  {checked && (
+                    <span style={{ fontSize:10, fontWeight:800, color:C.orange, flexShrink:0 }}>✓ Assigned</span>
+                  )}
+                </label>
+              );
+            })
+          )}
+        </div>
+
+        {/* Footer summary */}
+        {!losLoading && allLOs.length > 0 && (
+          <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.line}`, background:C.sand, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <p style={{ margin:0, fontSize:11, color:C.muted }}>
+              {assigned.size} of {allLOs.length} LOs will receive the announcement
+            </p>
+            {assigned.size === 0 && (
+              <span style={{ fontSize:11, fontWeight:700, color:"#d97706" }}>⚠ No one assigned — no emails will send</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Publish toggle ── */}
       <div style={{
         padding:"16px 20px", borderRadius:12, marginBottom:20, cursor:"pointer",
         background: publish ? "rgba(243,112,33,0.06)" : C.sand,
@@ -229,39 +378,33 @@ export function GoalCreateForm() {
           <div>
             <p style={{ margin:"0 0 3px", fontSize:13, fontWeight:800, color:C.ink }}>Publish & Send Announcement Emails</p>
             <p style={{ margin:0, fontSize:11, color:C.muted, lineHeight:1.5 }}>
-              Publishes immediately and emails every active LO the announcement.
+              Publishes immediately and emails the <strong>{assigned.size} assigned LO{assigned.size !== 1 ? "s" : ""}</strong> the announcement.
             </p>
           </div>
         </label>
       </div>
 
+      {/* ── Result messages ── */}
       {result?.success && (
         <div style={{ marginBottom:16, padding:"16px 18px", borderRadius:12, background:"#f0fdf4", border:"1.5px solid #86efac" }}>
-          <p style={{ margin:"0 0 6px", fontSize:13, fontWeight:800, color:"#166534" }}>
+          <p style={{ margin:"0 0 4px", fontSize:13, fontWeight:800, color:"#166534" }}>
             ✅ Goal {publish ? "published and emails sent" : "saved as draft"} successfully!
           </p>
-          <p style={{ margin:"0 0 10px", fontSize:12, color:"#166534", lineHeight:1.6 }}>
-            Next step: assign which Loan Officers are expected to produce for this goal. Participation rate is calculated only against assigned LOs — non-production staff won&apos;t affect your numbers.
+          <p style={{ margin:0, fontSize:12, color:"#166534", lineHeight:1.6 }}>
+            {assigned.size} LO{assigned.size !== 1 ? "s" : ""} assigned.
+            {newGoalId && (
+              <> <a href={`/goal-engine/admin/goals/${newGoalId}/assignments`} style={{ color:C.green, fontWeight:700 }}>Edit assignees anytime →</a></>
+            )}
           </p>
-          {newGoalId && (
-            <a href={`/goal-engine/admin/goals/${newGoalId}/assignments`} style={{
-              display:"inline-flex", alignItems:"center", gap:6,
-              padding:"9px 18px", borderRadius:10, textDecoration:"none",
-              background:"linear-gradient(135deg,#FF9847,#F37021)",
-              color:"#fff", fontSize:12, fontWeight:800,
-              boxShadow:"0 4px 12px rgba(243,112,33,0.3)",
-            }}>
-              👥 Assign LOs to This Goal →
-            </a>
-          )}
         </div>
       )}
       {result?.error && (
-        <div style={{ marginBottom:16, padding:"12px 16px", borderRadius:10, background:"#fee2e2", border:"1px solid #fca5a5", fontSize:13, color:"#991b1b", fontWeight:600 }}>
+        <div style={{ marginBottom:16, padding:"12px 16px", borderRadius:10, background:"#fee2e2", border:"1px solid #fca5a5", fontSize:13, color:C.red, fontWeight:600 }}>
           ⚠️ {result.error}
         </div>
       )}
 
+      {/* ── Submit ── */}
       <button type="submit" disabled={loading || fv <= 0} style={{
         padding:"12px 28px", borderRadius:12,
         background: (loading || fv <= 0) ? C.line : "linear-gradient(135deg,#FF9847,#F37021)",

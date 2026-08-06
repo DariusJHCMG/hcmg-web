@@ -11,6 +11,7 @@ const C = {
 export function GoalAdminCard({ goal }: { goal: GoalMonth }) {
   const [loading,          setLoading]          = useState(false);
   const [message,          setMessage]          = useState<string | null>(null);
+  const [msgOk,            setMsgOk]            = useState(true);
   const [published,        setPublished]        = useState(goal.is_published);
   const [assignedCount,    setAssignedCount]    = useState<number | null>(null);
 
@@ -25,8 +26,8 @@ export function GoalAdminCard({ goal }: { goal: GoalMonth }) {
     setLoading(true); setMessage(null);
     const res  = await fetch(`/api/goal-engine/goals/${goal.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ is_published:!published }) });
     const data = await res.json();
-    if (res.ok) { setPublished(!published); setMessage(!published ? "Published. Emails sent." : "Unpublished."); }
-    else setMessage(data.error ?? "Failed.");
+    if (res.ok) { setPublished(!published); setMsgOk(true); setMessage(!published ? "✅ Published. Emails sent." : "Unpublished."); }
+    else { setMsgOk(false); setMessage(data.error ?? "Failed."); }
     setLoading(false);
   }
 
@@ -34,6 +35,7 @@ export function GoalAdminCard({ goal }: { goal: GoalMonth }) {
     setLoading(true); setMessage(null);
     const res  = await fetch("/api/goal-engine/awards", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ goal_month_id:goal.id }) });
     const data = await res.json();
+    setMsgOk(res.ok);
     setMessage(res.ok ? `✅ ${data.issued} awards issued and emailed.` : (data.error ?? "Failed."));
     setLoading(false);
   }
@@ -42,7 +44,17 @@ export function GoalAdminCard({ goal }: { goal: GoalMonth }) {
     setLoading(true); setMessage(null);
     await fetch(`/api/goal-engine/goals/${goal.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ emails_sent:false }) });
     const res  = await fetch(`/api/goal-engine/goals/${goal.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ is_published:true }) });
-    setMessage(res.ok ? "📧 Announcement emails re-sent." : "Failed to resend.");
+    setMsgOk(res.ok); setMessage(res.ok ? "📧 Announcement emails re-sent." : "Failed to resend.");
+    setLoading(false);
+  }
+
+  async function forceClose() {
+    if (!confirm(`Force-close ${goal.month_label}? This runs the end-of-month award engine, sends recap emails, and closes the goal. This cannot be undone.`)) return;
+    setLoading(true); setMessage(null);
+    const res  = await fetch("/api/goal-engine/end-of-month", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ force:true }) });
+    const data = await res.json();
+    setMsgOk(res.ok);
+    setMessage(res.ok ? `✅ Month closed. ${data.emails_sent ?? 0} recap emails sent. ${data.awards_issued ?? 0} awards issued.` : (data.error ?? data.message ?? "Failed."));
     setLoading(false);
   }
 
@@ -105,11 +117,18 @@ export function GoalAdminCard({ goal }: { goal: GoalMonth }) {
               <button onClick={runAwards} disabled={loading} style={{ ...BTN, background:"#fef9c3", color:"#854d0e" }}>
                 🏆 Run Awards
               </button>
+              <button onClick={forceClose} disabled={loading} style={{ ...BTN, background:"#fee2e2", color:"#991b1b", border:"1px solid #fecaca" }}>
+                🔒 Force Close
+              </button>
             </>
           )}
         </div>
       </div>
-      {message && <p style={{ margin:"12px 0 0", fontSize:12, fontWeight:700, color:C.orange }}>{message}</p>}
+      {message && (
+        <p style={{ margin:"12px 0 0", fontSize:12, fontWeight:700, color: msgOk ? "#16a34a" : "#dc2626" }}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }

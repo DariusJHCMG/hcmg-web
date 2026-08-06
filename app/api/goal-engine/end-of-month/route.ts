@@ -82,7 +82,36 @@ export async function POST(req: NextRequest) {
   ]);
 
   const companyTotal = summary.totalActualVolume;
-  let emailsSent = 0;
+  let emailsSent   = 0;
+  let awardsIssued = 0;
+
+  // ── 2b. Run award engine via internal DB call ─────────────────
+  // We call the awards route via fetch using the Supabase service key
+  // as a bearer token so it bypasses the admin session check.
+  // If SUPABASE_SERVICE_ROLE_KEY is unavailable, this step is skipped
+  // (admin can manually click "Run Awards" on the admin page).
+  try {
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (serviceKey) {
+      const awardRes = await fetch(
+        `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/api/goal-engine/awards`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${serviceKey}`,
+          },
+          body: JSON.stringify({ goal_month_id: goal.id, _internal: true }),
+        }
+      );
+      if (awardRes.ok) {
+        const awardData = await awardRes.json();
+        awardsIssued = awardData.issued ?? 0;
+      }
+    }
+  } catch (e) {
+    console.error("[end-of-month] Award engine failed:", e);
+  }
 
   // ── 3. Send personal recap emails ─────────────────────────────
   for (const lo of los) {
@@ -148,10 +177,14 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({
-    message:    `End-of-month complete. ${emailsSent} recap emails sent.`,
-    goal_id:    goal.id,
-    month:      goal.month_label,
+    message:       `End-of-month complete. ${emailsSent} recap emails sent. ${awardsIssued} awards issued.`,
+    goal_id:       goal.id,
+    month:         goal.month_label,
+    emails_sent:   emailsSent,
+    awards_issued: awardsIssued,
+    total_funded:  fmt$(companyTotal),
+    // Keep legacy keys for backwards compatibility
     emailsSent,
-    totalFunded: fmt$(companyTotal),
+    totalFunded:   fmt$(companyTotal),
   });
 }

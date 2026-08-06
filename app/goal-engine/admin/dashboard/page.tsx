@@ -80,7 +80,7 @@ export default async function GoalEngineManagerDashboard() {
   const days         = daysRemaining(goal.end_date);
   const medals       = ["🥇","🥈","🥉"];
 
-  type EnrichedRow = LeaderboardRow & { relativePace:number; noCommitment:boolean; forecast:number };
+  type EnrichedRow = LeaderboardRow & { relativePace:number; noCommitment:boolean; forecast:number; branch_id:string|null };
 
   const enrichedRows: EnrichedRow[] = allLOs.map(lo => {
     const boardRow     = leaderboard.find(r => r.profile_id === lo.id);
@@ -96,7 +96,7 @@ export default async function GoalEngineManagerDashboard() {
     };
     const volumePace = row.funded_volume_commitment > 0 ? calcPace(row.funded_volume_actual, row.funded_volume_commitment) : 0;
     const forecast   = elapsed > 0 ? row.funded_volume_actual / elapsed : 0;
-    return { ...row, relativePace:volumePace - requiredPct, noCommitment, forecast };
+    return { ...row, relativePace:volumePace - requiredPct, noCommitment, forecast, branch_id:(lo as unknown as Record<string,unknown>).branch_id as string|null ?? null };
   }).sort((a,b) => {
     if (a.noCommitment && !b.noCommitment) return 1;
     if (!a.noCommitment && b.noCommitment) return -1;
@@ -132,6 +132,20 @@ export default async function GoalEngineManagerDashboard() {
           <h1 style={{ margin:"12px 0 0", fontSize:28, fontWeight:900, color:C.ink }}>Manager Dashboard</h1>
           <p style={{ margin:"4px 0 0", fontSize:13, color:C.muted }}>{goal.month_label} · {days} days remaining</p>
         </div>
+        {/* CSV Export button — client-side download via data URI */}
+        <a
+          href={`/api/goal-engine/export-csv?goal_month_id=${goal.id}`}
+          download={`SLICE-${goal.month_label.replace(/\s+/g,"-")}.csv`}
+          style={{
+            display:"inline-flex", alignItems:"center", gap:8,
+            padding:"10px 20px", borderRadius:12, textDecoration:"none",
+            border:`1.5px solid ${C.line}`, background:C.white,
+            color:C.ink, fontSize:12, fontWeight:700,
+            boxShadow:"0 1px 4px rgba(15,23,42,0.05)",
+          }}
+        >
+          ⬇ Export CSV
+        </a>
       </div>
 
       {/* KPI cards */}
@@ -284,6 +298,76 @@ export default async function GoalEngineManagerDashboard() {
           </div>
         </div>
       )}
+
+      {/* ── Branch Analytics ── */}
+      {(() => {
+        // Group enriched rows by branch_id (null → "No Branch")
+        const branchMap = new Map<string, typeof enrichedRows>();
+        for (const row of enrichedRows) {
+          const key = row.branch_id ?? "—";
+          if (!branchMap.has(key)) branchMap.set(key, []);
+          branchMap.get(key)!.push(row);
+        }
+        // Only show if there are multiple distinct branches (or any branch IDs set)
+        const hasBranches = [...branchMap.keys()].some(k => k !== "—");
+        if (!hasBranches) return null;
+        return (
+          <div style={{ marginTop:28 }}>
+            <div style={{ background:C.white, border:`1px solid ${C.line}`, borderRadius:20, overflow:"hidden", boxShadow:"0 1px 6px rgba(15,23,42,0.06)" }}>
+              <div style={{ padding:"18px 24px", borderBottom:`1px solid ${C.line}` }}>
+                <p style={{ margin:0, fontSize:15, fontWeight:800, color:C.ink }}>Branch / Office Analytics</p>
+                <p style={{ margin:"2px 0 0", fontSize:11, color:C.muted }}>Aggregated by branch_id — set on each profile to enable</p>
+              </div>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse" }}>
+                  <thead>
+                    <tr>
+                      {["Branch","LOs","Committed","Funded","Goal %","On Pace","Off Track"].map(h => (
+                        <th key={h} style={{ padding:"10px 16px", fontSize:9, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase" as const, color:C.muted, background:C.sand, borderBottom:`1px solid ${C.line}`, textAlign:"left" as const, whiteSpace:"nowrap" as const }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...branchMap.entries()].sort(([a],[b])=>a.localeCompare(b)).map(([branch, rows]) => {
+                      const totalCommit  = rows.reduce((s,r) => s + r.funded_volume_commitment, 0);
+                      const totalFunded  = rows.reduce((s,r) => s + r.funded_volume_actual, 0);
+                      const goalPct      = totalCommit > 0 ? Math.round((totalFunded / totalCommit) * 100) : 0;
+                      const branchOnPace = rows.filter(r => !r.noCommitment && r.relativePace >= 0).length;
+                      const branchOff    = rows.filter(r => !r.noCommitment && r.relativePace < -20).length;
+                      return (
+                        <tr key={branch} style={{ borderBottom:`1px solid ${C.line}` }}>
+                          <td style={{ padding:"13px 16px", fontWeight:800, color:C.ink, fontSize:13 }}>{branch}</td>
+                          <td style={{ padding:"13px 16px", fontSize:13, color:C.muted }}>{rows.length}</td>
+                          <td style={{ padding:"13px 16px", fontSize:13, color:C.muted }}>{fmt$(totalCommit)}</td>
+                          <td style={{ padding:"13px 16px", fontWeight:800, fontSize:14, color:C.ink }}>{fmt$(totalFunded)}</td>
+                          <td style={{ padding:"13px 16px" }}>
+                            <span style={{ fontWeight:900, fontSize:14, color:goalPct>=100?"#16a34a":goalPct>=70?"#d97706":"#dc2626" }}>
+                              {goalPct}%
+                            </span>
+                          </td>
+                          <td style={{ padding:"13px 16px" }}>
+                            <span style={{ padding:"2px 9px", borderRadius:99, background:"#dcfce7", color:"#166534", fontSize:10, fontWeight:800 }}>
+                              {branchOnPace}
+                            </span>
+                          </td>
+                          <td style={{ padding:"13px 16px" }}>
+                            {branchOff > 0
+                              ? <span style={{ padding:"2px 9px", borderRadius:99, background:"#fee2e2", color:"#991b1b", fontSize:10, fontWeight:800 }}>{branchOff}</span>
+                              : <span style={{ fontSize:11, color:C.muted }}>—</span>
+                            }
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── HARRY AI Executive Briefing ── */}
       <div style={{ marginTop:28 }}>

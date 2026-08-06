@@ -28,20 +28,21 @@ const C = {
 };
 
 const LO_NAV = [
-  { label: "The Pie",      href: "/goal-engine/slice-visualization", icon: "🥧" },
   { label: "Dashboard",    href: "/goal-engine/dashboard",           icon: "⊞"  },
   { label: "My Slice",     href: "/goal-engine/commit",              icon: "🥧" },
+  { label: "The Pie",      href: "/goal-engine/slice-visualization", icon: "🥧" },
   { label: "Leaderboard",  href: "/goal-engine/leaderboard",        icon: "🏅" },
-  { label: "History",      href: "/goal-engine/history",            icon: "📈" },
+  { label: "History",      href: "/goal-engine/history",            icon: "🗓" },
   { label: "Trophy Room",  href: "/goal-engine/awards",             icon: "🏆" },
 ];
 
 const ADMIN_NAV = [
-  { label: "The Pie",      href: "/goal-engine/slice-visualization", icon: "🥧" },
   { label: "Dashboard",    href: "/goal-engine/dashboard",           icon: "⊞"  },
   { label: "My Slice",     href: "/goal-engine/commit",              icon: "🥧" },
+  { label: "The Pie",      href: "/goal-engine/slice-visualization", icon: "🥧" },
   { label: "Leaderboard",  href: "/goal-engine/leaderboard",        icon: "🏅" },
-  { label: "History",      href: "/goal-engine/history",            icon: "📈" },
+  { label: "Forecast",     href: "/goal-engine/forecast",           icon: "📈" },
+  { label: "History",      href: "/goal-engine/history",            icon: "🗓" },
   { label: "Trophy Room",  href: "/goal-engine/awards",             icon: "🏆" },
   { label: "THE SLICE",    href: "/goal-engine/the-slice",          icon: "📺" },
 ];
@@ -49,7 +50,8 @@ const ADMIN_NAV = [
 const ADMIN_SECTION = [
   { label: "Manage Goals",   href: "/goal-engine/admin",              icon: "🎯" },
   { label: "Manager View",   href: "/goal-engine/admin/dashboard",    icon: "📊" },
-  { label: "Forecast Center",href: "/goal-engine/forecast",          icon: "📈" },
+  { label: "Forecast Center",href: "/goal-engine/forecast",          icon: "📡" },
+  { label: "Coaching Notes", href: "/goal-engine/admin/coaching",    icon: "📝" },
   { label: "Production",     href: "/goal-engine/admin/production",  icon: "🔧" },
   { label: "Email Log",      href: "/goal-engine/admin/email-log",   icon: "📧" },
   { label: "Team Members",   href: "/goal-engine/admin/users",        icon: "👥" },

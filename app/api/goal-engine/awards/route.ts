@@ -27,12 +27,22 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const profile = await getCurrentProfile();
-  if (!profile || !isAdmin(profile)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  // Allow internal calls from end-of-month using the service role key as bearer
+  const authHeader = req.headers.get("authorization") ?? "";
+  const isInternalServiceCall =
+    authHeader.startsWith("Bearer ") &&
+    process.env.SUPABASE_SERVICE_ROLE_KEY &&
+    authHeader === `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`;
+
+  if (!isInternalServiceCall) {
+    const profile = await getCurrentProfile();
+    if (!profile || !isAdmin(profile)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
   }
 
-  const { goal_month_id } = await req.json();
+  const body = await req.json().catch(() => ({}));
+  const { goal_month_id } = body;
   if (!goal_month_id) return NextResponse.json({ error: "goal_month_id required" }, { status: 400 });
 
   const sb = createServiceClient();
@@ -157,6 +167,89 @@ export async function POST(req: NextRequest) {
       r.profile_id,
       { funded_volume: r.funded_volume_actual },
     );
+  }
+
+  // 8. Fastest to Commitment — earliest submitted_at among this goal's commitments
+  const { data: commitments } = await sb
+    .from("goal_commitments")
+    .select("profile_id, submitted_at")
+    .eq("goal_month_id", goal_month_id)
+    .not("submitted_at", "is", null)
+    .order("submitted_at", { ascending: true })
+    .limit(1);
+  const fastestCommit = commitments?.[0];
+  if (fastestCommit) {
+    await issueAward(
+      "fastest_commit", "Fastest to Commitment", "⚡",
+      fastestCommit.profile_id,
+      { submitted_at: fastestCommit.submitted_at },
+    );
+  }
+
+  // 9. Most Improved — highest funded volume % increase vs. prior month
+  // Fetch the goal that immediately preceded this one
+  const { data: thisGoal } = await sb
+    .from("goal_months")
+    .select("month_year, month_num")
+    .eq("id", goal_month_id)
+    .single();
+
+  if (thisGoal) {
+    const prevYear  = thisGoal.month_num === 1 ? thisGoal.month_year - 1 : thisGoal.month_year;
+    const prevMonth = thisGoal.month_num === 1 ? 12 : thisGoal.month_num - 1;
+
+    const { data: prevGoal } = await sb
+      .from("goal_months")
+      .select("id")
+      .eq("month_year", prevYear)
+      .eq("month_num", prevMonth)
+      .maybeSingle();
+
+    if (prevGoal) {
+      // Get prior month production for all LOs on the current leaderboard
+      const profileIds = board.map((r) => r.profile_id);
+      const { data: prevProd } = await sb
+        .from("goal_production")
+        .select("profile_id, funded_volume")
+        .eq("goal_month_id", prevGoal.id)
+        .in("profile_id", profileIds);
+
+      // Sum prior month funded_volume per profile
+      const prevByProfile = new Map<string, number>();
+      for (const row of prevProd ?? []) {
+        prevByProfile.set(
+          row.profile_id,
+          (prevByProfile.get(row.profile_id) ?? 0) + (row.funded_volume ?? 0),
+        );
+      }
+
+      // Compute improvement pct — only for LOs who had prior month data > 0
+      let topImprovedPct  = -Infinity;
+      let topImprovedRow: typeof board[0] | null = null;
+
+      for (const row of board) {
+        if (row.funded_volume_actual <= 0) continue;
+        const prev = prevByProfile.get(row.profile_id) ?? 0;
+        if (prev <= 0) continue; // can't compute % improvement from zero baseline
+        const improvePct = ((row.funded_volume_actual - prev) / prev) * 100;
+        if (improvePct > topImprovedPct) {
+          topImprovedPct  = improvePct;
+          topImprovedRow  = row;
+        }
+      }
+
+      if (topImprovedRow && topImprovedPct > 0) {
+        await issueAward(
+          "most_improved", "Most Improved", "🔥",
+          topImprovedRow.profile_id,
+          {
+            current_volume: topImprovedRow.funded_volume_actual,
+            prior_volume:   prevByProfile.get(topImprovedRow.profile_id) ?? 0,
+            improvement_pct: Math.round(topImprovedPct),
+          },
+        );
+      }
+    }
   }
 
   // ── Send award emails ─────────────────────────────────────────

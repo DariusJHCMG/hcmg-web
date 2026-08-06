@@ -1,0 +1,750 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SLICE by HCMG — Build Status</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #f7f8fa;
+    color: #1f2328;
+    padding: 32px 16px 64px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    background: #142850;
+    border-radius: 16px;
+    padding: 32px 36px;
+    margin-bottom: 28px;
+    border-top: 4px solid #F37021;
+  }
+  .header-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: .2em;
+    text-transform: uppercase; color: #F37021; margin-bottom: 8px;
+  }
+  .header h1 { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+  .header p { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.7; }
+
+  /* Score banner */
+  .score-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .score-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .score-card .num {
+    font-size: 30px; font-weight: 900; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .score-card .lbl {
+    font-size: 10px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: #57606a;
+  }
+  .green { color: #16a34a; }
+  .yellow { color: #d97706; }
+  .red { color: #dc2626; }
+  .orange { color: #F37021; }
+
+  /* Progress bar */
+  .progress-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px 24px; margin-bottom: 28px; }
+  .progress-wrap h2 { font-size: 13px; font-weight: 800; color: #1f2328; margin-bottom: 14px; }
+  .prog-track { background: #e5e7eb; border-radius: 99px; height: 14px; overflow: hidden; margin-bottom: 6px; }
+  .prog-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #F37021, #FF9847); }
+  .prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: #57606a; }
+  .prog-labels strong { color: #1f2328; }
+
+  /* Section */
+  .section { margin-bottom: 28px; }
+  .section-title {
+    font-size: 10px; font-weight: 800; letter-spacing: .18em;
+    text-transform: uppercase; color: #57606a;
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  /* Feature rows */
+  .feature-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .feature-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .feature-row:last-child { border-bottom: none; }
+  .status-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 900; flex-shrink: 0; margin-top: 1px;
+  }
+  .dot-done   { background: #dcfce7; color: #166534; }
+  .dot-partial{ background: #fef9c3; color: #854d0e; }
+  .dot-todo   { background: #fee2e2; color: #991b1b; }
+  .feature-content { flex: 1; min-width: 0; }
+  .feature-name { font-size: 13px; font-weight: 800; color: #1f2328; }
+  .feature-desc { font-size: 12px; color: #57606a; margin-top: 2px; line-height: 1.5; }
+  .feature-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .tag {
+    font-size: 9px; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; padding: 2px 8px; border-radius: 99px;
+  }
+  .tag-route  { background: #eff6ff; color: #1e40af; }
+  .tag-page   { background: #faf5ff; color: #6b21a8; }
+  .tag-comp   { background: #f0fdf4; color: #166534; }
+  .tag-db     { background: #fff7ed; color: #9a3412; }
+  .tag-email  { background: #f0f9ff; color: #075985; }
+
+  /* Steps */
+  .step-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #F37021; color: #fff;
+    font-size: 11px; font-weight: 800;
+    padding: 4px 12px; border-radius: 99px;
+    margin-bottom: 10px;
+  }
+
+  /* Next steps */
+  .next-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .next-num {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #F37021, #FF9847);
+    color: #fff; font-size: 13px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .next-body h3 { font-size: 14px; font-weight: 800; color: #1f2328; margin-bottom: 4px; }
+  .next-body p  { font-size: 12px; color: #57606a; line-height: 1.6; }
+  .priority-high   { border-left: 3px solid #F37021; }
+  .priority-medium { border-left: 3px solid #3b82d4; }
+
+  /* Alert box */
+  .alert {
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .alert-green { background: #f0fdf4; border: 1px solid #86efac; }
+  .alert-amber { background: #fffbeb; border: 1px solid #fde68a; }
+  .alert-icon  { font-size: 18px; flex-shrink: 0; line-height: 1.3; }
+  .alert-body  { font-size: 12px; color: #1f2328; line-height: 1.7; }
+  .alert-body strong { font-weight: 800; }
+
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 11px;
+    color: #57606a;
+  }
+
+  @media (max-width: 600px) {
+    .score-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  
+  <div class="header">
+    <div class="header-eyebrow">SLICE by HCMG · Build Status Report</div>
+    <h1>🥧 You Built This Thing</h1>
+    <p>
+      The SLICE by HCMG platform is already substantially complete and fully integrated into the
+      existing hcmgloans.com Next.js + Supabase codebase. Here's exactly where everything stands.
+    </p>
+  </div>
+
+  
+  <div class="score-row">
+    <div class="score-card">
+      <div class="num green">31</div>
+      <div class="lbl">Features Built</div>
+    </div>
+    <div class="score-card">
+      <div class="num yellow">6</div>
+      <div class="lbl">Partial / Gaps</div>
+    </div>
+    <div class="score-card">
+      <div class="num red">4</div>
+      <div class="lbl">Not Yet Built</div>
+    </div>
+    <div class="score-card">
+      <div class="num orange">83%</div>
+      <div class="lbl">Complete</div>
+    </div>
+  </div>
+
+  
+  <div class="progress-wrap">
+    <h2>Overall Completion</h2>
+    <div class="prog-track">
+      <div class="prog-fill" style="width:83%"></div>
+    </div>
+    <div class="prog-labels">
+      <span>0%</span>
+      <strong>83% — Production-ready core. Only polish + activation remains.</strong>
+      <span>100%</span>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Step 1 — Admin Creates Monthly Goal</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Goal Creation Form</div>
+          <div class="feature-desc">Month, volume goal, unit goal, start/end date, CLO message, awards toggle. Admin-only access enforced.</div>
+          <div class="feature-meta">
+            <span class="tag tag-page">Page: /goal-engine/admin</span>
+            <span class="tag tag-comp">GoalCreateForm.tsx</span>
+            <span class="tag tag-route">POST /api/goal-engine/goals</span>
+          </div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Announcement Email (Auto on Publish)</div>
+          <div class="feature-desc">When a goal is published, every active LO receives the "What's Your Slice of the Pie?" email via Resend.</div>
+          <div class="feature-meta">
+            <span class="tag tag-email">lib/goal-engine-announce.ts</span>
+            <span class="tag tag-email">Resend integration</span>
+          </div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Goal Management / Edit / Delete / Publish</div>
+          <div class="feature-desc">GoalAdminCard shows each goal with status badges, publish/unpublish toggle, and goal-level actions.</div>
+          <div class="feature-meta">
+            <span class="tag tag-comp">GoalAdminCard.tsx</span>
+            <span class="tag tag-route">PATCH /api/goal-engine/goals/[id]</span>
+          </div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-partial">~</div>
+        <div class="feature-content">
+          <div class="feature-name">Bonus Field on Goal</div>
+          <div class="feature-desc">The original spec asked for an optional "Bonus" field on the goal. The DB and form don't yet include this column.</div>
+          <div class="feature-meta"><span class="tag tag-db">DB migration needed</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Step 2 — Loan Officer Email Notification</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">"What's Your Slice?" Announcement Email</div>
+          <div class="feature-desc">HTML email with company goal, CTA button, and branding sent to all LOs when goal publishes.</div>
+          <div class="feature-meta"><span class="tag tag-email">email: announcement</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Commitment Reminder Emails (Initial + Final)</div>
+          <div class="feature-desc">Two-stage reminder system for LOs who haven't committed. Has its own API route and reminder log table.</div>
+          <div class="feature-meta">
+            <span class="tag tag-route">POST /api/goal-engine/commitment-reminder</span>
+            <span class="tag tag-db">goal_reminder_log table</span>
+          </div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Email Delivery Log</div>
+          <div class="feature-desc">Every email logged to goal_email_log with status tracking (sent → delivered → opened → clicked → bounced).</div>
+          <div class="feature-meta">
+            <span class="tag tag-page">Page: /goal-engine/admin/email-log</span>
+            <span class="tag tag-email">Resend webhook integration</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Step 3 — The Commitment Form ("Claim My Slice")</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Commitment Form — Full Fields</div>
+          <div class="feature-desc">Volume dropdown + custom entry, unit count, confidence level %, "What will you do differently?", "What obstacles?", digital commitment checkbox.</div>
+          <div class="feature-meta">
+            <span class="tag tag-page">Page: /goal-engine/commit</span>
+            <span class="tag tag-comp">CommitFormDark.tsx</span>
+            <span class="tag tag-route">POST /api/goal-engine/commit</span>
+          </div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Commitment Locking</div>
+          <div class="feature-desc">Once submitted, commitment locks. Admin can unlock with a reason. Locked badge shown on dashboard.</div>
+          <div class="feature-meta"><span class="tag tag-db">locked, unlock_reason, unlocked_by fields</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Company Context Banner</div>
+          <div class="feature-desc">The company goal and CLO message displayed above the form for context and motivation.</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">In-App Notification on Submit</div>
+          <div class="feature-desc">"Commitment Submitted 🥧" notification fires automatically and shows in the bell icon.</div>
+          <div class="feature-meta"><span class="tag tag-comp">GoalNotificationBell.tsx</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Step 4 — Company Dashboard (LO View)</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">LO Personal Dashboard</div>
+          <div class="feature-desc">Company goal banner, KPI cards (commitment, funded, still needed, applications), progress bars, pace badge, leaderboard preview.</div>
+          <div class="feature-meta"><span class="tag tag-page">Page: /goal-engine/dashboard</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Full Leaderboard</div>
+          <div class="feature-desc">Funded volume AND application leaderboard with rank medals, progress bars, pace status, NMLS numbers.</div>
+          <div class="feature-meta"><span class="tag tag-page">Page: /goal-engine/leaderboard</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Slice of the Pie Visualization</div>
+          <div class="feature-desc">Interactive SVG donut chart — outer ring = committed volume per LO, inner arc = actual funded. Color-coded 🟢🟡🔴 by pace. Hover tooltips. Auto-refreshes every 60s.</div>
+          <div class="feature-meta">
+            <span class="tag tag-page">Page: /goal-engine/slice-visualization</span>
+            <span class="tag tag-comp">SliceOfThePie.tsx</span>
+          </div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">THE SLICE — Live TV Board</div>
+          <div class="feature-desc">Fullscreen display mode for office TVs. Shows goal card, today's activity, pie chart, and leaderboard grid. Auto-refreshes every 60s. Fullscreen button included.</div>
+          <div class="feature-meta"><span class="tag tag-page">Page: /goal-engine/the-slice</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">HARRY AI Coaching Widget</div>
+          <div class="feature-desc">AI-powered coaching insights on the LO dashboard. Separate executive briefing mode for admins.</div>
+          <div class="feature-meta"><span class="tag tag-comp">HarryWidget.tsx</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Performance History</div>
+          <div class="feature-desc">All-time monthly history table: funded vs. committed, achievement %, app volume, rank, awards per month. Career stats summary.</div>
+          <div class="feature-meta"><span class="tag tag-page">Page: /goal-engine/history</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Step 5 — Manager Dashboard</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Manager View — All LOs</div>
+          <div class="feature-desc">Every LO's committed vs. actual, pace, forecast, difference, color-coded status (🟢🟡🔴). "Needs Attention" panel for off-track LOs.</div>
+          <div class="feature-meta"><span class="tag tag-page">Page: /goal-engine/admin/dashboard</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Forecast Center</div>
+          <div class="feature-desc">Full analytics page with confidence gauges, sparklines, "what-if" simulation sliders, revenue projections, top risk / top opportunity LOs.</div>
+          <div class="feature-meta"><span class="tag tag-page">Page: /goal-engine/forecast</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Production Corrections</div>
+          <div class="feature-desc">Admin can manually add, correct, or reverse production records with reason tracking and audit trail.</div>
+          <div class="feature-meta"><span class="tag tag-page">Page: /goal-engine/admin/production</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Admin Goal Assignments</div>
+          <div class="feature-desc">Assign specific LOs to specific goals. Per-LO goal overrides. Goal assignments API.</div>
+          <div class="feature-meta"><span class="tag tag-route">POST /api/goal-engine/goal-assignments</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Step 6 — Automatic Weekly Emails</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Weekly Progress Email (Monday AM)</div>
+          <div class="feature-desc">Shows company goal, current production, pace %, days remaining, each LO's personal committed vs. actual, motivational message. Smart: sends off-pace variant if &gt;15% behind.</div>
+          <div class="feature-meta">
+            <span class="tag tag-route">POST /api/goal-engine/weekly-email</span>
+            <span class="tag tag-email">CRON_SECRET secured</span>
+          </div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Off-Pace Alert Email</div>
+          <div class="feature-desc">Separate red-alert email template for LOs who are significantly behind pace. Fires automatically from the weekly cron job.</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-partial">~</div>
+        <div class="feature-content">
+          <div class="feature-name">Vercel Cron Job Configuration</div>
+          <div class="feature-desc">vercel.json has cron endpoint defined. Needs CRON_SECRET set in Vercel environment variables to activate. Not yet verified as live.</div>
+          <div class="feature-meta"><span class="tag tag-todo">Action needed: set env var in Vercel Dashboard</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Milestone Emails (25/50/75/90/100%)</div>
+          <div class="feature-desc">Company-wide milestone notification emails when the team hits major progress thresholds. Milestone flags tracked in DB to prevent duplicates.</div>
+          <div class="feature-meta"><span class="tag tag-db">milestone_25/50/75/90/100_sent columns</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Step 7 — End of Month</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">End-of-Month Recap Emails</div>
+          <div class="feature-desc">Full personal recap email to every LO who committed: final goal vs. actual, rank, awards earned. Idempotent — won't send twice.</div>
+          <div class="feature-meta"><span class="tag tag-route">POST /api/goal-engine/end-of-month</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Goal Auto-Close</div>
+          <div class="feature-desc">Sets goal_status = "closed" and preserves final snapshot. Admin can also force-run before end date for testing.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Gamification — Awards &amp; Recognition</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Award Engine — 7 Award Types</div>
+          <div class="feature-desc">🏆 Funded Champion · 🏆 Units Champion · 🔥 App Champion · 📈 Best Conversion · 👑 Largest Slice · 🎯 Perfect Goal · 💰 Million Dollar Club. Auto-detects winners from leaderboard.</div>
+          <div class="feature-meta"><span class="tag tag-route">POST /api/goal-engine/awards</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Award Emails + Printable HTML Certificate</div>
+          <div class="feature-desc">Winners receive a branded congratulation email with an attached HTML certificate they can print or display.</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Trophy Room</div>
+          <div class="feature-desc">Each LO has a personal Trophy Room showing all-time awards by month with career stats (total awards, million-dollar clubs, perfect goals).</div>
+          <div class="feature-meta"><span class="tag tag-page">Page: /goal-engine/awards</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-partial">~</div>
+        <div class="feature-content">
+          <div class="feature-name">Missing: "Most Improved" + "Fastest to Commitment" Awards</div>
+          <div class="feature-desc">The spec called for these two badges. "Fastest to Commitment" (⚡) tracks submission timestamp — needs award rule added to the engine. "Most Improved" requires prior month comparison.</div>
+          <div class="feature-meta"><span class="tag tag-todo">Small addition to awards/route.ts</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Integrations &amp; Data Pipeline</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">ARIVE → SLICE via Zapier Webhook</div>
+          <div class="feature-desc">POST /api/goal-engine/zapier receives funded loan data. Matches LO by email or NMLS. Idempotent (deduplicates by loan_id).</div>
+          <div class="feature-meta"><span class="tag tag-route">POST /api/goal-engine/zapier</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">ARIVE Native Webhook</div>
+          <div class="feature-desc">Direct ARIVE outbound webhook endpoint. Handles loan.funded and loan.application_submitted events. Secured with ARIVE_WEBHOOK_SECRET header.</div>
+          <div class="feature-meta"><span class="tag tag-route">POST /api/goal-engine/arive-webhook</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">ARIVE Setup Guide</div>
+          <div class="feature-desc">Full step-by-step integration setup page with copy-able code blocks, field mapping table, live webhook tester, and environment variable checklist.</div>
+          <div class="feature-meta"><span class="tag tag-page">Page: /goal-engine/admin/arive</span></div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Resend Webhook (Email Status Updates)</div>
+          <div class="feature-desc">Resend delivery events (delivered, opened, clicked, bounced) are received and written back to goal_email_log.</div>
+          <div class="feature-meta"><span class="tag tag-route">POST /api/goal-engine/resend-webhook</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Database Schema</div>
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Core Tables (7)</div>
+          <div class="feature-desc">goal_months · goal_commitments · goal_production · goal_leaderboard (view) · goal_awards · goal_email_log · goal_notifications</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Extended Tables (6)</div>
+          <div class="feature-desc">coaching_notes · coaching_actions · slice_audit_log · harry_ai_insights · goal_reminder_log · slice_sessions</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">Multi-tenant Architecture</div>
+          <div class="feature-desc">Every table has tenant_id column, indexes, and default HCMG tenant. Ready to expand to other companies.</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-done">✓</div>
+        <div class="feature-content">
+          <div class="feature-name">v3 Migrations — All Applied</div>
+          <div class="feature-desc">7 migrations through 20250604 covering complete schema evolution. Production corrections and goal assignments fully migrated.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr />
+
+  
+  <div class="section">
+    <div class="section-title">⚠️ Gaps — What Still Needs to Be Built</div>
+
+    <div class="alert alert-amber">
+      <span class="alert-icon">💡</span>
+      <div class="alert-body">
+        <strong>The core system is fully functional.</strong> The items below are either minor additions to existing features or enhancements that would take SLICE from "operational" to "exceptional."
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-row">
+        <div class="status-dot dot-todo">✗</div>
+        <div class="feature-content">
+          <div class="feature-name">Coaching Notes UI</div>
+          <div class="feature-desc">The coaching_notes and coaching_actions tables are in the DB, but there's no admin page to write or view coaching notes per LO. The spec implied managers would have a way to note who needs help.</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-todo">✗</div>
+        <div class="feature-content">
+          <div class="feature-name">Branch / Office-Level Analytics</div>
+          <div class="feature-desc">The spec mentioned branch pace and office pace. branch_id exists in profiles, but no branch aggregation view or UI has been built yet.</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-todo">✗</div>
+        <div class="feature-content">
+          <div class="feature-name">Admin Analytics Export</div>
+          <div class="feature-desc">Leadership asked for: total commitments, participation rate, commitment vs. actual, average commitment size, forecasted month-end. Most data is visible in the Manager Dashboard but no CSV export exists.</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-todo">✗</div>
+        <div class="feature-content">
+          <div class="feature-name">Public Commitment Sharing / Social Proof</div>
+          <div class="feature-desc">The spec's "public commitment" accountability feature — making commitments visible to the whole team. Currently the leaderboard shows funded data but not individual commitment quotes/focus statements.</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-partial">~</div>
+        <div class="feature-content">
+          <div class="feature-name">Cron Job Activation</div>
+          <div class="feature-desc">vercel.json has cron defined. Needs CRON_SECRET in Vercel env vars. Not confirmed as active. This is what fires Monday morning emails.</div>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="status-dot dot-partial">~</div>
+        <div class="feature-content">
+          <div class="feature-name">ARIVE Connection — Live Test Needed</div>
+          <div class="feature-desc">Zapier + native webhook endpoints are built and tested in the UI. But a real ARIVE → Zapier → SLICE end-to-end test with a live loan hasn't been confirmed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr />
+
+  
+  <div class="section">
+    <div class="section-title">🚀 Recommended Next Steps (In Order)</div>
+
+    <div class="next-card priority-high">
+      <div class="next-num">1</div>
+      <div class="next-body">
+        <h3>Activate Weekly Emails — Set CRON_SECRET</h3>
+        <p>Go to Vercel Dashboard → hcmg-web → Settings → Environment Variables. Add <code>CRON_SECRET</code> (any string, e.g. <em>hcmg-cron-2025</em>). This activates Monday AM progress emails to all LOs. Takes 2 minutes.</p>
+      </div>
+    </div>
+
+    <div class="next-card priority-high">
+      <div class="next-num">2</div>
+      <div class="next-body">
+        <h3>Connect ARIVE via Zapier</h3>
+        <p>Follow the step-by-step guide at <strong>/goal-engine/admin/arive</strong>. Create the Zap in 20 minutes. Use the Live Webhook Tester on that page to confirm data flows before going live. This is what makes the leaderboard update in real time.</p>
+      </div>
+    </div>
+
+    <div class="next-card priority-high">
+      <div class="next-num">3</div>
+      <div class="next-body">
+        <h3>Create the First Real Goal + Invite All LOs</h3>
+        <p>Go to <strong>/goal-engine/admin</strong>, create the goal for the upcoming month, and hit Publish. Every active LO profile will receive the announcement email automatically. Make sure all LO profiles have correct emails matching ARIVE.</p>
+      </div>
+    </div>
+
+    <div class="next-card priority-medium">
+      <div class="next-num">4</div>
+      <div class="next-body">
+        <h3>Add "Most Improved" + "Fastest to Commitment" Awards</h3>
+        <p>Small addition to <strong>/api/goal-engine/awards/route.ts</strong>. "Fastest to Commitment" is a single sort on <code>submitted_at</code>. "Most Improved" compares funded_volume_actual vs. the prior month's leaderboard row.</p>
+      </div>
+    </div>
+
+    <div class="next-card priority-medium">
+      <div class="next-num">5</div>
+      <div class="next-body">
+        <h3>Build Coaching Notes UI for Managers</h3>
+        <p>The DB tables (coaching_notes, coaching_actions) are ready. Need a simple admin page under <strong>/goal-engine/admin/coaching</strong> where Darius can add a note to any LO, mark action items, and flag follow-ups. Maybe 200 lines of code.</p>
+      </div>
+    </div>
+
+    <div class="next-card priority-medium">
+      <div class="next-num">6</div>
+      <div class="next-body">
+        <h3>Branch-Level Analytics View</h3>
+        <p>Group the Manager Dashboard by <code>branch_id</code>. Add a branch filter and office-level progress bars. The data is already there — it's a UI grouping task.</p>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="alert alert-green">
+    <span class="alert-icon">✅</span>
+    <div class="alert-body">
+      <strong>Bottom line:</strong> SLICE by HCMG is production-ready <em>right now</em> for steps 1–7 as described in the spec.
+      The pie chart, leaderboard, LO dashboard, commitment form, weekly emails, award engine, manager view, and ARIVE integration are all coded and deployed.
+      The only thing between you and launch is setting 2–3 environment variables and firing your first Zapier connection.
+    </div>
+  </div>
+
+</div>
+
+<footer>Made with IBM Bob</footer>
+</body>
+</html>

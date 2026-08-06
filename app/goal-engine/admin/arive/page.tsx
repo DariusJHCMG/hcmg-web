@@ -144,26 +144,44 @@ export default function ArivePage() {
     setSendingNative(false);
   }
 
-  const zapierPayloadExample = JSON.stringify({
-    lo_email:      "johndoe@hcmgloans.com",
+  const zapierFundedPayload = JSON.stringify({
     lo_nmls:       "123456",
+    lo_email:      "johndoe@hcmgloans.com",
     loan_id:       "ARIVE-LN-00012345",
     funded_date:   "2025-07-15",
     funded_volume: 485000,
     funded_unit:   1,
-    app_date:      "2025-07-01",
-    app_volume:    485000,
-    app_unit:      1,
+  }, null, 2);
+
+  const zapierAppPayload = JSON.stringify({
+    lo_nmls:    "123456",
+    lo_email:   "johndoe@hcmgloans.com",
+    loan_id:    "ARIVE-LN-00012345",
+    app_date:   "2025-07-01",
+    app_volume: 485000,
+    app_unit:   1,
   }, null, 2);
 
   const ariveNativePayload = JSON.stringify({
     event: "loan.funded",
     loan: {
-      id:                 "ARIVE-LN-00012345",
-      loanOfficerEmail:   "johndoe@hcmgloans.com",
-      loanAmount:         485000,
-      fundedDate:         "2025-07-15",
-      applicationDate:    "2025-07-01",
+      id:               "ARIVE-LN-00012345",
+      loanOfficerNmls:  "123456",
+      loanOfficerEmail: "johndoe@hcmgloans.com",
+      loanAmount:       485000,
+      fundedDate:       "2025-07-15",
+      applicationDate:  "2025-07-01",
+    }
+  }, null, 2);
+
+  const ariveAppPayload = JSON.stringify({
+    event: "loan.application_submitted",
+    loan: {
+      id:               "ARIVE-LN-00012345",
+      loanOfficerNmls:  "123456",
+      loanOfficerEmail: "johndoe@hcmgloans.com",
+      loanAmount:       485000,
+      applicationDate:  "2025-07-01",
     }
   }, null, 2);
 
@@ -250,20 +268,21 @@ export default function ArivePage() {
           </table>
         </Step>
 
-        <Step num={4} title="Map ARIVE fields to the payload">
-          <p style={{ margin:"0 0 12px", fontSize:13, color:C.muted }}>In the Zapier action body, map these fields from the ARIVE trigger data:</p>
-          <CodeBlock label="Expected JSON payload" code={zapierPayloadExample} />
-          <div style={{ marginTop:12, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+        <Step num={4} title="Create TWO Zaps — one for funded, one for applications">
+          <p style={{ margin:"0 0 12px", fontSize:13, color:C.muted }}>
+            You need <strong style={{ color:C.ink }}>two separate Zaps</strong> — one for each event type.
+            Each Zap sends only its own fields so the other event&apos;s data is never overwritten.
+          </p>
+          <p style={{ margin:"0 0 8px", fontSize:12, fontWeight:700, color:C.ink }}>Zap 1 — Loan Funded</p>
+          <CodeBlock label="Funded event payload" code={zapierFundedPayload} />
+          <div style={{ marginTop:8, marginBottom:16, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
             {[
-              { field: "lo_email",      from: "ARIVE: Loan Officer Email",   required: true },
-              { field: "lo_nmls",       from: "ARIVE: Loan Officer NMLS",    required: false },
-              { field: "loan_id",       from: "ARIVE: Loan ID",              required: true },
-              { field: "funded_date",   from: "ARIVE: Funded Date",          required: false },
-              { field: "funded_volume", from: "ARIVE: Loan Amount",          required: false },
+              { field: "lo_nmls",       from: "ARIVE: Loan Officer NMLS",    required: true  },
+              { field: "lo_email",      from: "ARIVE: Loan Officer Email",   required: false },
+              { field: "loan_id",       from: "ARIVE: Loan ID",              required: true  },
+              { field: "funded_date",   from: "ARIVE: Funded Date",          required: true  },
+              { field: "funded_volume", from: "ARIVE: Loan Amount",          required: true  },
               { field: "funded_unit",   from: "Hard-code: 1",                required: false },
-              { field: "app_date",      from: "ARIVE: Application Date",     required: false },
-              { field: "app_volume",    from: "ARIVE: Loan Amount",          required: false },
-              { field: "app_unit",      from: "Hard-code: 1",                required: false },
             ].map(f => (
               <div key={f.field} style={{ background:C.sand, borderRadius:8, padding:"10px 14px", border:`1px solid ${C.line}` }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
@@ -273,6 +292,33 @@ export default function ArivePage() {
                 <p style={{ margin:0, fontSize:11, color:C.muted }}>← {f.from}</p>
               </div>
             ))}
+          </div>
+          <p style={{ margin:"0 0 8px", fontSize:12, fontWeight:700, color:C.ink }}>Zap 2 — Application Submitted</p>
+          <CodeBlock label="Application event payload" code={zapierAppPayload} />
+          <div style={{ marginTop:8, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+            {[
+              { field: "lo_nmls",    from: "ARIVE: Loan Officer NMLS",    required: true  },
+              { field: "lo_email",   from: "ARIVE: Loan Officer Email",   required: false },
+              { field: "loan_id",    from: "ARIVE: Loan ID",              required: true  },
+              { field: "app_date",   from: "ARIVE: Application Date",     required: true  },
+              { field: "app_volume", from: "ARIVE: Loan Amount",          required: true  },
+              { field: "app_unit",   from: "Hard-code: 1",                required: false },
+            ].map(f => (
+              <div key={f.field} style={{ background:C.sand, borderRadius:8, padding:"10px 14px", border:`1px solid ${C.line}` }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
+                  <code style={{ fontSize:11, color:C.navy, fontWeight:700 }}>{f.field}</code>
+                  {f.required && <span style={{ fontSize:9, background:"#fee2e2", color:"#991b1b", padding:"1px 5px", borderRadius:3, fontWeight:800 }}>required</span>}
+                </div>
+                <p style={{ margin:0, fontSize:11, color:C.muted }}>← {f.from}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop:14, padding:"12px 16px", borderRadius:10, background:"#fffbeb", border:"1px solid #fde68a" }}>
+            <p style={{ margin:0, fontSize:12, color:"#92400e", lineHeight:1.8 }}>
+              <strong>💡 Why two Zaps?</strong> Each Zap only knows about its own event&apos;s fields.
+              If you send both funded and app fields in one Zap, the second time the same loan fires
+              it would overwrite the other event&apos;s data. Two Zaps = clean merge, no overwrites.
+            </p>
           </div>
         </Step>
 
@@ -396,8 +442,9 @@ export default function ArivePage() {
         </p>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {[
-            { priority: "1st", label: "NMLS match", desc: "lo_nmls in webhook → profiles.nmls column", icon:"🏆" },
-            { priority: "2nd", label: "Email match", desc: "lo_email in webhook → profiles.email column", icon:"📧" },
+            { priority: "1st", label: "NMLS match",      desc: "loanOfficerNmls / lo_nmls → profiles.nmls — most reliable, never changes", icon:"🏆" },
+            { priority: "2nd", label: "Email match",      desc: "loanOfficerEmail / lo_email → profiles.email — fallback if no NMLS", icon:"📧" },
+            { priority: "3rd", label: "ARIVE LO ID",      desc: "loanOfficerId / lo_id → profiles.arive_lo_id — set in Team Members page", icon:"🔑" },
           ].map(r => (
             <div key={r.priority} style={{ display:"flex", alignItems:"center", gap:14, background:C.sand, borderRadius:10, padding:"12px 16px", border:`1px solid ${C.line}` }}>
               <span style={{ fontSize:20 }}>{r.icon}</span>
