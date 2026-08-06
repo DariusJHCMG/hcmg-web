@@ -8,6 +8,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { SliceOfThePie, type PieSlice } from "@/components/goal-engine/SliceOfThePie";
 
 const C = {
   bg:     "#F8FAFC",
@@ -192,7 +193,7 @@ export default function TheSlicePage() {
           </div>
         </div>
       ) : (
-        <div style={{ flex:1, display:"grid", gridTemplateColumns:"1fr 1fr", gridTemplateRows:"auto 1fr", gap:20, padding:"24px 28px 28px" }}>
+        <div style={{ flex:1, display:"grid", gridTemplateColumns:"1fr 1fr", gridTemplateRows:"auto auto 1fr", gap:20, padding:"24px 28px 28px" }}>
 
           {/* ── Company Goal Card (top-left) ── */}
           <div style={{
@@ -292,6 +293,46 @@ export default function TheSlicePage() {
                 {fmtPct(volPct)} of goal
               </span>
             </div>
+          </div>
+
+          {/* ── Slice of the Pie (full width, between stats and leaderboard) ── */}
+          <div style={{
+            gridColumn:"1 / -1",
+            background:"#fff", borderRadius:20, border:`1px solid ${C.line}`,
+            padding:"24px 28px",
+            boxShadow:"0 1px 8px rgba(20,40,80,0.06)",
+          }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:10 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <span style={{ fontSize:20 }}>🥧</span>
+                <div>
+                  <p style={{ margin:0, fontSize:15, fontWeight:900, color:C.navy }}>Slice of the Pie</p>
+                  <p style={{ margin:"2px 0 0", fontSize:11, color:C.muted }}>Funded commitment by LO · Inner arc = actual progress</p>
+                </div>
+              </div>
+              <a href="/goal-engine/slice-visualization" style={{
+                fontSize:12, fontWeight:800, color:C.orange, textDecoration:"none",
+                padding:"5px 14px", borderRadius:8, border:`1px solid rgba(243,112,33,0.25)`,
+                background:"rgba(243,112,33,0.05)",
+              }}>View Full →</a>
+            </div>
+            {(() => {
+              const pieSlices: PieSlice[] = board.map(row => ({
+                profile_id:               String(row.profile_id ?? ""),
+                full_name:                String(row.full_name  ?? ""),
+                avatar_url:               row.avatar_url ? String(row.avatar_url) : null,
+                funded_volume_commitment: Number(row.funded_volume_commitment ?? 0),
+                funded_volume_actual:     Number(row.funded_volume_actual     ?? 0),
+                funded_units_actual:      Number(row.funded_units_actual      ?? 0),
+              }));
+              return (
+                <SliceOfThePie
+                  goalVol={goalVol}
+                  slices={pieSlices}
+                  compact
+                />
+              );
+            })()}
           </div>
 
           {/* ── Leaderboard (bottom — full width) ── */}

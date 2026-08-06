@@ -28,20 +28,22 @@ const C = {
 };
 
 const LO_NAV = [
-  { label: "Dashboard",    href: "/goal-engine/dashboard",  icon: "⊞" },
-  { label: "My Slice",     href: "/goal-engine/commit",      icon: "🥧" },
-  { label: "Leaderboard",  href: "/goal-engine/leaderboard", icon: "🏅" },
-  { label: "History",      href: "/goal-engine/history",     icon: "📈" },
-  { label: "Trophy Room",  href: "/goal-engine/awards",      icon: "🏆" },
+  { label: "Dashboard",    href: "/goal-engine/dashboard",           icon: "⊞"  },
+  { label: "My Slice",     href: "/goal-engine/commit",              icon: "🥧" },
+  { label: "Leaderboard",  href: "/goal-engine/leaderboard",        icon: "🏅" },
+  { label: "The Pie",      href: "/goal-engine/slice-visualization", icon: "🥧" },
+  { label: "History",      href: "/goal-engine/history",            icon: "📈" },
+  { label: "Trophy Room",  href: "/goal-engine/awards",             icon: "🏆" },
 ];
 
 const ADMIN_NAV = [
-  { label: "Dashboard",    href: "/goal-engine/dashboard",       icon: "⊞"  },
-  { label: "My Slice",     href: "/goal-engine/commit",           icon: "🥧" },
-  { label: "Leaderboard",  href: "/goal-engine/leaderboard",     icon: "🏅" },
-  { label: "History",      href: "/goal-engine/history",         icon: "📈" },
-  { label: "Trophy Room",  href: "/goal-engine/awards",          icon: "🏆" },
-  { label: "THE SLICE",    href: "/goal-engine/the-slice",       icon: "📺" },
+  { label: "Dashboard",    href: "/goal-engine/dashboard",           icon: "⊞"  },
+  { label: "My Slice",     href: "/goal-engine/commit",              icon: "🥧" },
+  { label: "Leaderboard",  href: "/goal-engine/leaderboard",        icon: "🏅" },
+  { label: "The Pie",      href: "/goal-engine/slice-visualization", icon: "🥧" },
+  { label: "History",      href: "/goal-engine/history",            icon: "📈" },
+  { label: "Trophy Room",  href: "/goal-engine/awards",             icon: "🏆" },
+  { label: "THE SLICE",    href: "/goal-engine/the-slice",          icon: "📺" },
 ];
 
 const ADMIN_SECTION = [
