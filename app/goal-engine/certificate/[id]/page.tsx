@@ -13,7 +13,8 @@ import { fmt$ } from "@/lib/goal-engine";
 export const dynamic = "force-dynamic";
 
 // Tell Next.js to render this as a full document (no layout)
-export default async function CertificatePage({ params }: { params: { id: string } }) {
+export default async function CertificatePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const sb = createServiceClient();
 
   const { data: award } = await sb
@@ -23,7 +24,7 @@ export default async function CertificatePage({ params }: { params: { id: string
       goal_months(month_label),
       profiles!goal_awards_profile_id_fkey(full_name)
     `)
-    .eq("id", params.id)
+    .eq("id", id)
     .maybeSingle();
 
   if (!award) notFound();
