@@ -317,9 +317,9 @@ export function SliceOfThePie({ goalVol, slices, compact = false }: Props) {
 
   // ── Centre label ──────────────────────────────────────────────
   const centreLines = [
-    { text: fmt$short(totalActualVol), size: 32, weight: 900, color: C.navy, dy: -14 },
-    { text: "of " + fmt$short(goalVol), size: 12, weight: 700, color: C.muted, dy: 12 },
-    { text: `${overallPct.toFixed(0)}% funded`, size: 14, weight: 800, color: C.orange, dy: 32 },
+    { text: fmt$short(totalActualVol), size: 30, weight: 900, color: C.navy,   dy: 4  },
+    { text: "of " + fmt$short(goalVol), size: 12, weight: 700, color: C.muted, dy: 24 },
+    { text: `${overallPct.toFixed(0)}% funded`, size: 14, weight: 800, color: C.orange, dy: 44 },
   ];
 
   // Label placement — only show if arc is big enough (>5 deg)
@@ -537,6 +537,13 @@ export function SliceOfThePie({ goalVol, slices, compact = false }: Props) {
               </g>
             ) : (
               <g style={{ pointerEvents: "none" }}>
+                {/* SLICE logo centred in the donut hole */}
+                <image
+                  href="/SLICE.png"
+                  x={cx - 38} y={cy - 88}
+                  width={76} height={76}
+                  style={{ imageRendering: "auto" }}
+                />
                 {centreLines.map((l, i) => (
                   <text key={i} x={cx} y={cy + l.dy}
                     textAnchor="middle" dominantBaseline="middle"
