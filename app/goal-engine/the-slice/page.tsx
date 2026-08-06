@@ -158,6 +158,15 @@ export default function TheSlicePage() {
             background:C.white, fontSize:12, fontWeight:700, color:C.muted,
             cursor:"pointer", fontFamily:"inherit",
           }}>↻ Refresh</button>
+          <button onClick={() => {
+            const el = document.documentElement;
+            if (!document.fullscreenElement) { el.requestFullscreen?.(); }
+            else { document.exitFullscreen?.(); }
+          }} style={{
+            padding:"6px 14px", borderRadius:8, border:`1px solid ${C.line}`,
+            background:C.white, fontSize:12, fontWeight:700, color:C.ink,
+            cursor:"pointer", fontFamily:"inherit",
+          }}>⛶ Fullscreen</button>
           <a href="/goal-engine/dashboard" style={{
             padding:"6px 14px", borderRadius:8,
             background:C.navy, color:"#fff",

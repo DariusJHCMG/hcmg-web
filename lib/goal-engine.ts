@@ -74,7 +74,9 @@ export function calcPace(actual: number, commitment: number): number {
 export async function getActiveGoal(): Promise<GoalMonth | null> {
   const sb  = createServiceClient();
   const now = new Date().toISOString().split("T")[0];
-  const { data } = await sb
+
+  // First: try exact date-range match (goal running right now)
+  const { data: exact } = await sb
     .from("goal_months")
     .select("*")
     .eq("is_published", true)
@@ -82,8 +84,20 @@ export async function getActiveGoal(): Promise<GoalMonth | null> {
     .gte("end_date", now)
     .order("start_date", { ascending: false })
     .limit(1)
-    .single();
-  return data as GoalMonth | null;
+    .maybeSingle();
+
+  if (exact) return exact as GoalMonth;
+
+  // Fallback: most recently published goal (covers "just ended" month still visible)
+  const { data: latest } = await sb
+    .from("goal_months")
+    .select("*")
+    .eq("is_published", true)
+    .order("start_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return (latest as GoalMonth | null) ?? null;
 }
 
 export async function getGoalById(id: string): Promise<GoalMonth | null> {

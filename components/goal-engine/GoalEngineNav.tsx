@@ -17,13 +17,14 @@ interface Props {
 }
 
 const C = {
-  navy:    "#142850",
-  navyL:   "#1e3a6e",
-  orange:  "#F37021",
+  bg:      "#F8FAFC",
   white:   "#ffffff",
-  muted:   "rgba(255,255,255,0.45)",
-  line:    "rgba(255,255,255,0.1)",
-  active:  "rgba(243,112,33,0.15)",
+  navy:    "#142850",
+  orange:  "#F37021",
+  ink:     "#1A2B42",
+  muted:   "#64748B",
+  line:    "#E2E8F0",
+  activeBg:"rgba(243,112,33,0.08)",
 };
 
 const LO_NAV = [
@@ -48,6 +49,7 @@ const ADMIN_SECTION = [
   { label: "Manager View",  href: "/goal-engine/admin/dashboard", icon: "📊" },
   { label: "Email Log",     href: "/goal-engine/admin/email-log", icon: "📧" },
   { label: "Team Members",  href: "/goal-engine/admin/users",     icon: "👥" },
+  { label: "ARIVE Setup",   href: "/goal-engine/admin/arive",     icon: "🔗" },
   { label: "Test Panel",    href: "/goal-engine/admin/test",      icon: "🧪" },
 ];
 
@@ -61,14 +63,14 @@ function NavItem({ href, icon, label, active }: { href: string; icon: string; la
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
         padding: "9px 14px", borderRadius: 10,
-        background: active ? C.active : "transparent",
+        background: active ? C.activeBg : "transparent",
         borderLeft: active ? `3px solid ${C.orange}` : "3px solid transparent",
-        transition: "all .15s",
+        transition: "background .15s",
       }}>
         <span style={{ fontSize: 15, width: 20, textAlign: "center", flexShrink: 0 }}>{icon}</span>
         <span style={{
-          fontSize: 13, fontWeight: active ? 800 : 600,
-          color: active ? C.white : C.muted,
+          fontSize: 13, fontWeight: active ? 800 : 500,
+          color: active ? C.orange : C.muted,
           whiteSpace: "nowrap",
         }}>
           {label}
@@ -98,19 +100,20 @@ export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
   const sidebar = (
     <nav style={{
       width: 220, flexShrink: 0,
-      background: C.navy,
+      background: C.white,
+      borderRight: `1px solid ${C.line}`,
       display: "flex", flexDirection: "column",
       minHeight: "100vh",
       position: "sticky", top: 0,
       overflowY: "auto",
     }}>
       {/* Logo */}
-      <div style={{ padding: "22px 16px 18px", borderBottom: `1px solid ${C.line}` }}>
+      <div style={{ padding: "20px 16px 16px", borderBottom: `1px solid ${C.line}` }}>
         <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
           <img src="/SLICE.png" alt="SLICE" style={{ height: 44, width: "auto", display: "block" }} />
           <div>
             <div style={{ fontSize: 7, fontWeight: 800, letterSpacing: ".2em", textTransform: "uppercase", color: C.orange, lineHeight: 1 }}>by</div>
-            <img src="/hcmg-wordmark-on-dark.svg" alt="HCMG" style={{ height: 11, width: "auto", display: "block", marginTop: 3 }} />
+            <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 11, width: "auto", display: "block", marginTop: 3 }} />
           </div>
         </Link>
       </div>
@@ -118,7 +121,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
       {/* Main nav */}
       <div style={{ padding: "12px 8px", flex: 1 }}>
         <div style={{ marginBottom: 4 }}>
-          <p style={{ margin: "0 0 6px 14px", fontSize: 9, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+          <p style={{ margin: "0 0 6px 14px", fontSize: 9, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: "#CBD5E1" }}>
             Navigation
           </p>
           {navLinks.map(l => (
@@ -128,7 +131,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
 
         {isAdmin && (
           <div style={{ marginTop: 20 }}>
-            <p style={{ margin: "0 0 6px 14px", fontSize: 9, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+            <p style={{ margin: "0 0 6px 14px", fontSize: 9, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: "#CBD5E1" }}>
               Admin
             </p>
             {ADMIN_SECTION.map(l => (
@@ -155,7 +158,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
             </span>
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {fullName.split(" ")[0]}
             </p>
             <p style={{ margin: "1px 0 0", fontSize: 9, fontWeight: 700, color: C.orange, textTransform: "uppercase", letterSpacing: ".1em" }}>
@@ -165,10 +168,9 @@ export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
         </div>
         <button onClick={signOut} style={{
           width: "100%", padding: "8px 0", borderRadius: 8,
-          border: "1px solid rgba(255,255,255,0.15)",
-          background: "transparent", color: "rgba(255,255,255,0.45)",
+          border: `1px solid ${C.line}`,
+          background: C.bg, color: C.muted,
           fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-          transition: "all .15s",
         }}>
           Sign out
         </button>
@@ -186,16 +188,17 @@ export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
       {/* Mobile top bar */}
       <div className="ge-mobile-bar" style={{
         display: "none", position: "sticky", top: 0, zIndex: 40,
-        background: C.navy, borderBottom: `3px solid ${C.orange}`,
+        background: C.white, borderBottom: `1px solid ${C.line}`,
+        borderTop: `3px solid ${C.orange}`,
         padding: "0 16px", height: 60,
         alignItems: "center", justifyContent: "space-between",
       }}>
         <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
           <img src="/SLICE.png" alt="SLICE" style={{ height: 36, width: "auto" }} />
-          <img src="/hcmg-wordmark-on-dark.svg" alt="HCMG" style={{ height: 10, width: "auto" }} />
+          <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 10, width: "auto" }} />
         </Link>
         <button onClick={() => setMobileOpen(o => !o)} style={{
-          background: "transparent", border: "none", color: "#fff",
+          background: "transparent", border: "none", color: C.ink,
           fontSize: 22, cursor: "pointer", lineHeight: 1,
         }}>
           {mobileOpen ? "✕" : "☰"}

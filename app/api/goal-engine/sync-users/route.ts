@@ -64,50 +64,30 @@ export async function POST(req: NextRequest) {
     existingAuthUsers.map(u => [u.email?.toLowerCase(), u as unknown as Record<string, unknown>])
   );
 
-  // ── 2. Fetch HCMG team members via TenantMembership JOIN User ─
-  // Using .from() with service role — PostgREST exposes public schema tables.
-  // TenantMembership and User are Prisma-generated tables in the public schema
-  // of the hcmg-web Supabase database.
+  // ── 2. Fetch HCMG team members via RPC helper function ────────
+  // PostgREST can't query Prisma's PascalCase tables directly via
+  // .from() due to schema cache issues. We use a SQL function instead.
+  // Run supabase/migrations/20250603_sync_helper.sql first.
   const { data: rows, error: rowsErr } = await sb
-    .from("TenantMembership")
-    .select(`
-      isTenantAdmin,
-      primaryWireRole,
-      loNmls,
-      User:userId (
-        id,
-        email,
-        name,
-        avatarUrl
-      )
-    `)
-    .eq("tenantId", HCMG_TENANT_ID)
-    .eq("isActive", true);
+    .rpc("get_hcmg_team_members", { tenant_id_param: HCMG_TENANT_ID });
 
-  if (rowsErr) {
-    // PostgREST can't do the join — fall back to two separate queries
-    return syncFallback(sb, admin, authByEmail, sendInvites);
-  }
-
-  if (!rows || rows.length === 0) {
-    // Try fallback in case join returned nothing
+  if (rowsErr || !rows || rows.length === 0) {
+    // RPC not available yet — fall back to direct table queries
     return syncFallback(sb, admin, authByEmail, sendInvites);
   }
 
   // ── 3. Process each member ────────────────────────────────────
+  type RpcRow = { user_id: string; email: string; name: string; avatar_url: string | null; is_tenant_admin: boolean; primary_wire_role: string | null; lo_nmls: string | null };
   const results = await processUsers(
-    rows.map((r: Record<string, unknown>) => {
-      const u = r.User as Record<string, string | null> | null;
-      return {
-        id:              u?.id ?? "",
-        email:           (u?.email ?? "").toLowerCase(),
-        name:            u?.name ?? "",
-        avatarUrl:       u?.avatarUrl ?? null,
-        isTenantAdmin:   Boolean(r.isTenantAdmin),
-        primaryWireRole: r.primaryWireRole as string | null,
-        loNmls:          r.loNmls as string | null,
-      };
-    }).filter(u => u.email && u.id),
+    (rows as RpcRow[]).map(r => ({
+      id:              r.user_id,
+      email:           (r.email ?? "").toLowerCase(),
+      name:            r.name ?? "",
+      avatarUrl:       r.avatar_url ?? null,
+      isTenantAdmin:   Boolean(r.is_tenant_admin),
+      primaryWireRole: r.primary_wire_role ?? null,
+      loNmls:          r.lo_nmls ?? null,
+    })).filter(u => u.email && u.id),
     sb, admin, authByEmail, sendInvites,
   );
 
