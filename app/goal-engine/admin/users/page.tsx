@@ -2,7 +2,7 @@
 
 /**
  * /goal-engine/admin/users
- * Sync HCMG users from the Porchy platform into SLICE.
+ * Sync HCMG team members into SLICE.
  * Shows all HCMG team members, their SLICE role, and sync status.
  */
 
@@ -89,7 +89,7 @@ export default function UsersPage() {
           <div>
             <p style={{ margin:0, fontSize:10, fontWeight:700, letterSpacing:"0.2em", textTransform:"uppercase", color:C.orange }}>Administration</p>
             <h1 style={{ margin:"4px 0 0", fontSize:26, fontWeight:900, color:C.ink }}>User Management</h1>
-            <p style={{ margin:"2px 0 0", fontSize:13, color:C.muted }}>Sync HCMG users from the Porchy platform into SLICE.</p>
+            <p style={{ margin:"2px 0 0", fontSize:13, color:C.muted }}>Sync HCMG team members into SLICE.</p>
           </div>
         </div>
       </div>
@@ -104,7 +104,7 @@ export default function UsersPage() {
         </p>
         <div style={{ display:"flex", gap:12, marginTop:16, flexWrap:"wrap" }}>
           {[
-            { label:"Source",   value:"Porchy platform User + TenantMembership tables" },
+            { label:"Source",   value:"HCMG Team Portal — User & Membership tables" },
             { label:"Tenant",   value:"Harris Capital Mortgage Group" },
             { label:"Invites",  value:"Sent via Supabase → user@hcmgloans.com" },
           ].map(s => (
@@ -198,7 +198,7 @@ export default function UsersPage() {
             fontFamily:"inherit",
           }}
         >
-          {syncing ? "Syncing…" : "🔄 Sync Users from Porchy"}
+          {syncing ? "Syncing…" : "🔄 Sync HCMG Team Members"}
         </button>
 
         {error && (
