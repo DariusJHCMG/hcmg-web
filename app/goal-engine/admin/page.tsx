@@ -37,6 +37,12 @@ export default async function GoalEngineAdmin() {
           <p style={{ margin:"4px 0 0", fontSize:13, color:C.muted }}>Create monthly goals, manage emails, run awards.</p>
         </div>
         <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+          <Link href="/goal-engine/admin/users" style={{
+            padding:"10px 20px", borderRadius:12, textDecoration:"none",
+            background:C.navy, color:"#fff", fontSize:13, fontWeight:700,
+          }}>
+            👥 Users
+          </Link>
           <Link href="/goal-engine/admin/arive" style={{
             padding:"10px 20px", borderRadius:12, textDecoration:"none",
             background:"linear-gradient(135deg,#FF9847,#F37021)",

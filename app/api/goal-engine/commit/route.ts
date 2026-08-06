@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     "Commitment Submitted! 🥧",
     `Your slice of the pie has been locked in for this month.`,
     "success",
-    "/portal/goal-engine",
+    "/goal-engine/dashboard",
   );
 
   return NextResponse.json({ commitment: result }, { status: 201 });

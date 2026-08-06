@@ -22,6 +22,7 @@ const ADMIN_NAV = [
   { label: "Leaderboard",  href: "/goal-engine/leaderboard"     },
   { label: "Manage Goals", href: "/goal-engine/admin"           },
   { label: "Manager View", href: "/goal-engine/admin/dashboard" },
+  { label: "👥 Users",      href: "/goal-engine/admin/users"    },
   { label: "🧪 Test Panel", href: "/goal-engine/admin/test"     },
 ];
 
