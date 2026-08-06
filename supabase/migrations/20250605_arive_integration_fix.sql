@@ -42,14 +42,11 @@ create unique index if not exists goal_production_loan_profile_uniq
   where loan_id is not null;
 
 -- ── 3. Rebuild the leaderboard view — filter correctly ───────────
--- OLD view summed ALL goal_production rows including reversals and
--- excluded records. The corrected view:
---   • Only sums rows where is_excluded = false
---   • funded_volume/funded_unit only from rows with event_type in
---     ('funded', 'correction') — never reversals, never app-only rows
---   • app_volume/app_unit from rows with event_type in
---     ('application', 'funded') — a funded loan also counts as an app
-create or replace view public.goal_leaderboard as
+-- Drop first to avoid "cannot change data type of view column" error,
+-- then recreate. Safe: the view is read-only and rebuilt immediately.
+drop view if exists public.goal_leaderboard;
+
+create view public.goal_leaderboard as
   select
     c.goal_month_id,
     c.profile_id,
@@ -109,13 +106,11 @@ create or replace view public.goal_leaderboard as
 -- ── 4. Backfill event_type for existing rows ──────────────────────
 -- Rows that have funded_volume set → 'funded'
 -- Rows that have only app_volume (no funded_volume) → 'application'
--- Rows that are corrections → already set correctly or will be set going forward
 update public.goal_production
 set event_type = case
   when funded_volume is not null and funded_volume > 0 then 'funded'
   when app_volume    is not null and app_volume    > 0
    and (funded_volume is null or funded_volume = 0)   then 'application'
-  else event_type -- leave corrections/reversals alone
+  else event_type
 end
-where event_type = 'funded'  -- only touch rows still at the old default
-  and is_correction = false;
+where event_type = 'funded';
