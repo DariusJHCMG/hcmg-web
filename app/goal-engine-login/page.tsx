@@ -40,6 +40,10 @@ function LoginForm() {
         borderRight:"1px solid #E2E8F0",
       }} className="hidden lg:flex">
         <img src="/SLICE.png" alt="SLICE" style={{ width:"72%", maxWidth:380, height:"auto" }} />
+        <div style={{ marginTop:20, display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
+          <span style={{ fontSize:11, fontWeight:700, letterSpacing:"0.2em", textTransform:"uppercase", color:"#64748B" }}>by</span>
+          <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height:18, width:"auto" }} />
+        </div>
       </div>
 
       {/* ── Right panel ── */}
