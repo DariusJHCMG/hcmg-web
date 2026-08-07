@@ -55,12 +55,18 @@ export async function GET(req: NextRequest) {
     .eq("is_active", true)
     .order("full_name");
 
-  const assignedIds = new Set((assignments ?? []).map((a) => (a.profile as unknown as { id: string }).id));
+  // Supabase returns the FK join as an array even for many-to-one; normalise to a plain object
+  const normalised = (assignments ?? []).map((a) => ({
+    ...a,
+    profile: Array.isArray(a.profile) ? a.profile[0] ?? null : a.profile,
+  }));
+
+  const assignedIds = new Set(normalised.map((a) => (a.profile as { id: string } | null)?.id).filter(Boolean) as string[]);
 
   return NextResponse.json({
-    assignments:   assignments ?? [],
-    all_los:       allLOs ?? [],
-    assigned_ids:  Array.from(assignedIds),
+    assignments:    normalised,
+    all_los:        allLOs ?? [],
+    assigned_ids:   Array.from(assignedIds),
     unassigned_los: (allLOs ?? []).filter((lo) => !assignedIds.has(lo.id)),
   });
 }

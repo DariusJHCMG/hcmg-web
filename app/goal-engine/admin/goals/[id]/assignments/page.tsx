@@ -98,6 +98,20 @@ export default function GoalAssignmentsPage() {
     setSaving(false);
   }
 
+  async function addOne(profileId: string) {
+    setSaving(true); setMessage(null);
+    const newList = [...Array.from(assignedIds), profileId];
+    const r = await fetch("/api/goal-engine/goal-assignments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ goal_month_id: goalMonthId, profile_ids: newList }),
+    });
+    const d = await r.json();
+    setMessage({ text: r.ok ? "✓ LO added to this goal." : (d.error ?? "Failed"), ok: r.ok });
+    if (r.ok) await load();
+    setSaving(false);
+  }
+
   async function addSelected() {
     if (selected.size === 0) return;
     setSaving(true); setMessage(null);
@@ -236,25 +250,29 @@ export default function GoalAssignmentsPage() {
               </div>
             ) : (
               <div>
-                {assignments.map(a => (
-                  <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: `1px solid ${C.line}` }}>
-                    <Avatar name={a.profile.full_name} url={a.profile.avatar_url} size={36} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.profile.full_name}</p>
-                      <p style={{ margin: "1px 0 0", fontSize: 11, color: C.muted }}>{a.profile.email}{a.profile.nmls ? ` · NMLS# ${a.profile.nmls}` : ""}</p>
+                {assignments.map(a => {
+                  const p = a.profile;
+                  if (!p) return null;
+                  return (
+                    <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: `1px solid ${C.line}` }}>
+                      <Avatar name={p.full_name} url={p.avatar_url} size={36} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.full_name}</p>
+                        <p style={{ margin: "1px 0 0", fontSize: 11, color: C.muted }}>{p.email}{p.nmls ? ` · NMLS# ${p.nmls}` : ""}</p>
+                      </div>
+                      <span style={{ fontSize: 10, color: C.muted, flexShrink: 0 }}>
+                        Added {new Date(a.assigned_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </span>
+                      <button
+                        onClick={() => removeOne(p.id)}
+                        disabled={saving}
+                        style={{ padding: "5px 12px", borderRadius: 8, border: `1px solid #fca5a5`, background: "#fff5f5", color: "#dc2626", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
+                      >
+                        − Remove
+                      </button>
                     </div>
-                    <span style={{ fontSize: 10, color: C.muted, flexShrink: 0 }}>
-                      Added {new Date(a.assigned_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                    </span>
-                    <button
-                      onClick={() => removeOne(a.profile.id)}
-                      disabled={saving}
-                      style={{ padding: "5px 12px", borderRadius: 8, border: `1px solid #fca5a5`, background: "#fff5f5", color: "#dc2626", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -295,9 +313,9 @@ export default function GoalAssignmentsPage() {
                 {filteredUnassigned.map(lo => {
                   const checked = selected.has(lo.id);
                   return (
-                    <label
+                    <div
                       key={lo.id}
-                      style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: `1px solid ${C.line}`, cursor: "pointer", background: checked ? "rgba(243,112,33,0.04)" : C.white }}
+                      style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: `1px solid ${C.line}`, background: checked ? "rgba(243,112,33,0.04)" : C.white }}
                     >
                       <input
                         type="checkbox"
@@ -307,14 +325,21 @@ export default function GoalAssignmentsPage() {
                           if (e.target.checked) next.add(lo.id); else next.delete(lo.id);
                           setSelected(next);
                         }}
-                        style={{ width: 16, height: 16, accentColor: C.orange, flexShrink: 0 }}
+                        style={{ width: 16, height: 16, accentColor: C.orange, flexShrink: 0, cursor: "pointer" }}
                       />
                       <Avatar name={lo.full_name} url={lo.avatar_url} size={34} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: checked ? C.orange : C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{lo.full_name}</p>
                         <p style={{ margin: "1px 0 0", fontSize: 11, color: C.muted }}>{lo.email}{lo.nmls ? ` · NMLS# ${lo.nmls}` : ""}</p>
                       </div>
-                    </label>
+                      <button
+                        onClick={() => addOne(lo.id)}
+                        disabled={saving}
+                        style={{ padding: "5px 12px", borderRadius: 8, border: `1px solid #86efac`, background: "#f0fdf4", color: "#16a34a", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
+                      >
+                        + Add
+                      </button>
+                    </div>
                   );
                 })}
                 {filteredUnassigned.length === 0 && (
