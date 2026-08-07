@@ -14,6 +14,7 @@ interface Props {
   fullName:  string;
   role:      Role;
   avatarUrl: string | null;
+  profileId: string;
 }
 
 const C = {
@@ -47,7 +48,7 @@ const ADMIN_NAV = [
   { label: "THE SLICE",    href: "/goal-engine/the-slice",          icon: "📺" },
 ];
 
-const ADMIN_SECTION = [
+const ADMIN_SECTION_BASE = [
   { label: "Manage Goals",   href: "/goal-engine/admin",              icon: "🎯" },
   { label: "Manager View",   href: "/goal-engine/admin/dashboard",    icon: "📊" },
   { label: "Forecast Center",href: "/goal-engine/forecast",          icon: "📡" },
@@ -56,9 +57,14 @@ const ADMIN_SECTION = [
   { label: "Email Log",      href: "/goal-engine/admin/email-log",   icon: "📧" },
   { label: "Webhook Log",    href: "/goal-engine/admin/webhook-log", icon: "🛰️" },
   { label: "Team Members",   href: "/goal-engine/admin/users",        icon: "👥" },
+];
+
+const DARIUS_ONLY = [
   { label: "ARIVE Setup",    href: "/goal-engine/admin/arive",        icon: "🔗" },
   { label: "Test Panel",     href: "/goal-engine/admin/test",         icon: "🧪" },
 ];
+
+const DARIUS_ID = "736a599a-492a-4585-b845-74b264d0ac9e";
 
 function Initials({ name }: { name: string }) {
   return <>{name.trim().split(/\s+/).map(n => n[0]).slice(0, 2).join("").toUpperCase()}</>;
@@ -87,11 +93,14 @@ function NavItem({ href, icon, label, active }: { href: string; icon: string; la
   );
 }
 
-export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
+export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isAdmin = role === "admin" || role === "developer";
-  const navLinks = isAdmin ? ADMIN_NAV : LO_NAV;
+  const isAdmin    = role === "admin" || role === "developer";
+  const navLinks   = isAdmin ? ADMIN_NAV : LO_NAV;
+  const adminLinks = isAdmin
+    ? [...ADMIN_SECTION_BASE, ...(profileId === DARIUS_ID ? DARIUS_ONLY : [])]
+    : [];
 
   async function signOut() {
     const sb = createBrowserClient();
@@ -141,7 +150,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
             <p style={{ margin: "0 0 6px 14px", fontSize: 9, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: "#CBD5E1" }}>
               Admin
             </p>
-            {ADMIN_SECTION.map(l => (
+            {adminLinks.map(l => (
               <NavItem key={l.href} {...l} active={isActive(l.href)} />
             ))}
           </div>
@@ -229,7 +238,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl }: Props) {
               {isAdmin && (
                 <>
                   <div style={{ height: 1, background: C.line, margin: "12px 8px" }} />
-                  {ADMIN_SECTION.map(l => <NavItem key={l.href} {...l} active={isActive(l.href)} />)}
+                  {adminLinks.map(l => <NavItem key={l.href} {...l} active={isActive(l.href)} />)}
                 </>
               )}
             </div>

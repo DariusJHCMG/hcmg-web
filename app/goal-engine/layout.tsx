@@ -23,6 +23,7 @@ export default async function GoalEngineLayout({ children }: { children: React.R
         fullName={profile.full_name}
         role={profile.role}
         avatarUrl={profile.avatar_url}
+        profileId={profile.id}
       />
       <main style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
         {children}
