@@ -73,10 +73,11 @@ function PaceDot({ pct }: { pct: number }) {
 }
 
 export default function TheSlicePage() {
-  const [data,    setData]    = useState<SliceData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [last,    setLast]    = useState("");
-  const [counter, setCounter] = useState(REFRESH_SEC);
+  const [data,       setData]       = useState<SliceData | null>(null);
+  const [loading,    setLoading]    = useState(true);
+  const [last,       setLast]       = useState("");
+  const [counter,    setCounter]    = useState(REFRESH_SEC);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -97,6 +98,14 @@ export default function TheSlicePage() {
     }, 1000);
     return () => clearInterval(t);
   }, [load]);
+
+  useEffect(() => {
+    function onFsChange() {
+      setIsFullscreen(!!document.fullscreenElement);
+    }
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
 
   const goal    = data?.goal;
   const summary = data?.summary;
@@ -167,7 +176,7 @@ export default function TheSlicePage() {
             padding:"6px 14px", borderRadius:8, border:`1px solid ${C.line}`,
             background:C.white, fontSize:12, fontWeight:700, color:C.ink,
             cursor:"pointer", fontFamily:"inherit",
-          }}>⛶ Fullscreen</button>
+          }}>{isFullscreen ? "✕ Exit Fullscreen" : "⛶ Fullscreen"}</button>
           <a href="/goal-engine/dashboard" style={{
             padding:"6px 14px", borderRadius:8,
             background:C.navy, color:"#fff",
@@ -408,6 +417,11 @@ export default function TheSlicePage() {
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
         @media(max-width:900px){
           .slice-grid { grid-template-columns:1fr !important; }
+        }
+        :fullscreen nav,
+        :-webkit-full-screen nav,
+        :-moz-full-screen nav {
+          display: none !important;
         }
       `}</style>
     </div>
