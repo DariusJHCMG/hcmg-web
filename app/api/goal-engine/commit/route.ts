@@ -7,6 +7,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import { createNotification, getActiveGoal } from "@/lib/goal-engine-server";
+import { sendGoalEmail } from "@/lib/goal-engine-mailer";
+import { buildCommitmentConfirmEmail, buildCommitmentAlertEmail } from "@/lib/goal-engine-emails";
+
+// Leadership always receive commitment alerts
+const ALERT_RECIPIENTS = [
+  { name: "Darius",  email: "darius@hcmgloans.com" },
+  { name: "Lamont",  email: "lamont@hcmgloans.com" },
+];
 
 export async function POST(req: NextRequest) {
   const profile = await getCurrentProfile();
@@ -90,7 +98,7 @@ export async function POST(req: NextRequest) {
     result = data;
   }
 
-  // Create in-app notification
+  // ── In-app notification ───────────────────────────────────────
   await createNotification(
     profile.id,
     "Commitment Submitted! 🥧",
@@ -98,6 +106,53 @@ export async function POST(req: NextRequest) {
     "success",
     "/goal-engine/dashboard",
   );
+
+  // ── Fetch goal month label + LO email for emails ──────────────
+  const sb2 = createServiceClient();
+  const { data: goalMonth } = await sb2
+    .from("goal_months")
+    .select("month_label, funded_units_goal")
+    .eq("id", goalMonthId)
+    .single();
+
+  const monthLabel     = goalMonth?.month_label ?? "This Month";
+  const fundedVol      = payload.funded_volume_commitment;
+  const fundedUnits    = payload.funded_units_commitment;
+  const appUnits       = payload.app_units_commitment;
+  const appVol         = payload.app_volume_commitment;
+  const conf           = payload.confidence_pct;
+  const loFirstName    = profile.full_name?.split(" ")[0] ?? "Team";
+  const loEmail        = profile.notify_email ?? profile.email;
+
+  // ── 1. Confirmation email to the LO ──────────────────────────
+  try {
+    const subject = `🥧 Your ${monthLabel} commitment is locked in`;
+    const html    = buildCommitmentConfirmEmail(
+      loFirstName, monthLabel, fundedVol, fundedUnits,
+      appUnits, appVol, biggest_focus ?? null, biggest_challenge ?? null, conf ?? null,
+    );
+    await sendGoalEmail({ to: loEmail, subject, html });
+    await sb2.from("goal_email_log").insert({
+      goal_month_id:   goalMonthId,
+      profile_id:      profile.id,
+      email_type:      "commitment_confirm",
+      recipient_email: loEmail,
+      subject,
+    });
+  } catch (e) { console.error("Failed to send commitment confirmation email", e); }
+
+  // ── 2. Alert email to Darius + Lamont ────────────────────────
+  const alertSubject = `📋 ${profile.full_name} committed ${fundedVol >= 1_000_000 ? `$${(fundedVol/1_000_000).toFixed(1)}M` : `$${Math.round(fundedVol/1_000)}K`} — ${monthLabel}`;
+  const alertHtml    = buildCommitmentAlertEmail(
+    profile.full_name, loEmail, monthLabel,
+    fundedVol, fundedUnits, appUnits, conf ?? null,
+    biggest_focus ?? null, biggest_challenge ?? null,
+  );
+  for (const leader of ALERT_RECIPIENTS) {
+    try {
+      await sendGoalEmail({ to: leader.email, subject: alertSubject, html: alertHtml });
+    } catch (e) { console.error(`Failed to send commitment alert to ${leader.email}`, e); }
+  }
 
   return NextResponse.json({ commitment: result }, { status: 201 });
 }

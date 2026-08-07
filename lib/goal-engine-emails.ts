@@ -593,6 +593,132 @@ export function buildAwardEmail(
   return wrap(body);
 }
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 8. COMMITMENT CONFIRMATION EMAIL (sent to the LO who just committed)
+// ══════════════════════════════════════════════════════════════════════════════
+
+export function buildCommitmentConfirmEmail(
+  firstName: string,
+  monthLabel: string,
+  fundedVolume: number,
+  fundedUnits: number,
+  appUnits: number,
+  appVolume: number,
+  focus: string | null,
+  challenge: string | null,
+  confidence: number | null,
+): string {
+  const body = `
+    ${topBar()}
+    ${hero("🥧 Commitment Locked In", `Your slice is claimed, ${firstName}!`, `${monthLabel} · Harris Capital Mortgage Group`)}
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 32px 0;">
+      <tr><td>
+        <p style="margin:0 0 20px;font-size:15px;color:${INK};line-height:1.8;">
+          Your ${monthLabel} commitment has been submitted and locked in.
+          This is your official record — leadership can see it and it counts toward participation.
+        </p>
+
+        <!-- Commitment stats -->
+        ${statGrid([
+          { label: "Funded Volume", value: fmt$(fundedVolume), navy: true },
+          { label: "Funded Loans",  value: `${fundedUnits} loans` },
+        ])}
+        ${statGrid([
+          { label: "App Goal",   value: `${appUnits} apps` },
+          { label: "App Volume", value: fmt$(appVolume) },
+          { label: "Confidence", value: `${confidence ?? 80}%` },
+        ])}
+
+        ${focus ? `
+        <!-- Strategy -->
+        <div style="margin:20px 0 0;padding:18px 20px;background:${SAND};border:1px solid ${LINE};border-radius:12px;">
+          <p style="margin:0 0 6px;font-size:9px;font-weight:800;letter-spacing:2px;color:${ORANGE};text-transform:uppercase;">Your Plan This Month</p>
+          <p style="margin:0;font-size:13px;color:${INK};line-height:1.7;font-style:italic;">&ldquo;${focus}&rdquo;</p>
+        </div>` : ""}
+
+        ${challenge ? `
+        <div style="margin:12px 0 0;padding:18px 20px;background:${SAND};border:1px solid ${LINE};border-radius:12px;">
+          <p style="margin:0 0 6px;font-size:9px;font-weight:800;letter-spacing:2px;color:${MUTED};text-transform:uppercase;">Obstacles to Watch</p>
+          <p style="margin:0;font-size:13px;color:${INK};line-height:1.7;font-style:italic;">&ldquo;${challenge}&rdquo;</p>
+        </div>` : ""}
+
+        <!-- Motivational callout -->
+        <div style="margin:24px 0;padding:20px 24px;background:linear-gradient(135deg,${NAVY},#1e3a6e);border-radius:14px;text-align:center;">
+          <p style="margin:0 0 6px;font-size:22px;font-weight:900;color:#fff;">You own your number. 🔥</p>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;">
+            The pie is claimed. Now go fund it. Track your progress on the leaderboard anytime.
+          </p>
+        </div>
+
+        ${cta("View My Dashboard →", `${SITE}/goal-engine/dashboard`)}
+        ${cloSig()}
+      </td></tr>
+    </table>
+    ${footer()}`;
+
+  return wrap(body);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 9. COMMITMENT ALERT EMAIL (sent to Darius + Lamont on every new commitment)
+// ══════════════════════════════════════════════════════════════════════════════
+
+export function buildCommitmentAlertEmail(
+  loFullName: string,
+  loEmail: string,
+  monthLabel: string,
+  fundedVolume: number,
+  fundedUnits: number,
+  appUnits: number,
+  confidence: number | null,
+  focus: string | null,
+  challenge: string | null,
+): string {
+  const body = `
+    ${topBar()}
+    ${hero("📋 New Commitment", `${loFullName} just committed`, `${monthLabel} · SLICE by HCMG`)}
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 32px 0;">
+      <tr><td>
+        <!-- LO identity -->
+        <div style="margin-bottom:20px;padding:16px 20px;background:${SAND};border:1px solid ${LINE};border-radius:12px;">
+          <p style="margin:0 0 2px;font-size:15px;font-weight:900;color:${NAVY};">${loFullName}</p>
+          <p style="margin:0;font-size:12px;color:${MUTED};">${loEmail}</p>
+        </div>
+
+        <!-- Commitment numbers -->
+        ${statGrid([
+          { label: "Funded Volume", value: fmt$(fundedVolume), navy: true },
+          { label: "Funded Loans",  value: `${fundedUnits} loans` },
+          { label: "App Goal",      value: `${appUnits} apps` },
+          { label: "Confidence",    value: `${confidence ?? 80}%` },
+        ])}
+
+        ${focus ? `
+        <div style="margin:20px 0 0;padding:18px 20px;background:${SAND};border:1px solid ${LINE};border-radius:12px;">
+          <p style="margin:0 0 6px;font-size:9px;font-weight:800;letter-spacing:2px;color:${ORANGE};text-transform:uppercase;">Their Plan</p>
+          <p style="margin:0;font-size:13px;color:${INK};line-height:1.7;font-style:italic;">&ldquo;${focus}&rdquo;</p>
+        </div>` : ""}
+
+        ${challenge ? `
+        <div style="margin:12px 0 0;padding:18px 20px;background:${SAND};border:1px solid ${LINE};border-radius:12px;">
+          <p style="margin:0 0 6px;font-size:9px;font-weight:800;letter-spacing:2px;color:${MUTED};text-transform:uppercase;">Obstacles They Named</p>
+          <p style="margin:0;font-size:13px;color:${INK};line-height:1.7;font-style:italic;">&ldquo;${challenge}&rdquo;</p>
+        </div>` : ""}
+
+        <div style="margin:24px 0 0;">
+          ${cta("View All Commitments →", `${SITE}/goal-engine/admin`)}
+        </div>
+      </td></tr>
+    </table>
+    ${footer()}`;
+
+  return wrap(body);
+}
+
+
 // ══════════════════════════════════════════════════════════════════════════════
 // 8. CERTIFICATE HTML (for email attachment — opens in browser, print to PDF)
 // ══════════════════════════════════════════════════════════════════════════════

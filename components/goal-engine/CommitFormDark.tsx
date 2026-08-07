@@ -74,8 +74,10 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setError(null);
-    if (!agreed) { setError("You must agree to the digital commitment."); return; }
     if (resolvedVol <= 0) { setError("Please select a funded volume commitment."); return; }
+    if (!focus.trim()) { setError("Please tell us what you'll do differently this month."); return; }
+    if (!challenge.trim()) { setError("Please tell us what obstacles you're expecting."); return; }
+    if (!agreed) { setError("You must check the commitment box to submit."); return; }
     setLoading(true);
     // All units and app values derived from HARRY AI formula — never user-entered
     const { fundedLoanGoal: submitUnits, appUnitsGoal: submitAppUnits, appVolGoal: submitAppVol } = calcHarry(resolvedVol);
@@ -263,16 +265,18 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
       {/* Strategy */}
       <div style={CARD}>
         <div style={{ marginBottom:24 }}>
-          <p style={LABEL}>What are you going to do differently this month?</p>
+          <p style={LABEL}>What are you going to do differently this month? <span style={{ color:"#dc2626" }}>*</span></p>
           <textarea rows={3} value={focus} onChange={e=>setFocus(e.target.value)}
             placeholder="e.g. Doubling down on realtor referrals and following up every pre-approval within 24h..."
-            style={TEXTAREA} onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=C.line} />
+            style={{ ...TEXTAREA, borderColor: !focus.trim() ? "#fca5a5" : C.line }}
+            onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=focus.trim()?C.line:"#fca5a5"} />
         </div>
         <div style={{ marginBottom:24 }}>
-          <p style={LABEL}>What obstacles could prevent you from reaching this goal?</p>
+          <p style={LABEL}>What obstacles could prevent you from reaching this goal? <span style={{ color:"#dc2626" }}>*</span></p>
           <textarea rows={3} value={challenge} onChange={e=>setChallenge(e.target.value)}
             placeholder="e.g. Rate volatility, limited purchase inventory..."
-            style={TEXTAREA} onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=C.line} />
+            style={{ ...TEXTAREA, borderColor: !challenge.trim() ? "#fca5a5" : C.line }}
+            onFocus={e=>e.target.style.borderColor=C.orange} onBlur={e=>e.target.style.borderColor=challenge.trim()?C.line:"#fca5a5"} />
         </div>
         <div style={{ marginBottom:24 }}>
           <p style={{ ...LABEL, marginBottom:14 }}>Confidence Level</p>
