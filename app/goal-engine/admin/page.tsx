@@ -8,6 +8,7 @@ import { getAllGoals } from "@/lib/goal-engine";
 import { GoalCreateForm } from "@/components/goal-engine/GoalCreateForm";
 import { GoalAdminCard } from "@/components/goal-engine/GoalAdminCard";
 import { SeedDemoButton } from "@/components/goal-engine/SeedDemoButton";
+import { BackfillButton } from "@/components/goal-engine/BackfillButton";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -90,6 +91,9 @@ export default async function GoalEngineAdmin() {
           <SeedDemoButton />
         </div>
       )}
+
+      {/* Backfill tool — always shown when goals exist */}
+      {goals.length > 0 && <BackfillButton />}
 
       {/* Create form */}
       <div style={{ background:C.white, border:`1px solid ${C.line}`, borderRadius:20, padding:28, marginBottom:24, boxShadow:"0 1px 6px rgba(15,23,42,0.06)" }}>
