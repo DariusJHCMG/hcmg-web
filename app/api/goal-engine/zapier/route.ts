@@ -34,6 +34,26 @@ import { createServiceClient } from "@/lib/supabase";
 
 const ZAPIER_SECRET = process.env.ZAPIER_WEBHOOK_SECRET ?? "";
 
+/** Write to webhook_log — fire-and-forget, never throws */
+async function writeLog(
+  sb: ReturnType<typeof import("@/lib/supabase").createServiceClient>,
+  body: Record<string, unknown>,
+  startMs: number,
+  ip: string | null,
+  fields: Record<string, unknown>,
+) {
+  try {
+    await sb.from("webhook_log").insert({
+      source:         "zapier",
+      event_type_raw: String(body.event_type ?? body.event ?? ""),
+      raw_payload:    body,
+      ip_address:     ip,
+      duration_ms:    Date.now() - startMs,
+      ...fields,
+    });
+  } catch { /* never block the response */ }
+}
+
 /** "YYYY-MM-DD" or null */
 function normDate(v: unknown): string | null {
   if (!v) return null;
@@ -58,6 +78,8 @@ function normAmount(v: unknown): number | null {
 }
 
 export async function POST(req: NextRequest) {
+  const startMs = Date.now();
+
   // ── 1. Auth ──────────────────────────────────────────────────
   const authHeader = req.headers.get("x-zapier-secret");
   if (ZAPIER_SECRET && authHeader !== ZAPIER_SECRET) {
@@ -68,6 +90,9 @@ export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+
+  const sb  = createServiceClient();
+  const ip  = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
 
   // ── 3. Extract fields — accept snake_case and camelCase ───────
   const loNmls     = String(body.lo_nmls    ?? body.loNmls    ?? "").trim().replace(/[^0-9]/g, "");
@@ -85,12 +110,14 @@ export async function POST(req: NextRequest) {
   const isAppEvent    = !!appDate    || !!appVol;
 
   if (!isFundedEvent && !isAppEvent) {
+    await writeLog(sb, body, startMs, ip, { action: "error", error_message: "cannot determine event type" });
     return NextResponse.json({
       error: "Could not determine event type. Provide funded_date+funded_volume OR app_date+app_volume.",
     }, { status: 400 });
   }
 
   if (!loNmls && !loEmail && !loName) {
+    await writeLog(sb, body, startMs, ip, { action: "error", error_message: "no LO identifier provided" });
     return NextResponse.json({
       error: "lo_nmls, lo_email, or lo_name required to identify the Loan Officer.",
       tip: "Map ARIVE 'Loan Officer NMLS' to lo_nmls or 'Loan Officer Email' to lo_email in Zapier.",
@@ -98,13 +125,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (!loanId) {
+    await writeLog(sb, body, startMs, ip, { action: "error", error_message: "loan_id missing", lo_nmls: loNmls || null, lo_email_raw: loEmail || null });
     return NextResponse.json({
       error: "loan_id required for deduplication.",
       tip: "Map ARIVE 'Loan ID' to loan_id in Zapier.",
     }, { status: 400 });
   }
-
-  const sb = createServiceClient();
 
   // ── 4. Resolve LO profile — NMLS → email → full name ─────────
   type LO = { id: string; full_name: string };
@@ -134,6 +160,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (!lo) {
+    await writeLog(sb, body, startMs, ip, {
+      action: "error", error_message: "LO not found",
+      loan_id: loanId, lo_nmls: loNmls || null, lo_email_raw: loEmail || null,
+      event_type: isFundedEvent ? "funded" : "application",
+      amount: fundedVol ?? appVol, event_date: fundedDate ?? appDate,
+    });
     return NextResponse.json({
       error: "Loan Officer not found in SLICE.",
       attempted: { loNmls: loNmls || null, loEmail: loEmail || null, loName: loName || null },
@@ -141,13 +173,12 @@ export async function POST(req: NextRequest) {
     }, { status: 404 });
   }
 
-  // ── 5. Find the correct goal month by date ────────────────────
+  // ── 5. Find the correct goal month by date (draft or published) ──
   const eventDate = fundedDate ?? appDate;
   let goalMonthId: string | null = null;
 
   if (eventDate) {
     const { data } = await sb.from("goal_months").select("id")
-      .eq("is_published", true)
       .lte("start_date", eventDate)
       .gte("end_date", eventDate)
       .maybeSingle();
@@ -157,11 +188,17 @@ export async function POST(req: NextRequest) {
   if (!goalMonthId) {
     const today = new Date().toISOString().slice(0, 10);
     const { data } = await sb.from("goal_months").select("id")
-      .eq("is_published", true)
       .lte("start_date", today)
       .gte("end_date", today)
       .maybeSingle();
     goalMonthId = data?.id ?? null;
+  }
+
+  // Goal month label for log
+  let goalLabel: string | null = null;
+  if (goalMonthId) {
+    const { data: gm } = await sb.from("goal_months").select("month_label").eq("id", goalMonthId).maybeSingle();
+    goalLabel = gm?.month_label ?? null;
   }
 
   // ── 6. Look up existing row (loan_id, profile_id) ─────────────
@@ -197,15 +234,14 @@ export async function POST(req: NextRequest) {
     }
 
     const { error } = await sb.from("goal_production").update(merged).eq("id", existing.id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      await writeLog(sb, body, startMs, ip, { action: "error", error_message: error.message, loan_id: loanId, lo_matched_id: lo.id, lo_matched_name: lo.full_name, lo_nmls: loNmls || null, lo_email_raw: loEmail || null, event_type: isFundedEvent ? "funded" : "application", amount: fundedVol ?? appVol, event_date: fundedDate ?? appDate, goal_month_id: goalMonthId, goal_month_label: goalLabel });
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
-    return NextResponse.json({
-      status:        "updated",
-      loan_id:       loanId,
-      lo:            lo.full_name,
-      goal_month_id: goalMonthId,
-      merged_fields: Object.keys(merged).filter(k => k !== "raw_payload"),
-    });
+    const resp = { status: "updated", loan_id: loanId, lo: lo.full_name, goal_month_id: goalMonthId, merged_fields: Object.keys(merged).filter(k => k !== "raw_payload") };
+    await writeLog(sb, body, startMs, ip, { action: "updated", loan_id: loanId, lo_matched_id: lo.id, lo_matched_name: lo.full_name, lo_nmls: loNmls || null, lo_email_raw: loEmail || null, event_type: isFundedEvent ? "funded" : "application", amount: fundedVol ?? appVol, event_date: fundedDate ?? appDate, goal_month_id: goalMonthId, goal_month_label: goalLabel, response_body: resp });
+    return NextResponse.json(resp);
   }
 
   // ── 7b. INSERT — new row ──────────────────────────────────────
@@ -237,13 +273,12 @@ export async function POST(req: NextRequest) {
   }
 
   const { error } = await sb.from("goal_production").insert(insert);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    await writeLog(sb, body, startMs, ip, { action: "error", error_message: error.message, loan_id: loanId, lo_matched_id: lo.id, lo_matched_name: lo.full_name, lo_nmls: loNmls || null, lo_email_raw: loEmail || null, event_type: insert.event_type, amount: fundedVol ?? appVol, event_date: fundedDate ?? appDate, goal_month_id: goalMonthId, goal_month_label: goalLabel });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-  return NextResponse.json({
-    status:        "created",
-    loan_id:       loanId,
-    lo:            lo.full_name,
-    goal_month_id: goalMonthId,
-    event_type:    insert.event_type,
-  });
+  const resp = { status: "created", loan_id: loanId, lo: lo.full_name, goal_month_id: goalMonthId, event_type: insert.event_type };
+  await writeLog(sb, body, startMs, ip, { action: "created", loan_id: loanId, lo_matched_id: lo.id, lo_matched_name: lo.full_name, lo_nmls: loNmls || null, lo_email_raw: loEmail || null, event_type: String(insert.event_type), amount: fundedVol ?? appVol, event_date: fundedDate ?? appDate, goal_month_id: goalMonthId, goal_month_label: goalLabel, response_body: resp });
+  return NextResponse.json(resp);
 }
