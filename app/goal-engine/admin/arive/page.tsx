@@ -2,7 +2,7 @@
 
 /**
  * /goal-engine/admin/arive — ARIVE × Zapier Integration Setup
- * Full step-by-step guide + live webhook tester for Darius.
+ * Accurate documentation of how both webhook routes actually work.
  */
 
 import { useState } from "react";
@@ -17,7 +17,8 @@ const C = {
 };
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com";
-const WEBHOOK_URL = `${SITE}/api/goal-engine/zapier`;
+const ZAPIER_URL = `${SITE}/api/goal-engine/zapier`;
+const ARIVE_URL  = `${SITE}/api/goal-engine/arive-webhook`;
 
 type TestResult = { ok: boolean; data: unknown } | null;
 
@@ -82,68 +83,97 @@ function FieldRow({ field, value, note }: { field: string; value: string; note?:
   );
 }
 
+function ResultBox({ result, label }: { result: TestResult; label: string }) {
+  if (!result) return null;
+  return (
+    <div style={{ marginTop:14, background: result.ok ? C.greenBg : C.redBg, border:`1px solid ${result.ok ? "#86efac" : "#fca5a5"}`, borderRadius:10, padding:"14px 18px" }}>
+      <p style={{ margin:"0 0 6px", fontSize:12, fontWeight:800, color: result.ok ? C.green : C.red }}>
+        {result.ok ? `✅ ${label} passed!` : `❌ ${label} failed`}
+      </p>
+      <pre style={{ margin:0, fontSize:11, color: result.ok ? "#166534" : "#991b1b", fontFamily:"monospace", overflowX:"auto" }}>
+        {JSON.stringify(result.data, null, 2)}
+      </pre>
+    </div>
+  );
+}
+
 export default function ArivePage() {
   const [testEmail,  setTestEmail]  = useState("");
   const [testVolume, setTestVolume] = useState("485000");
+  const [testLoanId, setTestLoanId] = useState("");
   const [testSecret, setTestSecret] = useState("");
-  const [testResult, setTestResult] = useState<TestResult>(null);
-  const [testing,    setTesting]    = useState(false);
-  const [sendingNative, setSendingNative] = useState(false);
-  const [nativeResult,  setNativeResult]  = useState<TestResult>(null);
 
-  async function runWebhookTest() {
-    setTesting(true); setTestResult(null);
+  const [testingZapFunded,  setTestingZapFunded]  = useState(false);
+  const [testingZapApp,     setTestingZapApp]      = useState(false);
+  const [testingNative,     setTestingNative]      = useState(false);
+  const [zapFundedResult,   setZapFundedResult]    = useState<TestResult>(null);
+  const [zapAppResult,      setZapAppResult]       = useState<TestResult>(null);
+  const [nativeResult,      setNativeResult]       = useState<TestResult>(null);
+
+  const loanIdForTest = testLoanId || `TEST-${Date.now()}`;
+  const today = new Date().toISOString().split("T")[0];
+
+  async function testZapFunded() {
+    setTestingZapFunded(true); setZapFundedResult(null);
     try {
-      const res = await fetch("/api/goal-engine/zapier", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(testSecret ? { "x-zapier-secret": testSecret } : {}),
-        },
+      const res = await fetch(ZAPIER_URL, {
+        method:"POST",
+        headers: { "Content-Type":"application/json", ...(testSecret ? { "x-zapier-secret": testSecret } : {}) },
         body: JSON.stringify({
-          lo_email:     testEmail,
-          loan_id:      `TEST-${Date.now()}`,
-          funded_date:  new Date().toISOString().split("T")[0],
-          funded_volume: parseFloat(testVolume) || 0,
-          funded_unit:  1,
-          app_date:     new Date().toISOString().split("T")[0],
-          app_volume:   parseFloat(testVolume) || 0,
-          app_unit:     1,
+          lo_email:      testEmail,
+          loan_id:       loanIdForTest,
+          funded_date:   today,
+          funded_volume: parseFloat(testVolume) || 485000,
+          funded_unit:   1,
         }),
       });
-      const data = await res.json();
-      setTestResult({ ok: res.ok, data });
-    } catch (e) {
-      setTestResult({ ok: false, data: String(e) });
-    }
-    setTesting(false);
+      setZapFundedResult({ ok: res.ok, data: await res.json() });
+    } catch (e) { setZapFundedResult({ ok:false, data: String(e) }); }
+    setTestingZapFunded(false);
+  }
+
+  async function testZapApp() {
+    setTestingZapApp(true); setZapAppResult(null);
+    try {
+      const res = await fetch(ZAPIER_URL, {
+        method:"POST",
+        headers: { "Content-Type":"application/json", ...(testSecret ? { "x-zapier-secret": testSecret } : {}) },
+        body: JSON.stringify({
+          lo_email:   testEmail,
+          loan_id:    loanIdForTest,
+          app_date:   today,
+          app_volume: parseFloat(testVolume) || 485000,
+          app_unit:   1,
+        }),
+      });
+      setZapAppResult({ ok: res.ok, data: await res.json() });
+    } catch (e) { setZapAppResult({ ok:false, data: String(e) }); }
+    setTestingZapApp(false);
   }
 
   async function testNativeArive() {
-    setSendingNative(true); setNativeResult(null);
+    setTestingNative(true); setNativeResult(null);
     try {
-      const res = await fetch("/api/goal-engine/arive-webhook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-arive-secret": testSecret || "test" },
+      const res = await fetch(ARIVE_URL, {
+        method:"POST",
+        headers: { "Content-Type":"application/json", ...(testSecret ? { "x-arive-secret": testSecret } : {}) },
         body: JSON.stringify({
           event: "loan.funded",
           loan: {
-            id: `ARIVE-TEST-${Date.now()}`,
+            id:               loanIdForTest,
             loanOfficerEmail: testEmail,
-            loanAmount: parseFloat(testVolume) || 485000,
-            fundedDate: new Date().toISOString().split("T")[0],
-            applicationDate: new Date().toISOString().split("T")[0],
-          }
+            loanAmount:       parseFloat(testVolume) || 485000,
+            fundedDate:       today,
+            applicationDate:  today,
+          },
         }),
       });
-      const data = await res.json();
-      setNativeResult({ ok: res.ok, data });
-    } catch (e) {
-      setNativeResult({ ok: false, data: String(e) });
-    }
-    setSendingNative(false);
+      setNativeResult({ ok: res.ok, data: await res.json() });
+    } catch (e) { setNativeResult({ ok:false, data: String(e) }); }
+    setTestingNative(false);
   }
 
+  /* ── Payload samples ── */
   const zapierFundedPayload = JSON.stringify({
     lo_nmls:       "123456",
     lo_email:      "johndoe@hcmgloans.com",
@@ -162,31 +192,35 @@ export default function ArivePage() {
     app_unit:   1,
   }, null, 2);
 
-  const ariveNativePayload = JSON.stringify({
+  const ariveNativeFundedPayload = JSON.stringify({
     event: "loan.funded",
     loan: {
       id:               "ARIVE-LN-00012345",
       loanOfficerNmls:  "123456",
       loanOfficerEmail: "johndoe@hcmgloans.com",
+      loanOfficerId:    "arive-internal-id",
       loanAmount:       485000,
       fundedDate:       "2025-07-15",
       applicationDate:  "2025-07-01",
-    }
+    },
   }, null, 2);
 
-  const ariveAppPayload = JSON.stringify({
+  const ariveNativeAppPayload = JSON.stringify({
     event: "loan.application_submitted",
     loan: {
       id:               "ARIVE-LN-00012345",
       loanOfficerNmls:  "123456",
       loanOfficerEmail: "johndoe@hcmgloans.com",
+      loanOfficerId:    "arive-internal-id",
       loanAmount:       485000,
       applicationDate:  "2025-07-01",
-    }
+    },
   }, null, 2);
 
+  const canTest = !!testEmail;
+
   return (
-    <div style={{ maxWidth:900, margin:"0 auto", padding:"28px 24px 56px", fontFamily:"Montserrat,system-ui,sans-serif" }}>
+    <div style={{ maxWidth:960, margin:"0 auto", padding:"28px 24px 56px", fontFamily:"Montserrat,system-ui,sans-serif" }}>
 
       {/* Header */}
       <div style={{ marginBottom:32 }}>
@@ -203,31 +237,103 @@ export default function ArivePage() {
         </div>
       </div>
 
-      {/* Status banner */}
-      <div style={{ background: "#f0fdf4", border:"1.5px solid #86efac", borderRadius:14, padding:"16px 20px", marginBottom:28, display:"flex", alignItems:"center", gap:14 }}>
-        <span style={{ fontSize:20 }}>✅</span>
-        <div>
-          <p style={{ margin:0, fontSize:13, fontWeight:800, color:"#166534" }}>Webhook Endpoint Ready</p>
-          <p style={{ margin:"2px 0 0", fontSize:12, color:"#166534" }}>Your SLICE webhook is live and waiting for ARIVE data.</p>
-        </div>
-        <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:8 }}>
-          <code style={{ fontSize:11, background:"#dcfce7", padding:"4px 10px", borderRadius:6, color:"#166534", border:"1px solid #86efac", fontFamily:"monospace" }}>
-            POST {WEBHOOK_URL}
-          </code>
-          <CopyButton text={WEBHOOK_URL} />
+      {/* Endpoint URLs */}
+      <div style={{ background:"#f0fdf4", border:"1.5px solid #86efac", borderRadius:14, padding:"16px 20px", marginBottom:12 }}>
+        <p style={{ margin:"0 0 10px", fontSize:12, fontWeight:800, color:"#166534" }}>✅ Both webhook endpoints are live</p>
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {[
+            { label:"Zapier endpoint",        url:ZAPIER_URL },
+            { label:"ARIVE native endpoint",  url:ARIVE_URL  },
+          ].map(e => (
+            <div key={e.url} style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+              <span style={{ fontSize:11, fontWeight:700, color:"#166534", minWidth:160 }}>{e.label}</span>
+              <code style={{ fontSize:11, background:"#dcfce7", padding:"3px 10px", borderRadius:6, color:"#166534", border:"1px solid #86efac", fontFamily:"monospace" }}>
+                POST {e.url}
+              </code>
+              <CopyButton text={e.url} />
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Option A: Zapier (recommended) */}
+      {/* How SLICE matches loans to LOs */}
+      <div style={{ background:C.white, border:`1px solid ${C.line}`, borderRadius:20, padding:"24px 28px", marginBottom:20, boxShadow:"0 1px 6px rgba(15,23,42,0.05)" }}>
+        <h2 style={{ margin:"0 0 6px", fontSize:15, fontWeight:800, color:C.ink }}>🔑 How SLICE Matches a Loan to a Loan Officer</h2>
+        <p style={{ margin:"0 0 16px", fontSize:13, color:C.muted, lineHeight:1.8 }}>
+          SLICE tries three lookups in priority order. The first match wins.
+        </p>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:16 }}>
+          {[
+            { priority:"1st", icon:"🏆", label:"NMLS", zapier:"lo_nmls", native:"loanOfficerNmls", desc:"Most reliable — never changes per LO." },
+            { priority:"2nd", icon:"📧", label:"Email", zapier:"lo_email", native:"loanOfficerEmail", desc:"Fallback. Must match SLICE profile email exactly." },
+            { priority:"3rd", icon:"🔑", label:"ARIVE LO ID", zapier:"(not supported)", native:"loanOfficerId", desc:"Native webhook only. Set arive_lo_id in Team Members." },
+          ].map(r => (
+            <div key={r.priority} style={{ background:C.sand, borderRadius:12, padding:"14px 16px", border:`1px solid ${C.line}` }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                <span style={{ fontSize:18 }}>{r.icon}</span>
+                <div>
+                  <span style={{ fontSize:9, fontWeight:800, color:C.orange, textTransform:"uppercase", letterSpacing:".1em" }}>{r.priority} priority</span>
+                  <p style={{ margin:0, fontSize:13, fontWeight:800, color:C.ink }}>{r.label}</p>
+                </div>
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                <div><span style={{ fontSize:10, color:C.muted }}>Zapier field: </span><code style={{ fontSize:10, color:C.navy }}>{r.zapier}</code></div>
+                <div><span style={{ fontSize:10, color:C.muted }}>ARIVE field: </span><code style={{ fontSize:10, color:C.navy }}>{r.native}</code></div>
+              </div>
+              <p style={{ margin:"8px 0 0", fontSize:11, color:C.muted, lineHeight:1.5 }}>{r.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:10, padding:"12px 16px" }}>
+          <p style={{ margin:0, fontSize:12, color:"#92400e", lineHeight:1.8 }}>
+            <strong>⚠️ Important:</strong> Make sure each LO&apos;s Supabase profile email matches their ARIVE account email exactly.
+            NMLS is strongly preferred — it&apos;s immune to email typos and address changes.
+            You can verify in <Link href="/goal-engine/admin" style={{ color:C.orange, fontWeight:700 }}>Admin → Manage Goals</Link>.
+          </p>
+        </div>
+      </div>
+
+      {/* How the merge logic works */}
+      <div style={{ background:C.navy, borderRadius:20, padding:"24px 28px", marginBottom:20 }}>
+        <h2 style={{ margin:"0 0 12px", fontSize:15, fontWeight:800, color:"#fff" }}>⚡ How the Merge Logic Works — One Row Per Loan</h2>
+        <p style={{ margin:"0 0 16px", fontSize:13, color:"rgba(255,255,255,0.65)", lineHeight:1.8 }}>
+          SLICE stores <strong style={{ color:"#fff" }}>one row per loan per LO</strong>, keyed on <code style={{ color:"#f97316" }}>(loan_id, profile_id)</code>.
+          App and funded events merge into the same row — they never overwrite each other.
+        </p>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:12 }}>
+          {[
+            { title:"App event arrives first", body:"Row created with app_date + app_volume. funded_date and funded_volume are null." },
+            { title:"Funded event arrives later", body:"Same row updated: funded_date + funded_volume added. App fields untouched." },
+            { title:"Funded event arrives first (ARIVE skipped app event)", body:"Row created with funded fields. App fields filled with funded_date as best-effort fallback." },
+            { title:"Same event fires twice (ARIVE retry)", body:"Idempotent. Same (loan_id, profile_id) key → update in place. No duplicate rows, no data lost." },
+          ].map(item => (
+            <div key={item.title} style={{ background:"rgba(255,255,255,0.07)", borderRadius:12, padding:"14px 16px" }}>
+              <p style={{ margin:"0 0 6px", fontSize:12, fontWeight:800, color:"#f97316" }}>{item.title}</p>
+              <p style={{ margin:0, fontSize:12, color:"rgba(255,255,255,0.6)", lineHeight:1.6 }}>{item.body}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop:12, background:"rgba(255,255,255,0.07)", borderRadius:12, padding:"14px 16px" }}>
+          <p style={{ margin:0, fontSize:12, color:"rgba(255,255,255,0.6)", lineHeight:1.8 }}>
+            <strong style={{ color:"#fff" }}>📅 Goal month is matched by date, not by today.</strong>{" "}
+            The <code style={{ color:"#f97316" }}>funded_date</code> or <code style={{ color:"#f97316" }}>app_date</code> in the payload
+            is matched to the goal month whose <code style={{ color:"#f97316" }}>start_date</code>–<code style={{ color:"#f97316" }}>end_date</code> contains it.
+            This means a loan funded on July 31 will always count toward the July goal even if it arrives after July ends.
+            If no date-matching goal is found, the currently active goal is used as a fallback.
+          </p>
+        </div>
+      </div>
+
+      {/* Option banners */}
       <div style={{ background:C.navy, borderRadius:16, padding:"16px 24px", marginBottom:12, display:"flex", alignItems:"center", gap:12 }}>
         <span style={{ fontSize:20 }}>⚡</span>
         <div>
-          <p style={{ margin:0, fontSize:13, fontWeight:800, color:"#fff" }}>Two Ways to Connect</p>
+          <p style={{ margin:0, fontSize:13, fontWeight:800, color:"#fff" }}>Two Ways to Connect ARIVE to SLICE</p>
           <p style={{ margin:"2px 0 0", fontSize:12, color:"rgba(255,255,255,0.6)" }}>Option A: Zapier (no-code, easiest) · Option B: ARIVE native webhook (direct)</p>
         </div>
       </div>
 
-      {/* OPTION A: ZAPIER */}
+      {/* ════════════ OPTION A: ZAPIER ════════════ */}
       <div style={{ background:C.white, border:`2px solid ${C.orange}`, borderRadius:20, padding:"22px 28px", marginBottom:20 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20 }}>
           <span style={{ fontSize:18 }}>⚡</span>
@@ -237,52 +343,40 @@ export default function ArivePage() {
 
         <Step num={1} title="Create a Zapier account (free tier works)">
           <p style={{ margin:0, fontSize:13, color:C.muted, lineHeight:1.8 }}>
-            Go to <strong style={{ color:C.ink }}>zapier.com</strong> and sign up for free. The free plan allows the zaps you need.
+            Go to <strong style={{ color:C.ink }}>zapier.com</strong> and sign up. The free plan supports the two Zaps you need.
           </p>
         </Step>
 
-        <Step num={2} title="Create a new Zap — trigger: ARIVE">
-          <p style={{ margin:"0 0 12px", fontSize:13, color:C.muted, lineHeight:1.8 }}>In Zapier, click <strong style={{ color:C.ink }}>+ Create → Zap</strong>. Set the trigger:</p>
-          <table style={{ width:"100%", borderCollapse:"collapse", borderRadius:10, overflow:"hidden", border:`1px solid ${C.line}` }}>
-            <tbody>
-              <FieldRow field="App" value="ARIVE" note="Search for ARIVE in the app list" />
-              <FieldRow field="Trigger Event" value="Loan Funded" note="Fires when a loan reaches Funded status" />
-              <FieldRow field="Account" value="Your ARIVE account" note="Connect your HCMG ARIVE account" />
-            </tbody>
-          </table>
-          <p style={{ margin:"12px 0 0", fontSize:12, color:C.muted }}>
-            💡 Also create a second Zap with trigger <strong>Application Submitted</strong> to track pipeline data.
-          </p>
-        </Step>
+        <Step num={2} title="Create TWO Zaps — one per event type">
+          <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:10, padding:"12px 16px", marginBottom:16 }}>
+            <p style={{ margin:0, fontSize:12, color:"#92400e", lineHeight:1.8 }}>
+              <strong>Why two Zaps?</strong> Each Zap only has access to its own event&apos;s fields.
+              Sending both events from one Zap would corrupt the merge — the second fire would
+              appear to have empty funded or app fields, overwriting good data. Two Zaps = clean, safe merge.
+            </p>
+          </div>
 
-        <Step num={3} title="Set the action — Webhooks by Zapier (POST)">
-          <p style={{ margin:"0 0 12px", fontSize:13, color:C.muted, lineHeight:1.8 }}>Set the action app to <strong style={{ color:C.ink }}>Webhooks by Zapier</strong>:</p>
-          <table style={{ width:"100%", borderCollapse:"collapse", borderRadius:10, overflow:"hidden", border:`1px solid ${C.line}` }}>
+          <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:800, color:C.ink }}>Zap 1 — Loan Funded</p>
+          <table style={{ width:"100%", borderCollapse:"collapse", borderRadius:10, overflow:"hidden", border:`1px solid ${C.line}`, marginBottom:16 }}>
             <tbody>
+              <FieldRow field="Trigger App"    value="ARIVE" />
+              <FieldRow field="Trigger Event"  value="Loan Funded" note="Fires when a loan reaches Funded status" />
+              <FieldRow field="Action App"     value="Webhooks by Zapier" />
               <FieldRow field="Action Event"   value="POST" />
-              <FieldRow field="URL"            value={WEBHOOK_URL} note="← Your SLICE webhook endpoint" />
+              <FieldRow field="URL"            value={ZAPIER_URL} note="← Your SLICE Zapier endpoint" />
               <FieldRow field="Payload Type"   value="json" />
-              <FieldRow field="Header Name"    value="x-zapier-secret" note="Add a custom header" />
-              <FieldRow field="Header Value"   value="(set ZAPIER_WEBHOOK_SECRET in Vercel)" note="Any secret string you choose" />
+              <FieldRow field="Header"         value="x-zapier-secret: (optional — see env vars below)" />
             </tbody>
           </table>
-        </Step>
-
-        <Step num={4} title="Create TWO Zaps — one for funded, one for applications">
-          <p style={{ margin:"0 0 12px", fontSize:13, color:C.muted }}>
-            You need <strong style={{ color:C.ink }}>two separate Zaps</strong> — one for each event type.
-            Each Zap sends only its own fields so the other event&apos;s data is never overwritten.
-          </p>
-          <p style={{ margin:"0 0 8px", fontSize:12, fontWeight:700, color:C.ink }}>Zap 1 — Loan Funded</p>
-          <CodeBlock label="Funded event payload" code={zapierFundedPayload} />
-          <div style={{ marginTop:8, marginBottom:16, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+          <CodeBlock label="Zap 1 — funded event body" code={zapierFundedPayload} />
+          <div style={{ marginTop:8, marginBottom:20, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
             {[
-              { field: "lo_nmls",       from: "ARIVE: Loan Officer NMLS",    required: true  },
-              { field: "lo_email",      from: "ARIVE: Loan Officer Email",   required: false },
-              { field: "loan_id",       from: "ARIVE: Loan ID",              required: true  },
-              { field: "funded_date",   from: "ARIVE: Funded Date",          required: true  },
-              { field: "funded_volume", from: "ARIVE: Loan Amount",          required: true  },
-              { field: "funded_unit",   from: "Hard-code: 1",                required: false },
+              { field:"lo_nmls",       from:"ARIVE: Loan Officer NMLS",  required:true,  note:"Preferred — most reliable" },
+              { field:"lo_email",      from:"ARIVE: Loan Officer Email",  required:false, note:"Fallback to NMLS" },
+              { field:"loan_id",       from:"ARIVE: Loan ID",             required:true,  note:"Required for dedup / merge" },
+              { field:"funded_date",   from:"ARIVE: Close Date / Funded Date", required:true,  note:"Used to match the goal month" },
+              { field:"funded_volume", from:"ARIVE: Loan Amount",         required:true,  note:"Dollar amount" },
+              { field:"funded_unit",   from:"Hard-code: 1",               required:false, note:"SLICE always counts 1 per row" },
             ].map(f => (
               <div key={f.field} style={{ background:C.sand, borderRadius:8, padding:"10px 14px", border:`1px solid ${C.line}` }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
@@ -290,19 +384,31 @@ export default function ArivePage() {
                   {f.required && <span style={{ fontSize:9, background:"#fee2e2", color:"#991b1b", padding:"1px 5px", borderRadius:3, fontWeight:800 }}>required</span>}
                 </div>
                 <p style={{ margin:0, fontSize:11, color:C.muted }}>← {f.from}</p>
+                {f.note && <p style={{ margin:"2px 0 0", fontSize:10, color:C.orange }}>{f.note}</p>}
               </div>
             ))}
           </div>
-          <p style={{ margin:"0 0 8px", fontSize:12, fontWeight:700, color:C.ink }}>Zap 2 — Application Submitted</p>
-          <CodeBlock label="Application event payload" code={zapierAppPayload} />
+
+          <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:800, color:C.ink }}>Zap 2 — Application Submitted</p>
+          <table style={{ width:"100%", borderCollapse:"collapse", borderRadius:10, overflow:"hidden", border:`1px solid ${C.line}`, marginBottom:16 }}>
+            <tbody>
+              <FieldRow field="Trigger App"    value="ARIVE" />
+              <FieldRow field="Trigger Event"  value="Application Submitted" note="Fires when a new application is created" />
+              <FieldRow field="Action App"     value="Webhooks by Zapier" />
+              <FieldRow field="Action Event"   value="POST" />
+              <FieldRow field="URL"            value={ZAPIER_URL} note="← Same endpoint as Zap 1" />
+              <FieldRow field="Payload Type"   value="json" />
+            </tbody>
+          </table>
+          <CodeBlock label="Zap 2 — application event body" code={zapierAppPayload} />
           <div style={{ marginTop:8, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
             {[
-              { field: "lo_nmls",    from: "ARIVE: Loan Officer NMLS",    required: true  },
-              { field: "lo_email",   from: "ARIVE: Loan Officer Email",   required: false },
-              { field: "loan_id",    from: "ARIVE: Loan ID",              required: true  },
-              { field: "app_date",   from: "ARIVE: Application Date",     required: true  },
-              { field: "app_volume", from: "ARIVE: Loan Amount",          required: true  },
-              { field: "app_unit",   from: "Hard-code: 1",                required: false },
+              { field:"lo_nmls",    from:"ARIVE: Loan Officer NMLS",  required:true,  note:"Preferred — most reliable" },
+              { field:"lo_email",   from:"ARIVE: Loan Officer Email",  required:false, note:"Fallback to NMLS" },
+              { field:"loan_id",    from:"ARIVE: Loan ID",             required:true,  note:"Required for dedup / merge" },
+              { field:"app_date",   from:"ARIVE: Application Date",    required:true,  note:"Used to match the goal month" },
+              { field:"app_volume", from:"ARIVE: Loan Amount",         required:true,  note:"Dollar amount" },
+              { field:"app_unit",   from:"Hard-code: 1",               required:false, note:"SLICE always counts 1 per row" },
             ].map(f => (
               <div key={f.field} style={{ background:C.sand, borderRadius:8, padding:"10px 14px", border:`1px solid ${C.line}` }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
@@ -310,27 +416,51 @@ export default function ArivePage() {
                   {f.required && <span style={{ fontSize:9, background:"#fee2e2", color:"#991b1b", padding:"1px 5px", borderRadius:3, fontWeight:800 }}>required</span>}
                 </div>
                 <p style={{ margin:0, fontSize:11, color:C.muted }}>← {f.from}</p>
+                {f.note && <p style={{ margin:"2px 0 0", fontSize:10, color:C.orange }}>{f.note}</p>}
               </div>
             ))}
           </div>
-          <div style={{ marginTop:14, padding:"12px 16px", borderRadius:10, background:"#fffbeb", border:"1px solid #fde68a" }}>
-            <p style={{ margin:0, fontSize:12, color:"#92400e", lineHeight:1.8 }}>
-              <strong>💡 Why two Zaps?</strong> Each Zap only knows about its own event&apos;s fields.
-              If you send both funded and app fields in one Zap, the second time the same loan fires
-              it would overwrite the other event&apos;s data. Two Zaps = clean merge, no overwrites.
+        </Step>
+
+        <Step num={3} title="How SLICE detects which event type Zapier sent">
+          <p style={{ margin:"0 0 12px", fontSize:13, color:C.muted, lineHeight:1.8 }}>
+            Unlike the native webhook, Zapier doesn&apos;t send an <code style={{ background:C.sand, padding:"1px 6px", borderRadius:4, color:C.navy }}>event</code> field.
+            SLICE determines the event type by inspecting which fields are present:
+          </p>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+            <div style={{ background:C.sand, borderRadius:10, padding:"14px 16px", border:`1px solid ${C.line}` }}>
+              <p style={{ margin:"0 0 6px", fontSize:12, fontWeight:800, color:C.navy }}>Funded event detected when:</p>
+              <p style={{ margin:0, fontSize:12, color:C.muted, lineHeight:1.7 }}>
+                Payload contains <code style={{ color:C.navy }}>funded_date</code> and/or <code style={{ color:C.navy }}>funded_volume</code>
+              </p>
+            </div>
+            <div style={{ background:C.sand, borderRadius:10, padding:"14px 16px", border:`1px solid ${C.line}` }}>
+              <p style={{ margin:"0 0 6px", fontSize:12, fontWeight:800, color:C.navy }}>Application event detected when:</p>
+              <p style={{ margin:0, fontSize:12, color:C.muted, lineHeight:1.7 }}>
+                Payload contains <code style={{ color:C.navy }}>app_date</code> and/or <code style={{ color:C.navy }}>app_volume</code> (but no funded fields)
+              </p>
+            </div>
+          </div>
+          <div style={{ marginTop:12, background:"#fee2e2", border:"1px solid #fca5a5", borderRadius:10, padding:"12px 16px" }}>
+            <p style={{ margin:0, fontSize:12, color:"#991b1b", lineHeight:1.8 }}>
+              <strong>⚠️ Never send both funded and app fields in one Zap.</strong> If <code>funded_date</code> is present,
+              SLICE treats the whole payload as a funded event — meaning app fields in the same payload would be
+              ignored in favor of what&apos;s already in the database.
             </p>
           </div>
         </Step>
 
-        <Step num={5} title="Test and turn on the Zap">
+        <Step num={4} title="Test and activate both Zaps">
           <p style={{ margin:0, fontSize:13, color:C.muted, lineHeight:1.8 }}>
-            Use Zapier's built-in test to fire a sample payload. You should see <strong style={{ color:C.green }}>status: "created"</strong> in the response.
-            Once confirmed, turn the Zap ON. Every funded loan in ARIVE will now automatically update SLICE.
+            Use Zapier&apos;s built-in test to fire a sample payload. A successful response will return{" "}
+            <code style={{ background:C.sand, padding:"1px 6px", borderRadius:4, color:C.green, fontWeight:700 }}>&quot;status&quot;: &quot;created&quot;</code>{" "}
+            or <code style={{ background:C.sand, padding:"1px 6px", borderRadius:4, color:C.green, fontWeight:700 }}>&quot;status&quot;: &quot;updated&quot;</code>.
+            Once confirmed, turn both Zaps ON. Every funded loan and new application in ARIVE will now automatically flow into SLICE.
           </p>
         </Step>
       </div>
 
-      {/* OPTION B: Native webhook */}
+      {/* ════════════ OPTION B: NATIVE WEBHOOK ════════════ */}
       <div style={{ background:C.white, border:`1px solid ${C.line}`, borderRadius:20, padding:"22px 28px", marginBottom:28 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20 }}>
           <span style={{ fontSize:18 }}>🔌</span>
@@ -338,23 +468,41 @@ export default function ArivePage() {
           <span style={{ background:C.sand, color:C.muted, fontSize:10, fontWeight:800, padding:"2px 8px", borderRadius:99 }}>DIRECT</span>
         </div>
         <p style={{ margin:"0 0 16px", fontSize:13, color:C.muted, lineHeight:1.8 }}>
-          If ARIVE supports outbound webhooks directly (check ARIVE Settings → Integrations → Webhooks),
-          you can skip Zapier entirely. Use this endpoint and format:
+          If ARIVE supports outbound webhooks (check <strong>ARIVE Settings → Integrations → Webhooks</strong>),
+          you can skip Zapier entirely and have ARIVE post directly to SLICE.
+          The native route also supports a 3rd LO match priority (<code style={{ background:C.sand, padding:"1px 5px", borderRadius:4, color:C.navy }}>loanOfficerId</code>).
         </p>
-        <table style={{ width:"100%", borderCollapse:"collapse", borderRadius:10, overflow:"hidden", border:`1px solid ${C.line}`, marginBottom:16 }}>
+
+        <table style={{ width:"100%", borderCollapse:"collapse", borderRadius:10, overflow:"hidden", border:`1px solid ${C.line}`, marginBottom:20 }}>
           <tbody>
-            <FieldRow field="Endpoint URL"  value={`${SITE}/api/goal-engine/arive-webhook`} />
-            <FieldRow field="Secret Header" value="x-arive-secret" note="Set value in Vercel as ARIVE_WEBHOOK_SECRET" />
-            <FieldRow field="Events"        value="loan.funded, loan.application_submitted" />
+            <FieldRow field="Endpoint URL"   value={ARIVE_URL} />
+            <FieldRow field="Events"         value="loan.funded, loan.application_submitted" note="Also accepts LOAN_FUNDED, APPLICATION_SUBMITTED variants" />
+            <FieldRow field="Auth header"    value="x-arive-secret: <your secret>" note="Optional — if ARIVE_WEBHOOK_SECRET env var is set" />
+            <FieldRow field="Also accepted"  value="x-webhook-secret  or  Authorization: Bearer <secret>" note="All three auth header styles work" />
           </tbody>
         </table>
-        <CodeBlock label="Expected ARIVE native payload" code={ariveNativePayload} />
+
+        <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:800, color:C.ink }}>Funded event payload</p>
+        <CodeBlock label="loan.funded" code={ariveNativeFundedPayload} />
+
+        <p style={{ margin:"16px 0 8px", fontSize:13, fontWeight:800, color:C.ink }}>Application event payload</p>
+        <CodeBlock label="loan.application_submitted" code={ariveNativeAppPayload} />
+
+        <div style={{ marginTop:12, background:C.sand, borderRadius:10, padding:"12px 16px", border:`1px solid ${C.line}` }}>
+          <p style={{ margin:0, fontSize:12, color:C.muted, lineHeight:1.8 }}>
+            <strong style={{ color:C.ink }}>loanOfficerId</strong> is the 3rd-priority LO match (native webhook only).
+            To use it, set the <code style={{ color:C.navy }}>arive_lo_id</code> field on each LO&apos;s profile in{" "}
+            <Link href="/goal-engine/admin" style={{ color:C.orange, fontWeight:700 }}>Admin → Team Members</Link>.
+          </p>
+        </div>
       </div>
 
-      {/* Live Webhook Tester */}
+      {/* ════════════ LIVE TESTER ════════════ */}
       <div style={{ background:C.white, border:`1px solid ${C.line}`, borderRadius:20, padding:"28px 32px", marginBottom:28, boxShadow:"0 1px 6px rgba(15,23,42,0.05)" }}>
         <h2 style={{ margin:"0 0 6px", fontSize:16, fontWeight:800, color:C.ink }}>🧪 Live Webhook Tester</h2>
-        <p style={{ margin:"0 0 20px", fontSize:13, color:C.muted }}>Fire a test production record right now to verify your setup.</p>
+        <p style={{ margin:"0 0 20px", fontSize:13, color:C.muted }}>
+          Fire a test record directly against the live endpoints. Each button sends only the fields for its event type — matching how real Zaps work.
+        </p>
 
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
           <div>
@@ -366,7 +514,7 @@ export default function ArivePage() {
             />
           </div>
           <div>
-            <label style={{ display:"block", fontSize:11, fontWeight:700, color:C.ink, marginBottom:6, textTransform:"uppercase", letterSpacing:"0.1em" }}>Funded Volume</label>
+            <label style={{ display:"block", fontSize:11, fontWeight:700, color:C.ink, marginBottom:6, textTransform:"uppercase", letterSpacing:"0.1em" }}>Funded Volume ($)</label>
             <input
               type="number" value={testVolume} onChange={e => setTestVolume(e.target.value)}
               placeholder="485000"
@@ -374,116 +522,95 @@ export default function ArivePage() {
             />
           </div>
         </div>
-        <div style={{ marginBottom:20 }}>
-          <label style={{ display:"block", fontSize:11, fontWeight:700, color:C.ink, marginBottom:6, textTransform:"uppercase", letterSpacing:"0.1em" }}>Webhook Secret (optional)</label>
-          <input
-            type="text" value={testSecret} onChange={e => setTestSecret(e.target.value)}
-            placeholder="Leave blank if ZAPIER_WEBHOOK_SECRET not set yet"
-            style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.line}`, fontSize:13, color:C.ink, outline:"none", fontFamily:"inherit", boxSizing:"border-box" as const }}
-          />
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:20 }}>
+          <div>
+            <label style={{ display:"block", fontSize:11, fontWeight:700, color:C.ink, marginBottom:6, textTransform:"uppercase", letterSpacing:"0.1em" }}>Loan ID (optional — auto-generated if blank)</label>
+            <input
+              type="text" value={testLoanId} onChange={e => setTestLoanId(e.target.value)}
+              placeholder="TEST-1234  (leave blank to auto)"
+              style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.line}`, fontSize:13, color:C.ink, outline:"none", fontFamily:"inherit", boxSizing:"border-box" as const }}
+            />
+          </div>
+          <div>
+            <label style={{ display:"block", fontSize:11, fontWeight:700, color:C.ink, marginBottom:6, textTransform:"uppercase", letterSpacing:"0.1em" }}>Webhook Secret (leave blank if not set)</label>
+            <input
+              type="text" value={testSecret} onChange={e => setTestSecret(e.target.value)}
+              placeholder="Only needed if ZAPIER_WEBHOOK_SECRET / ARIVE_WEBHOOK_SECRET is set"
+              style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1.5px solid ${C.line}`, fontSize:13, color:C.ink, outline:"none", fontFamily:"inherit", boxSizing:"border-box" as const }}
+            />
+          </div>
         </div>
 
         <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
           <button
-            onClick={runWebhookTest}
-            disabled={!testEmail || testing}
+            onClick={testZapFunded}
+            disabled={!canTest || testingZapFunded}
             style={{
-              padding:"12px 24px", borderRadius:12, border:"none",
-              background: !testEmail ? C.line : "linear-gradient(135deg,#FF9847,#F37021)",
-              color: !testEmail ? C.muted : "#fff",
-              fontSize:13, fontWeight:800, cursor: testEmail ? "pointer" : "not-allowed",
+              padding:"12px 22px", borderRadius:12, border:"none",
+              background: !canTest ? C.line : "linear-gradient(135deg,#FF9847,#F37021)",
+              color: !canTest ? C.muted : "#fff",
+              fontSize:13, fontWeight:800, cursor: canTest ? "pointer" : "not-allowed", fontFamily:"inherit",
             }}
-          >
-            {testing ? "Sending..." : "⚡ Test Zapier Webhook"}
-          </button>
+          >{testingZapFunded ? "Sending…" : "⚡ Zapier — Funded Event"}</button>
+
+          <button
+            onClick={testZapApp}
+            disabled={!canTest || testingZapApp}
+            style={{
+              padding:"12px 22px", borderRadius:12, border:`1.5px solid ${C.orange}`,
+              background: C.white,
+              color: !canTest ? C.muted : C.orange,
+              fontSize:13, fontWeight:800, cursor: canTest ? "pointer" : "not-allowed", fontFamily:"inherit",
+            }}
+          >{testingZapApp ? "Sending…" : "⚡ Zapier — Application Event"}</button>
+
           <button
             onClick={testNativeArive}
-            disabled={!testEmail || sendingNative}
+            disabled={!canTest || testingNative}
             style={{
-              padding:"12px 24px", borderRadius:12,
-              border:`1.5px solid ${C.line}`,
+              padding:"12px 22px", borderRadius:12, border:`1.5px solid ${C.line}`,
               background: C.white,
-              color: !testEmail ? C.muted : C.ink,
-              fontSize:13, fontWeight:800, cursor: testEmail ? "pointer" : "not-allowed",
+              color: !canTest ? C.muted : C.ink,
+              fontSize:13, fontWeight:800, cursor: canTest ? "pointer" : "not-allowed", fontFamily:"inherit",
             }}
-          >
-            {sendingNative ? "Sending..." : "🔌 Test Native Webhook"}
-          </button>
+          >{testingNative ? "Sending…" : "🔌 Native — Funded Event"}</button>
         </div>
 
-        {testResult && (
-          <div style={{ marginTop:16, background: testResult.ok ? C.greenBg : C.redBg, border:`1px solid ${testResult.ok ? "#86efac" : "#fca5a5"}`, borderRadius:10, padding:"14px 18px" }}>
-            <p style={{ margin:"0 0 6px", fontSize:12, fontWeight:800, color: testResult.ok ? C.green : C.red }}>
-              {testResult.ok ? "✅ Zapier webhook test passed!" : "❌ Zapier webhook test failed"}
-            </p>
-            <pre style={{ margin:0, fontSize:11, color: testResult.ok ? "#166534" : "#991b1b", fontFamily:"monospace", overflowX:"auto" }}>
-              {JSON.stringify(testResult.data, null, 2)}
-            </pre>
-          </div>
+        {!canTest && (
+          <p style={{ margin:"12px 0 0", fontSize:12, color:C.muted }}>Enter an LO email above to enable the test buttons.</p>
         )}
 
-        {nativeResult && (
-          <div style={{ marginTop:12, background: nativeResult.ok ? C.greenBg : C.redBg, border:`1px solid ${nativeResult.ok ? "#86efac" : "#fca5a5"}`, borderRadius:10, padding:"14px 18px" }}>
-            <p style={{ margin:"0 0 6px", fontSize:12, fontWeight:800, color: nativeResult.ok ? C.green : C.red }}>
-              {nativeResult.ok ? "✅ Native webhook test passed!" : "❌ Native webhook test failed"}
-            </p>
-            <pre style={{ margin:0, fontSize:11, color: nativeResult.ok ? "#166534" : "#991b1b", fontFamily:"monospace", overflowX:"auto" }}>
-              {JSON.stringify(nativeResult.data, null, 2)}
-            </pre>
-          </div>
-        )}
+        <ResultBox result={zapFundedResult}  label="Zapier funded event" />
+        <ResultBox result={zapAppResult}     label="Zapier application event" />
+        <ResultBox result={nativeResult}     label="Native webhook funded event" />
       </div>
 
-      {/* LO Email Mapping */}
-      <div style={{ background:C.white, border:`1px solid ${C.line}`, borderRadius:20, padding:"24px 28px", marginBottom:28 }}>
-        <h2 style={{ margin:"0 0 8px", fontSize:15, fontWeight:800, color:C.ink }}>🔑 How SLICE Matches ARIVE Loans to Loan Officers</h2>
-        <p style={{ margin:"0 0 16px", fontSize:13, color:C.muted, lineHeight:1.8 }}>
-          SLICE matches incoming webhook data to a Supabase profile using:
-        </p>
-        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-          {[
-            { priority: "1st", label: "NMLS match",      desc: "loanOfficerNmls / lo_nmls → profiles.nmls — most reliable, never changes", icon:"🏆" },
-            { priority: "2nd", label: "Email match",      desc: "loanOfficerEmail / lo_email → profiles.email — fallback if no NMLS", icon:"📧" },
-            { priority: "3rd", label: "ARIVE LO ID",      desc: "loanOfficerId / lo_id → profiles.arive_lo_id — set in Team Members page", icon:"🔑" },
-          ].map(r => (
-            <div key={r.priority} style={{ display:"flex", alignItems:"center", gap:14, background:C.sand, borderRadius:10, padding:"12px 16px", border:`1px solid ${C.line}` }}>
-              <span style={{ fontSize:20 }}>{r.icon}</span>
-              <div>
-                <span style={{ fontSize:10, fontWeight:800, color:C.orange, textTransform:"uppercase", letterSpacing:"0.1em" }}>{r.priority} priority — </span>
-                <strong style={{ fontSize:13, color:C.ink }}>{r.label}</strong>
-                <p style={{ margin:"2px 0 0", fontSize:12, color:C.muted }}>{r.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div style={{ marginTop:14, background:"#fffbeb", border:"1px solid #fed7aa", borderRadius:10, padding:"12px 16px" }}>
-          <p style={{ margin:0, fontSize:12, color:"#92400e", lineHeight:1.8 }}>
-            <strong>⚠️ Important:</strong> Make sure each LO&apos;s Supabase profile email matches their ARIVE account email exactly.
-            You can set this in <Link href="/goal-engine/admin" style={{ color:C.orange, fontWeight:700 }}>Admin → Manage Profiles</Link>.
-          </p>
-        </div>
-      </div>
-
-      {/* Env var checklist */}
+      {/* Env vars */}
       <div style={{ background:C.navy, borderRadius:20, padding:"24px 28px" }}>
-        <h2 style={{ margin:"0 0 16px", fontSize:15, fontWeight:800, color:"#fff" }}>🔐 Required Vercel Environment Variables</h2>
+        <h2 style={{ margin:"0 0 6px", fontSize:15, fontWeight:800, color:"#fff" }}>🔐 Vercel Environment Variables</h2>
+        <p style={{ margin:"0 0 16px", fontSize:12, color:"rgba(255,255,255,0.45)" }}>
+          Vercel Dashboard → hcmg-web → Settings → Environment Variables
+        </p>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
           {[
-            { key: "ZAPIER_WEBHOOK_SECRET",  desc: "Any secret string (e.g. hcmg-arive-2025). Set same value in Zapier header." },
-            { key: "ARIVE_WEBHOOK_SECRET",   desc: "If using native ARIVE webhooks. Set same value in ARIVE webhook config." },
-            { key: "GOAL_ENGINE_TEST_MODE",  desc: "Set to false when ready for live emails." },
-            { key: "GOAL_ENGINE_TEST_EMAIL", desc: "darius@hcmgloans.com — receives all test emails." },
-            { key: "CRON_SECRET",            desc: "hcmg-cron-2025 — secures the weekly email cron job." },
+            { key:"ZAPIER_WEBHOOK_SECRET",  optional:true,  desc:"Secret string sent in Zapier header x-zapier-secret. Optional — if not set, the Zapier endpoint accepts all requests (rely on the secret URL instead)." },
+            { key:"ARIVE_WEBHOOK_SECRET",   optional:true,  desc:"Secret for ARIVE native webhook header x-arive-secret. Optional — same policy as above." },
+            { key:"GOAL_ENGINE_TEST_MODE",  optional:false, desc:"Set to false in production. When true, all goal emails are redirected to GOAL_ENGINE_TEST_EMAIL." },
+            { key:"GOAL_ENGINE_TEST_EMAIL", optional:false, desc:"e.g. darius@hcmgloans.com — receives all emails while test mode is on." },
+            { key:"CRON_SECRET",            optional:false, desc:"Secures the weekly email cron job at /api/goal-engine/weekly-email." },
           ].map(v => (
             <div key={v.key} style={{ background:"rgba(255,255,255,0.06)", borderRadius:10, padding:"12px 16px", display:"flex", alignItems:"flex-start", gap:14 }}>
-              <code style={{ fontSize:12, color:"#f97316", fontFamily:"monospace", fontWeight:700, flexShrink:0 }}>{v.key}</code>
+              <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:8 }}>
+                <code style={{ fontSize:12, color:"#f97316", fontFamily:"monospace", fontWeight:700 }}>{v.key}</code>
+                {v.optional
+                  ? <span style={{ fontSize:9, background:"rgba(255,255,255,0.12)", color:"rgba(255,255,255,0.5)", padding:"1px 6px", borderRadius:3, fontWeight:800 }}>OPTIONAL</span>
+                  : <span style={{ fontSize:9, background:"#dc2626", color:"#fff", padding:"1px 6px", borderRadius:3, fontWeight:800 }}>REQUIRED</span>
+                }
+              </div>
               <p style={{ margin:0, fontSize:12, color:"rgba(255,255,255,0.55)", lineHeight:1.6 }}>{v.desc}</p>
             </div>
           ))}
         </div>
-        <p style={{ margin:"16px 0 0", fontSize:12, color:"rgba(255,255,255,0.4)" }}>
-          Vercel Dashboard → hcmg-web → Settings → Environment Variables → Add each key above
-        </p>
       </div>
 
     </div>
