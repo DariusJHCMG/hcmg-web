@@ -32,37 +32,40 @@ export async function GET(req: NextRequest) {
 
   const sb = createServiceClient();
 
-  // Get assignments with profile info
-  const { data: assignments, error } = await sb
+  // Fetch assignments (just the raw rows)
+  const { data: rawAssignments, error } = await sb
     .from("goal_assignments")
-    .select(`
-      id, assigned_at, notes,
-      personal_funded_volume_goal, personal_funded_units_goal,
-      profile:profiles!goal_assignments_profile_id_fkey(
-        id, full_name, email, avatar_url, nmls, role, is_active
-      )
-    `)
+    .select("id, assigned_at, notes, personal_funded_volume_goal, personal_funded_units_goal, profile_id")
     .eq("goal_month_id", goalMonthId)
     .order("assigned_at", { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // All profiles — admin can assign anyone regardless of role or active status
-  const { data: allLOs } = await sb
+  const { data: allLOs, error: profilesError } = await sb
     .from("profiles")
     .select("id, full_name, email, avatar_url, nmls, role, is_active")
     .order("full_name");
 
-  // Supabase returns the FK join as an array even for many-to-one; normalise to a plain object
-  const normalised = (assignments ?? []).map((a) => ({
-    ...a,
-    profile: Array.isArray(a.profile) ? a.profile[0] ?? null : a.profile,
+  if (profilesError) return NextResponse.json({ error: profilesError.message }, { status: 500 });
+
+  // Build a profile lookup map
+  const profileMap = new Map((allLOs ?? []).map((p) => [p.id, p]));
+
+  // Attach profile object manually — no FK embed needed
+  const assignments = (rawAssignments ?? []).map((a) => ({
+    id:          a.id,
+    assigned_at: a.assigned_at,
+    notes:       a.notes,
+    personal_funded_volume_goal: a.personal_funded_volume_goal,
+    personal_funded_units_goal:  a.personal_funded_units_goal,
+    profile: profileMap.get(a.profile_id) ?? null,
   }));
 
-  const assignedIds = new Set(normalised.map((a) => (a.profile as { id: string } | null)?.id).filter(Boolean) as string[]);
+  const assignedIds = new Set(assignments.map((a) => a.profile?.id).filter(Boolean) as string[]);
 
   return NextResponse.json({
-    assignments:    normalised,
+    assignments,
     all_los:        allLOs ?? [],
     assigned_ids:   Array.from(assignedIds),
     unassigned_los: (allLOs ?? []).filter((lo) => !assignedIds.has(lo.id)),
