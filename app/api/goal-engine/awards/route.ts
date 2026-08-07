@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
   const byUnits = [...board].sort((a, b) => b.funded_units_actual - a.funded_units_actual);
   if (byUnits[0]?.funded_units_actual > 0) {
     await issueAward(
-      "units_champion", "Funded Units Champion", "🏆",
+      "units_champion", "Funded Units Champion", "🎯",
       byUnits[0].profile_id,
       { funded_units: byUnits[0].funded_units_actual },
     );
@@ -136,13 +136,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 5. Largest Slice (highest commitment)
-  const byCommit = [...board].sort((a, b) => b.funded_volume_commitment - a.funded_volume_commitment);
-  if (byCommit[0]) {
+  // 5. Largest Slice — whoever funded the most volume (same as funded_champion sort, but a
+  // separate award recognising the biggest absolute producer by end-of-month funded dollars)
+  // board is already sorted funded_volume_actual DESC so board[0] is the top funder.
+  // Only issue if they actually funded something.
+  if (board[0]?.funded_volume_actual > 0) {
     await issueAward(
       "largest_slice", "Largest Slice of the Pie", "👑",
-      byCommit[0].profile_id,
-      { commitment: byCommit[0].funded_volume_commitment },
+      board[0].profile_id,
+      { funded_volume: board[0].funded_volume_actual, funded_units: board[0].funded_units_actual },
     );
   }
 
@@ -159,11 +161,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 7. Million Dollar Club
+  // 7. Million Dollar Club — per-LO idempotency key uses profile_id suffix (same as perfect_goal)
   const millionDollar = board.filter((r) => r.funded_volume_actual >= 1_000_000);
   for (const r of millionDollar) {
     await issueAward(
-      `million_dollar_${r.profile_id}`, "Million Dollar Club", "💰",
+      `million_dollar_${r.profile_id}`, "Million Dollar Club 💰", "💰",
       r.profile_id,
       { funded_volume: r.funded_volume_actual },
     );
@@ -240,7 +242,7 @@ export async function POST(req: NextRequest) {
 
       if (topImprovedRow && topImprovedPct > 0) {
         await issueAward(
-          "most_improved", "Most Improved", "🔥",
+          "most_improved", "Most Improved", "📈",
           topImprovedRow.profile_id,
           {
             current_volume: topImprovedRow.funded_volume_actual,

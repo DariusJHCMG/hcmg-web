@@ -320,12 +320,10 @@ export async function computeGoalSummary(
 
 export const AWARD_CATALOG = [
   { type: "funded_champion",   label: "Funded Volume Champion",      emoji: "🏆" },
-  { type: "units_champion",    label: "Funded Units Champion",       emoji: "🏆" },
+  { type: "units_champion",    label: "Funded Units Champion",       emoji: "🎯" },
   { type: "app_champion",      label: "Application Champion",        emoji: "🔥" },
   { type: "best_conversion",   label: "Best Conversion Rate",        emoji: "📈" },
-  { type: "most_improved",     label: "Most Improved",               emoji: "⚡" },
-  { type: "top_commitment",    label: "Top Commitment Achievement",  emoji: "💎" },
-  { type: "presidents_club",   label: "President's Club",            emoji: "🥇" },
+  { type: "most_improved",     label: "Most Improved",               emoji: "📈" },
   { type: "million_dollar",    label: "Million Dollar Club",         emoji: "💰" },
   { type: "perfect_goal",      label: "Perfect Goal Achievement",    emoji: "🎯" },
   { type: "fastest_commit",    label: "Fastest to Commitment",       emoji: "⚡" },
