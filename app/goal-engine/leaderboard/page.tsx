@@ -4,7 +4,7 @@
 
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { getActiveGoal, getLeaderboard, computeGoalSummary, fmt$, fmtPct, daysRemaining } from "@/lib/goal-engine";
+import { getActiveGoal, getLeaderboard, computeGoalSummary, fmt$, fmtPct, daysRemaining, monthProgress } from "@/lib/goal-engine";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -43,8 +43,10 @@ export default async function GoalEngineLeaderboard() {
     goal ? getLeaderboard(goal.id) : [],
     goal ? computeGoalSummary(goal) : null,
   ]);
-  const days   = goal ? daysRemaining(goal.end_date) : 0;
-  const medals = ["🥇","🥈","🥉"];
+  const days    = goal ? daysRemaining(goal.end_date) : 0;
+  // elapsed % of the month (0–100). Pace = actual% / elapsed% * 100.
+  const elapsed = goal ? monthProgress(goal.start_date, goal.end_date) * 100 : 100;
+  const medals  = ["🥇","🥈","🥉"];
 
   return (
     <div style={{ fontFamily:"Montserrat,system-ui,sans-serif", color: C.ink, maxWidth:1200, margin:"0 auto", padding:"28px 24px 56px" }}>
@@ -93,7 +95,7 @@ export default async function GoalEngineLeaderboard() {
                 { l:"App Vol Goal",    v: fmt$(goal.app_volume_goal),              sub:`${goal.app_units_goal} apps target` },
                 { l:"App Vol Actual",  v: fmt$(summary.totalActualAppVolume),      sub:`${fmtPct(summary.appVolPct)} of goal` },
                 { l:"App Units",       v: `${summary.totalActualAppUnits} apps`,   sub: goal.app_units_goal > 0 ? `of ${goal.app_units_goal} unit goal` : "submitted" },
-                { l:"App Pace",        v: fmtPct(summary.appVolPct),               sub: summary.appVolPct >= 90 ? "🟢 On Pace" : summary.appVolPct >= 70 ? "🟡 Behind" : "🔴 Off Track" },
+                { l:"App Pace",        v: fmtPct(elapsed > 0 ? summary.appVolPct / elapsed * 100 : 0), sub: (() => { const p = elapsed > 0 ? summary.appVolPct / elapsed * 100 : 0; return p >= 100 ? "🟢 On Pace" : p >= 80 ? "🟡 Slightly Behind" : "🔴 Off Track"; })() },
               ].map(s => (
                 <div key={s.l} style={{
                   background: C.white, borderRadius:18, padding:"20px",
