@@ -388,7 +388,7 @@ export default function ForecastCenterPage() {
       <div className="fc-hero" style={{ marginBottom: 24 }}>
         {[
           {
-            label:   "Company Goal",
+            label:   "Company Volume Goal",
             value:   fmt$(fc.goal_vol),
             sub:     `${fc.goal_units} loans`,
             bg:      C.navy,
@@ -420,7 +420,7 @@ export default function ForecastCenterPage() {
           },
           {
             label:   "Company Pace",
-            value:   fc.company_pace >= 100 ? "On Pace ✓" : `${fc.company_pace}%`,
+            value:   fc.company_pace >= 100 ? "On Pace ✓" : fc.company_pace >= 80 ? "Behind" : "Off Track",
             sub:     fc.company_pace >= 100 ? "Ahead of schedule" : fc.company_pace >= 80 ? "Slightly behind" : "Needs acceleration",
             pace:    fc.company_pace,
           },
