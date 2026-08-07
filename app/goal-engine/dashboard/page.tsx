@@ -158,77 +158,142 @@ export default async function GoalEngineDashboard() {
       {goal && (
         <div style={{ display:"flex", flexDirection:"column", gap:24 }}>
 
-          {/* ── Company Goal Banner ── */}
-          <div style={{
-            background: C.navy,
-            borderRadius: 24,
-            padding: "32px",
-            boxShadow: "0 8px 40px rgba(20,40,80,0.25)",
-            border: `1px solid rgba(243,112,33,0.2)`,
-          }}>
-            <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.orange }}>
-              {goal.month_label} — Company Goal
-            </p>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:20 }}
-              className="ge-company-grid">
-              {[
-                { l:"Funded Goal",   v: fmt$(goal.funded_volume_goal)         },
-                { l:"Funded Actual", v: fmt$(summary?.totalActualVolume ?? 0) },
-                { l:"Team",          v: `${summary?.participationCount ?? 0}/${summary?.totalLOs ?? 0}` },
-              ].map(s => (
-                <div key={s.l}>
-                  <p style={{ margin:0, fontSize:10, color:"rgba(255,255,255,0.45)", fontWeight:700, letterSpacing:".12em", textTransform:"uppercase" }}>{s.l}</p>
-                  <p style={{ margin:"5px 0 0", fontSize:22, fontWeight:900, color:"#fff" }}>{s.v}</p>
-                </div>
-              ))}
-            </div>
+          {/* ── Company Goal Banner — Pie Style ── */}
+          {(() => {
+            const appActual  = summary?.totalActualAppVolume ?? 0;
+            const appUnits   = summary?.totalActualAppUnits  ?? 0;
+            const appPct     = goal.app_volume_goal  > 0 ? Math.min(100, (appActual  / goal.app_volume_goal)  * 100) : 0;
+            const appUPct    = goal.app_units_goal   > 0 ? Math.min(100, (appUnits   / goal.app_units_goal)   * 100) : 0;
+            const fundedPct  = Math.min(100, compPct);
+            const fundedUPct = goal.funded_units_goal > 0 ? Math.min(100, ((summary?.totalActualUnits ?? 0) / goal.funded_units_goal) * 100) : 0;
 
-            {/* Funded progress */}
-            <p style={{ margin:"0 0 6px", fontSize:10, color:"rgba(255,255,255,0.45)", fontWeight:700, letterSpacing:".12em", textTransform:"uppercase" }}>Funded Volume</p>
-            <ProgressBar pct={compPct} thick />
-            <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, marginBottom:16 }}>
-              <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{fmt$(summary?.totalActualVolume ?? 0)} of {fmt$(goal.funded_volume_goal)}</span>
-              <span style={{ fontSize:12, fontWeight:800, color:"#fff" }}>{fmtPct(compPct)}</span>
-            </div>
+            // SVG donut helpers — cx=cy=110 r=90 stroke-width=18
+            const CX = 110, CY = 110, R = 86, SW = 20;
+            const circ = 2 * Math.PI * R;
 
-            {/* App volume progress */}
-            {goal.app_volume_goal > 0 && (() => {
-              const appActual   = summary?.totalActualAppVolume ?? 0;
-              const appUnits    = summary?.totalActualAppUnits  ?? 0;
-              const appPct      = (appActual / goal.app_volume_goal) * 100;
-              const appUnitPct  = goal.app_units_goal > 0 ? (appUnits / goal.app_units_goal) * 100 : 0;
-              return (
-                <>
-                  <p style={{ margin:"0 0 6px", fontSize:10, color:"rgba(255,255,255,0.45)", fontWeight:700, letterSpacing:".12em", textTransform:"uppercase" }}>Application Volume</p>
-                  <ProgressBar pct={appPct} thick />
-                  <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, marginBottom:16 }}>
-                    <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{fmt$(appActual)} of {fmt$(goal.app_volume_goal)} app goal</span>
-                    <span style={{ fontSize:12, fontWeight:800, color:"#fff" }}>{fmtPct(appPct)}</span>
+            // 4 quarter arcs: each occupies a 90° window, shows its own pct within that window
+            // Outer track is a grey circle; each arc overlays its segment
+            // Quarters: top=funded vol, right=funded units, bottom=app vol, left=app units
+            const segments = [
+              { pct: fundedPct,  color: "#F37021", rotate: 0   },   // funded vol  — top-right arc
+              { pct: fundedUPct, color: "#3b82f6", rotate: 90  },   // funded units — bottom-right
+              { pct: appPct,     color: "#22c55e", rotate: 180 },   // app vol — bottom-left
+              { pct: appUPct,    color: "#a855f7", rotate: 270 },   // app units — top-left
+            ];
+
+            return (
+              <div style={{
+                background: C.navy,
+                borderRadius: 24,
+                padding: "28px 32px",
+                boxShadow: "0 8px 40px rgba(20,40,80,0.25)",
+                border: `1px solid rgba(243,112,33,0.2)`,
+              }}>
+                <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.orange }}>
+                  {goal.month_label} — Company Goal
+                </p>
+
+                {/* Two-column layout: pie left, stats right */}
+                <div style={{ display:"flex", gap:36, alignItems:"center", flexWrap:"wrap" }} className="ge-banner-wrap">
+
+                  {/* ── Donut pie ── */}
+                  <div style={{ flexShrink:0, position:"relative", width:220, height:220 }}>
+                    <svg width={220} height={220} viewBox="0 0 220 220">
+                      {/* Background track */}
+                      <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={SW} />
+                      {/* Quarter dividers (faint lines from center) */}
+                      {[0,90,180,270].map(deg => {
+                        const rad = (deg - 90) * Math.PI / 180;
+                        const x2 = CX + (R + SW/2 + 4) * Math.cos(rad);
+                        const y2 = CY + (R + SW/2 + 4) * Math.sin(rad);
+                        const x1 = CX + (R - SW/2 - 4) * Math.cos(rad);
+                        const y1 = CY + (R - SW/2 - 4) * Math.sin(rad);
+                        return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.15)" strokeWidth={2} />;
+                      })}
+                      {/* Each arc fills its quarter proportionally to its % */}
+                      {segments.map((s, i) => {
+                        // each arc can use at most 90° of the circle
+                        const maxDash = circ * 0.25;
+                        const dash    = (s.pct / 100) * maxDash;
+                        const gap     = circ - dash;
+                        // offset: top of this quarter = i * 90°
+                        const offsetDeg = i * 90;
+                        // SVG dashoffset: start at 12 o'clock (offset = circ*0.25), then add per-segment rotation
+                        const dashOffset = circ * 0.25 - (circ * offsetDeg / 360);
+                        return (
+                          <circle
+                            key={i}
+                            cx={CX} cy={CY} r={R}
+                            fill="none"
+                            stroke={s.color}
+                            strokeWidth={SW}
+                            strokeDasharray={`${dash} ${gap}`}
+                            strokeDashoffset={dashOffset}
+                            strokeLinecap="butt"
+                            style={{ transition: "stroke-dasharray 1s ease" }}
+                          />
+                        );
+                      })}
+                    </svg>
+                    {/* SLICE logo in centre */}
+                    <div style={{
+                      position:"absolute", top:"50%", left:"50%",
+                      transform:"translate(-50%,-50%)",
+                      display:"flex", flexDirection:"column", alignItems:"center",
+                    }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/SLICE.png" alt="SLICE" style={{ width:56, height:"auto", filter:"brightness(0) invert(1)", opacity:0.9 }} />
+                    </div>
                   </div>
-                  {goal.app_units_goal > 0 && (
-                    <>
-                      <p style={{ margin:"0 0 6px", fontSize:10, color:"rgba(255,255,255,0.45)", fontWeight:700, letterSpacing:".12em", textTransform:"uppercase" }}>Application Units</p>
-                      <ProgressBar pct={appUnitPct} thick />
-                      <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
-                        <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{appUnits} of {goal.app_units_goal} apps</span>
-                        <span style={{ fontSize:12, fontWeight:800, color:"#fff" }}>{fmtPct(appUnitPct)}</span>
+
+                  {/* ── Stats grid ── */}
+                  <div style={{ flex:1, minWidth:200 }}>
+                    {/* Legend + values: 2×2 grid */}
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:20 }} className="ge-stat-grid">
+                      {[
+                        { dot:"#F37021", label:"Funded Vol Goal",   goal: fmt$(goal.funded_volume_goal),  actual: fmt$(summary?.totalActualVolume ?? 0),           pct: fundedPct  },
+                        { dot:"#3b82f6", label:"Funded Units Goal", goal: `${goal.funded_units_goal} loans`, actual: `${summary?.totalActualUnits ?? 0} funded`,  pct: fundedUPct },
+                        { dot:"#22c55e", label:"App Vol Goal",      goal: fmt$(goal.app_volume_goal),     actual: fmt$(appActual),                                  pct: appPct     },
+                        { dot:"#a855f7", label:"App Units Goal",    goal: `${goal.app_units_goal} apps`,  actual: `${appUnits} filed`,                              pct: appUPct    },
+                      ].map(s => (
+                        <div key={s.label} style={{ padding:"10px 14px", borderRadius:12, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
+                            <span style={{ width:8, height:8, borderRadius:"50%", background:s.dot, flexShrink:0, display:"inline-block" }} />
+                            <span style={{ fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,255,255,0.45)" }}>{s.label}</span>
+                          </div>
+                          <p style={{ margin:"0 0 1px", fontSize:18, fontWeight:900, color:"#fff", lineHeight:1 }}>{s.actual}</p>
+                          <p style={{ margin:0, fontSize:10, color:"rgba(255,255,255,0.35)" }}>of {s.goal} · <span style={{ color: s.pct >= 90 ? "#22c55e" : s.pct >= 70 ? "#f59e0b" : "#ef4444", fontWeight:800 }}>{Math.round(s.pct)}%</span></p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Team + Days */}
+                    <div style={{ display:"flex", gap:12 }}>
+                      <div style={{ flex:1, padding:"8px 14px", borderRadius:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" }}>
+                        <p style={{ margin:0, fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,255,255,0.4)" }}>Team</p>
+                        <p style={{ margin:"3px 0 0", fontSize:16, fontWeight:900, color:"#fff" }}>{summary?.participationCount ?? 0}/{summary?.totalLOs ?? 0} committed</p>
                       </div>
-                    </>
-                  )}
-                </>
-              );
-            })()}
-            {goal.clo_message && (
-              <div style={{ marginTop:20, paddingTop:20, borderTop:"1px solid rgba(255,255,255,0.1)" }}>
-                <p style={{ margin:"0 0 4px", fontSize:9, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.orange }}>
-                  Message from Darius
-                </p>
-                <p style={{ margin:0, fontSize:14, color:"rgba(255,255,255,0.65)", fontStyle:"italic", lineHeight:1.7 }}>
-                  &ldquo;{goal.clo_message}&rdquo;
-                </p>
+                      <div style={{ flex:1, padding:"8px 14px", borderRadius:10, background:"rgba(243,112,33,0.12)", border:"1px solid rgba(243,112,33,0.25)" }}>
+                        <p style={{ margin:0, fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,255,255,0.4)" }}>Pace</p>
+                        <p style={{ margin:"3px 0 0", fontSize:16, fontWeight:900, color: compPct >= 90 ? "#22c55e" : compPct >= 70 ? "#f59e0b" : "#ef4444" }}>{fmtPct(compPct)} funded</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {goal.clo_message && (
+                  <div style={{ marginTop:20, paddingTop:20, borderTop:"1px solid rgba(255,255,255,0.1)" }}>
+                    <p style={{ margin:"0 0 4px", fontSize:9, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.orange }}>
+                      Message from Darius
+                    </p>
+                    <p style={{ margin:0, fontSize:14, color:"rgba(255,255,255,0.65)", fontStyle:"italic", lineHeight:1.7 }}>
+                      &ldquo;{goal.clo_message}&rdquo;
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* ── No commitment CTA ── */}
           {!commitment && (
@@ -418,8 +483,9 @@ export default async function GoalEngineDashboard() {
 
       <style>{`
         @media (max-width:900px) { .ge-kpi-grid { grid-template-columns:repeat(2,1fr) !important; } }
-        @media (max-width:640px) { .ge-kpi-grid,.ge-company-grid { grid-template-columns:repeat(2,1fr) !important; } }
-        @media (max-width:380px) { .ge-kpi-grid,.ge-company-grid { grid-template-columns:1fr !important; } }
+        @media (max-width:700px) { .ge-banner-wrap { flex-direction:column !important; align-items:center !important; } }
+        @media (max-width:640px) { .ge-kpi-grid,.ge-stat-grid { grid-template-columns:repeat(2,1fr) !important; } }
+        @media (max-width:380px) { .ge-kpi-grid,.ge-stat-grid { grid-template-columns:1fr !important; } }
       `}</style>
     </div>
   );
