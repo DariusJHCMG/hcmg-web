@@ -47,12 +47,10 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Also get all active LOs so admin can see who is NOT assigned
-  // Include all active profiles (not just loan_officer role) to match the goal create form
+  // All profiles — admin can assign anyone regardless of role or active status
   const { data: allLOs } = await sb
     .from("profiles")
     .select("id, full_name, email, avatar_url, nmls, role, is_active")
-    .eq("is_active", true)
     .order("full_name");
 
   // Supabase returns the FK join as an array even for many-to-one; normalise to a plain object
@@ -90,8 +88,7 @@ export async function POST(req: NextRequest) {
   if (assign_all) {
     const { data: allLOs } = await sb
       .from("profiles")
-      .select("id")
-      .eq("is_active", true);
+      .select("id");
     finalIds = (allLOs ?? []).map((lo) => lo.id);
   } else if (Array.isArray(profile_ids)) {
     finalIds = profile_ids;

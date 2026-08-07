@@ -10,8 +10,7 @@ export async function GET() {
   const sb = createServiceClient();
   const { data, error } = await sb
     .from("profiles")
-    .select("id, email, full_name, role, nmls, avatar_url")
-    .eq("is_active", true)
+    .select("id, email, full_name, role, nmls, avatar_url, is_active")
     .order("full_name");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

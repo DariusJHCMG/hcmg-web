@@ -77,11 +77,8 @@ export function GoalCreateForm() {
     fetch("/api/goal-engine/profiles-list")
       .then(r => r.ok ? r.json() : { profiles: [] })
       .then(d => {
-        const los: LORow[] = (d.profiles ?? []).filter((p: LORow & { role?: string }) =>
-          p.role === "loan_officer" || !p.role  // include if role is LO or not set
-        );
         setAllLOs(d.profiles ?? []);
-        // Default: all LOs assigned
+        // Default: all profiles assigned
         setAssigned(new Set((d.profiles ?? []).map((p: LORow) => p.id)));
       })
       .catch(() => {})
