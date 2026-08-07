@@ -121,9 +121,16 @@ export async function POST(req: NextRequest) {
     lo = data;
   }
   if (!lo && loName) {
-    const { data } = await sb.from("profiles").select("id,full_name")
+    // Try exact full_name match first
+    const { data: d1 } = await sb.from("profiles").select("id,full_name")
       .ilike("full_name", loName.trim()).eq("is_active", true).maybeSingle();
-    lo = data;
+    lo = d1;
+    // Then try arive_name alias (set per-LO for name mismatches between ARIVE and SLICE)
+    if (!lo) {
+      const { data: d2 } = await sb.from("profiles").select("id,full_name")
+        .ilike("arive_name", loName.trim()).eq("is_active", true).maybeSingle();
+      lo = d2;
+    }
   }
 
   if (!lo) {
