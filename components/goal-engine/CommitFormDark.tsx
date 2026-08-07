@@ -12,8 +12,6 @@ const VOLUMES = [
   { l:"$2,000,000", v:2000000  }, { l:"$2,500,000",  v:2500000  },
   { l:"Custom",     v:0        },
 ];
-const UNITS = [1,2,3,4,5,6,7,8,10,12,15,20];
-
 const CARD: React.CSSProperties = { background:C.white, borderRadius:20, border:`1px solid ${C.line}`, padding:28, boxShadow:"0 2px 12px rgba(15,23,42,0.06)", marginBottom:20 };
 const LABEL: React.CSSProperties = { display:"block", marginBottom:8, fontSize:10, fontWeight:800, letterSpacing:".14em", textTransform:"uppercase" as const, color: C.ink };
 const INPUT: React.CSSProperties = { width:"100%", padding:"13px 16px", borderRadius:12, border:`2px solid ${C.line}`, background:C.white, fontSize:14, color:C.ink, outline:"none", fontFamily:"Montserrat,system-ui,sans-serif", boxSizing:"border-box" as const };
@@ -61,9 +59,7 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
       ? (VOLUMES.find(o=>o.v===existingCommitment.funded_volume_commitment)?.v ?? 0) : null
   );
   const [customVol,  setCustomVol]  = useState(existingCommitment?.funded_volume_commitment?.toString() ?? "");
-  const [units,      setUnits]      = useState(existingCommitment?.funded_units_commitment ?? 3);
-  // App values are always derived — never editable by LO
-  // They are recalculated whenever funded vol changes
+  // App values and units are always derived — never editable by LO
   function autoCalcApp(_vol: number) { /* no-op — values derived at render time from resolvedVol */ }
   const [focus,      setFocus]      = useState(existingCommitment?.biggest_focus ?? "");
   const [challenge,  setChallenge]  = useState(existingCommitment?.biggest_challenge ?? "");
@@ -81,12 +77,12 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
     if (!agreed) { setError("You must agree to the digital commitment."); return; }
     if (resolvedVol <= 0) { setError("Please select a funded volume commitment."); return; }
     setLoading(true);
-    // Derive app values from HARRY AI formula at submit time
-    const { appUnitsGoal: submitAppUnits, appVolGoal: submitAppVol } = calcHarry(resolvedVol);
+    // All units and app values derived from HARRY AI formula — never user-entered
+    const { fundedLoanGoal: submitUnits, appUnitsGoal: submitAppUnits, appVolGoal: submitAppVol } = calcHarry(resolvedVol);
     try {
       const res = await fetch("/api/goal-engine/commit", {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ goal_month_id:goalMonthId, funded_volume_commitment:resolvedVol, funded_units_commitment:units, app_volume_commitment:submitAppVol, app_units_commitment:submitAppUnits, biggest_focus:focus||null, biggest_challenge:challenge||null, confidence_pct:confidence, comments:comments||null, digital_agreement:true }),
+        body:JSON.stringify({ goal_month_id:goalMonthId, funded_volume_commitment:resolvedVol, funded_units_commitment:submitUnits, app_volume_commitment:submitAppVol, app_units_commitment:submitAppUnits, biggest_focus:focus||null, biggest_challenge:challenge||null, confidence_pct:confidence, comments:comments||null, digital_agreement:true }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed."); return; }
@@ -150,15 +146,24 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
         )}
       </div>
 
-      {/* Units */}
-      <div style={CARD}>
-        <p style={LABEL}>Funded Units — How many loans?</p>
-        <p style={{ margin:"0 0 18px", fontSize:13, color:C.muted }}>How many loans are you committing to fund?</p>
-        <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
-          {UNITS.map(u => <Opt key={u} label={u.toString()} active={units===u} onClick={()=>setUnits(u)} />)}
-        </div>
-        {units > 0 && <p style={{ marginTop:12, fontSize:12, color:C.muted }}>{units} loans = {Math.round((units/fundedUnitsGoal)*100)}% of company unit goal</p>}
-      </div>
+      {/* Units — auto-calculated, read-only */}
+      {resolvedVol > 0 && (() => {
+        const autoUnits = calcHarry(resolvedVol).fundedLoanGoal;
+        return (
+          <div style={{ ...CARD, background: "#F8FAFC", border: `1px solid ${C.line}` }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <div>
+                <p style={LABEL}>Funded Units — Loans to Close</p>
+                <p style={{ margin:0, fontSize:13, color:C.muted }}>Auto-calculated from your volume commitment · read-only</p>
+              </div>
+              <div style={{ textAlign:"right" }}>
+                <p style={{ margin:0, fontSize:28, fontWeight:900, color:C.navy }}>{autoUnits}</p>
+                <p style={{ margin:"2px 0 0", fontSize:11, color:C.muted }}>loans · {Math.round((autoUnits/fundedUnitsGoal)*100)}% of company unit goal</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Applications — HARRY AI calculated, read-only */}
       {resolvedVol > 0 && (() => {
