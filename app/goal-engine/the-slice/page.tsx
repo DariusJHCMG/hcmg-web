@@ -369,28 +369,32 @@ export default function TheSlicePage() {
             </div>
 
             {board.length === 0 ? (
-              <p style={{ padding:"40px 28px", textAlign:"center", fontSize:14, color:C.muted }}>
-                No commitments yet this month.
-              </p>
+              <div style={{ padding:"40px 28px", textAlign:"center" }}>
+                <p style={{ margin:"0 0 6px", fontSize:24 }}>🏆</p>
+                <p style={{ margin:"0 0 4px", fontSize:14, fontWeight:700, color:C.navy }}>No LOs assigned yet</p>
+                <p style={{ margin:0, fontSize:13, color:C.muted }}>Assign LOs to the goal — they will appear here even before committing.</p>
+              </div>
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:0 }}>
                 {board.slice(0, 12).map((row, i) => {
-                  const commit = Number(row.funded_volume_commitment ?? 0);
-                  const actual = Number(row.funded_volume_actual ?? 0);
-                  const pct    = commit > 0 ? (actual / commit) * 100 : 0;
+                  const commit    = Number(row.funded_volume_commitment ?? 0);
+                  const actual    = Number(row.funded_volume_actual ?? 0);
+                  const committed = commit > 0;
+                  const pct       = committed ? (actual / commit) * 100 : 0;
                   const paceColor = pct >= 90 ? C.green : pct >= 70 ? C.yellow : C.red;
-                  const name   = String(row.full_name ?? "");
-                  const initials = name.split(" ").map((n: string) => n[0]).slice(0,2).join("");
+                  const name      = String(row.full_name ?? "");
+                  const initials  = name.split(" ").map((n: string) => n[0]).slice(0,2).join("");
 
                   return (
                     <div key={String(row.profile_id)} style={{
                       padding:"18px 22px",
                       borderRight:`1px solid ${C.line}`,
                       borderBottom:`1px solid ${C.line}`,
+                      opacity: committed ? 1 : 0.65,
                     }}>
                       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
                         <span style={{ fontSize:16, width:22, textAlign:"center", flexShrink:0 }}>
-                          {medals[i] ?? <span style={{ fontSize:11, fontWeight:800, color:C.muted }}>#{i+1}</span>}
+                          {committed ? (medals[i] ?? <span style={{ fontSize:11, fontWeight:800, color:C.muted }}>#{i+1}</span>) : <span style={{ fontSize:11, color:C.muted }}>—</span>}
                         </span>
                         {row.avatar_url ? (
                           <img src={String(row.avatar_url)} alt="" style={{ width:32, height:32, borderRadius:"50%", objectFit:"cover", flexShrink:0 }} />
@@ -404,15 +408,21 @@ export default function TheSlicePage() {
                           <p style={{ margin:"1px 0 0", fontSize:10, color:C.muted }}>{name.split(" ").slice(1).join(" ")}</p>
                         </div>
                       </div>
-                      <p style={{ margin:"0 0 2px", fontSize:20, fontWeight:900, color:C.navy }}>{fmt$(actual)}</p>
-                      <p style={{ margin:"0 0 8px", fontSize:10, color:C.muted }}>of {fmt$(commit)} · {Number(row.funded_units_actual ?? 0)} loans</p>
-                      <div style={{ background:C.line, borderRadius:99, height:6, overflow:"hidden" }}>
-                        <div style={{ height:"100%", width:`${Math.min(100,pct)}%`, background:paceColor, borderRadius:99 }} />
-                      </div>
-                      <div style={{ display:"flex", justifyContent:"space-between", marginTop:5 }}>
-                        <span style={{ fontSize:10, color:C.muted }}>Pace</span>
-                        <span style={{ fontSize:10, fontWeight:800, color:paceColor }}>{fmtPct(pct)}</span>
-                      </div>
+                      {committed ? (
+                        <>
+                          <p style={{ margin:"0 0 2px", fontSize:20, fontWeight:900, color:C.navy }}>{fmt$(actual)}</p>
+                          <p style={{ margin:"0 0 8px", fontSize:10, color:C.muted }}>of {fmt$(commit)} · {Number(row.funded_units_actual ?? 0)} loans</p>
+                          <div style={{ background:C.line, borderRadius:99, height:6, overflow:"hidden" }}>
+                            <div style={{ height:"100%", width:`${Math.min(100,pct)}%`, background:paceColor, borderRadius:99 }} />
+                          </div>
+                          <div style={{ display:"flex", justifyContent:"space-between", marginTop:5 }}>
+                            <span style={{ fontSize:10, color:C.muted }}>Pace</span>
+                            <span style={{ fontSize:10, fontWeight:800, color:paceColor }}>{fmtPct(pct)}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <span style={{ fontSize:11, padding:"2px 8px", borderRadius:99, background:"#fef9c3", color:"#854d0e", fontWeight:700 }}>Not committed yet</span>
+                      )}
                     </div>
                   );
                 })}

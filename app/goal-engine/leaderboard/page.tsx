@@ -97,7 +97,13 @@ export default async function GoalEngineLeaderboard() {
             </div>
 
             {board.length === 0
-              ? <p style={{ padding:"48px 28px", textAlign:"center", fontSize:14, color: C.muted }}>No commitments yet.</p>
+              ? (
+                <div style={{ padding:"48px 28px", textAlign:"center" }}>
+                  <p style={{ margin:"0 0 6px", fontSize:20 }}>🏆</p>
+                  <p style={{ margin:"0 0 4px", fontSize:14, fontWeight:700, color: C.ink }}>No one assigned yet</p>
+                  <p style={{ margin:0, fontSize:13, color: C.muted }}>Assign LOs to this goal first, then they will appear here once they commit.</p>
+                </div>
+              )
               : (
                 <div style={{ overflowX:"auto" }}>
                   <table style={{ width:"100%", borderCollapse:"collapse", minWidth:680 }}>
@@ -112,16 +118,18 @@ export default async function GoalEngineLeaderboard() {
                     </thead>
                     <tbody>
                       {board.map((row, i) => {
-                        const pct  = row.funded_volume_commitment > 0 ? (row.funded_volume_actual / row.funded_volume_commitment) * 100 : 0;
+                        const committed = row.funded_volume_commitment > 0;
+                        const pct  = committed ? (row.funded_volume_actual / row.funded_volume_commitment) * 100 : 0;
                         const isMe = row.profile_id === profile.id;
                         return (
                           <tr key={row.profile_id} style={{
                             background: isMe ? "rgba(243,112,33,0.05)" : C.white,
                             borderBottom: `1px solid ${C.line}`,
                             borderLeft: isMe ? `4px solid ${C.orange}` : "4px solid transparent",
+                            opacity: committed ? 1 : 0.6,
                           }}>
                             <td style={{ padding:"16px 20px", textAlign:"right", fontSize:18, fontWeight:900 }}>
-                              {medals[i] ?? <span style={{ fontSize:12, color: C.muted }}>#{i+1}</span>}
+                              {committed ? (medals[i] ?? <span style={{ fontSize:12, color: C.muted }}>#{i+1}</span>) : <span style={{ fontSize:12, color: C.muted }}>—</span>}
                             </td>
                             <td style={{ padding:"16px 20px" }}>
                               <div style={{ display:"flex", alignItems:"center", gap:12 }}>
@@ -139,19 +147,25 @@ export default async function GoalEngineLeaderboard() {
                                 </div>
                               </div>
                             </td>
-                            <td style={{ padding:"16px 20px", textAlign:"right", fontSize:13, color: C.muted, fontWeight:600 }}>{fmt$(row.funded_volume_commitment)}</td>
+                            <td style={{ padding:"16px 20px", textAlign:"right", fontSize:13, color: C.muted, fontWeight:600 }}>
+                              {committed ? fmt$(row.funded_volume_commitment) : <span style={{ fontSize:11, color:"#d97706", fontWeight:700 }}>Pending</span>}
+                            </td>
                             <td style={{ padding:"16px 20px", textAlign:"right", fontSize:14, fontWeight:900, color: C.ink }}>{fmt$(row.funded_volume_actual)}</td>
                             <td style={{ padding:"16px 20px", textAlign:"right", fontSize:14, fontWeight:800, color: C.ink }}>{row.funded_units_actual}</td>
                             <td style={{ padding:"16px 20px", textAlign:"right" }}>
-                              <span style={{ fontSize:15, fontWeight:900, color: pct>=100?"#16a34a":pct>=70?"#d97706":"#dc2626" }}>
-                                {fmtPct(pct)}
-                              </span>
+                              {committed
+                                ? <span style={{ fontSize:15, fontWeight:900, color: pct>=100?"#16a34a":pct>=70?"#d97706":"#dc2626" }}>{fmtPct(pct)}</span>
+                                : <span style={{ fontSize:11, color: C.muted }}>—</span>
+                              }
                             </td>
                             <td style={{ padding:"16px 20px" }}>
-                              <div style={{ display:"flex", flexDirection:"column", gap:6, minWidth:130 }}>
-                                <Bar pct={pct} />
-                                <PaceTag pct={pct} />
-                              </div>
+                              {committed
+                                ? <div style={{ display:"flex", flexDirection:"column", gap:6, minWidth:130 }}>
+                                    <Bar pct={pct} />
+                                    <PaceTag pct={pct} />
+                                  </div>
+                                : <span style={{ fontSize:11, padding:"2px 8px", borderRadius:99, background:"#fef9c3", color:"#854d0e", fontWeight:700 }}>Not committed yet</span>
+                              }
                             </td>
                           </tr>
                         );
