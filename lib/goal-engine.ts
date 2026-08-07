@@ -38,19 +38,40 @@ export function paceLabel(pct: number): string {
   return "Off Track 🔴";
 }
 
-/** Days remaining in month as fraction of month elapsed (for pace calc). */
-export function monthProgress(start: string, end: string): number {
-  const now   = Date.now();
-  const s     = new Date(start).getTime();
-  const e     = new Date(end).getTime();
-  if (now >= e) return 1;
-  if (now <= s) return 0;
-  return (now - s) / (e - s);
+/** Truncate a date to UTC midnight (strips time component). */
+function utcDay(d: Date): number {
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 }
 
+/** Today as UTC midnight. */
+function todayUtc(): number {
+  return utcDay(new Date());
+}
+
+/**
+ * Fraction of the goal period that has elapsed, based on whole calendar days.
+ * Uses UTC dates so server timezone never affects the result.
+ * Returns 0 before start, 1 on/after end.
+ */
+export function monthProgress(start: string, end: string): number {
+  const today = todayUtc();
+  const s     = utcDay(new Date(start));
+  const e     = utcDay(new Date(end));
+  const total = e - s;
+  if (total <= 0) return 1;
+  if (today >= e) return 1;
+  if (today <= s) return 0;
+  return (today - s) / total;
+}
+
+/**
+ * Whole calendar days remaining until end date (inclusive of end day).
+ * e.g. today = Aug 7, end = Aug 31 → 24 days remaining.
+ */
 export function daysRemaining(end: string): number {
-  const diff = new Date(end).getTime() - Date.now();
-  return Math.max(0, Math.ceil(diff / 86_400_000));
+  const today = todayUtc();
+  const e     = utcDay(new Date(end));
+  return Math.max(0, Math.round((e - today) / 86_400_000));
 }
 
 /**
@@ -246,6 +267,7 @@ export async function getActiveLoanOfficers(): Promise<Profile[]> {
   const { data } = await sb
     .from("profiles")
     .select("*")
+    .eq("is_active", true)
     .order("full_name");
   return (data ?? []) as Profile[];
 }

@@ -121,7 +121,9 @@ export async function GET() {
   // ── Core numbers ─────────────────────────────────────────────
   const elapsedPct       = monthProgress(goal.start_date, goal.end_date);
   const daysLeft         = daysRemaining(goal.end_date);
-  const daysTotal        = Math.ceil((new Date(goal.end_date).getTime() - new Date(goal.start_date).getTime()) / 86_400_000);
+  // Parse YYYY-MM-DD as UTC midnight (same as monthProgress/daysRemaining)
+  const parseUtcDay = (s: string) => { const [y,m,d] = s.split("-").map(Number); return Date.UTC(y, m-1, d); };
+  const daysTotal        = Math.round((parseUtcDay(goal.end_date) - parseUtcDay(goal.start_date)) / 86_400_000);
   const daysElapsed      = daysTotal - daysLeft;
 
   const goalVol          = goal.funded_volume_goal;
