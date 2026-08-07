@@ -137,15 +137,17 @@ export default function TheSlicePage() {
   const appUnitRawPct = goalAppUnit> 0 ? (actAppUnit/ goalAppUnit)* 100 : 0;
 
   // Time-adjusted pace: (actual% of goal) / (elapsed% of month) * 100
-  // e.g. 77% of goal at 19% of month elapsed = 405% pace = well ahead
+  // Uses whole UTC calendar days so server/client timezone doesn't shift the result.
   const elapsedPct = (() => {
     if (!goal?.start_date || !goal?.end_date) return 100;
-    const now = Date.now();
-    const s   = new Date(String(goal.start_date)).getTime();
-    const e   = new Date(String(goal.end_date)).getTime();
-    if (now >= e) return 100;
-    if (now <= s) return 0;
-    return ((now - s) / (e - s)) * 100;
+    const utcDay = (iso: string) => { const [y,m,d] = iso.split("-").map(Number); return Date.UTC(y, m-1, d); };
+    const today  = utcDay(new Date().toISOString().slice(0, 10));
+    const s      = utcDay(String(goal.start_date));
+    const e      = utcDay(String(goal.end_date));
+    const total  = e - s;
+    if (total <= 0 || today >= e) return 100;
+    if (today <= s) return 0;
+    return ((today - s) / total) * 100;
   })();
   const pace = (rawPct: number) => elapsedPct > 0 ? rawPct / elapsedPct * 100 : 0;
 
