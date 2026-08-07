@@ -167,20 +167,6 @@ export default async function GoalEngineDashboard() {
             const fundedPct  = Math.min(100, compPct);
             const fundedUPct = goal.funded_units_goal > 0 ? Math.min(100, ((summary?.totalActualUnits ?? 0) / goal.funded_units_goal) * 100) : 0;
 
-            // SVG donut helpers — cx=cy=110 r=90 stroke-width=18
-            const CX = 110, CY = 110, R = 86, SW = 20;
-            const circ = 2 * Math.PI * R;
-
-            // 4 quarter arcs: each occupies a 90° window, shows its own pct within that window
-            // Outer track is a grey circle; each arc overlays its segment
-            // Quarters: top=funded vol, right=funded units, bottom=app vol, left=app units
-            const segments = [
-              { pct: fundedPct,  color: "#F37021", rotate: 0   },   // funded vol  — top-right arc
-              { pct: fundedUPct, color: "#3b82f6", rotate: 90  },   // funded units — bottom-right
-              { pct: appPct,     color: "#22c55e", rotate: 180 },   // app vol — bottom-left
-              { pct: appUPct,    color: "#a855f7", rotate: 270 },   // app units — top-left
-            ];
-
             return (
               <div style={{
                 background: C.navy,
@@ -196,54 +182,17 @@ export default async function GoalEngineDashboard() {
                 {/* Two-column layout: pie left, stats right */}
                 <div style={{ display:"flex", gap:36, alignItems:"center", flexWrap:"wrap" }} className="ge-banner-wrap">
 
-                  {/* ── Donut pie ── */}
-                  <div style={{ flexShrink:0, position:"relative", width:220, height:220 }}>
-                    <svg width={220} height={220} viewBox="0 0 220 220">
-                      {/* Background track */}
-                      <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={SW} />
-                      {/* Quarter dividers (faint lines from center) */}
-                      {[0,90,180,270].map(deg => {
-                        const rad = (deg - 90) * Math.PI / 180;
-                        const x2 = CX + (R + SW/2 + 4) * Math.cos(rad);
-                        const y2 = CY + (R + SW/2 + 4) * Math.sin(rad);
-                        const x1 = CX + (R - SW/2 - 4) * Math.cos(rad);
-                        const y1 = CY + (R - SW/2 - 4) * Math.sin(rad);
-                        return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.15)" strokeWidth={2} />;
-                      })}
-                      {/* Each arc fills its quarter proportionally to its % */}
-                      {segments.map((s, i) => {
-                        // each arc can use at most 90° of the circle
-                        const maxDash = circ * 0.25;
-                        const dash    = (s.pct / 100) * maxDash;
-                        const gap     = circ - dash;
-                        // offset: top of this quarter = i * 90°
-                        const offsetDeg = i * 90;
-                        // SVG dashoffset: start at 12 o'clock (offset = circ*0.25), then add per-segment rotation
-                        const dashOffset = circ * 0.25 - (circ * offsetDeg / 360);
-                        return (
-                          <circle
-                            key={i}
-                            cx={CX} cy={CY} r={R}
-                            fill="none"
-                            stroke={s.color}
-                            strokeWidth={SW}
-                            strokeDasharray={`${dash} ${gap}`}
-                            strokeDashoffset={dashOffset}
-                            strokeLinecap="butt"
-                            style={{ transition: "stroke-dasharray 1s ease" }}
-                          />
-                        );
-                      })}
-                    </svg>
-                    {/* SLICE logo in centre */}
-                    <div style={{
-                      position:"absolute", top:"50%", left:"50%",
-                      transform:"translate(-50%,-50%)",
-                      display:"flex", flexDirection:"column", alignItems:"center",
-                    }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/SLICE.png" alt="SLICE" style={{ width:56, height:"auto", filter:"brightness(0) invert(1)", opacity:0.9 }} />
-                    </div>
+                  {/* ── Logo circle ── */}
+                  <div style={{
+                    flexShrink: 0,
+                    width: 200, height: 200,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #ffffff 0%, #FF9847 55%, #F37021 100%)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 8px 32px rgba(243,112,33,0.35)",
+                  }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/SLICE.png" alt="SLICE" style={{ width: 90, height: "auto" }} />
                   </div>
 
                   {/* ── Stats grid ── */}
