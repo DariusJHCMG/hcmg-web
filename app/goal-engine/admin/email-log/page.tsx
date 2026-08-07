@@ -40,7 +40,6 @@ export default async function EmailLogPage() {
 
   const sb = createServiceClient();
 
-  // Pagination: last 100
   const { data: logs } = await sb
     .from("goal_email_log")
     .select(`
@@ -50,7 +49,7 @@ export default async function EmailLogPage() {
       goal_months(month_label)
     `)
     .order("sent_at", { ascending: false })
-    .limit(100);
+    .limit(500);
 
   // Stats
   const total     = logs?.length ?? 0;
@@ -67,7 +66,7 @@ export default async function EmailLogPage() {
         <div>
           <Link href="/goal-engine/admin" style={{ fontSize:13, fontWeight:700, color:C.muted, textDecoration:"none" }}>← Admin</Link>
           <h1 style={{ margin:"12px 0 0", fontSize:26, fontWeight:900, color:C.ink }}>Email Log</h1>
-          <p style={{ margin:"4px 0 0", fontSize:13, color:C.muted }}>All SLICE emails sent via Resend · Last 100</p>
+          <p style={{ margin:"4px 0 0", fontSize:13, color:C.muted }}>All SLICE emails sent via Resend · Last 500</p>
         </div>
       </div>
 

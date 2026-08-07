@@ -55,8 +55,8 @@ export async function POST(req: NextRequest) {
 
     // Determine which stage to send
     let stage: "initial" | "final" | null = null;
-    if (daysSincePublish >= 3 && daysSincePublish < 10) stage = "initial";
-    if (daysToDeadline >= 0 && daysToDeadline <= 2)      stage = "final";
+    if (daysToDeadline >= 0 && daysToDeadline <= 2)           stage = "final";
+    else if (daysSincePublish >= 3 && daysSincePublish < 10)  stage = "initial";
     if (!stage) continue;
 
     // Idempotency check
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
         subject,
         resend_id:       resendId,
         status:          "sent",
-        tenant_id:       "cmrss19yi000fysf83wcom9th",
+        tenant_id:       (goal as unknown as Record<string,unknown>).tenant_id ?? null,
       });
 
       sent++;

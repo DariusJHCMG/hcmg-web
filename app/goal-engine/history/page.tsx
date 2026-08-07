@@ -61,17 +61,22 @@ export default async function HistoryPage() {
         .in("goal_month_id", goalMonthIds)
     : { data: [] };
 
-  // Leaderboard positions
+  // Leaderboard positions — single query for all months, no N+1
   const positions: Record<string, number> = {};
-  for (const goalMonthId of goalMonthIds) {
-    const { data: board } = await sb
+  if (goalMonthIds.length > 0) {
+    const { data: allBoard } = await sb
       .from("goal_leaderboard")
-      .select("profile_id")
-      .eq("goal_month_id", goalMonthId)
+      .select("goal_month_id, profile_id, funded_volume_actual")
+      .in("goal_month_id", goalMonthIds)
       .order("funded_volume_actual", { ascending: false });
-    if (board) {
-      const idx = board.findIndex(r => r.profile_id === profile.id);
-      if (idx >= 0) positions[goalMonthId] = idx + 1;
+
+    // Group by month and find this LO's rank in each
+    if (allBoard) {
+      for (const monthId of goalMonthIds) {
+        const monthBoard = allBoard.filter(r => r.goal_month_id === monthId);
+        const idx = monthBoard.findIndex(r => r.profile_id === profile.id);
+        if (idx >= 0) positions[monthId] = idx + 1;
+      }
     }
   }
 
