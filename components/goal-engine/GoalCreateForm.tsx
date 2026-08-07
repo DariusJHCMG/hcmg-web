@@ -144,7 +144,7 @@ export function GoalCreateForm() {
 
       // 2. Save assignees (always, even if none selected)
       if (goalId) {
-        await fetch("/api/goal-engine/goal-assignments", {
+        const aRes = await fetch("/api/goal-engine/goal-assignments", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -152,6 +152,12 @@ export function GoalCreateForm() {
             profile_ids:   Array.from(assigned),
           }),
         });
+        if (!aRes.ok) {
+          const aData = await aRes.json().catch(() => ({}));
+          setResult({ error: `Goal created but assignments failed: ${aData.error ?? "unknown error"}. Go to the goal's Assignees page to add them manually.` });
+          setNewGoalId(goalId);
+          return;
+        }
       }
 
       setResult({ success: true });

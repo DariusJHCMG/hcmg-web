@@ -246,7 +246,6 @@ export async function getActiveLoanOfficers(): Promise<Profile[]> {
   const { data } = await sb
     .from("profiles")
     .select("*")
-    .eq("role", "loan_officer")
     .eq("is_active", true)
     .order("full_name");
   return (data ?? []) as Profile[];

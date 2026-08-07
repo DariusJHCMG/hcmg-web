@@ -48,10 +48,10 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // Also get all active LOs so admin can see who is NOT assigned
+  // Include all active profiles (not just loan_officer role) to match the goal create form
   const { data: allLOs } = await sb
     .from("profiles")
     .select("id, full_name, email, avatar_url, nmls, role, is_active")
-    .eq("role", "loan_officer")
     .eq("is_active", true)
     .order("full_name");
 
@@ -91,7 +91,6 @@ export async function POST(req: NextRequest) {
     const { data: allLOs } = await sb
       .from("profiles")
       .select("id")
-      .eq("role", "loan_officer")
       .eq("is_active", true);
     finalIds = (allLOs ?? []).map((lo) => lo.id);
   } else if (Array.isArray(profile_ids)) {
