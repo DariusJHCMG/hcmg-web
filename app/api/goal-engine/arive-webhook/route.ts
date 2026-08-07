@@ -113,6 +113,8 @@ async function currentGoalMonth(
 }
 
 export async function POST(req: NextRequest) {
+  const startMs = Date.now();
+
   // ── 1. Auth ──────────────────────────────────────────────────
   const secret =
     req.headers.get("x-arive-secret") ??
@@ -128,6 +130,23 @@ export async function POST(req: NextRequest) {
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
+  const sb = createServiceClient();
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+
+  /** Write a log row — fire-and-forget, never throws */
+  async function writeLog(fields: Record<string, unknown>) {
+    try {
+      await sb.from("webhook_log").insert({
+        source:          "arive",
+        event_type_raw:  String(body.event ?? body.type ?? ""),
+        raw_payload:     body,
+        ip_address:      ip,
+        duration_ms:     Date.now() - startMs,
+        ...fields,
+      });
+    } catch { /* never block the response */ }
+  }
+
   // ── 3. Classify event ────────────────────────────────────────
   const rawEvent = String(body.event ?? body.type ?? "")
     .toLowerCase().replace(/[.\-\s]/g, "_");
@@ -135,11 +154,11 @@ export async function POST(req: NextRequest) {
   const isApp    = rawEvent.includes("application") || rawEvent.includes("submitted");
 
   if (!isFunded && !isApp) {
+    await writeLog({ action: "ignored", event_type: "unknown" });
     return NextResponse.json({ status: "ignored", event: body.event }, { status: 200 });
   }
 
   // ── 4. Extract loan fields ───────────────────────────────────
-  // ARIVE nests under "loan" but sometimes sends flat
   const L = (body.loan ?? body.data ?? body) as Record<string, unknown>;
 
   const loanId    = String(L.id ?? L.loanId ?? L.loan_id ?? "").trim();
@@ -156,15 +175,14 @@ export async function POST(req: NextRequest) {
   );
 
   if (!loanId) {
+    await writeLog({ action: "error", error_message: "loan.id missing", lo_nmls: loNmls || null, lo_email_raw: loEmail || null });
     return NextResponse.json({
       error: "loan.id is required — cannot deduplicate without it.",
       received_keys: Object.keys(L),
     }, { status: 400 });
   }
 
-  const sb = createServiceClient();
-
-  // ── 5. Resolve LO — NMLS first, email second, ARIVE ID third ──
+  // ── 5. Resolve LO ────────────────────────────────────────────
   type LO = { id: string; full_name: string; email: string };
   let lo: LO | null = null;
 
@@ -185,6 +203,16 @@ export async function POST(req: NextRequest) {
   }
 
   if (!lo) {
+    await writeLog({
+      action:        "error",
+      error_message: "LO not found",
+      loan_id:       loanId,
+      lo_nmls:       loNmls || null,
+      lo_email_raw:  loEmail || null,
+      event_type:    isFunded ? "funded" : "application",
+      amount,
+      event_date:    isFunded ? fundedDt : appDt,
+    });
     return NextResponse.json({
       error: "Loan Officer not found. Check NMLS or email matches a SLICE profile.",
       attempted: { loNmls: loNmls || null, loEmail: loEmail || null, ariveId: ariveId || null },
@@ -192,13 +220,19 @@ export async function POST(req: NextRequest) {
     }, { status: 404 });
   }
 
-  // ── 6. Find the correct goal month by event date ──────────────
-  // Use the date that belongs to the event type, not "today"
+  // ── 6. Find goal month ───────────────────────────────────────
   const eventDate = isFunded ? (fundedDt ?? appDt) : appDt;
   let goalMonthId = await findGoalMonth(sb, eventDate);
   if (!goalMonthId) goalMonthId = await currentGoalMonth(sb);
 
-  // ── 7. Look up existing row for this (loan_id, profile_id) ───
+  // Look up goal label for log
+  let goalLabel: string | null = null;
+  if (goalMonthId) {
+    const { data: gm } = await sb.from("goal_months").select("month_label").eq("id", goalMonthId).maybeSingle();
+    goalLabel = gm?.month_label ?? null;
+  }
+
+  // ── 7. Look up existing row ───────────────────────────────────
   const { data: existing } = await sb
     .from("goal_production")
     .select("id, funded_date, funded_volume, funded_unit, app_date, app_volume, app_unit, event_type")
@@ -207,28 +241,20 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (existing) {
-    // ── 8a. UPDATE — MERGE, never blindly overwrite ───────────
-    // Rule: only update a field if the incoming event actually has that field.
-    // A funded event must NOT reset app_date to null.
-    // An app event must NOT reset funded_date to null.
     const merged: Record<string, unknown> = {
       goal_month_id: goalMonthId,
       raw_payload:   body,
     };
 
     if (isFunded) {
-      // Funded event — update funded fields; preserve existing app fields
       merged.event_type   = "funded";
       if (fundedDt) merged.funded_date   = fundedDt;
       if (amount)   merged.funded_volume = amount;
       merged.funded_unit  = 1;
-      // Only update app fields if they aren't already set
       if (!existing.app_date   && appDt)  merged.app_date   = appDt;
       if (!existing.app_volume && amount) merged.app_volume = amount;
       if (!existing.app_unit || existing.app_unit === 0) merged.app_unit = 1;
     } else {
-      // App event — only update app fields; preserve funded fields
-      // Don't touch event_type if it's already 'funded'
       if (existing.event_type !== "funded") merged.event_type = "application";
       if (appDt)  merged.app_date   = appDt;
       if (amount) merged.app_volume = amount;
@@ -236,20 +262,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { error } = await sb.from("goal_production").update(merged).eq("id", existing.id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      await writeLog({ action: "error", error_message: error.message, loan_id: loanId, lo_matched_id: lo.id, lo_matched_name: lo.full_name, lo_email_raw: loEmail, lo_nmls: loNmls, event_type: isFunded ? "funded" : "application", amount, event_date: isFunded ? fundedDt : appDt, goal_month_id: goalMonthId, goal_month_label: goalLabel });
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
-    return NextResponse.json({
-      status:        "updated",
-      loan_id:       loanId,
-      lo:            lo.full_name,
-      lo_email:      lo.email,
-      goal_month_id: goalMonthId,
-      event:         body.event,
-      merged_fields: Object.keys(merged).filter(k => k !== "raw_payload"),
-    });
+    const resp = { status: "updated", loan_id: loanId, lo: lo.full_name, lo_email: lo.email, goal_month_id: goalMonthId, event: body.event, merged_fields: Object.keys(merged).filter(k => k !== "raw_payload") };
+    await writeLog({ action: "updated", loan_id: loanId, lo_matched_id: lo.id, lo_matched_name: lo.full_name, lo_email_raw: loEmail, lo_nmls: loNmls, event_type: isFunded ? "funded" : "application", amount, event_date: isFunded ? fundedDt : appDt, goal_month_id: goalMonthId, goal_month_label: goalLabel, response_body: resp });
+    return NextResponse.json(resp);
   }
 
-  // ── 8b. INSERT — new row ─────────────────────────────────────
+  // ── 8b. INSERT ───────────────────────────────────────────────
   const insert: Record<string, unknown> = {
     profile_id:    lo.id,
     goal_month_id: goalMonthId,
@@ -263,7 +286,6 @@ export async function POST(req: NextRequest) {
     insert.funded_date  = fundedDt;
     insert.funded_volume= amount;
     insert.funded_unit  = 1;
-    // Best-effort app fields from funded event
     insert.app_date     = appDt ?? fundedDt;
     insert.app_volume   = amount;
     insert.app_unit     = 1;
@@ -278,15 +300,12 @@ export async function POST(req: NextRequest) {
   }
 
   const { error } = await sb.from("goal_production").insert(insert);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    await writeLog({ action: "error", error_message: error.message, loan_id: loanId, lo_matched_id: lo.id, lo_matched_name: lo.full_name, lo_email_raw: loEmail, lo_nmls: loNmls, event_type: insert.event_type, amount, event_date: isFunded ? fundedDt : appDt, goal_month_id: goalMonthId, goal_month_label: goalLabel });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-  return NextResponse.json({
-    status:        "created",
-    loan_id:       loanId,
-    lo:            lo.full_name,
-    lo_email:      lo.email,
-    goal_month_id: goalMonthId,
-    event:         body.event,
-    event_type:    insert.event_type,
-  });
+  const resp = { status: "created", loan_id: loanId, lo: lo.full_name, lo_email: lo.email, goal_month_id: goalMonthId, event: body.event, event_type: insert.event_type };
+  await writeLog({ action: "created", loan_id: loanId, lo_matched_id: lo.id, lo_matched_name: lo.full_name, lo_email_raw: loEmail, lo_nmls: loNmls, event_type: String(insert.event_type), amount, event_date: isFunded ? fundedDt : appDt, goal_month_id: goalMonthId, goal_month_label: goalLabel, response_body: resp });
+  return NextResponse.json(resp);
 }
