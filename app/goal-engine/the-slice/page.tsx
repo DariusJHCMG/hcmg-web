@@ -279,8 +279,8 @@ export default function TheSlicePage() {
               {[
                 { l:"Funded Today",    v:fmt$(today.funded),      sub:`${today.fundedUnits} loans`,   color:C.navy },
                 { l:"Apps Today",      v:fmt$(today.apps),        sub:`${today.appUnits} apps`,        color:C.ink  },
-                { l:"Team Members",    v:String(summary?.participationCount ?? 0), sub:"committed",   color:C.ink  },
-                { l:"Participation",   v:fmtPct(summary?.participationCount && summary?.totalLOs ? (summary.participationCount / summary.totalLOs) * 100 : 0), sub:"of team",   color:C.orange },
+                { l:"Funded Units MTD",v:String(summary?.totalActualUnits ?? 0), sub:"loans funded",  color:C.orange },
+                { l:"Participation",   v:fmtPct(summary?.participationCount && summary?.totalLOs ? (summary.participationCount / summary.totalLOs) * 100 : 0), sub:`${summary?.participationCount ?? 0} of ${summary?.totalLOs ?? 0} committed`, color:C.ink },
               ].map(s => (
                 <div key={s.l} style={{
                   background:C.bg, borderRadius:12, padding:"16px 18px",

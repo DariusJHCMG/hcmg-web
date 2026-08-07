@@ -67,10 +67,11 @@ export default async function GoalEngineLeaderboard() {
       {goal && summary && (
         <>
           {/* Summary KPIs */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:28 }} className="ge-grid-4">
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:16, marginBottom:28 }} className="ge-grid-4">
             {[
-              { l:"Company Goal",    v: fmt$(goal.funded_volume_goal),        dark:true },
+              { l:"Company Goal",    v: fmt$(goal.funded_volume_goal),        dark:true, sub:`${goal.funded_units_goal} loans` },
               { l:"Total Funded",    v: fmt$(summary.totalActualVolume),      sub:`${fmtPct(summary.volumePct)} of goal` },
+              { l:"Funded Units",    v: `${summary.totalActualUnits} loans`,  sub:`of ${goal.funded_units_goal} unit goal` },
               { l:"Total Committed", v: fmt$(summary.totalCommittedVolume),   sub:`${fmtPct(summary.commitVsGoalPct)} vs goal` },
               { l:"Participation",   v: `${summary.participationCount}/${summary.totalLOs}`, sub:"LOs committed" },
             ].map(s => (

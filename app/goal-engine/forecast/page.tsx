@@ -533,12 +533,13 @@ export default function ForecastCenterPage() {
           </div>
 
           {/* Three-row label */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 12 }}>
             {[
-              { label: "Actual",     value: fmt$short(fc.actual_vol),    pct: fc.actual_pct,    color: C.orange },
-              { label: "Forecast",   value: fmt$short(fc.forecast_vol),  pct: Math.round((fc.forecast_vol / fc.goal_vol) * 100), color: gapPositive ? C.green : C.red },
-              { label: "Committed",  value: fmt$short(fc.committed_vol), pct: Math.round((fc.committed_vol / fc.goal_vol) * 100), color: "#3b82f6" },
-              { label: "Still Need", value: fmt$short(Math.max(0, fc.goal_vol - fc.actual_vol)), pct: null, color: C.muted },
+              { label: "Actual Vol",    value: fmt$short(fc.actual_vol),     pct: fc.actual_pct,    color: C.orange },
+              { label: "Funded Units",  value: `${fc.actual_units} loans`,   pct: fc.goal_units > 0 ? Math.round((fc.actual_units / fc.goal_units) * 100) : null, color: C.navy },
+              { label: "Forecast",      value: fmt$short(fc.forecast_vol),   pct: Math.round((fc.forecast_vol / fc.goal_vol) * 100), color: gapPositive ? C.green : C.red },
+              { label: "Committed",     value: fmt$short(fc.committed_vol),  pct: Math.round((fc.committed_vol / fc.goal_vol) * 100), color: "#3b82f6" },
+              { label: "Still Need",    value: fmt$short(Math.max(0, fc.goal_vol - fc.actual_vol)), pct: null, color: C.muted },
             ].map(r => (
               <div key={r.label} style={{ padding: "10px 14px", borderRadius: 10, background: C.sand, border: `1px solid ${C.line}` }}>
                 <p style={{ margin: "0 0 3px", fontSize: 9, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.muted }}>{r.label}</p>

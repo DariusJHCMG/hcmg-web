@@ -61,6 +61,7 @@ export async function GET() {
       totalActualAppVolume: (board.data ?? []).reduce((s, r) => s + ((r as {app_volume_actual?:number}).app_volume_actual ?? 0), 0),
       totalActualAppUnits:  (board.data ?? []).reduce((s, r) => s + ((r as {app_units_actual?:number}).app_units_actual ?? 0), 0),
       totalCommittedVolume: summary.totalCommittedVolume,
+      totalCommittedUnits:  summary.totalCommittedUnits,
       participationCount:   summary.participationCount,
       totalLOs:             summary.totalLOs,
       volumePct:            summary.volumePct,
