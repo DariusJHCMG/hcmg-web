@@ -169,30 +169,23 @@ export default async function GoalEngineDashboard() {
 
             return (
               <div style={{
-                background: C.navy,
+                background: "linear-gradient(to right, #ffffff 0%, #FF9847 50%, #F37021 100%)",
                 borderRadius: 24,
                 padding: "28px 32px",
-                boxShadow: "0 8px 40px rgba(20,40,80,0.25)",
-                border: `1px solid rgba(243,112,33,0.2)`,
+                boxShadow: "0 8px 40px rgba(243,112,33,0.25)",
+                border: `1px solid rgba(243,112,33,0.3)`,
               }}>
-                <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.orange }}>
+                <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.navy }}>
                   {goal.month_label} — Company Goal
                 </p>
 
                 {/* Two-column layout: pie left, stats right */}
                 <div style={{ display:"flex", gap:36, alignItems:"center", flexWrap:"wrap" }} className="ge-banner-wrap">
 
-                  {/* ── Logo circle ── */}
-                  <div style={{
-                    flexShrink: 0,
-                    width: 200, height: 200,
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, #ffffff 0%, #FF9847 55%, #F37021 100%)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    boxShadow: "0 8px 32px rgba(243,112,33,0.35)",
-                  }}>
+                  {/* ── SLICE logo on white side ── */}
+                  <div style={{ flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", width:180 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/SLICE.png" alt="SLICE" style={{ width: 90, height: "auto" }} />
+                    <img src="/SLICE.png" alt="SLICE" style={{ width: 110, height: "auto" }} />
                   </div>
 
                   {/* ── Stats grid ── */}
@@ -205,7 +198,7 @@ export default async function GoalEngineDashboard() {
                         { dot:"#22c55e", label:"App Vol Goal",      goal: fmt$(goal.app_volume_goal),     actual: fmt$(appActual),                                  pct: appPct     },
                         { dot:"#a855f7", label:"App Units Goal",    goal: `${goal.app_units_goal} apps`,  actual: `${appUnits} filed`,                              pct: appUPct    },
                       ].map(s => (
-                        <div key={s.label} style={{ padding:"10px 14px", borderRadius:12, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" }}>
+                        <div key={s.label} style={{ padding:"10px 14px", borderRadius:12, background: C.navy, border:`1px solid rgba(255,255,255,0.08)` }}>
                           <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
                             <span style={{ width:8, height:8, borderRadius:"50%", background:s.dot, flexShrink:0, display:"inline-block" }} />
                             <span style={{ fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,255,255,0.45)" }}>{s.label}</span>
@@ -218,11 +211,11 @@ export default async function GoalEngineDashboard() {
 
                     {/* Team + Days */}
                     <div style={{ display:"flex", gap:12 }}>
-                      <div style={{ flex:1, padding:"8px 14px", borderRadius:10, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" }}>
+                      <div style={{ flex:1, padding:"8px 14px", borderRadius:10, background: C.navy, border:`1px solid rgba(255,255,255,0.08)` }}>
                         <p style={{ margin:0, fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,255,255,0.4)" }}>Team</p>
                         <p style={{ margin:"3px 0 0", fontSize:16, fontWeight:900, color:"#fff" }}>{summary?.participationCount ?? 0}/{summary?.totalLOs ?? 0} committed</p>
                       </div>
-                      <div style={{ flex:1, padding:"8px 14px", borderRadius:10, background:"rgba(243,112,33,0.12)", border:"1px solid rgba(243,112,33,0.25)" }}>
+                      <div style={{ flex:1, padding:"8px 14px", borderRadius:10, background: C.navy, border:`1px solid rgba(255,255,255,0.08)` }}>
                         <p style={{ margin:0, fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,255,255,0.4)" }}>Pace</p>
                         <p style={{ margin:"3px 0 0", fontSize:16, fontWeight:900, color: compPct >= 90 ? "#22c55e" : compPct >= 70 ? "#f59e0b" : "#ef4444" }}>{fmtPct(compPct)} funded</p>
                       </div>
@@ -231,11 +224,11 @@ export default async function GoalEngineDashboard() {
                 </div>
 
                 {goal.clo_message && (
-                  <div style={{ marginTop:20, paddingTop:20, borderTop:"1px solid rgba(255,255,255,0.1)" }}>
-                    <p style={{ margin:"0 0 4px", fontSize:9, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.orange }}>
+                  <div style={{ marginTop:20, paddingTop:20, borderTop:`1px solid rgba(20,40,80,0.15)` }}>
+                    <p style={{ margin:"0 0 4px", fontSize:9, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.navy }}>
                       Message from Darius
                     </p>
-                    <p style={{ margin:0, fontSize:14, color:"rgba(255,255,255,0.65)", fontStyle:"italic", lineHeight:1.7 }}>
+                    <p style={{ margin:0, fontSize:14, color: C.navy, fontStyle:"italic", lineHeight:1.7, opacity:0.75 }}>
                       &ldquo;{goal.clo_message}&rdquo;
                     </p>
                   </div>
