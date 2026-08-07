@@ -257,10 +257,13 @@ export interface GoalSummary {
   totalActualVolume: number;
   totalCommittedUnits: number;
   totalActualUnits: number;
+  totalActualAppVolume: number;
+  totalActualAppUnits: number;
   participationCount: number;
   totalLOs: number;
   volumePct: number;
   unitsPct: number;
+  appVolPct: number;
   commitVsGoalPct: number;
 }
 
@@ -289,21 +292,26 @@ export async function computeGoalSummary(
     (assignedIds.length === 0 || assignedIds.includes(r.profile_id))
   );
 
-  const totalCommittedVolume = rows.reduce((s, r) => s + r.funded_volume_commitment, 0);
-  const totalActualVolume    = rows.reduce((s, r) => s + r.funded_volume_actual,     0);
-  const totalCommittedUnits  = rows.reduce((s, r) => s + r.funded_units_commitment,  0);
-  const totalActualUnits     = rows.reduce((s, r) => s + r.funded_units_actual,      0);
-  const participationCount   = eligibleCommitted.length;
+  const totalCommittedVolume  = rows.reduce((s, r) => s + r.funded_volume_commitment, 0);
+  const totalActualVolume     = rows.reduce((s, r) => s + r.funded_volume_actual,     0);
+  const totalCommittedUnits   = rows.reduce((s, r) => s + r.funded_units_commitment,  0);
+  const totalActualUnits      = rows.reduce((s, r) => s + r.funded_units_actual,      0);
+  const totalActualAppVolume  = rows.reduce((s, r) => s + (r.app_volume_actual  ?? 0), 0);
+  const totalActualAppUnits   = rows.reduce((s, r) => s + (r.app_units_actual   ?? 0), 0);
+  const participationCount    = eligibleCommitted.length;
 
   return {
     totalCommittedVolume,
     totalActualVolume,
     totalCommittedUnits,
     totalActualUnits,
+    totalActualAppVolume,
+    totalActualAppUnits,
     participationCount,
     totalLOs: effectiveLOCount,
     volumePct:       goal.funded_volume_goal > 0 ? (totalActualVolume    / goal.funded_volume_goal)  * 100 : 0,
     unitsPct:        goal.funded_units_goal  > 0 ? (totalActualUnits     / goal.funded_units_goal)   * 100 : 0,
+    appVolPct:       goal.app_volume_goal    > 0 ? (totalActualAppVolume / goal.app_volume_goal)     * 100 : 0,
     commitVsGoalPct: goal.funded_volume_goal > 0 ? (totalCommittedVolume / goal.funded_volume_goal)  * 100 : 0,
   };
 }
