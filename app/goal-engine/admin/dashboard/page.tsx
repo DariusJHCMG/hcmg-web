@@ -95,8 +95,15 @@ export default async function GoalEngineManagerDashboard() {
       app_volume_actual:0,   app_units_actual:0,
     };
     const volumePace = row.funded_volume_commitment > 0 ? calcPace(row.funded_volume_actual, row.funded_volume_commitment) : 0;
-    const forecast   = elapsed > 0 ? row.funded_volume_actual / elapsed : 0;
-    return { ...row, relativePace:volumePace - requiredPct, noCommitment, forecast, branch_id:(lo as unknown as Record<string,unknown>).branch_id as string|null ?? null };
+    // Forecast = extrapolate current production to end of month.
+    // elapsed is 0–1 fraction of month. actual/elapsed = pace-projected finish.
+    // Blend with commitment early in month (same formula as forecast API).
+    const forecast = elapsed > 0
+      ? (elapsed < 0.15
+          ? row.funded_volume_actual / elapsed * (elapsed / 0.15) + (row.funded_volume_commitment || 0) * (1 - elapsed / 0.15)
+          : row.funded_volume_actual / elapsed)
+      : (row.funded_volume_commitment || 0);
+    return { ...row, relativePace:volumePace - requiredPct, noCommitment, forecast, branch_id:(lo.branch_id as string | null) ?? null };
   }).sort((a,b) => {
     if (a.noCommitment && !b.noCommitment) return 1;
     if (!a.noCommitment && b.noCommitment) return -1;
@@ -132,20 +139,6 @@ export default async function GoalEngineManagerDashboard() {
           <h1 style={{ margin:"12px 0 0", fontSize:28, fontWeight:900, color:C.ink }}>Manager Dashboard</h1>
           <p style={{ margin:"4px 0 0", fontSize:13, color:C.muted }}>{goal.month_label} · {days} days remaining</p>
         </div>
-        {/* CSV Export button — client-side download via data URI */}
-        <a
-          href={`/api/goal-engine/export-csv?goal_month_id=${goal.id}`}
-          download={`SLICE-${goal.month_label.replace(/\s+/g,"-")}.csv`}
-          style={{
-            display:"inline-flex", alignItems:"center", gap:8,
-            padding:"10px 20px", borderRadius:12, textDecoration:"none",
-            border:`1.5px solid ${C.line}`, background:C.white,
-            color:C.ink, fontSize:12, fontWeight:700,
-            boxShadow:"0 1px 4px rgba(15,23,42,0.05)",
-          }}
-        >
-          ⬇ Export CSV
-        </a>
       </div>
 
       {/* KPI cards */}

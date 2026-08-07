@@ -34,11 +34,6 @@ function calcHarry(fundedVol: number) {
   return { fundedLoanGoal, appUnitsGoal, appVolGoal };
 }
 
-function calcAppGoals(fundedVolumeGoal: number) {
-  const { appVolGoal, appUnitsGoal } = calcHarry(fundedVolumeGoal);
-  return { appVolGoal, appUnitGoal: appUnitsGoal };
-}
-
 interface Props {
   goalMonthId: string; monthLabel: string;
   fundedVolumeGoal: number; fundedUnitsGoal: number;
@@ -59,8 +54,6 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
       ? (VOLUMES.find(o=>o.v===existingCommitment.funded_volume_commitment)?.v ?? 0) : null
   );
   const [customVol,  setCustomVol]  = useState(existingCommitment?.funded_volume_commitment?.toString() ?? "");
-  // App values and units are always derived — never editable by LO
-  function autoCalcApp(_vol: number) { /* no-op — values derived at render time from resolvedVol */ }
   const [focus,      setFocus]      = useState(existingCommitment?.biggest_focus ?? "");
   const [challenge,  setChallenge]  = useState(existingCommitment?.biggest_challenge ?? "");
   const [confidence, setConfidence] = useState(existingCommitment?.confidence_pct ?? 80);
@@ -70,7 +63,6 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
   const [error,      setError]      = useState<string|null>(null);
 
   const resolvedVol = selVol === 0 ? Number(customVol)||0 : selVol ?? 0;
-  const { appVolGoal, appUnitGoal } = calcAppGoals(fundedVolumeGoal);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setError(null);
@@ -129,7 +121,7 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
         <p style={{ margin:"0 0 18px", fontSize:13, color:C.muted }}>How much funded volume are you committing to this month?</p>
         <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:16 }}>
           {VOLUMES.map(o => (
-            <Opt key={o.v} label={o.l} active={selVol===o.v} onClick={()=>{ setSelVol(o.v); if (o.v > 0) autoCalcApp(o.v); }} />
+            <Opt key={o.v} label={o.l} active={selVol===o.v} onClick={()=>setSelVol(o.v)} />
           ))}
         </div>
         {selVol === 0 && (
@@ -137,7 +129,7 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
             <label style={LABEL}>Custom Amount ($)</label>
             <input type="number" min={1} placeholder="e.g. 875000" value={customVol} onChange={e=>setCustomVol(e.target.value)} style={INPUT}
               onFocus={e=>e.target.style.borderColor=C.orange}
-              onBlur={e=>{ e.target.style.borderColor=C.line; const v=Number(e.target.value); if(v>0) autoCalcApp(v); }} />
+                onBlur={e=>e.target.style.borderColor=C.line} />
           </div>
         )}
         {resolvedVol > 0 && (
@@ -170,7 +162,8 @@ export function CommitFormDark({ goalMonthId, monthLabel, fundedVolumeGoal, fund
       {/* Applications — HARRY AI calculated, read-only */}
       {resolvedVol > 0 && (() => {
         const { fundedLoanGoal, appUnitsGoal, appVolGoal: myAppVol } = calcHarry(resolvedVol);
-        const { appVolGoal: coAppVol, appUnitGoal: coAppUnits } = calcAppGoals(fundedVolumeGoal);
+        const coAppVol   = calcHarry(fundedVolumeGoal).appVolGoal;
+        const coAppUnits = calcHarry(fundedVolumeGoal).appUnitsGoal;
         return (
           <div style={CARD}>
             {/* Header */}
