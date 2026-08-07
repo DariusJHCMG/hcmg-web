@@ -420,13 +420,13 @@ export default function ForecastCenterPage() {
           },
           {
             label:   "Company Pace",
-            value:   `${fc.company_pace}%`,
+            value:   fc.company_pace >= 100 ? "On Pace ✓" : `${fc.company_pace}%`,
             sub:     fc.company_pace >= 100 ? "Ahead of schedule" : fc.company_pace >= 80 ? "Slightly behind" : "Needs acceleration",
             pace:    fc.company_pace,
           },
           {
             label:   "App Volume Pace",
-            value:   fc.app_vol_goal > 0 ? `${fc.app_pace}%` : "—",
+            value:   fc.app_vol_goal > 0 ? (fc.app_pace >= 100 ? "On Pace ✓" : `${fc.app_pace}%`) : "—",
             sub:     fc.app_vol_goal > 0 ? `${fmt$short(fc.app_vol_actual)} of ${fmt$short(fc.app_vol_goal)} · ${Math.round((fc.app_vol_actual / fc.app_vol_goal) * 100)}% of goal` : "No app goal set",
             pace:    fc.app_vol_goal > 0 ? fc.app_pace : null as unknown as number,
           },
