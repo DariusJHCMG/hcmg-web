@@ -101,10 +101,19 @@ export default function TheSlicePage() {
 
   useEffect(() => {
     function onFsChange() {
-      setIsFullscreen(!!document.fullscreenElement);
+      const fs = !!document.fullscreenElement;
+      setIsFullscreen(fs);
+      if (fs) {
+        document.body.classList.add("slice-fullscreen");
+      } else {
+        document.body.classList.remove("slice-fullscreen");
+      }
     }
     document.addEventListener("fullscreenchange", onFsChange);
-    return () => document.removeEventListener("fullscreenchange", onFsChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange);
+      document.body.classList.remove("slice-fullscreen");
+    };
   }, []);
 
   const goal    = data?.goal;
@@ -418,9 +427,7 @@ export default function TheSlicePage() {
         @media(max-width:900px){
           .slice-grid { grid-template-columns:1fr !important; }
         }
-        :fullscreen nav,
-        :-webkit-full-screen nav,
-        :-moz-full-screen nav {
+        body.slice-fullscreen nav {
           display: none !important;
         }
       `}</style>
