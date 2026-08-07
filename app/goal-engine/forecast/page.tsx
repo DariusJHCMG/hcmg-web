@@ -333,10 +333,10 @@ export default function ForecastCenterPage() {
       <style>{`
         @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-        .fc-hero{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+        .fc-hero{display:grid;grid-template-columns:repeat(7,1fr);gap:14px}
         .fc-mid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
         .fc-lo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-        @media(max-width:1100px){.fc-hero{grid-template-columns:repeat(3,1fr)!important}}
+        @media(max-width:1200px){.fc-hero{grid-template-columns:repeat(4,1fr)!important}}
         @media(max-width:860px){.fc-mid{grid-template-columns:1fr!important}.fc-hero{grid-template-columns:repeat(2,1fr)!important}}
         @media(max-width:500px){.fc-hero{grid-template-columns:1fr!important}}
         .lo-card:hover{border-color:${C.orange}!important;box-shadow:0 4px 20px rgba(243,112,33,0.12)!important}
@@ -422,6 +422,12 @@ export default function ForecastCenterPage() {
             value:   `${fc.company_pace}%`,
             sub:     fc.company_pace >= 100 ? "Ahead of schedule" : fc.company_pace >= 80 ? "Slightly behind" : "Needs acceleration",
             pace:    fc.company_pace,
+          },
+          {
+            label:   "App Volume Pace",
+            value:   fc.app_vol_goal > 0 ? `${Math.round((fc.app_vol_actual / fc.app_vol_goal) * 100)}%` : "—",
+            sub:     fc.app_vol_goal > 0 ? `${fmt$short(fc.app_vol_actual)} of ${fmt$short(fc.app_vol_goal)}` : "No app goal set",
+            pace:    fc.app_vol_goal > 0 ? Math.round((fc.app_vol_actual / fc.app_vol_goal) * 100) : null as unknown as number,
           },
         ].map((card, i) => (
           <div key={i} style={{
@@ -586,28 +592,45 @@ export default function ForecastCenterPage() {
             </div>
           </Card>
 
-          {/* Applications forecast */}
-          {fc.app_vol_goal > 0 && (
-            <Card style={{ padding: "20px 24px" }}>
-              <SectionLabel>Application Forecast</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-                {[
-                  { l: "App Goal",   v: fmt$short(fc.app_vol_goal),    sub: `${fc.app_unit_goal} apps` },
-                  { l: "Apps Filed", v: fmt$short(fc.app_vol_actual),  sub: `${fc.app_units_actual} apps` },
-                  { l: "Forecast",   v: fmt$short(fc.forecast_app_vol), sub: `${fc.forecast_app_units} projected`, accent: true },
-                ].map(s => (
-                  <div key={s.l} style={{ padding: "10px 12px", borderRadius: 10, background: s.accent ? C.navy : C.sand, border: `1px solid ${s.accent ? "transparent" : C.line}` }}>
-                    <p style={{ margin: "0 0 3px", fontSize: 9, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: s.accent ? "rgba(255,255,255,0.45)" : C.muted }}>{s.l}</p>
-                    <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: s.accent ? "#fff" : C.navy }}>{s.v}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: 10, color: s.accent ? "rgba(255,255,255,0.4)" : C.muted }}>{s.sub}</p>
-                  </div>
-                ))}
+          {/* Applications forecast — always shown */}
+          <Card style={{ padding: "20px 24px" }}>
+            <SectionLabel>Application Forecast</SectionLabel>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              {[
+                { l: "App Goal",       v: fc.app_vol_goal > 0 ? fmt$short(fc.app_vol_goal)    : "Not set",  sub: fc.app_unit_goal > 0 ? `${fc.app_unit_goal} apps` : "" },
+                { l: "Apps Filed",     v: fmt$short(fc.app_vol_actual),                                       sub: `${fc.app_units_actual} apps` },
+                { l: "App Forecast",   v: fc.app_vol_goal > 0 ? fmt$short(fc.forecast_app_vol) : "—",        sub: fc.app_vol_goal > 0 ? `${fc.forecast_app_units} projected` : "Set app goal to enable", accent: true },
+              ].map(s => (
+                <div key={s.l} style={{ padding: "10px 12px", borderRadius: 10, background: (s as {accent?:boolean}).accent ? C.navy : C.sand, border: `1px solid ${(s as {accent?:boolean}).accent ? "transparent" : C.line}` }}>
+                  <p style={{ margin: "0 0 3px", fontSize: 9, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: (s as {accent?:boolean}).accent ? "rgba(255,255,255,0.45)" : C.muted }}>{s.l}</p>
+                  <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: (s as {accent?:boolean}).accent ? "#fff" : C.navy }}>{s.v}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 10, color: (s as {accent?:boolean}).accent ? "rgba(255,255,255,0.4)" : C.muted }}>{s.sub}</p>
+                </div>
+              ))}
+            </div>
+            {/* App Vol progress bar */}
+            <div style={{ marginTop: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: C.muted }}>App Volume</span>
+                <span style={{ fontSize: 10, fontWeight: 800, color: C.navy }}>
+                  {fc.app_vol_goal > 0 ? `${Math.round((fc.app_vol_actual / fc.app_vol_goal) * 100)}%` : "—"}
+                </span>
               </div>
-              <div style={{ marginTop: 10 }}>
-                <Bar pct={fc.app_vol_goal > 0 ? (fc.app_vol_actual / fc.app_vol_goal) * 100 : 0} color={C.navy} height={6} />
+              <Bar pct={fc.app_vol_goal > 0 ? (fc.app_vol_actual / fc.app_vol_goal) * 100 : 0} color={C.navy} height={6} />
+            </div>
+            {/* App Units progress bar */}
+            {fc.app_unit_goal > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: C.muted }}>App Units ({fc.app_units_actual} / {fc.app_unit_goal})</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: C.navy }}>
+                    {Math.round((fc.app_units_actual / fc.app_unit_goal) * 100)}%
+                  </span>
+                </div>
+                <Bar pct={(fc.app_units_actual / fc.app_unit_goal) * 100} color={C.orange} height={6} />
               </div>
-            </Card>
-          )}
+            )}
+          </Card>
         </div>
 
         {/* Right: Gap + Revenue + Risk/Opportunity */}

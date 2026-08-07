@@ -169,12 +169,11 @@ export default async function GoalEngineDashboard() {
             <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.orange }}>
               {goal.month_label} — Company Goal
             </p>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:24 }}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:20 }}
               className="ge-company-grid">
               {[
                 { l:"Funded Goal",   v: fmt$(goal.funded_volume_goal)         },
                 { l:"Funded Actual", v: fmt$(summary?.totalActualVolume ?? 0) },
-                { l:"Loans Goal",    v: goal.funded_units_goal.toString()     },
                 { l:"Team",          v: `${summary?.participationCount ?? 0}/${summary?.totalLOs ?? 0}` },
               ].map(s => (
                 <div key={s.l}>
@@ -183,11 +182,42 @@ export default async function GoalEngineDashboard() {
                 </div>
               ))}
             </div>
+
+            {/* Funded progress */}
+            <p style={{ margin:"0 0 6px", fontSize:10, color:"rgba(255,255,255,0.45)", fontWeight:700, letterSpacing:".12em", textTransform:"uppercase" }}>Funded Volume</p>
             <ProgressBar pct={compPct} thick />
-            <div style={{ display:"flex", justifyContent:"space-between", marginTop:8 }}>
-              <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>Company progress</span>
+            <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, marginBottom:16 }}>
+              <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{fmt$(summary?.totalActualVolume ?? 0)} of {fmt$(goal.funded_volume_goal)}</span>
               <span style={{ fontSize:12, fontWeight:800, color:"#fff" }}>{fmtPct(compPct)}</span>
             </div>
+
+            {/* App volume progress */}
+            {goal.app_volume_goal > 0 && (() => {
+              const appActual   = summary?.totalActualAppVolume ?? 0;
+              const appUnits    = summary?.totalActualAppUnits  ?? 0;
+              const appPct      = (appActual / goal.app_volume_goal) * 100;
+              const appUnitPct  = goal.app_units_goal > 0 ? (appUnits / goal.app_units_goal) * 100 : 0;
+              return (
+                <>
+                  <p style={{ margin:"0 0 6px", fontSize:10, color:"rgba(255,255,255,0.45)", fontWeight:700, letterSpacing:".12em", textTransform:"uppercase" }}>Application Volume</p>
+                  <ProgressBar pct={appPct} thick />
+                  <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, marginBottom:16 }}>
+                    <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{fmt$(appActual)} of {fmt$(goal.app_volume_goal)} app goal</span>
+                    <span style={{ fontSize:12, fontWeight:800, color:"#fff" }}>{fmtPct(appPct)}</span>
+                  </div>
+                  {goal.app_units_goal > 0 && (
+                    <>
+                      <p style={{ margin:"0 0 6px", fontSize:10, color:"rgba(255,255,255,0.45)", fontWeight:700, letterSpacing:".12em", textTransform:"uppercase" }}>Application Units</p>
+                      <ProgressBar pct={appUnitPct} thick />
+                      <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+                        <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{appUnits} of {goal.app_units_goal} apps</span>
+                        <span style={{ fontSize:12, fontWeight:800, color:"#fff" }}>{fmtPct(appUnitPct)}</span>
+                      </div>
+                    </>
+                  )}
+                </>
+              );
+            })()}
             {goal.clo_message && (
               <div style={{ marginTop:20, paddingTop:20, borderTop:"1px solid rgba(255,255,255,0.1)" }}>
                 <p style={{ margin:"0 0 4px", fontSize:9, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.orange }}>

@@ -121,12 +121,18 @@ export default function TheSlicePage() {
   const board   = data?.leaderboard ?? [];
   const today   = data?.todayActivity ?? { funded:0, fundedUnits:0, apps:0, appUnits:0 };
 
-  const goalVol  = Number(goal?.funded_volume_goal  ?? 0);
-  const goalUnit = Number(goal?.funded_units_goal   ?? 0);
-  const actVol   = Number(summary?.totalActualVolume ?? 0);
-  const actUnit  = Number(summary?.totalActualUnits ?? 0);
-  const volPct   = goalVol  > 0 ? (actVol  / goalVol)  * 100 : 0;
-  const unitPct  = goalUnit > 0 ? (actUnit / goalUnit) * 100 : 0;
+  const goalVol    = Number(goal?.funded_volume_goal    ?? 0);
+  const goalUnit   = Number(goal?.funded_units_goal     ?? 0);
+  const goalAppVol = Number(goal?.app_volume_goal       ?? 0);
+  const goalAppUnit= Number(goal?.app_units_goal        ?? 0);
+  const actVol     = Number(summary?.totalActualVolume  ?? 0);
+  const actUnit    = Number(summary?.totalActualUnits   ?? 0);
+  const actAppVol  = Number(summary?.totalActualAppVolume ?? 0);
+  const actAppUnit = Number(summary?.totalActualAppUnits  ?? 0);
+  const volPct     = goalVol    > 0 ? (actVol    / goalVol)    * 100 : 0;
+  const unitPct    = goalUnit   > 0 ? (actUnit   / goalUnit)   * 100 : 0;
+  const appVolPct  = goalAppVol > 0 ? (actAppVol / goalAppVol) * 100 : 0;
+  const appUnitPct = goalAppUnit> 0 ? (actAppUnit/ goalAppUnit)* 100 : 0;
 
   const medals = ["🥇","🥈","🥉"];
 
@@ -231,12 +237,13 @@ export default function TheSlicePage() {
               <PaceDot pct={volPct} />
             </div>
 
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:24 }}>
+            {/* Funded stats */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
               {[
-                { l:"Funded Goal",   v:fmt$(goalVol),  accent:false },
-                { l:"Funded Actual", v:fmt$(actVol),   accent:true  },
+                { l:"Funded Goal",   v:fmt$(goalVol),       accent:false },
+                { l:"Funded Actual", v:fmt$(actVol),        accent:true  },
                 { l:"Loan Goal",     v:`${goalUnit} loans`, accent:false },
-                { l:"Funded Loans",  v:`${actUnit} loans`, accent:true  },
+                { l:"Funded Loans",  v:`${actUnit} loans`,  accent:true  },
               ].map(s => (
                 <div key={s.l} style={{
                   background: s.accent ? C.navy : C.bg,
@@ -253,8 +260,35 @@ export default function TheSlicePage() {
               ))}
             </div>
 
+            {/* App stats — shown when goal has app_volume_goal */}
+            {goalAppVol > 0 && (
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+                {[
+                  { l:"App Goal",   v:fmt$(goalAppVol),        accent:false },
+                  { l:"App Actual", v:fmt$(actAppVol),         accent:true  },
+                  { l:"App Units Goal",  v:`${goalAppUnit} apps`, accent:false },
+                  { l:"Apps Filed",      v:`${actAppUnit} apps`,  accent:true  },
+                ].map(s => (
+                  <div key={s.l} style={{
+                    background: s.accent ? "#0f3460" : C.bg,
+                    borderRadius:12, padding:"14px 16px",
+                    border:`1px solid ${s.accent ? "rgba(243,112,33,0.15)" : C.line}`,
+                  }}>
+                    <p style={{ margin:"0 0 5px", fontSize:9, fontWeight:800, letterSpacing:".15em", textTransform:"uppercase", color: s.accent ? "rgba(255,255,255,0.45)" : C.muted }}>
+                      {s.l}
+                    </p>
+                    <p style={{ margin:0, fontSize:22, fontWeight:900, color: s.accent ? "#fff" : C.navy, lineHeight:1 }}>
+                      {s.v}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <PaceBar pct={volPct}  label="Funded Volume" />
             <PaceBar pct={unitPct} label="Funded Units" />
+            {goalAppVol > 0 && <PaceBar pct={appVolPct}  label="App Volume" />}
+            {goalAppUnit > 0 && <PaceBar pct={appUnitPct} label="App Units" />}
 
             {goal.clo_message && (
               <div style={{ marginTop:20, padding:"14px 18px", borderRadius:12, background:`rgba(243,112,33,0.05)`, border:`1px solid rgba(243,112,33,0.15)` }}>

@@ -67,26 +67,48 @@ export default async function GoalEngineLeaderboard() {
       {goal && summary && (
         <>
           {/* Summary KPIs */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:16, marginBottom:28 }} className="ge-grid-4">
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:16 }} className="ge-grid-4">
             {[
               { l:"Company Goal",    v: fmt$(goal.funded_volume_goal),        dark:true, sub:`${goal.funded_units_goal} loans` },
               { l:"Total Funded",    v: fmt$(summary.totalActualVolume),      sub:`${fmtPct(summary.volumePct)} of goal` },
               { l:"Funded Units",    v: `${summary.totalActualUnits} loans`,  sub:`of ${goal.funded_units_goal} unit goal` },
-              { l:"Total Committed", v: fmt$(summary.totalCommittedVolume),   sub:`${fmtPct(summary.commitVsGoalPct)} vs goal` },
               { l:"Participation",   v: `${summary.participationCount}/${summary.totalLOs}`, sub:"LOs committed" },
             ].map(s => (
               <div key={s.l} style={{
-                background: s.dark ? C.navy : C.white,
+                background: (s as {dark?:boolean}).dark ? C.navy : C.white,
                 borderRadius:18, padding:"20px",
-                border: s.dark ? "none" : `1px solid ${C.line}`,
-                boxShadow: s.dark ? "0 8px 32px rgba(20,40,80,0.25)" : "0 2px 8px rgba(15,23,42,0.05)",
+                border: (s as {dark?:boolean}).dark ? "none" : `1px solid ${C.line}`,
+                boxShadow: (s as {dark?:boolean}).dark ? "0 8px 32px rgba(20,40,80,0.25)" : "0 2px 8px rgba(15,23,42,0.05)",
               }}>
-                <p style={{ margin:0, fontSize:9, fontWeight:800, letterSpacing:".15em", textTransform:"uppercase", color: s.dark ? "rgba(255,255,255,0.4)" : C.muted }}>{s.l}</p>
-                <p style={{ margin:"6px 0 0", fontSize:24, fontWeight:900, color: s.dark ? "#fff" : C.ink }}>{s.v}</p>
-                {s.sub && <p style={{ margin:"3px 0 0", fontSize:11, color: s.dark ? "rgba(255,255,255,0.4)" : C.muted }}>{s.sub}</p>}
+                <p style={{ margin:0, fontSize:9, fontWeight:800, letterSpacing:".15em", textTransform:"uppercase", color: (s as {dark?:boolean}).dark ? "rgba(255,255,255,0.4)" : C.muted }}>{s.l}</p>
+                <p style={{ margin:"6px 0 0", fontSize:24, fontWeight:900, color: (s as {dark?:boolean}).dark ? "#fff" : C.ink }}>{s.v}</p>
+                {s.sub && <p style={{ margin:"3px 0 0", fontSize:11, color: (s as {dark?:boolean}).dark ? "rgba(255,255,255,0.4)" : C.muted }}>{s.sub}</p>}
               </div>
             ))}
           </div>
+          {/* App volume KPIs — shown when goal has app_volume_goal */}
+          {goal.app_volume_goal > 0 && (
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:28 }} className="ge-grid-4">
+              {[
+                { l:"App Vol Goal",    v: fmt$(goal.app_volume_goal),              sub:`${goal.app_units_goal} apps target` },
+                { l:"App Vol Actual",  v: fmt$(summary.totalActualAppVolume),      sub:`${fmtPct(summary.appVolPct)} of goal` },
+                { l:"App Units",       v: `${summary.totalActualAppUnits} apps`,   sub: goal.app_units_goal > 0 ? `of ${goal.app_units_goal} unit goal` : "submitted" },
+                { l:"App Pace",        v: fmtPct(summary.appVolPct),               sub: summary.appVolPct >= 90 ? "🟢 On Pace" : summary.appVolPct >= 70 ? "🟡 Behind" : "🔴 Off Track" },
+              ].map(s => (
+                <div key={s.l} style={{
+                  background: C.white, borderRadius:18, padding:"20px",
+                  border:`1px solid ${C.line}`,
+                  boxShadow:"0 2px 8px rgba(15,23,42,0.05)",
+                }}>
+                  <p style={{ margin:0, fontSize:9, fontWeight:800, letterSpacing:".15em", textTransform:"uppercase", color:C.muted }}>{s.l}</p>
+                  <p style={{ margin:"6px 0 0", fontSize:24, fontWeight:900, color: C.ink }}>{s.v}</p>
+                  <p style={{ margin:"3px 0 0", fontSize:11, color: C.muted }}>{s.sub}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* No app row gap spacer when no app goal */}
+          {!goal.app_volume_goal && <div style={{ marginBottom:28 }} />}
 
           {/* Funded Volume Leaderboard */}
           <div style={{ background:C.white, borderRadius:24, border:`1px solid ${C.line}`, overflow:"hidden", boxShadow:"0 4px 24px rgba(15,23,42,0.07)", marginBottom:28 }}>
