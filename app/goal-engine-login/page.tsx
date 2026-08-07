@@ -34,46 +34,12 @@ function LoginForm() {
       {/* ── Left panel ── */}
       <div style={{
         width:"45%", minHeight:"100vh",
-        background:"#142850",
-        display:"flex", flexDirection:"column", justifyContent:"space-between",
+        background:"#ffffff",
+        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
         padding:"48px 52px",
+        borderRight:"1px solid #E2E8F0",
       }} className="hidden lg:flex">
-        <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:10 }}>
-          <img src="/SLICE.png" alt="SLICE" style={{ height:90, width:"auto" }} />
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ fontSize:11, fontWeight:700, letterSpacing:"0.2em", textTransform:"uppercase", color:"#F37021" }}>by</span>
-            <img src="/hcmg-wordmark-on-dark.svg" alt="HCMG" style={{ height:16, width:"auto" }} />
-          </div>
-        </div>
-        <div>
-          <h2 style={{ margin:"0 0 16px", fontSize:44, fontWeight:900, color:"#fff", lineHeight:1.1 }}>
-            Own your number.<br />
-            <span style={{ color:"#F37021" }}>Track every dollar.</span>
-          </h2>
-          <p style={{ margin:0, fontSize:15, color:"rgba(255,255,255,0.5)", lineHeight:1.8, maxWidth:380 }}>
-            The HCMG monthly production operating system. Commit, compete, and get recognized.
-          </p>
-        </div>
-        <div>
-          {[
-            { icon:"🥧", text:"Monthly commitment tracking" },
-            { icon:"📊", text:"Real-time leaderboard" },
-            { icon:"🏆", text:"Automated awards & recognition" },
-            { icon:"📧", text:"Weekly progress emails from Darius" },
-          ].map(f => (
-            <div key={f.text} style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
-              <div style={{
-                width:36, height:36, borderRadius:10, flexShrink:0,
-                background:"rgba(243,112,33,0.18)",
-                display:"flex", alignItems:"center", justifyContent:"center", fontSize:17,
-              }}>{f.icon}</div>
-              <span style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.65)" }}>{f.text}</span>
-            </div>
-          ))}
-          <p style={{ marginTop:32, fontSize:11, color:"rgba(255,255,255,0.2)", letterSpacing:".05em" }}>
-            Harris Capital Mortgage Group, LLC · NMLS# 1918223
-          </p>
-        </div>
+        <img src="/SLICE.png" alt="SLICE" style={{ width:"72%", maxWidth:380, height:"auto" }} />
       </div>
 
       {/* ── Right panel ── */}
