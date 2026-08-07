@@ -125,14 +125,35 @@ export default function TheSlicePage() {
   const goalUnit   = Number(goal?.funded_units_goal     ?? 0);
   const goalAppVol = Number(goal?.app_volume_goal       ?? 0);
   const goalAppUnit= Number(goal?.app_units_goal        ?? 0);
-  const actVol     = Number(summary?.totalActualVolume  ?? 0);
-  const actUnit    = Number(summary?.totalActualUnits   ?? 0);
+  const actVol     = Number(summary?.totalActualVolume    ?? 0);
+  const actUnit    = Number(summary?.totalActualUnits     ?? 0);
   const actAppVol  = Number(summary?.totalActualAppVolume ?? 0);
   const actAppUnit = Number(summary?.totalActualAppUnits  ?? 0);
-  const volPct     = goalVol    > 0 ? (actVol    / goalVol)    * 100 : 0;
-  const unitPct    = goalUnit   > 0 ? (actUnit   / goalUnit)   * 100 : 0;
-  const appVolPct  = goalAppVol > 0 ? (actAppVol / goalAppVol) * 100 : 0;
-  const appUnitPct = goalAppUnit> 0 ? (actAppUnit/ goalAppUnit)* 100 : 0;
+
+  // Raw % of goal (for progress fills / stat displays)
+  const volRawPct     = goalVol    > 0 ? (actVol    / goalVol)    * 100 : 0;
+  const unitRawPct    = goalUnit   > 0 ? (actUnit   / goalUnit)   * 100 : 0;
+  const appVolRawPct  = goalAppVol > 0 ? (actAppVol / goalAppVol) * 100 : 0;
+  const appUnitRawPct = goalAppUnit> 0 ? (actAppUnit/ goalAppUnit)* 100 : 0;
+
+  // Time-adjusted pace: (actual% of goal) / (elapsed% of month) * 100
+  // e.g. 77% of goal at 19% of month elapsed = 405% pace = well ahead
+  const elapsedPct = (() => {
+    if (!goal?.start_date || !goal?.end_date) return 100;
+    const now = Date.now();
+    const s   = new Date(String(goal.start_date)).getTime();
+    const e   = new Date(String(goal.end_date)).getTime();
+    if (now >= e) return 100;
+    if (now <= s) return 0;
+    return ((now - s) / (e - s)) * 100;
+  })();
+  const pace = (rawPct: number) => elapsedPct > 0 ? rawPct / elapsedPct * 100 : 0;
+
+  // Pace values passed to PaceBar / PaceDot
+  const volPct     = pace(volRawPct);
+  const unitPct    = pace(unitRawPct);
+  const appVolPct  = pace(appVolRawPct);
+  const appUnitPct = pace(appUnitRawPct);
 
   const medals = ["🥇","🥈","🥉"];
 
@@ -333,7 +354,7 @@ export default function TheSlicePage() {
             <div style={{ background:C.line, borderRadius:99, height:14, overflow:"hidden", marginBottom:6 }}>
               <div style={{
                 height:"100%", borderRadius:99, transition:"width 1.2s ease",
-                width:`${volPct}%`,
+                width:`${Math.min(100, volRawPct)}%`,
                 background:`linear-gradient(90deg,${C.orange},#FF9847)`,
               }} />
             </div>
@@ -342,7 +363,7 @@ export default function TheSlicePage() {
                 {fmt$(actVol)} funded
               </span>
               <span style={{ fontSize:11, fontWeight:800, color:C.navy }}>
-                {fmtPct(volPct)} of goal
+                {fmtPct(volRawPct)} of goal
               </span>
             </div>
           </div>

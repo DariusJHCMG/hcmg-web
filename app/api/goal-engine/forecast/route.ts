@@ -267,6 +267,7 @@ export async function GET() {
       confidence_color: confidenceColor(confidenceTierVal),
 
       // Applications
+      app_pace:          Math.round(requiredPct > 0 ? ((totalAppVol / (appVolGoal || 1)) * 100) / requiredPct * 100 : 0),
       app_vol_actual:    totalAppVol,
       app_units_actual:  totalAppUnits,
       app_vol_goal:      appVolGoal,

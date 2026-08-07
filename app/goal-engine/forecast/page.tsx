@@ -120,6 +120,7 @@ interface ForecastData {
   days_total: number;
   days_remaining: number;
   company_pace: number;
+  app_pace: number;
   required_pct: number;
   actual_pct: number;
   confidence: number;
@@ -425,9 +426,9 @@ export default function ForecastCenterPage() {
           },
           {
             label:   "App Volume Pace",
-            value:   fc.app_vol_goal > 0 ? `${Math.round((fc.app_vol_actual / fc.app_vol_goal) * 100)}%` : "—",
-            sub:     fc.app_vol_goal > 0 ? `${fmt$short(fc.app_vol_actual)} of ${fmt$short(fc.app_vol_goal)}` : "No app goal set",
-            pace:    fc.app_vol_goal > 0 ? Math.round((fc.app_vol_actual / fc.app_vol_goal) * 100) : null as unknown as number,
+            value:   fc.app_vol_goal > 0 ? `${fc.app_pace}%` : "—",
+            sub:     fc.app_vol_goal > 0 ? `${fmt$short(fc.app_vol_actual)} of ${fmt$short(fc.app_vol_goal)} · ${Math.round((fc.app_vol_actual / fc.app_vol_goal) * 100)}% of goal` : "No app goal set",
+            pace:    fc.app_vol_goal > 0 ? fc.app_pace : null as unknown as number,
           },
         ].map((card, i) => (
           <div key={i} style={{
