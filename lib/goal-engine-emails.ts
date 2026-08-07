@@ -303,17 +303,21 @@ export function buildWeeklyProgressEmail(
   rank: number,
   totalParticipants: number,
   daysLeft: number,
+  paceRequired?: number,   // elapsed % of month — passed from cron; defaults to 100 if missing
 ): string {
   const volumePct   = commitment.funded_volume_commitment > 0
     ? (actualVolume / commitment.funded_volume_commitment) * 100 : 0;
   const unitPct     = commitment.funded_units_commitment > 0
     ? (actualUnits / commitment.funded_units_commitment) * 100 : 0;
   const remaining   = Math.max(0, commitment.funded_volume_commitment - actualVolume);
-  const statusColor = volumePct >= 90 ? "#16a34a" : volumePct >= 70 ? "#d97706" : "#dc2626";
-  const statusMsg   = volumePct >= 90
-    ? "🟢 You&apos;re on pace — keep pushing!"
-    : volumePct >= 70
-    ? "🟡 Slightly behind — time to pick it up."
+  // Time-adjusted pace: how far ahead/behind you are relative to elapsed time
+  const required    = paceRequired ?? 100;
+  const paceDelta   = volumePct - required;          // positive = ahead, negative = behind
+  const statusColor = paceDelta >= 0 ? "#16a34a" : paceDelta >= -15 ? "#d97706" : "#dc2626";
+  const statusMsg   = paceDelta >= 0
+    ? "🟢 You&apos;re ahead of pace — keep pushing!"
+    : paceDelta >= -15
+    ? "🟡 Slightly behind pace — time to pick it up."
     : "🔴 Behind pace — you need to accelerate right now.";
 
   const body = `

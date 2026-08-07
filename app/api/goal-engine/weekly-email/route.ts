@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
           goal, lo.full_name.split(" ")[0],
           commitment, actualVolume, actualUnits,
           rank, totalParticipants, days,
+          paceRequired,    // pass elapsed% so status label is time-adjusted
         );
 
     const subject = isOffPace
