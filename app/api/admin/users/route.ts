@@ -172,8 +172,9 @@ export async function POST(request: NextRequest) {
     full_name,
     role,
     is_active:       true,
-    // Loan officers and leadership titles are shown on the public team page by default.
-    show_on_website: role === "loan_officer" || isLeadershipTitle(title),
+    // Everyone added via the admin panel is shown on the team page by default.
+    // Admins can toggle this off afterwards from the user edit screen if needed.
+    show_on_website: true,
     updated_at:      new Date().toISOString(),
   };
   if (lo_slug)      profilePatch.lo_slug      = lo_slug;

@@ -7,7 +7,7 @@ import { TeamPhoto } from "@/components/ui/TeamPhoto";
 import { teamMembers, getTeamGroupedByRole, type TeamMember } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 // Leadership slugs — only these get their portal photo shown on the /team roster page.
 // All other roles (LOs, operations) always show the placeholder here; their
