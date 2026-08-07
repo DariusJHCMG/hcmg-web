@@ -12,7 +12,8 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").repla
 
 export async function sendAnnouncementEmails(goal: Record<string, unknown>) {
   const sb  = createServiceClient();
-  const los = await getActiveLoanOfficers();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const los = await getActiveLoanOfficers((goal as any).id);
 
   for (const lo of los) {
     const email      = lo.notify_email ?? lo.email;

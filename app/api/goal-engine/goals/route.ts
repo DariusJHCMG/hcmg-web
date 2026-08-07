@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
     start_date,
     end_date,
     is_published:        is_published        ?? false,
+    goal_status:         is_published ? "published" : "draft",
     created_by:          profile.id,
   }).select().single();
 

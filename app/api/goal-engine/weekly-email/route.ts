@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   if (!goal) return NextResponse.json({ message: "No active goal." });
 
   const sb   = createServiceClient();
-  const los  = await getActiveLoanOfficers();
+  const los  = await getActiveLoanOfficers(goal.id);
   const days = daysRemaining(goal.end_date);
   const paceRequired = monthProgress(goal.start_date, goal.end_date) * 100;
 
@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
         recipient_email: email,
         subject,
         resend_id:       resendId,
+        tenant_id:       (goal as unknown as Record<string,unknown>).tenant_id ?? null,
       });
       sent++;
     } catch (e) {

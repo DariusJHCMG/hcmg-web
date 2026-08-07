@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   if (!goal) return NextResponse.json({ message: "No active goal." });
 
   const sb       = createServiceClient();
-  const los      = await getActiveLoanOfficers();
+  const los      = await getActiveLoanOfficers(goal.id);
   const today    = new Date();
   const published = new Date(goal.start_date);
   const daysSincePublish = Math.floor((today.getTime() - published.getTime()) / 86_400_000);

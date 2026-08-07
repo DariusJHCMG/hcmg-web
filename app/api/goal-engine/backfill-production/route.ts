@@ -99,13 +99,13 @@ export async function POST(req: NextRequest) {
     type LO = { id: string };
     let lo: LO | null = null;
     if (loEmail) {
-      const { data } = await sb.from("profiles").select("id").eq("email", loEmail).eq("is_active", true).maybeSingle();
+      const { data } = await sb.from("profiles").select("id").eq("email", loEmail).maybeSingle();
       lo = data;
     }
     if (!lo && loName) {
-      const { data } = await sb.from("profiles").select("id").ilike("full_name", loName).eq("is_active", true).maybeSingle();
+      const { data } = await sb.from("profiles").select("id").ilike("full_name", loName).maybeSingle();
       if (!data && loName) {
-        const { data: d2 } = await sb.from("profiles").select("id").ilike("arive_name", loName).eq("is_active", true).maybeSingle();
+        const { data: d2 } = await sb.from("profiles").select("id").ilike("arive_name", loName).maybeSingle();
         lo = d2;
       } else {
         lo = data;

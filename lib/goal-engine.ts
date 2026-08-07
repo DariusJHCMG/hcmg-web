@@ -266,9 +266,28 @@ export async function createNotification(
 }
 
 // ── All active LOs ────────────────────────────────────────────
+// Pass goalMonthId to restrict to profiles assigned to that goal
+// (used by email flows). Omit for admin/list views.
 
-export async function getActiveLoanOfficers(): Promise<Profile[]> {
+export async function getActiveLoanOfficers(goalMonthId?: string): Promise<Profile[]> {
   const sb = createServiceClient();
+
+  if (goalMonthId) {
+    // Return only profiles that are assigned to this goal month
+    const { data: assignments } = await sb
+      .from("goal_assignments")
+      .select("profile_id")
+      .eq("goal_month_id", goalMonthId);
+    const ids = (assignments ?? []).map((a) => a.profile_id);
+    if (ids.length === 0) return [];
+    const { data } = await sb
+      .from("profiles")
+      .select("*")
+      .in("id", ids)
+      .order("full_name");
+    return (data ?? []) as Profile[];
+  }
+
   const { data } = await sb
     .from("profiles")
     .select("*")

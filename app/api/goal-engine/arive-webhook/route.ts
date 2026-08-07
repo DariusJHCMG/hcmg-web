@@ -81,7 +81,7 @@ function normAmount(v: unknown): number | null {
   return n;
 }
 
-/** Find the published goal month that contains a given date */
+/** Find the goal month that contains a given date (draft or published) */
 async function findGoalMonth(
   sb: ReturnType<typeof createServiceClient>,
   date: string | null,
@@ -90,14 +90,13 @@ async function findGoalMonth(
   const { data } = await sb
     .from("goal_months")
     .select("id")
-    .eq("is_published", true)
     .lte("start_date", date)
     .gte("end_date", date)
     .maybeSingle();
   return data?.id ?? null;
 }
 
-/** Fallback: currently active goal */
+/** Fallback: currently active goal (draft or published) */
 async function currentGoalMonth(
   sb: ReturnType<typeof createServiceClient>,
 ): Promise<string | null> {
@@ -105,7 +104,6 @@ async function currentGoalMonth(
   const { data } = await sb
     .from("goal_months")
     .select("id")
-    .eq("is_published", true)
     .lte("start_date", today)
     .gte("end_date", today)
     .maybeSingle();
@@ -188,17 +186,17 @@ export async function POST(req: NextRequest) {
 
   if (loNmls) {
     const { data } = await sb.from("profiles").select("id,full_name,email")
-      .eq("nmls", loNmls).eq("is_active", true).maybeSingle();
+      .eq("nmls", loNmls).maybeSingle();
     lo = data;
   }
   if (!lo && loEmail) {
     const { data } = await sb.from("profiles").select("id,full_name,email")
-      .eq("email", loEmail).eq("is_active", true).maybeSingle();
+      .eq("email", loEmail).maybeSingle();
     lo = data;
   }
   if (!lo && ariveId) {
     const { data } = await sb.from("profiles").select("id,full_name,email")
-      .eq("arive_lo_id", ariveId).eq("is_active", true).maybeSingle();
+      .eq("arive_lo_id", ariveId).maybeSingle();
     lo = data;
   }
 

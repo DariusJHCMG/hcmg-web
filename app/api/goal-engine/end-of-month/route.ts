@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
   const [leaderboard, summary, los] = await Promise.all([
     getLeaderboard(goal.id),
     computeGoalSummary(goal),
-    getActiveLoanOfficers(),
+    getActiveLoanOfficers(goal.id),
   ]);
 
   const companyTotal = summary.totalActualVolume;
@@ -136,7 +136,8 @@ export async function POST(req: NextRequest) {
 
     const actualVol   = production.reduce((s, r) => s + (r.funded_volume ?? 0), 0);
     const actualUnits = production.reduce((s, r) => s + (r.funded_unit  ?? 0), 0);
-    const rank        = leaderboard.findIndex(r => r.profile_id === lo.id) + 1 || los.length;
+    const idx  = leaderboard.findIndex(r => r.profile_id === lo.id);
+    const rank = idx >= 0 ? idx + 1 : leaderboard.length + 1;
 
     // Get awards for this LO this month
     const { data: loAwards } = await sb
@@ -168,7 +169,7 @@ export async function POST(req: NextRequest) {
         subject,
         resend_id:       resendId,
         status:          "sent",
-        tenant_id:       "cmrss19yi000fysf83wcom9th",
+        tenant_id:       (goal as unknown as Record<string,unknown>).tenant_id ?? null,
       });
       emailsSent++;
     } catch (e) {

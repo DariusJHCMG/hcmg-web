@@ -71,13 +71,16 @@ export async function POST(req: NextRequest) {
     profileId: string,
     statsSnapshot: Record<string, unknown>,
   ) {
-    // Check if already issued
+    // Check if already issued — include profile_id so per-LO awards (perfect_goal,
+    // million_dollar) don't block each other; single-winner awards use the same
+    // award_type so the first insert still prevents duplicates on re-run.
     const { data: existing } = await sb
       .from("goal_awards")
       .select("id")
       .eq("goal_month_id", goal_month_id)
       .eq("award_type", awardType)
-      .single();
+      .eq("profile_id", profileId)
+      .maybeSingle();
     if (existing) return; // already issued
 
     await sb.from("goal_awards").insert({
@@ -123,10 +126,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 4. Best Conversion Rate (funded / app_units, min 3 apps)
+  // 4. Best Conversion Rate (funded / app_units, min 3 apps, guarded against div/0)
   const withConversion = board
     .filter((r) => r.app_units_actual >= 3)
-    .map((r) => ({ ...r, rate: r.funded_units_actual / r.app_units_actual }))
+    .map((r) => ({ ...r, rate: r.app_units_actual > 0 ? r.funded_units_actual / r.app_units_actual : 0 }))
     .sort((a, b) => b.rate - a.rate);
   if (withConversion[0]) {
     await issueAward(

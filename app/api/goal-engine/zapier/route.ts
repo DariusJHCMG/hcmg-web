@@ -112,23 +112,23 @@ export async function POST(req: NextRequest) {
 
   if (loNmls) {
     const { data } = await sb.from("profiles").select("id,full_name")
-      .eq("nmls", loNmls).eq("is_active", true).maybeSingle();
+      .eq("nmls", loNmls).maybeSingle();
     lo = data;
   }
   if (!lo && loEmail) {
     const { data } = await sb.from("profiles").select("id,full_name")
-      .eq("email", loEmail).eq("is_active", true).maybeSingle();
+      .eq("email", loEmail).maybeSingle();
     lo = data;
   }
   if (!lo && loName) {
     // Try exact full_name match first
     const { data: d1 } = await sb.from("profiles").select("id,full_name")
-      .ilike("full_name", loName.trim()).eq("is_active", true).maybeSingle();
+      .ilike("full_name", loName.trim()).maybeSingle();
     lo = d1;
     // Then try arive_name alias (set per-LO for name mismatches between ARIVE and SLICE)
     if (!lo) {
       const { data: d2 } = await sb.from("profiles").select("id,full_name")
-        .ilike("arive_name", loName.trim()).eq("is_active", true).maybeSingle();
+        .ilike("arive_name", loName.trim()).maybeSingle();
       lo = d2;
     }
   }

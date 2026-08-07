@@ -36,21 +36,43 @@ export async function PATCH(
   const body = await req.json();
   const sb   = createServiceClient();
 
-  // Check if we're publishing for the first time
+  // ── Explicit resend action ────────────────────────────────────
+  // When the admin clicks "Resend", the client sends { _resend: true }.
+  // We reset emails_sent, then fire announcement emails immediately —
+  // no need to flip is_published back and forth.
+  if (body._resend === true) {
+    const { data: goal } = await sb.from("goal_months").select("*").eq("id", id).single();
+    if (!goal?.is_published) {
+      return NextResponse.json({ error: "Goal must be published before resending." }, { status: 400 });
+    }
+    await sb.from("goal_months").update({ emails_sent: false }).eq("id", id);
+    await sendAnnouncementEmails(goal as Record<string, unknown>);
+    await sb.from("goal_months").update({ emails_sent: true }).eq("id", id);
+    return NextResponse.json({ ok: true, resent: true });
+  }
+
+  // ── Normal update ─────────────────────────────────────────────
   const { data: existing } = await sb.from("goal_months").select("*").eq("id", id).single();
   const wasUnpublished = existing && !existing.is_published;
   const isNowPublished = body.is_published === true;
 
+  // When publishing, promote goal_status to 'published' (unless already closed/archived)
+  const updates = { ...body };
+  const immutableStatuses = ["closed", "archived"];
+  if (isNowPublished && !immutableStatuses.includes(existing?.goal_status)) {
+    updates.goal_status = "published";
+  }
+
   const { data, error } = await sb
     .from("goal_months")
-    .update(body)
+    .update(updates)
     .eq("id", id)
     .select()
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // If just published and emails not yet sent → send now
+  // If transitioning from unpublished → published and emails not yet sent → send now
   if (wasUnpublished && isNowPublished && data && !data.emails_sent) {
     await sendAnnouncementEmails(data as Record<string, unknown>);
   }

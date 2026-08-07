@@ -131,13 +131,14 @@ export async function POST(req: NextRequest) {
       loFirstName, monthLabel, fundedVol, fundedUnits,
       appUnits, appVol, biggest_focus ?? null, biggest_challenge ?? null, conf ?? null,
     );
-    await sendGoalEmail({ to: loEmail, subject, html });
+    const { id: resendId } = await sendGoalEmail({ to: loEmail, subject, html });
     await sb2.from("goal_email_log").insert({
       goal_month_id:   goalMonthId,
       profile_id:      profile.id,
       email_type:      "commitment_confirm",
       recipient_email: loEmail,
       subject,
+      resend_id:       resendId,
     });
   } catch (e) { console.error("Failed to send commitment confirmation email", e); }
 
@@ -150,7 +151,15 @@ export async function POST(req: NextRequest) {
   );
   for (const leader of ALERT_RECIPIENTS) {
     try {
-      await sendGoalEmail({ to: leader.email, subject: alertSubject, html: alertHtml });
+      const { id: alertResendId } = await sendGoalEmail({ to: leader.email, subject: alertSubject, html: alertHtml });
+      await sb2.from("goal_email_log").insert({
+        goal_month_id:   goalMonthId,
+        profile_id:      profile.id,
+        email_type:      "commitment_alert",
+        recipient_email: leader.email,
+        subject:         alertSubject,
+        resend_id:       alertResendId,
+      });
     } catch (e) { console.error(`Failed to send commitment alert to ${leader.email}`, e); }
   }
 

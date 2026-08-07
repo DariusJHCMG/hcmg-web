@@ -42,9 +42,9 @@ export function GoalAdminCard({ goal }: { goal: GoalMonth }) {
 
   async function resend() {
     setLoading(true); setMessage(null);
-    await fetch(`/api/goal-engine/goals/${goal.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ emails_sent:false }) });
-    const res  = await fetch(`/api/goal-engine/goals/${goal.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ is_published:true }) });
-    setMsgOk(res.ok); setMessage(res.ok ? "📧 Announcement emails re-sent." : "Failed to resend.");
+    const res  = await fetch(`/api/goal-engine/goals/${goal.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ _resend:true }) });
+    const data = await res.json();
+    setMsgOk(res.ok); setMessage(res.ok ? "📧 Announcement emails re-sent." : (data.error ?? "Failed to resend."));
     setLoading(false);
   }
 
