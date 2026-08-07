@@ -140,14 +140,16 @@ export default function TheSlicePage() {
   // Uses whole UTC calendar days so server/client timezone doesn't shift the result.
   const elapsedPct = (() => {
     if (!goal?.start_date || !goal?.end_date) return 100;
+    const MS     = 86_400_000;
     const utcDay = (iso: string) => { const [y,m,d] = iso.split("-").map(Number); return Date.UTC(y, m-1, d); };
     const today  = utcDay(new Date().toISOString().slice(0, 10));
     const s      = utcDay(String(goal.start_date));
     const e      = utcDay(String(goal.end_date));
-    const total  = e - s;
-    if (total <= 0 || today >= e) return 100;
-    if (today <= s) return 0;
-    return ((today - s) / total) * 100;
+    const total  = (e - s) / MS + 1;   // Aug 1–31 = 31 days
+    if (total <= 0 || today > e) return 100;
+    if (today < s) return 0;
+    const elapsed = (today - s) / MS + 1;  // Aug 7 = day 7
+    return (elapsed / total) * 100;
   })();
   const pace = (rawPct: number) => elapsedPct > 0 ? rawPct / elapsedPct * 100 : 0;
 

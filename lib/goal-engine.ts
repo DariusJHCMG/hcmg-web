@@ -48,8 +48,11 @@ function todayUtc(): number {
   return utcDay(new Date());
 }
 
+const MS  = 86_400_000;
+
 /**
- * Fraction of the goal period that has elapsed, based on whole calendar days.
+ * Fraction of the goal period that has elapsed, based on whole calendar days (inclusive).
+ * Aug 1–31 = 31-day month. On Aug 7 → 7/31 = 22.6% elapsed.
  * Uses UTC dates so server timezone never affects the result.
  * Returns 0 before start, 1 on/after end.
  */
@@ -57,21 +60,23 @@ export function monthProgress(start: string, end: string): number {
   const today = todayUtc();
   const s     = utcDay(new Date(start));
   const e     = utcDay(new Date(end));
-  const total = e - s;
+  const total = (e - s) / MS + 1;   // inclusive: Aug 1–31 = 31 days
   if (total <= 0) return 1;
-  if (today >= e) return 1;
-  if (today <= s) return 0;
-  return (today - s) / total;
+  if (today > e) return 1;
+  if (today < s) return 0;
+  const elapsed = (today - s) / MS + 1;  // Aug 1 = day 1, Aug 7 = day 7
+  return elapsed / total;
 }
 
 /**
  * Whole calendar days remaining until end date (inclusive of end day).
- * e.g. today = Aug 7, end = Aug 31 → 24 days remaining.
+ * e.g. today = Aug 7, end = Aug 31 → 24 days remaining (Aug 8–31).
  */
 export function daysRemaining(end: string): number {
   const today = todayUtc();
   const e     = utcDay(new Date(end));
-  return Math.max(0, Math.round((e - today) / 86_400_000));
+  if (today > e) return 0;
+  return Math.round((e - today) / MS);  // Aug 7→31: 24 full days left after today
 }
 
 /**
