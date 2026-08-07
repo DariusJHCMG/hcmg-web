@@ -102,8 +102,8 @@ export default async function TeamPage() {
       return {
         slug,
         name: p.full_name as string,
-        // Use title if set; otherwise humanise the auth role
-        role: p.title
+        // Use title if set (non-empty); otherwise humanise the auth role
+        role: (p.title || null)
           ?? (p.role === "loan_officer" ? "Loan Officer"
             : p.role === "admin" ? "Admin"
             : p.role === "developer" ? "Developer"
