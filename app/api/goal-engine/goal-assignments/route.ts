@@ -39,15 +39,25 @@ export async function GET(req: NextRequest) {
     .eq("goal_month_id", goalMonthId)
     .order("assigned_at", { ascending: true });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  // All profiles — admin can assign anyone regardless of role or active status
+  // All active profiles — fetched regardless of whether assignments query succeeded
   const { data: allLOs, error: profilesError } = await sb
     .from("profiles")
     .select("id, full_name, email, avatar_url, nmls, role, is_active")
+    .eq("is_active", true)
     .order("full_name");
 
   if (profilesError) return NextResponse.json({ error: profilesError.message }, { status: 500 });
+
+  // If goal_assignments table doesn't exist yet, return all profiles as unassigned
+  if (error) {
+    return NextResponse.json({
+      assignments:    [],
+      all_los:        allLOs ?? [],
+      assigned_ids:   [],
+      unassigned_los: allLOs ?? [],
+      table_warning:  error.message,
+    });
+  }
 
   // Build a profile lookup map
   const profileMap = new Map((allLOs ?? []).map((p) => [p.id, p]));

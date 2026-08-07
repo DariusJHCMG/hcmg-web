@@ -51,19 +51,29 @@ export default function GoalAssignmentsPage() {
   const [loading,       setLoading]       = useState(true);
   const [saving,        setSaving]        = useState(false);
   const [message,       setMessage]       = useState<{ text: string; ok: boolean } | null>(null);
+  const [apiError,      setApiError]      = useState<string | null>(null);
   const [selected,      setSelected]      = useState<Set<string>>(new Set());
   const [search,        setSearch]        = useState("");
 
+  const [tableWarning,  setTableWarning]  = useState<string | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
+    setApiError(null);
     try {
       const r = await fetch(`/api/goal-engine/goal-assignments?goal_month_id=${goalMonthId}`, { cache: "no-store" });
       const d = await r.json();
-      if (!r.ok) { console.error(d.error); return; }
+      if (!r.ok) {
+        setApiError(d.error ?? `API error ${r.status}`);
+        return;
+      }
       setAssignments(d.assignments ?? []);
       setAllLOs(d.all_los ?? []);
       setUnassigned(d.unassigned_los ?? []);
-    } catch { /* silent */ }
+      setTableWarning(d.table_warning ?? null);
+    } catch (e) {
+      setApiError(e instanceof Error ? e.message : "Network error");
+    }
     finally { setLoading(false); }
   }, [goalMonthId]);
 
@@ -204,6 +214,18 @@ export default function GoalAssignmentsPage() {
         </div>
       )}
 
+      {tableWarning && (
+        <div style={{ marginBottom: 16, padding: "14px 18px", borderRadius: 12, background: "#fffbeb", border: "1.5px solid #fcd34d", fontSize: 13, fontWeight: 700, color: "#92400e" }}>
+          ⚠ The goal_assignments table is missing. Run the migration in Supabase → SQL Editor. Assignments cannot be saved until then. All LOs are shown below for reference.
+        </div>
+      )}
+
+      {apiError && (
+        <div style={{ marginBottom: 16, padding: "14px 18px", borderRadius: 12, background: "#fff5f5", border: "1.5px solid #fca5a5", fontSize: 13, fontWeight: 700, color: "#dc2626" }}>
+          ⚠ Failed to load assignments: {apiError}
+        </div>
+      )}
+
       {loading ? (
         <div style={{ textAlign: "center", padding: "48px 0" }}>
           <p style={{ fontSize: 14, color: C.muted }}>Loading assignments…</p>
@@ -278,6 +300,12 @@ export default function GoalAssignmentsPage() {
           </div>
 
           {/* ── Add Unassigned LOs ── */}
+          {unassigned.length === 0 && allLOs.length > 0 && assignments.length > 0 && (
+            <div style={{ padding: "20px", textAlign: "center", background: C.white, border: `1px solid ${C.line}`, borderRadius: 16 }}>
+              <p style={{ margin: 0, fontSize: 13, color: C.muted }}>✓ All active LOs are already assigned to this goal.</p>
+            </div>
+          )}
+
           {unassigned.length > 0 && (
             <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 16, overflow: "hidden" }}>
               <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.line}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
