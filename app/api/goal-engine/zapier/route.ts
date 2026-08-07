@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
   // ── 3. Extract fields — accept snake_case and camelCase ───────
   const loNmls     = String(body.lo_nmls    ?? body.loNmls    ?? "").trim().replace(/[^0-9]/g, "");
   const loEmail    = String(body.lo_email   ?? body.loEmail   ?? "").trim().toLowerCase();
+  const loName     = String(body.lo_name    ?? body.loName    ?? body.lo_full_name ?? body.loanOfficerName ?? "").trim();
   const loanId     = String(body.loan_id    ?? body.loanId    ?? "").trim();
   const fundedDate = normDate(body.funded_date  ?? body.fundedDate  ?? body.close_date ?? body.closeDate);
   const fundedVol  = normAmount(body.funded_volume ?? body.fundedVolume ?? body.loanAmount ?? body.loan_amount);
@@ -89,10 +90,10 @@ export async function POST(req: NextRequest) {
     }, { status: 400 });
   }
 
-  if (!loNmls && !loEmail) {
+  if (!loNmls && !loEmail && !loName) {
     return NextResponse.json({
-      error: "lo_nmls or lo_email required to identify the Loan Officer.",
-      tip: "Map ARIVE 'Loan Officer NMLS' to lo_nmls in Zapier (preferred).",
+      error: "lo_nmls, lo_email, or lo_name required to identify the Loan Officer.",
+      tip: "Map ARIVE 'Loan Officer NMLS' to lo_nmls or 'Loan Officer Email' to lo_email in Zapier.",
     }, { status: 400 });
   }
 
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
 
   const sb = createServiceClient();
 
-  // ── 4. Resolve LO profile ─────────────────────────────────────
+  // ── 4. Resolve LO profile — NMLS → email → full name ─────────
   type LO = { id: string; full_name: string };
   let lo: LO | null = null;
 
@@ -119,12 +120,17 @@ export async function POST(req: NextRequest) {
       .eq("email", loEmail).eq("is_active", true).maybeSingle();
     lo = data;
   }
+  if (!lo && loName) {
+    const { data } = await sb.from("profiles").select("id,full_name")
+      .ilike("full_name", loName.trim()).eq("is_active", true).maybeSingle();
+    lo = data;
+  }
 
   if (!lo) {
     return NextResponse.json({
       error: "Loan Officer not found in SLICE.",
-      attempted: { loNmls: loNmls || null, loEmail: loEmail || null },
-      tip: "Check /goal-engine/admin/users — verify NMLS and email match ARIVE.",
+      attempted: { loNmls: loNmls || null, loEmail: loEmail || null, loName: loName || null },
+      tip: "Verify NMLS, email, or full name matches a SLICE profile.",
     }, { status: 404 });
   }
 
