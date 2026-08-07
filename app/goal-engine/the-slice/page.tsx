@@ -151,11 +151,8 @@ export default function TheSlicePage() {
   })();
   const pace = (rawPct: number) => elapsedPct > 0 ? rawPct / elapsedPct * 100 : 0;
 
-  // Pace values passed to PaceBar / PaceDot
-  const volPct     = pace(volRawPct);
-  const unitPct    = pace(unitRawPct);
-  const appVolPct  = pace(appVolRawPct);
-  const appUnitPct = pace(appUnitRawPct);
+  // Pace value for the status dot only
+  const volPct = pace(volRawPct);
 
   const medals = ["🥇","🥈","🥉"];
 
@@ -308,10 +305,10 @@ export default function TheSlicePage() {
               </div>
             )}
 
-            <PaceBar pct={volPct}  label="Funded Volume" />
-            <PaceBar pct={unitPct} label="Funded Units" />
-            {goalAppVol > 0 && <PaceBar pct={appVolPct}  label="App Volume" />}
-            {goalAppUnit > 0 && <PaceBar pct={appUnitPct} label="App Units" />}
+            <PaceBar pct={volRawPct}     label="Funded Volume" />
+            <PaceBar pct={unitRawPct}    label="Funded Units" />
+            {goalAppVol  > 0 && <PaceBar pct={appVolRawPct}  label="App Volume" />}
+            {goalAppUnit > 0 && <PaceBar pct={appUnitRawPct} label="App Units" />}
 
             {goal.clo_message && (
               <div style={{ marginTop:20, padding:"14px 18px", borderRadius:12, background:`rgba(243,112,33,0.05)`, border:`1px solid rgba(243,112,33,0.15)` }}>
