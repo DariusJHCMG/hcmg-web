@@ -46,16 +46,17 @@ export default function SliceVisualizationPage() {
 
       setGoalVol(Number(d.goal.funded_volume_goal ?? 0));
       setMonthLabel(String(d.goal.month_label ?? ""));
-      setSlices(
-        (d.leaderboard ?? []).map((row: Record<string, unknown>) => ({
-          profile_id:               String(row.profile_id ?? ""),
-          full_name:                String(row.full_name  ?? ""),
-          avatar_url:               row.avatar_url ? String(row.avatar_url) : null,
-          funded_volume_commitment: Number(row.funded_volume_commitment ?? 0),
-          funded_volume_actual:     Number(row.funded_volume_actual     ?? 0),
-          funded_units_actual:      Number(row.funded_units_actual      ?? 0),
-        }))
-      );
+      // Only pass LOs who have committed to the pie chart —
+      // zero-commitment rows have a 0° arc and pollute the legend.
+      const allRows = (d.leaderboard ?? []).map((row: Record<string, unknown>) => ({
+        profile_id:               String(row.profile_id ?? ""),
+        full_name:                String(row.full_name  ?? ""),
+        avatar_url:               row.avatar_url ? String(row.avatar_url) : null,
+        funded_volume_commitment: Number(row.funded_volume_commitment ?? 0),
+        funded_volume_actual:     Number(row.funded_volume_actual     ?? 0),
+        funded_units_actual:      Number(row.funded_units_actual      ?? 0),
+      }));
+      setSlices(allRows.filter((r: PieSlice) => r.funded_volume_commitment > 0));
       setLastUpdate(new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }));
       setError(null);
     } catch {

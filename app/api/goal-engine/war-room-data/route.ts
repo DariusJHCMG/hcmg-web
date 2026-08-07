@@ -28,8 +28,8 @@ export async function GET() {
     sb.from("goal_leaderboard")
       .select("profile_id, full_name, avatar_url, funded_volume_commitment, funded_volume_actual, funded_units_actual, app_volume_actual, app_units_actual")
       .eq("goal_month_id", goal.id)
-      .order("funded_volume_actual", { ascending: false })
-      .limit(15),
+      .order("funded_volume_commitment", { ascending: false })
+      .order("funded_volume_actual",     { ascending: false }),
     sb.from("goal_production")
       .select("funded_volume, funded_unit, app_volume, app_unit")
       .eq("goal_month_id", goal.id)
