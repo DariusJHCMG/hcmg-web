@@ -17,7 +17,7 @@ export async function GET() {
   const sb = createServiceClient();
   const { data, error } = await sb
     .from("webhook_log")
-    .select("id, received_at, source, event_type_raw, event_type, loan_id, lo_nmls, lo_email_raw, lo_matched_name, goal_month_label, amount, event_date, action, error_message, raw_payload, response_body, ip_address, duration_ms")
+    .select("id, received_at, source, event_type_raw, event_type, loan_id, lo_nmls, lo_email_raw, lo_matched_name, goal_month_label, amount, event_date, action, error_message, raw_payload, response_body, ip_address, duration_ms, previous_value")
     .order("received_at", { ascending: false })
     .limit(200);
 

@@ -13,8 +13,12 @@
       "schedule": "0 6 1 * *"
     },
     {
+      "path": "/api/goal-engine/arive-pull-cron",
+      "schedule": "*/15 * * * *"
+    },
+    {
       "path": "/api/goal-engine/loan-sync-cron",
-      "schedule": "0 * * * *"
+      "schedule": "*/15 * * * *"
     }
   ]
 }

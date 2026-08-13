@@ -132,7 +132,14 @@ export async function POST(req: NextRequest) {
     }, { status: 400 });
   }
 
-  // ── 4. Resolve LO profile — NMLS → email → full name ─────────
+  // ── 4. Resolve LO profile ────────────────────────────────────────
+  // Resolution order:
+  //   1. NMLS (if provided — ARIVE currently doesn't send this)
+  //   2. Exact email match against profiles.email
+  //   3. arive_email alias (for LOs whose ARIVE email ≠ SLICE email, e.g. Lamont)
+  //   4. Exact full_name match
+  //   5. arive_name alias (for LOs whose ARIVE name ≠ SLICE full_name)
+  //   6. Prefix full_name match (e.g. "Lamont Harris" → "Lamont Harris Jr.")
   type LO = { id: string; full_name: string };
   let lo: LO | null = null;
 
@@ -142,21 +149,35 @@ export async function POST(req: NextRequest) {
     lo = data;
   }
   if (!lo && loEmail) {
+    // Exact SLICE email match (works for every LO except Lamont)
     const { data } = await sb.from("profiles").select("id,full_name")
       .eq("email", loEmail).maybeSingle();
     lo = data;
   }
+  if (!lo && loEmail) {
+    // arive_email alias — for LOs whose ARIVE-stored email differs from SLICE
+    // (currently only Lamont: lamont.harris@htalmortgage.com vs lamont@hcmgloans.com)
+    const { data } = await sb.from("profiles").select("id,full_name")
+      .eq("arive_email", loEmail).maybeSingle();
+    lo = data;
+  }
   if (!lo && loName) {
-    // Try exact full_name match first
+    // Exact full_name match
     const { data: d1 } = await sb.from("profiles").select("id,full_name")
       .ilike("full_name", loName.trim()).maybeSingle();
     lo = d1;
-    // Then try arive_name alias (set per-LO for name mismatches between ARIVE and SLICE)
-    if (!lo) {
-      const { data: d2 } = await sb.from("profiles").select("id,full_name")
-        .ilike("arive_name", loName.trim()).maybeSingle();
-      lo = d2;
-    }
+  }
+  if (!lo && loName) {
+    // arive_name alias (e.g. "Lamont Harris" → "Lamont Harris Jr.")
+    const { data } = await sb.from("profiles").select("id,full_name")
+      .ilike("arive_name", loName.trim()).maybeSingle();
+    lo = data;
+  }
+  if (!lo && loName) {
+    // Prefix match — last resort (e.g. "Lamont Harris" prefix-matches "Lamont Harris Jr.")
+    const { data } = await sb.from("profiles").select("id,full_name")
+      .ilike("full_name", `${loName.trim()}%`).maybeSingle();
+    lo = data;
   }
 
   if (!lo) {
