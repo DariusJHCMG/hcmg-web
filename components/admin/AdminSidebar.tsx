@@ -10,6 +10,7 @@ const NAV = [
   { label: "Dashboard",       href: "/admin",                    icon: "⊞" },
   { label: "Analytics",       href: "/admin/analytics",          icon: "📊" },
   { label: "Goal Engine",     href: "/goal-engine/admin",        icon: "🥧" },
+  { label: "Lift Off",        href: "/admin/liftoff",            icon: "🚀" },
   { label: "Leads",           href: "/admin/leads",              icon: "✉" },
   { label: "Agent Partners",  href: "/admin/agent-leads",        icon: "🤝" },
   { label: "Corporate Benefits", href: "/admin/corporate-leads", icon: "▦" },

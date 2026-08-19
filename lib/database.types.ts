@@ -1,5 +1,125 @@
 export type Role = "admin" | "developer" | "loan_officer";
 
+// ── Lift Off Types ────────────────────────────────────────────
+
+export type LiftOffRequestType =
+  | "register_disclosure"
+  | "disclosure_only"
+  | "submission"
+  | "restructure_suspense"
+  | "wire_request"
+  | "adverse";
+
+export type LiftOffRequestStatus =
+  | "pending"
+  | "in_review"
+  | "action_needed"
+  | "completed"
+  | "cancelled";
+
+export type LockStatus = "locked" | "floating" | "lock_required";
+
+export interface LiftOffRequest {
+  id: string;
+  created_at: string;
+  updated_at: string;
+
+  // Submitter
+  submitter_id: string;
+  submitter_name: string;
+  submitter_nmls: string | null;
+
+  // Classification
+  request_type: LiftOffRequestType;
+  request_status: LiftOffRequestStatus;
+
+  // Loan identity
+  arive_loan_number: string | null;
+  carried_forward_ids: string | null;
+  loan_type: string | null;
+  loan_amount: number | null;
+  purchase_price: number | null;
+
+  // Borrower
+  borrower_first_name: string;
+  borrower_last_name: string;
+  co_borrower_first_name: string | null;
+  co_borrower_last_name: string | null;
+
+  // Property
+  property_address: string | null;
+  property_city: string | null;
+  property_state: string | null;
+  property_zip: string | null;
+  target_close_date: string | null;
+
+  // Lock
+  lock_status: LockStatus | null;
+  float_reason: string | null;
+
+  // Notes
+  income_note: string | null;
+  property_note: string | null;
+  assets_note: string | null;
+  credit_note: string | null;
+  special_instructions: string | null;
+  team_notes: string | null;
+  doc_checklist_json: { label: string; checked: boolean }[] | null;
+
+  // Restructure / Suspense
+  suspense_reason: string | null;
+  suspense_notes: string | null;
+  reason_fixed: boolean | null;
+
+  // Wire
+  wire_lender: string | null;
+  wire_lender_loan_number: string | null;
+  wire_branch: string | null;
+  wire_closing_date: string | null;
+  wire_lock_date: string | null;
+  wire_lock_exp_date: string | null;
+  wire_disbursement_date: string | null;
+  wire_settlement_agent_name: string | null;
+  wire_settlement_agent_email: string | null;
+  wire_balanced_with_title: boolean | null;
+  wire_final_cd_key: string | null;
+  wire_final_cd_name: string | null;
+  wire_approvals_json: { approver_id: string; approved_at: string; role: string }[] | null;
+  wire_outcome: string | null;
+  wire_expires_at: string | null;
+  wire_requestor_email: string | null;
+
+  // Adverse
+  adverse_reason: string | null;
+  adverse_notes: string | null;
+  adverse_outcome: string | null;
+  adverse_withdraw_from_portal: boolean | null;
+  adverse_leader_attempted_resell: boolean | null;
+  adverse_open_appraisal_order: boolean | null;
+  adverse_appraisal_disposition: string | null;
+
+  // Ops
+  assigned_processor_name: string | null;
+  assigned_processor_email: string | null;
+  assigned_processor_company: string | null;
+  assigned_at: string | null;
+  block_reason: string | null;
+  blocked_at_stage: string | null;
+  return_reason: string | null;
+  registered_at: string | null;
+  le_uploaded_at: string | null;
+  le_approved_at: string | null;
+
+  // ARIVE lookup
+  arive_lookup_raw: Record<string, unknown> | null;
+  arive_looked_up_at: string | null;
+
+  // Certification
+  certified_at: string | null;
+  certified_by_name: string | null;
+}
+
+
 /** SLICE-specific role — more granular than the portal Role */
 export type SliceRole = "super_admin" | "clo" | "executive" | "branch_manager" | "loan_officer";
 export type LeadStatus = "new" | "contacted" | "qualified" | "closed" | "lost";
