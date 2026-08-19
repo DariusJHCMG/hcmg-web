@@ -6,9 +6,7 @@ export type LiftOffRequestType =
   | "register_disclosure"
   | "disclosure_only"
   | "submission"
-  | "restructure_suspense"
-  | "wire_request"
-  | "adverse";
+  | "restructure_suspense";
 
 export type LiftOffRequestStatus =
   | "pending"

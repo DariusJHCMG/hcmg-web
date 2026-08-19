@@ -182,45 +182,6 @@ export default async function LiftOffDetailPage({
         </div>
       )}
 
-      {/* Wire */}
-      {request.request_type === "wire_request" && (
-        <div className="rounded-2xl border border-line bg-white overflow-hidden">
-          <div className="border-b border-line px-6 py-4 bg-sand">
-            <h2 className="font-bold text-ink text-sm">Wire Request</h2>
-          </div>
-          <div className="px-6 py-2">
-            <Row label="Lender"                 value={request.wire_lender} />
-            <Row label="Lender Loan #"           value={request.wire_lender_loan_number} />
-            <Row label="Branch"                  value={request.wire_branch} />
-            <Row label="Closing Date"            value={fmt(request.wire_closing_date)} />
-            <Row label="Lock Date"               value={fmt(request.wire_lock_date)} />
-            <Row label="Lock Exp Date"           value={fmt(request.wire_lock_exp_date)} />
-            <Row label="Disbursement Date"       value={fmt(request.wire_disbursement_date)} />
-            <Row label="Settlement Agent"        value={request.wire_settlement_agent_name} />
-            <Row label="Settlement Agent Email"  value={request.wire_settlement_agent_email} />
-            <Row label="Balanced w/ Title"       value={request.wire_balanced_with_title == null ? null : request.wire_balanced_with_title ? "Yes" : "No"} />
-          </div>
-        </div>
-      )}
-
-      {/* Adverse */}
-      {request.request_type === "adverse" && (
-        <div className="rounded-2xl border border-line bg-white overflow-hidden">
-          <div className="border-b border-line px-6 py-4 bg-sand">
-            <h2 className="font-bold text-ink text-sm">Adverse Action</h2>
-          </div>
-          <div className="px-6 py-2">
-            <Row label="Reason"                    value={request.adverse_reason} />
-            <Row label="Outcome"                   value={request.adverse_outcome} />
-            <Row label="Attempted Resell"          value={request.adverse_leader_attempted_resell == null ? null : request.adverse_leader_attempted_resell ? "Yes" : "No"} />
-            <Row label="Open Appraisal Order"      value={request.adverse_open_appraisal_order == null ? null : request.adverse_open_appraisal_order ? "Yes" : "No"} />
-            <Row label="Appraisal Disposition"     value={request.adverse_appraisal_disposition} />
-            <Row label="Withdraw from Portal"      value={request.adverse_withdraw_from_portal == null ? null : request.adverse_withdraw_from_portal ? "Yes" : "No"} />
-            <Row label="Notes"                     value={request.adverse_notes} />
-          </div>
-        </div>
-      )}
-
       {/* Ops info (admin-visible or if assigned) */}
       {(isAdmin || request.assigned_processor_name) && (
         <div className="rounded-2xl border border-line bg-white overflow-hidden">

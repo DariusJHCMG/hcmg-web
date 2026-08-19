@@ -1,8 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { LiftOffRequestType, LockStatus } from "@/lib/database.types";
+
+// ── Demo data — pre-fills the whole form for presentations ────
+const DEMO_DATA = {
+  requestType:   "submission" as LiftOffRequestType,
+  ariveLoanNumber: "2025-008842",
+  loanType:      "purchase",
+  loanAmount:    "425000",
+  purchasePrice: "500000",
+  lockStatus:    "locked" as LockStatus,
+  borrowerFirst: "Marcus",
+  borrowerLast:  "Johnson",
+  coBorrowerFirst: "Tanya",
+  coBorrowerLast:  "Johnson",
+  propAddress:   "412 Lakeside Blvd",
+  propCity:      "Orlando",
+  propState:     "FL",
+  propZip:       "32801",
+  targetClose:   "2025-10-31",
+  incomeNote:    "W2 employee, 3yr same employer (Amazon), base $112K, no gaps, YTD aligns.",
+  propertyNote:  "SFR, primary residence, appraised at $510K, no conditions, clear title.",
+  assetsNote:    "$68K Chase checking, 3 months SOA provided, no large unexplained deposits.",
+  creditNote:    "738 mid score, no derogatory items, 4 open tradelines, 9% utilization.",
+  specialInstructions: "Rush — client closing Oct 31. All docs in DMS folder JOHNSON-8842.",
+};
 
 // ── Request type definitions ──────────────────────────────────
 const REQUEST_TYPES: {
@@ -43,20 +67,6 @@ const REQUEST_TYPES: {
     description: "Resolve a blocker on an existing loan — restructure if no solution, or submit an exception request when you have one.",
     tags: ["RESTRUCTURE", "EXCEPTION", "COMPLIANCE"],
     icon: "🔄",
-  },
-  {
-    id: "wire_request",
-    label: "Wire Request",
-    description: "Closing-stage funding request — uploads Final CD, requires dual approval before wire releases.",
-    tags: ["CLOSING", "DUAL APPROVAL", "TRIO"],
-    icon: "💸",
-  },
-  {
-    id: "adverse",
-    label: "Adverse",
-    description: "Declare a loan dead. Captures resell attempt + appraisal disposition; routes to compliance / procmgr / dms_admin to complete ARIVE LOS.",
-    tags: ["ADVERSE", "COMPLIANCE", "ARIVE"],
-    icon: "⚠️",
   },
 ];
 
@@ -168,7 +178,17 @@ function Select(props: React.SelectHTMLAttributes<HTMLSelectElement> & { options
 
 // ── Main wizard ───────────────────────────────────────────────
 export default function LiftOffWizard() {
+  return (
+    <Suspense>
+      <WizardInner />
+    </Suspense>
+  );
+}
+
+function WizardInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isDemo = searchParams.get("demo") === "1";
   const [step, setStep]             = useState<1 | 2 | 3>(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState("");
@@ -215,37 +235,40 @@ export default function LiftOffWizard() {
   const [suspenseNotes, setSuspenseNotes]   = useState("");
   const [reasonFixed, setReasonFixed]       = useState<boolean | null>(null);
 
-  // Step 3 — Wire
-  const [wireLender, setWireLender]                     = useState("");
-  const [wireLenderLoanNumber, setWireLenderLoanNumber] = useState("");
-  const [wireBranch, setWireBranch]                     = useState("");
-  const [wireClosingDate, setWireClosingDate]           = useState("");
-  const [wireLockDate, setWireLockDate]                 = useState("");
-  const [wireLockExpDate, setWireLockExpDate]           = useState("");
-  const [wireDisbursementDate, setWireDisbursementDate] = useState("");
-  const [wireSettlementAgentName, setWireSettlementAgentName]   = useState("");
-  const [wireSettlementAgentEmail, setWireSettlementAgentEmail] = useState("");
-  const [wireBalancedWithTitle, setWireBalancedWithTitle] = useState<boolean | null>(null);
-  const [wireRequestorEmail, setWireRequestorEmail]     = useState("");
-
-  // Step 3 — Adverse
-  const [adverseReason, setAdverseReason]   = useState("");
-  const [adverseNotes, setAdverseNotes]     = useState("");
-  const [adverseOutcome, setAdverseOutcome] = useState("");
-  const [adverseWithdrawFromPortal, setAdverseWithdrawFromPortal]       = useState<boolean | null>(null);
-  const [adverseLeaderAttemptedResell, setAdverseLeaderAttemptedResell] = useState<boolean | null>(null);
-  const [adverseOpenAppraisalOrder, setAdverseOpenAppraisalOrder]       = useState<boolean | null>(null);
-  const [adverseAppraisalDisposition, setAdverseAppraisalDisposition]   = useState("");
-
   // Certification
   const [certified, setCertified] = useState(false);
 
   const selectedType  = REQUEST_TYPES.find((t) => t.id === requestType);
   const lockRequired  = selectedType?.lockRequired ?? false;
-  const isWire        = requestType === "wire_request";
-  const isAdverse     = requestType === "adverse";
   const isRestructure = requestType === "restructure_suspense";
-  const needsIpac     = !isWire && !isAdverse;
+  const needsIpac     = true; // all current types need IPAC
+
+  // ── Demo mode — pre-fill everything on mount ─────────────────
+  useEffect(() => {
+    if (!isDemo) return;
+    setRequestType(DEMO_DATA.requestType);
+    setAriveLoanNumber(DEMO_DATA.ariveLoanNumber);
+    setLoanType(DEMO_DATA.loanType);
+    setLoanAmount(DEMO_DATA.loanAmount);
+    setPurchasePrice(DEMO_DATA.purchasePrice);
+    setLockStatus(DEMO_DATA.lockStatus);
+    setBorrowerFirst(DEMO_DATA.borrowerFirst);
+    setBorrowerLast(DEMO_DATA.borrowerLast);
+    setCoBorrowerFirst(DEMO_DATA.coBorrowerFirst);
+    setCoBorrowerLast(DEMO_DATA.coBorrowerLast);
+    setPropAddress(DEMO_DATA.propAddress);
+    setPropCity(DEMO_DATA.propCity);
+    setPropState(DEMO_DATA.propState);
+    setPropZip(DEMO_DATA.propZip);
+    setTargetClose(DEMO_DATA.targetClose);
+    setIncomeNote(DEMO_DATA.incomeNote);
+    setPropertyNote(DEMO_DATA.propertyNote);
+    setAssetsNote(DEMO_DATA.assetsNote);
+    setCreditNote(DEMO_DATA.creditNote);
+    setSpecialInstructions(DEMO_DATA.specialInstructions);
+    setAriveLookupStatus("found");
+    setAriveLookupMessage("Demo mode — loan pre-filled for presentation.");
+  }, [isDemo]);
 
   // ── ARIVE lookup ─────────────────────────────────────────────
   async function handleAriveLookup() {
@@ -322,11 +345,16 @@ export default function LiftOffWizard() {
     e.preventDefault();
     if (!certified)            { setError("Please check the certification box before submitting."); return; }
     if (!borrowerFirst || !borrowerLast) { setError("Borrower first and last name are required."); return; }
-    if (needsIpac) {
+    if (!isDemo && needsIpac) {
       if (!incomeNote.trim())   { setError("IPAC — Income note is required."); return; }
       if (!propertyNote.trim()) { setError("IPAC — Property note is required."); return; }
       if (!assetsNote.trim())   { setError("IPAC — Assets note is required."); return; }
       if (!creditNote.trim())   { setError("IPAC — Credit note is required."); return; }
+    }
+    // Demo mode — don't actually submit to DB, just show success
+    if (isDemo) {
+      router.push("/liftoff?demo=1&submitted=1");
+      return;
     }
 
     setSubmitting(true);
@@ -364,30 +392,6 @@ export default function LiftOffWizard() {
       payload.suspense_reason = suspenseReason || null;
       payload.suspense_notes  = suspenseNotes  || null;
       payload.reason_fixed    = reasonFixed;
-    }
-
-    if (isWire) {
-      payload.wire_lender               = wireLender               || null;
-      payload.wire_lender_loan_number   = wireLenderLoanNumber     || null;
-      payload.wire_branch               = wireBranch               || null;
-      payload.wire_closing_date         = wireClosingDate          || null;
-      payload.wire_lock_date            = wireLockDate             || null;
-      payload.wire_lock_exp_date        = wireLockExpDate          || null;
-      payload.wire_disbursement_date    = wireDisbursementDate     || null;
-      payload.wire_settlement_agent_name  = wireSettlementAgentName  || null;
-      payload.wire_settlement_agent_email = wireSettlementAgentEmail || null;
-      payload.wire_balanced_with_title  = wireBalancedWithTitle;
-      payload.wire_requestor_email      = wireRequestorEmail       || null;
-    }
-
-    if (isAdverse) {
-      payload.adverse_reason                  = adverseReason                  || null;
-      payload.adverse_notes                   = adverseNotes                   || null;
-      payload.adverse_outcome                 = adverseOutcome                 || null;
-      payload.adverse_withdraw_from_portal    = adverseWithdrawFromPortal;
-      payload.adverse_leader_attempted_resell = adverseLeaderAttemptedResell;
-      payload.adverse_open_appraisal_order    = adverseOpenAppraisalOrder;
-      payload.adverse_appraisal_disposition   = adverseAppraisalDisposition    || null;
     }
 
     try {
@@ -480,12 +484,21 @@ export default function LiftOffWizard() {
 
           {/* ARIVE lookup card */}
           <div className="rounded-2xl border-2 border-[#142850] bg-[#142850]/5 p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🔍</span>
-              <div>
-                <h3 className="text-sm font-bold text-ink">ARIVE Loan Lookup</h3>
-                <p className="text-xs text-muted">Enter the ARIVE loan number and click Look Up to auto-fill this form.</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">🔍</span>
+                <div>
+                  <h3 className="text-sm font-bold text-ink">ARIVE Loan Number</h3>
+                  <p className="text-xs text-muted">
+                    Required. Once Zapier is live, clicking Look Up will auto-fill this form.
+                  </p>
+                </div>
               </div>
+              {isDemo && (
+                <span className="rounded-full bg-purple-100 border border-purple-300 px-3 py-0.5 text-[10px] font-bold text-purple-700">
+                  DEMO MODE
+                </span>
+              )}
             </div>
 
             <Field label="ARIVE Loan Number" required>
@@ -515,9 +528,11 @@ export default function LiftOffWizard() {
                   ) : "Look Up →"}
                 </button>
               </div>
+              <p className="mt-1.5 text-[11px] text-muted/60">
+                Can't look up yet? Just type the number and continue — fill the loan details below manually.
+              </p>
             </Field>
 
-            {/* Lookup status banner */}
             {ariveLookupStatus === "found" && (
               <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 text-sm text-green-800 font-semibold">
                 <span>✓</span> {ariveLookupMessage}
@@ -529,8 +544,8 @@ export default function LiftOffWizard() {
               </div>
             )}
             {(ariveLookupStatus === "error" || ariveLookupStatus === "not_configured") && (
-              <div className="flex items-center gap-2 rounded-xl bg-orange-50 border border-orange-200 px-4 py-2.5 text-sm text-orange-800 font-semibold">
-                <span>ℹ</span> {ariveLookupMessage}
+              <div className="flex items-center gap-2 rounded-xl bg-sand border border-line px-4 py-2.5 text-sm text-muted font-medium">
+                <span>ℹ</span> ARIVE auto-fill coming soon. Fill the details below manually.
               </div>
             )}
           </div>
@@ -578,7 +593,7 @@ export default function LiftOffWizard() {
           </div>
 
           {/* Lock — only for types that need it */}
-          {!isRestructure && !isAdverse && (
+          {!isRestructure && (
             <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">
                 Lock Status {lockRequired && <span className="text-orange-500 ml-1">— Required for this request type</span>}
@@ -641,7 +656,7 @@ export default function LiftOffWizard() {
           </div>
 
           {/* Property */}
-          {!isRestructure && !isAdverse && (
+          {!isRestructure && (
             <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Property</h3>
@@ -709,133 +724,8 @@ export default function LiftOffWizard() {
             </div>
           )}
 
-          {isWire && (
-            <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Wire Request Details</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Lender">
-                  <Input value={wireLender} onChange={e => setWireLender(e.target.value)} placeholder="Lender name" />
-                </Field>
-                <Field label="Lender Loan #">
-                  <Input value={wireLenderLoanNumber} onChange={e => setWireLenderLoanNumber(e.target.value)} placeholder="Lender's loan number" />
-                </Field>
-                <Field label="Branch">
-                  <Input value={wireBranch} onChange={e => setWireBranch(e.target.value)} placeholder="Branch name" />
-                </Field>
-                <Field label="Requestor Email">
-                  <Input type="email" value={wireRequestorEmail} onChange={e => setWireRequestorEmail(e.target.value)} placeholder="your@email.com" />
-                </Field>
-                <Field label="Closing Date">
-                  <Input type="date" value={wireClosingDate} onChange={e => setWireClosingDate(e.target.value)} />
-                </Field>
-                <Field label="Lock Date">
-                  <Input type="date" value={wireLockDate} onChange={e => setWireLockDate(e.target.value)} />
-                </Field>
-                <Field label="Lock Expiration Date">
-                  <Input type="date" value={wireLockExpDate} onChange={e => setWireLockExpDate(e.target.value)} />
-                </Field>
-                <Field label="Disbursement Date">
-                  <Input type="date" value={wireDisbursementDate} onChange={e => setWireDisbursementDate(e.target.value)} />
-                </Field>
-                <Field label="Settlement Agent Name">
-                  <Input value={wireSettlementAgentName} onChange={e => setWireSettlementAgentName(e.target.value)} placeholder="Settlement agent" />
-                </Field>
-                <Field label="Settlement Agent Email">
-                  <Input type="email" value={wireSettlementAgentEmail} onChange={e => setWireSettlementAgentEmail(e.target.value)} placeholder="agent@title.com" />
-                </Field>
-                <Field label="Balanced with Title?">
-                  <div className="flex gap-4 pt-1">
-                    {[{ v: true, label: "Yes" }, { v: false, label: "No" }].map(({ v, label }) => (
-                      <label key={String(v)} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input type="radio" name="wireBalanced" checked={wireBalancedWithTitle === v}
-                          onChange={() => setWireBalancedWithTitle(v)} className="accent-orange-500" />
-                        {label}
-                      </label>
-                    ))}
-                  </div>
-                </Field>
-              </div>
-            </div>
-          )}
-
-          {isAdverse && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-6 space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-red-700">Adverse Action Details</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Adverse Reason" required>
-                  <Select value={adverseReason} onChange={e => setAdverseReason(e.target.value)}
-                    options={[
-                      { value: "credit_denied",          label: "Credit Denied" },
-                      { value: "incomplete_application", label: "Incomplete Application" },
-                      { value: "property_issue",         label: "Property / Appraisal Issue" },
-                      { value: "borrower_withdrew",      label: "Borrower Withdrew" },
-                      { value: "pricing_unworkable",     label: "Pricing / Terms Unworkable" },
-                      { value: "other",                  label: "Other" },
-                    ]}
-                  />
-                </Field>
-                <Field label="Outcome">
-                  <Select value={adverseOutcome} onChange={e => setAdverseOutcome(e.target.value)}
-                    options={[
-                      { value: "denied",     label: "Denied" },
-                      { value: "withdrawn",  label: "Withdrawn" },
-                      { value: "incomplete", label: "Incomplete" },
-                    ]}
-                  />
-                </Field>
-                <Field label="Leader Attempted Resell?">
-                  <div className="flex gap-4 pt-1">
-                    {[{ v: true, label: "Yes" }, { v: false, label: "No" }].map(({ v, label }) => (
-                      <label key={String(v)} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input type="radio" name="adverseResell" checked={adverseLeaderAttemptedResell === v}
-                          onChange={() => setAdverseLeaderAttemptedResell(v)} className="accent-orange-500" />
-                        {label}
-                      </label>
-                    ))}
-                  </div>
-                </Field>
-                <Field label="Open Appraisal Order?">
-                  <div className="flex gap-4 pt-1">
-                    {[{ v: true, label: "Yes" }, { v: false, label: "No" }].map(({ v, label }) => (
-                      <label key={String(v)} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input type="radio" name="adverseAppraisal" checked={adverseOpenAppraisalOrder === v}
-                          onChange={() => setAdverseOpenAppraisalOrder(v)} className="accent-orange-500" />
-                        {label}
-                      </label>
-                    ))}
-                  </div>
-                </Field>
-                {adverseOpenAppraisalOrder && (
-                  <Field label="Appraisal Disposition">
-                    <Select value={adverseAppraisalDisposition} onChange={e => setAdverseAppraisalDisposition(e.target.value)}
-                      options={[
-                        { value: "cancel_order",      label: "Cancel Order" },
-                        { value: "hold_for_reborrow", label: "Hold for Re-borrow" },
-                        { value: "transfer_to_new",   label: "Transfer to New Loan" },
-                      ]}
-                    />
-                  </Field>
-                )}
-                <Field label="Withdraw from Portal?">
-                  <div className="flex gap-4 pt-1">
-                    {[{ v: true, label: "Yes" }, { v: false, label: "No" }].map(({ v, label }) => (
-                      <label key={String(v)} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input type="radio" name="adverseWithdraw" checked={adverseWithdrawFromPortal === v}
-                          onChange={() => setAdverseWithdrawFromPortal(v)} className="accent-orange-500" />
-                        {label}
-                      </label>
-                    ))}
-                  </div>
-                </Field>
-                <Field label="Notes" className="sm:col-span-2">
-                  <Textarea value={adverseNotes} onChange={e => setAdverseNotes(e.target.value)} placeholder="Any additional context…" rows={3} />
-                </Field>
-              </div>
-            </div>
-          )}
-
-          {/* ── IPAC Notes (required for all types except Wire + Adverse) ── */}
-          {needsIpac && (
+          {/* ── IPAC Notes ── */}
+          {(
             <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
               <div className="flex items-center gap-3 mb-1">
                 <div>
@@ -894,20 +784,6 @@ export default function LiftOffWizard() {
                   value={specialInstructions}
                   onChange={e => setSpecialInstructions(e.target.value)}
                   placeholder="Anything else ops needs to know about this file…"
-                  rows={3}
-                />
-              </Field>
-            </div>
-          )}
-
-          {/* Wire / Adverse special instructions */}
-          {(isWire || isAdverse) && (
-            <div className="rounded-2xl border border-line bg-white p-6">
-              <Field label="Special Instructions">
-                <Textarea
-                  value={specialInstructions}
-                  onChange={e => setSpecialInstructions(e.target.value)}
-                  placeholder="Anything else ops needs to know…"
                   rows={3}
                 />
               </Field>
