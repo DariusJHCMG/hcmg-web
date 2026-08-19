@@ -21,9 +21,9 @@ export async function PATCH(
   }
 
   const allowedFields = [
-    "request_status", "block_reason", "return_reason", "team_notes",
+    "request_status", "stage", "block_reason", "return_reason", "team_notes",
     "assigned_processor_name", "assigned_processor_email", "assigned_processor_company",
-    "assigned_at", "registered_at",
+    "assigned_at", "registered_at", "priority_score", "sla_deadline_at",
   ];
   const update: Record<string, unknown> = {};
   for (const key of allowedFields) {

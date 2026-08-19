@@ -12,8 +12,17 @@ const TYPE_LABELS: Record<string, string> = {
   disclosure_only:       "Disclosure Only",
   submission:            "Submission",
   restructure_suspense:  "Restructure / Suspense",
-  wire_request:          "Wire Request",
-  adverse:               "Adverse",
+};
+
+const STAGE_LABELS: Record<string, string> = {
+  submitted:          "Submitted",
+  pre_process_review: "Pre-Process Review",
+  registered:         "Registered",
+  disclosure_sent:    "Disclosure Sent",
+  processor_assigned: "Processor Assigned",
+  compliance_review:  "Compliance Review",
+  ops_decision:       "Ops Decision",
+  resolved:           "Resolved",
 };
 
 const STATUS_STYLES: Record<string, string> = {
@@ -103,38 +112,59 @@ export default async function AdminLiftOffPage() {
                   <th className="px-5 py-3 text-left">LO</th>
                   <th className="px-5 py-3 text-left">Type</th>
                   <th className="px-5 py-3 text-left">ARIVE #</th>
+                  <th className="px-5 py-3 text-left">Stage</th>
                   <th className="px-5 py-3 text-left">Status</th>
+                  <th className="px-5 py-3 text-left">SLA</th>
                   <th className="px-5 py-3 text-left">Submitted</th>
                   <th className="px-5 py-3 text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {requests.map(r => (
-                  <tr key={r.id} className="border-b border-line last:border-0 hover:bg-sand/50 transition-colors">
-                    <td className="px-5 py-3.5 font-semibold text-ink">
-                      <Link href={`/liftoff/${r.id}`} className="hover:text-accent transition-colors">
-                        {r.borrower_first_name} {r.borrower_last_name}
-                      </Link>
-                    </td>
-                    <td className="px-5 py-3.5 text-muted text-xs">
-                      <div>{r.submitter_name}</div>
-                      {r.submitter_nmls && <div className="text-muted/60">NMLS# {r.submitter_nmls}</div>}
-                    </td>
-                    <td className="px-5 py-3.5 text-muted text-xs">{TYPE_LABELS[r.request_type] ?? r.request_type}</td>
-                    <td className="px-5 py-3.5 font-mono text-xs text-muted">{r.arive_loan_number ?? "—"}</td>
-                    <td className="px-5 py-3.5">
-                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold border ${STATUS_STYLES[r.request_status] ?? ""}`}>
-                        {STATUS_LABELS[r.request_status] ?? r.request_status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-muted">
-                      {new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <LiftOffAdminActions requestId={r.id} currentStatus={r.request_status} />
-                    </td>
-                  </tr>
-                ))}
+                {requests.map(r => {
+                  const slaBreached = r.sla_deadline_at
+                    ? new Date(r.sla_deadline_at) < new Date() && r.request_status !== "completed" && r.request_status !== "cancelled"
+                    : false;
+                  return (
+                    <tr key={r.id} className={`border-b border-line last:border-0 transition-colors ${slaBreached ? "bg-red-50/40 hover:bg-red-50/70" : "hover:bg-sand/50"}`}>
+                      <td className="px-5 py-3.5 font-semibold text-ink">
+                        <Link href={`/liftoff/${r.id}`} className="hover:text-accent transition-colors">
+                          {r.borrower_first_name} {r.borrower_last_name}
+                        </Link>
+                        {r.priority_score && r.priority_score >= 80 && (
+                          <span className="ml-2 rounded-full bg-red-100 border border-red-300 px-1.5 py-0.5 text-[9px] font-black text-red-700">HIGH</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-muted text-xs">
+                        <div>{r.submitter_name}</div>
+                        {r.submitter_nmls && <div className="text-muted/60">NMLS# {r.submitter_nmls}</div>}
+                      </td>
+                      <td className="px-5 py-3.5 text-muted text-xs">{TYPE_LABELS[r.request_type] ?? r.request_type}</td>
+                      <td className="px-5 py-3.5 font-mono text-xs text-muted">{r.arive_loan_number ?? "—"}</td>
+                      <td className="px-5 py-3.5 text-xs text-muted">
+                        {r.stage ? (STAGE_LABELS[r.stage] ?? r.stage) : <span className="text-muted/40">—</span>}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold border ${STATUS_STYLES[r.request_status] ?? ""}`}>
+                          {STATUS_LABELS[r.request_status] ?? r.request_status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-xs">
+                        {r.sla_deadline_at ? (
+                          <span className={`font-semibold ${slaBreached ? "text-red-600" : "text-muted"}`}>
+                            {slaBreached ? "⚠ " : ""}
+                            {new Date(r.sla_deadline_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </span>
+                        ) : <span className="text-muted/40">—</span>}
+                      </td>
+                      <td className="px-5 py-3.5 text-xs text-muted">
+                        {new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <LiftOffAdminActions requestId={r.id} currentStatus={r.request_status} currentStage={r.stage} />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

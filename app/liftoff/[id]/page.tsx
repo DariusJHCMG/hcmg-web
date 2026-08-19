@@ -11,8 +11,21 @@ const TYPE_LABELS: Record<string, string> = {
   disclosure_only:       "Disclosure Only",
   submission:            "Submission",
   restructure_suspense:  "Restructure / Suspense",
-  wire_request:          "Wire Request",
-  adverse:               "Adverse",
+};
+
+const PROPERTY_TYPE_LABELS: Record<string, string> = {
+  sfr:          "Single Family Residence",
+  condo:        "Condo",
+  townhome:     "Townhome",
+  "2_4_unit":   "2–4 Unit",
+  manufactured: "Manufactured / Mobile",
+  other:        "Other",
+};
+
+const OCCUPANCY_LABELS: Record<string, string> = {
+  primary:    "Primary Residence",
+  secondary:  "Second Home",
+  investment: "Investment Property",
 };
 
 const STATUS_STYLES: Record<string, string> = {
@@ -144,26 +157,66 @@ export default async function LiftOffDetailPage({
             <h2 className="font-bold text-ink text-sm">Property</h2>
           </div>
           <div className="px-6 py-2">
-            <Row label="Address"   value={request.property_address} />
-            <Row label="City"      value={request.property_city} />
-            <Row label="State"     value={request.property_state} />
-            <Row label="ZIP"       value={request.property_zip} />
+            <Row label="Address"        value={request.property_address} />
+            <Row label="City"           value={request.property_city} />
+            <Row label="State"          value={request.property_state} />
+            <Row label="ZIP"            value={request.property_zip} />
+            <Row label="Property Type"  value={request.property_type ? (PROPERTY_TYPE_LABELS[request.property_type] ?? request.property_type) : null} />
+            <Row label="Occupancy"      value={request.occupancy_type ? (OCCUPANCY_LABELS[request.occupancy_type] ?? request.occupancy_type) : null} />
           </div>
         </div>
       )}
 
-      {/* Notes */}
+      {/* IPAC Notes */}
       {(request.income_note || request.property_note || request.assets_note || request.credit_note || request.special_instructions) && (
         <div className="rounded-2xl border border-line bg-white overflow-hidden">
           <div className="border-b border-line px-6 py-4 bg-sand">
-            <h2 className="font-bold text-ink text-sm">File Notes</h2>
+            <h2 className="font-bold text-ink text-sm">IPAC Notes</h2>
+            <p className="text-[11px] text-muted mt-0.5">Income · Property · Assets · Credit</p>
           </div>
           <div className="px-6 py-2">
-            <Row label="Income"             value={request.income_note} />
-            <Row label="Property"           value={request.property_note} />
-            <Row label="Assets"             value={request.assets_note} />
-            <Row label="Credit"             value={request.credit_note} />
+            <Row label="I — Income"           value={request.income_note} />
+            <Row label="P — Property"         value={request.property_note} />
+            <Row label="A — Assets"           value={request.assets_note} />
+            <Row label="C — Credit"           value={request.credit_note} />
             <Row label="Special Instructions" value={request.special_instructions} />
+          </div>
+        </div>
+      )}
+
+      {/* Document Checklist */}
+      {Array.isArray(request.doc_checklist_json) && request.doc_checklist_json.length > 0 && (
+        <div className="rounded-2xl border border-line bg-white overflow-hidden">
+          <div className="border-b border-line px-6 py-4 bg-sand flex items-center justify-between">
+            <h2 className="font-bold text-ink text-sm">Document Checklist</h2>
+            <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold border ${
+              request.doc_checklist_json.every(d => d.checked)
+                ? "bg-green-50 text-green-700 border-green-200"
+                : "bg-orange-50 text-orange-700 border-orange-200"
+            }`}>
+              {request.doc_checklist_json.filter(d => d.checked).length} of {request.doc_checklist_json.length} in file
+            </span>
+          </div>
+          <div className="px-6 py-4 space-y-2">
+            {request.doc_checklist_json.map((doc, i) => (
+              <div key={i} className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 ${
+                doc.checked ? "border-green-200 bg-green-50" : "border-line bg-sand"
+              }`}>
+                <span className={`flex-shrink-0 text-sm ${doc.checked ? "text-green-600" : "text-muted/40"}`}>
+                  {doc.checked ? "✓" : "○"}
+                </span>
+                <span className={`flex-1 text-sm font-semibold ${doc.checked ? "text-green-800" : "text-muted"}`}>
+                  {doc.label}
+                </span>
+                {doc.checked ? (
+                  <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide">In File</span>
+                ) : (
+                  <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wide border border-orange-200 bg-orange-50 rounded-full px-2 py-0.5">
+                    PENDING
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -189,10 +242,12 @@ export default async function LiftOffDetailPage({
             <h2 className="font-bold text-ink text-sm">Processing</h2>
           </div>
           <div className="px-6 py-2">
+            <Row label="Stage"           value={request.stage} />
             <Row label="Assigned To"     value={request.assigned_processor_name} />
             <Row label="Processor Email" value={request.assigned_processor_email} />
             <Row label="Assigned At"     value={fmt(request.assigned_at)} />
             <Row label="Registered At"   value={fmt(request.registered_at)} />
+            <Row label="SLA Deadline"    value={fmt(request.sla_deadline_at)} />
             {request.team_notes && <Row label="Ops Notes" value={<span className="whitespace-pre-wrap">{request.team_notes}</span>} />}
           </div>
         </div>

@@ -11,14 +11,29 @@ const STATUS_OPTIONS: { value: LiftOffRequestStatus; label: string }[] = [
   { value: "cancelled",     label: "Cancelled" },
 ];
 
+const STAGE_OPTIONS = [
+  { value: "",                  label: "— No stage set —" },
+  { value: "submitted",         label: "Submitted" },
+  { value: "pre_process_review",label: "Pre-Process Review" },
+  { value: "registered",        label: "Registered in ARIVE" },
+  { value: "disclosure_sent",   label: "Disclosure Sent" },
+  { value: "processor_assigned",label: "Processor Assigned" },
+  { value: "compliance_review", label: "Compliance Review" },
+  { value: "ops_decision",      label: "Ops Decision" },
+  { value: "resolved",          label: "Resolved" },
+];
+
 export function LiftOffAdminActions({
   requestId,
   currentStatus,
+  currentStage,
 }: {
   requestId: string;
   currentStatus: LiftOffRequestStatus;
+  currentStage: string | null;
 }) {
   const [status, setStatus]     = useState<LiftOffRequestStatus>(currentStatus);
+  const [stage, setStage]       = useState<string>(currentStage ?? "");
   const [note, setNote]         = useState("");
   const [saving, setSaving]     = useState(false);
   const [saved, setSaved]       = useState(false);
@@ -28,8 +43,12 @@ export function LiftOffAdminActions({
     setSaving(true);
     setSaved(false);
     const body: Record<string, unknown> = { request_status: status };
+    if (stage) body.stage = stage;
     if (status === "action_needed" && note.trim()) {
       body.return_reason = note.trim();
+    }
+    if (note.trim()) {
+      body.team_notes = note.trim();
     }
     const res = await fetch(`/api/liftoff/${requestId}/status`, {
       method: "PATCH",
@@ -51,28 +70,51 @@ export function LiftOffAdminActions({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-8 z-20 w-64 rounded-2xl border border-line bg-white shadow-xl p-4 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Update Status</p>
-          <select
-            value={status}
-            onChange={e => setStatus(e.target.value as LiftOffRequestStatus)}
-            className="w-full rounded-xl border border-line px-3 py-2 text-sm text-ink bg-white focus:outline-none focus:ring-2 focus:ring-orange-400/40"
-          >
-            {STATUS_OPTIONS.map(o => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
+        <div className="absolute right-0 top-8 z-20 w-72 rounded-2xl border border-line bg-white shadow-xl p-4 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Update Request</p>
 
-          {status === "action_needed" && (
+          {/* Status */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted/60 mb-1">Status</p>
+            <select
+              value={status}
+              onChange={e => setStatus(e.target.value as LiftOffRequestStatus)}
+              className="w-full rounded-xl border border-line px-3 py-2 text-sm text-ink bg-white focus:outline-none focus:ring-2 focus:ring-orange-400/40"
+            >
+              {STATUS_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Stage */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted/60 mb-1">Stage</p>
+            <select
+              value={stage}
+              onChange={e => setStage(e.target.value)}
+              className="w-full rounded-xl border border-line px-3 py-2 text-sm text-ink bg-white focus:outline-none focus:ring-2 focus:ring-orange-400/40"
+            >
+              {STAGE_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Notes / return reason */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted/60 mb-1">
+              {status === "action_needed" ? "Return Reason (required)" : "Ops Notes"}
+            </p>
             <textarea
               value={note}
               onChange={e => setNote(e.target.value)}
-              placeholder="Describe what the LO needs to fix…"
+              placeholder={status === "action_needed" ? "Describe what the LO needs to fix…" : "Internal notes for ops team…"}
               rows={3}
               className="w-full rounded-xl border border-line px-3 py-2 text-sm text-ink bg-white resize-none
                          focus:outline-none focus:ring-2 focus:ring-orange-400/40"
             />
-          )}
+          </div>
 
           <div className="flex gap-2">
             <button

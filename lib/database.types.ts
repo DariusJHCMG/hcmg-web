@@ -49,6 +49,8 @@ export interface LiftOffRequest {
   property_city: string | null;
   property_state: string | null;
   property_zip: string | null;
+  property_type: string | null;
+  occupancy_type: string | null;
   target_close_date: string | null;
 
   // Lock
@@ -96,7 +98,12 @@ export interface LiftOffRequest {
   adverse_open_appraisal_order: boolean | null;
   adverse_appraisal_disposition: string | null;
 
-  // Ops
+  // Ops / Stage
+  stage: string | null;
+  owner_role: string | null;
+  sla_deadline_at: string | null;
+  priority_score: number | null;
+  stage_history_json: { stage: string; changed_at: string; changed_by: string }[] | null;
   assigned_processor_name: string | null;
   assigned_processor_email: string | null;
   assigned_processor_company: string | null;
@@ -105,6 +112,8 @@ export interface LiftOffRequest {
   blocked_at_stage: string | null;
   return_reason: string | null;
   registered_at: string | null;
+  submitter_email: string | null;
+  submitter_phone: string | null;
 
   // ARIVE lookup
   arive_lookup_raw: Record<string, unknown> | null;
