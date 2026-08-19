@@ -7,7 +7,10 @@
 alter table public.lift_off_requests
   -- Workflow stage (what step ops is on)
   add column if not exists stage                  text
-    check (stage in ('submitted','registered','locked','disclosed','pre_uw','processing','completed') or stage is null),
+    check (stage in (
+      'submitted','pre_process_review','registered','disclosure_sent',
+      'processor_assigned','compliance_review','ops_decision','resolved'
+    ) or stage is null),
 
   -- Who currently owns the request
   add column if not exists owner_role             text
@@ -30,9 +33,9 @@ alter table public.lift_off_requests
 
   -- Property details (for doc checklist logic)
   add column if not exists property_type          text
-    check (property_type in ('sfr','condo','townhouse','multi_family','manufactured','other') or property_type is null),
+    check (property_type in ('sfr','condo','townhome','2_4_unit','manufactured','other') or property_type is null),
   add column if not exists occupancy_type         text
-    check (occupancy_type in ('primary','second_home','investment') or occupancy_type is null),
+    check (occupancy_type in ('primary','secondary','investment') or occupancy_type is null),
 
   -- Stage history (jsonb array of {stage, enteredAt, exitedAt, actor})
   add column if not exists stage_history_json     jsonb,
