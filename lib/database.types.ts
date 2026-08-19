@@ -105,8 +105,6 @@ export interface LiftOffRequest {
   blocked_at_stage: string | null;
   return_reason: string | null;
   registered_at: string | null;
-  le_uploaded_at: string | null;
-  le_approved_at: string | null;
 
   // ARIVE lookup
   arive_lookup_raw: Record<string, unknown> | null;

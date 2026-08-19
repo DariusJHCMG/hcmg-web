@@ -193,8 +193,6 @@ export default async function LiftOffDetailPage({
             <Row label="Processor Email" value={request.assigned_processor_email} />
             <Row label="Assigned At"     value={fmt(request.assigned_at)} />
             <Row label="Registered At"   value={fmt(request.registered_at)} />
-            <Row label="LE Uploaded"     value={fmt(request.le_uploaded_at)} />
-            <Row label="LE Approved"     value={fmt(request.le_approved_at)} />
             {request.team_notes && <Row label="Ops Notes" value={<span className="whitespace-pre-wrap">{request.team_notes}</span>} />}
           </div>
         </div>

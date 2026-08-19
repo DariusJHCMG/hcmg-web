@@ -23,7 +23,7 @@ export async function PATCH(
   const allowedFields = [
     "request_status", "block_reason", "return_reason", "team_notes",
     "assigned_processor_name", "assigned_processor_email", "assigned_processor_company",
-    "assigned_at", "registered_at", "le_uploaded_at", "le_approved_at",
+    "assigned_at", "registered_at",
   ];
   const update: Record<string, unknown> = {};
   for (const key of allowedFields) {

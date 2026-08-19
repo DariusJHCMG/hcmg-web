@@ -111,8 +111,6 @@ create table if not exists public.lift_off_requests (
   blocked_at_stage            text,
   return_reason               text,
   registered_at               timestamptz,
-  le_uploaded_at              timestamptz,
-  le_approved_at              timestamptz,
 
   -- ── LO certification ─────────────────────────────────────────
   certified_at            timestamptz,  -- when LO checked "I certify..."
