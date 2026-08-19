@@ -33,6 +33,45 @@ import { getCurrentProfile } from "@/lib/auth";
 //   "found":                true   // false if loan number not found in ARIVE
 // }
 
+// ── Demo loans — returned instantly without Zapier ───────────
+// Share loan number HCMG-DEMO-001 with your team for presentations.
+const DEMO_LOANS: Record<string, object> = {
+  "HCMG-DEMO-001": {
+    found:              true,
+    borrowerFirstName:  "Marcus",
+    borrowerLastName:   "Johnson",
+    coBorrowerFirstName: "Tanya",
+    coBorrowerLastName:  "Johnson",
+    loanType:           "purchase",
+    loanAmount:         425000,
+    purchasePrice:      500000,
+    propertyAddress:    "412 Lakeside Blvd",
+    propertyCity:       "Orlando",
+    propertyState:      "FL",
+    propertyZip:        "32801",
+    targetCloseDate:    "2025-10-31",
+    lockStatus:         "locked",
+    floatReason:        null,
+  },
+  "HCMG-DEMO-002": {
+    found:              true,
+    borrowerFirstName:  "Renee",
+    borrowerLastName:   "Williams",
+    coBorrowerFirstName: null,
+    coBorrowerLastName:  null,
+    loanType:           "refinance",
+    loanAmount:         310000,
+    purchasePrice:      null,
+    propertyAddress:    "8801 Cypress Creek Pkwy",
+    propertyCity:       "Houston",
+    propertyState:      "TX",
+    propertyZip:        "77070",
+    targetCloseDate:    "2025-11-14",
+    lockStatus:         "floating",
+    floatReason:        "Waiting for rate improvement — client approved float strategy",
+  },
+};
+
 export async function POST(req: NextRequest) {
   const profile = await getCurrentProfile();
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -42,9 +81,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Loan number is required" }, { status: 400 });
   }
 
+  // ── Demo loan numbers — always work, no Zapier needed ────────
+  const demoKey = loanNumber.trim().toUpperCase();
+  if (DEMO_LOANS[demoKey]) {
+    // Simulate a brief network delay so it feels real
+    await new Promise(r => setTimeout(r, 800));
+    return NextResponse.json(DEMO_LOANS[demoKey]);
+  }
+
   const webhookUrl = process.env.ARIVE_ZAPIER_WEBHOOK_URL;
   if (!webhookUrl) {
-    // Webhook not yet configured — return a clear message so the LO knows
     return NextResponse.json(
       { error: "ARIVE lookup is not configured yet. Please fill in the loan details manually.", notConfigured: true },
       { status: 503 }
