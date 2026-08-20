@@ -63,6 +63,21 @@ export interface LiftOffRequest {
   assets_note: string | null;
   credit_note: string | null;
   special_instructions: string | null;
+  loan_goal: string | null;
+  matches_1003: boolean | null;
+  matches_1003_changes: string | null;
+  gift_funds_present: "yes" | "no" | null;
+  donor_first_name: string | null;
+  donor_last_name: string | null;
+  donor_phone: string | null;
+  donor_email: string | null;
+  donor_address_1: string | null;
+  donor_address_2: string | null;
+  donor_city: string | null;
+  donor_state: string | null;
+  donor_zip: string | null;
+  ready_to_submit: boolean;
+  submission_requested_at: string | null;
   team_notes: string | null;
   doc_checklist_json: { label: string; checked: boolean }[] | null;
 

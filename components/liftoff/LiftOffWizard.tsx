@@ -364,16 +364,37 @@ function WizardInner() {
   const [targetClose, setTargetClose] = useState("");
 
   // Step 3 — IPAC
-  const [incomeNote, setIncomeNote]     = useState("");
-  const [propertyNote, setPropertyNote] = useState("");
-  const [assetsNote, setAssetsNote]     = useState("");
-  const [creditNote, setCreditNote]     = useState("");
+  const [incomeNote, setIncomeNote]         = useState("");
+  const [propertyNote, setPropertyNote]     = useState("");
+  const [assetsNote, setAssetsNote]         = useState("");
+  const [creditNote, setCreditNote]         = useState("");
+  const [loanGoal, setLoanGoal]             = useState("");
   const [specialInstructions, setSpecialInstructions] = useState("");
 
   // Step 3 — Restructure
   const [suspenseReason, setSuspenseReason] = useState("");
   const [suspenseNotes, setSuspenseNotes]   = useState("");
   const [reasonFixed, setReasonFixed]       = useState<boolean | null>(null);
+
+  // Step 3 — 1003 matches registration
+  const [matches1003, setMatches1003]               = useState<boolean | null>(null);
+  const [matches1003Changes, setMatches1003Changes] = useState("");
+
+  // Step 3 — Gift funds
+  const [giftFundsPresent, setGiftFundsPresent]     = useState<"yes" | "no" | "">("");
+  const [donorFirstName, setDonorFirstName]         = useState("");
+  const [donorLastName, setDonorLastName]           = useState("");
+  const [donorPhone, setDonorPhone]                 = useState("");
+  const [donorEmail, setDonorEmail]                 = useState("");
+  const [donorAddress1, setDonorAddress1]           = useState("");
+  const [donorAddress2, setDonorAddress2]           = useState("");
+  const [donorCity, setDonorCity]                   = useState("");
+  const [donorState, setDonorState]                 = useState("");
+  const [donorZip, setDonorZip]                     = useState("");
+
+  // Step 3 — Ready to submit
+  const [readyToSubmit, setReadyToSubmit]               = useState(false);
+  const [submissionRequestedAt, setSubmissionRequestedAt] = useState<string | null>(null);
 
   // Step 3 — Doc checklist (keyed by doc id)
   const [docChecked, setDocChecked] = useState<Record<string, boolean>>({});
@@ -529,8 +550,23 @@ function WizardInner() {
       assets_note:            assetsNote        || "",
       credit_note:            creditNote        || "",
       special_instructions:   specialInstructions || null,
+      loan_goal:              loanGoal            || null,
+      gift_funds_present:     giftFundsPresent    || null,
+      donor_first_name:       donorFirstName      || null,
+      donor_last_name:        donorLastName       || null,
+      donor_phone:            donorPhone          || null,
+      donor_email:            donorEmail          || null,
+      donor_address_1:        donorAddress1       || null,
+      donor_address_2:        donorAddress2       || null,
+      donor_city:             donorCity           || null,
+      donor_state:            donorState          || null,
+      donor_zip:              donorZip            || null,
       doc_checklist_json:     checklistPayload,
-      certified_at:           new Date().toISOString(),
+      ready_to_submit:            readyToSubmit,
+      submission_requested_at:    submissionRequestedAt || null,
+      matches_1003:               matches1003,
+      matches_1003_changes:       matches1003Changes || null,
+      certified_at:               new Date().toISOString(),
       certified_by_name:      certLoName        || null,
       submitter_nmls:         certNmls          || null,
     };
@@ -680,22 +716,8 @@ function WizardInner() {
             </div>
 
             {/* Prior progress */}
-            <div className="rounded-2xl border border-line bg-white p-6 space-y-3">
+            <div className="rounded-2xl border border-line bg-white p-6">
               <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Prior Progress for This Loan</h3>
-              <Field label="Carried Forward From (prior Lift Off ID)"
-                hint="If this continues a previous request, paste its ID here.">
-                <Input value={carriedForwardIds}
-                  onChange={e => setCarriedForwardIds(e.target.value)}
-                  placeholder="Optional — prior request ID" />
-              </Field>
-              {!carriedForwardIds && (
-                <div className="rounded-xl border border-line bg-sand px-5 py-6 text-center">
-                  <p className="text-sm font-semibold text-ink">No prior progress to carry forward</p>
-                  <p className="text-xs text-muted mt-1">
-                    This loan hasn&apos;t reached any milestone for the chosen request type. Continue to file fresh.
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Loan details */}
@@ -777,34 +799,8 @@ function WizardInner() {
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Sidebar */}
-          <div className="space-y-4">
-            <FileStatusPanel requestType={requestType as LiftOffRequestType} />
-            <div className="rounded-2xl border border-line bg-white p-5 space-y-2">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Docs Progress</p>
-              <p className="text-sm font-bold text-ink">
-                {checkedCount} of {docItems.length} complete
-              </p>
-              <div className="h-1.5 rounded-full bg-line overflow-hidden">
-                <div className="h-full rounded-full" style={{
-                  width: `${docItems.length > 0 ? (checkedCount / docItems.length) * 100 : 0}%`,
-                  background: "linear-gradient(135deg,#FF9847,#F37021)",
-                }} />
-              </div>
-              <p className="text-[11px] text-muted/60">You&apos;ll confirm docs in Step 3</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── STEP 3 — Borrower / IPAC / Docs ── */}
-      {step === 3 && requestType && (
-        <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
-          <div className="space-y-6">
-
-            {/* Borrower */}
+            {/* Borrower & Property */}
             <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Borrower &amp; Property</h3>
@@ -870,6 +866,78 @@ function WizardInner() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-4">
+            <FileStatusPanel requestType={requestType as LiftOffRequestType} />
+            <div className="rounded-2xl border border-line bg-white p-5 space-y-2">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Docs Progress</p>
+              <p className="text-sm font-bold text-ink">
+                {checkedCount} of {docItems.length} complete
+              </p>
+              <div className="h-1.5 rounded-full bg-line overflow-hidden">
+                <div className="h-full rounded-full" style={{
+                  width: `${docItems.length > 0 ? (checkedCount / docItems.length) * 100 : 0}%`,
+                  background: "linear-gradient(135deg,#FF9847,#F37021)",
+                }} />
+              </div>
+              <p className="text-[11px] text-muted/60">You&apos;ll confirm docs in Step 3</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── STEP 3 — IPAC / Docs ── */}
+      {step === 3 && requestType && (
+        <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+          <div className="space-y-6">
+
+            {/* 1003 Matches Registration */}
+            {!isRestructure && (
+              <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
+                <div>
+                  <h3 className="text-sm font-bold text-ink">1003 Matches Registration</h3>
+                  <p className="text-xs text-muted mt-1">
+                    Do income, property, assets, credit, and declarations match?
+                  </p>
+                  <p className="text-xs text-muted/70 mt-1 italic">
+                    If they do not match it will cause delays — please explain up front for a clean submission.
+                  </p>
+                </div>
+
+                {/* Toggle */}
+                <div className="flex items-center gap-4">
+                  <span className={`text-sm font-bold ${matches1003 === false ? "text-ink" : "text-muted/40"}`}>No</span>
+                  <button
+                    type="button"
+                    onClick={() => setMatches1003(prev => prev === true ? false : true)}
+                    className={`relative inline-flex h-7 w-14 flex-shrink-0 rounded-full border-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400/40 ${
+                      matches1003 === true
+                        ? "bg-[#142850] border-[#142850]"
+                        : "bg-line border-line"
+                    }`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 mt-0.5 ${
+                      matches1003 === true ? "translate-x-7" : "translate-x-0.5"
+                    }`} />
+                  </button>
+                  <span className={`text-sm font-bold ${matches1003 === true ? "text-ink" : "text-muted/40"}`}>Yes</span>
+                </div>
+
+                {/* What changed — only when No */}
+                {matches1003 === false && (
+                  <Field label="What Changed From Time of Registration?" required>
+                    <Textarea
+                      value={matches1003Changes}
+                      onChange={e => setMatches1003Changes(e.target.value)}
+                      rows={4}
+                      placeholder="Describe what changed — income, property, assets, credit, or declarations…"
+                    />
+                  </Field>
+                )}
+              </div>
+            )}
 
             {/* Restructure specific */}
             {isRestructure && (
@@ -911,34 +979,84 @@ function WizardInner() {
 
             {/* IPAC Notes */}
             <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
-              <div>
-                <h3 className="text-sm font-bold text-ink">
-                  IPAC Notes
-                  <span className="ml-2 text-orange-500 text-xs font-bold">ALL REQUIRED</span>
-                </h3>
-                <p className="text-[11px] text-muted mt-0.5">
-                  <strong>I</strong>ncome · <strong>P</strong>roperty · <strong>A</strong>ssets · <strong>C</strong>redit
-                </p>
+              <div className="text-center pb-2 border-b border-line">
+                <h3 className="text-lg font-extrabold text-ink">IPAC</h3>
+                <p className="text-xs font-semibold text-muted italic mt-0.5">Summary on Income Property Assets &amp; Credit</p>
+                <p className="text-xs font-bold text-ink mt-1">Being detailed provides a faster closing and better experience!</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="I — Income" required hint="Employment type, income sources, YTD, gaps, etc.">
+                <Field label="Income" required hint="Employment type, income sources, YTD, gaps, etc.">
                   <Textarea value={incomeNote} onChange={e => setIncomeNote(e.target.value)} rows={4}
-                    placeholder="e.g. W2 employee, 2yr same employer, no gaps, base $85K..." />
+                    placeholder="Summary of income used on this loan" />
                 </Field>
-                <Field label="P — Property" required hint="Property type, condition, occupancy, appraisal status.">
+                <Field label="Property" required hint="Property type, condition, occupancy, appraisal status.">
                   <Textarea value={propertyNote} onChange={e => setPropertyNote(e.target.value)} rows={4}
-                    placeholder="e.g. SFR, primary, appraised at $520K, no conditions..." />
+                    placeholder="Summary of property type, value and condition, occupancy and other property underwriting items" />
                 </Field>
-                <Field label="A — Assets" required hint="Checking, savings, gift funds, sourcing notes.">
+                <Field label="Assets" required hint="Checking, savings, gift funds, sourcing notes.">
                   <Textarea value={assetsNote} onChange={e => setAssetsNote(e.target.value)} rows={4}
-                    placeholder="e.g. $62K Chase checking, 3 months SOA, no large deposits..." />
+                    placeholder="Summary of assets being used and other asset underwriting items" />
                 </Field>
-                <Field label="C — Credit" required hint="Score, tradelines, derogatory items, explanations.">
+                <Field label="Credit" required hint="Score, tradelines, derogatory items, explanations.">
                   <Textarea value={creditNote} onChange={e => setCreditNote(e.target.value)} rows={4}
-                    placeholder="e.g. 720 mid, no derog, 3 open TL, 12% utilization..." />
+                    placeholder="Summary of credit profile and issues" />
+                </Field>
+              </div>
+              <div className="pt-2 border-t border-line space-y-1">
+                <Field label="What is the client hoping to accomplish with this loan?" required
+                  hint="If this is a purchase we know the client is buying a new home — elaborate (relocation, job change, divorce buyout, etc.)">
+                  <Textarea value={loanGoal} onChange={e => setLoanGoal(e.target.value)} rows={4}
+                    placeholder="And/Or is there anything unique that could impact the process?" />
                 </Field>
               </div>
             </div>
+
+            {/* Gift Funds */}
+            {!isRestructure && (
+              <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Gift Funds</h3>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Are Gift Funds Present?" required>
+                    <Select
+                      value={giftFundsPresent}
+                      onChange={e => setGiftFundsPresent(e.target.value as "yes" | "no" | "")}
+                      options={[
+                        { value: "no",  label: "No" },
+                        { value: "yes", label: "Yes" },
+                      ]}
+                    />
+                  </Field>
+
+                  {giftFundsPresent === "yes" && (
+                    <>
+                      <Field label="Donor Name" required>
+                        <div className="flex gap-2">
+                          <Input value={donorFirstName} onChange={e => setDonorFirstName(e.target.value)} placeholder="First" />
+                          <Input value={donorLastName}  onChange={e => setDonorLastName(e.target.value)}  placeholder="Last" />
+                        </div>
+                      </Field>
+                      <Field label="Donor Phone" required>
+                        <Input value={donorPhone} onChange={e => setDonorPhone(e.target.value)} placeholder="(555) 555-5555" />
+                      </Field>
+                      <Field label="Donor Email" required>
+                        <Input type="email" value={donorEmail} onChange={e => setDonorEmail(e.target.value)} placeholder="donor@email.com" />
+                      </Field>
+                      <Field label="Donor Address" required className="sm:col-span-2">
+                        <div className="space-y-2">
+                          <Input value={donorAddress1} onChange={e => setDonorAddress1(e.target.value)} placeholder="Address Line 1" />
+                          <Input value={donorAddress2} onChange={e => setDonorAddress2(e.target.value)} placeholder="Address Line 2" />
+                          <div className="grid grid-cols-3 gap-2">
+                            <Input value={donorCity}  onChange={e => setDonorCity(e.target.value)}  placeholder="City" className="col-span-1" />
+                            <Input value={donorState} onChange={e => setDonorState(e.target.value)} placeholder="State" maxLength={2} />
+                            <Input value={donorZip}   onChange={e => setDonorZip(e.target.value)}   placeholder="Zip Code" maxLength={10} />
+                          </div>
+                        </div>
+                      </Field>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Document Checklist */}
             <DocChecklist
@@ -956,6 +1074,51 @@ function WizardInner() {
                   rows={4}
                   placeholder="Rush details, unusual situations, disclosure timing, or anything the Lift Off team must know (min. 60 characters or 20 words)." />
               </Field>
+            </div>
+
+            {/* Ready to Submit */}
+            <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-ink">Ready to Submit Loan</h3>
+                <p className="text-xs text-muted/70 italic mt-0.5">
+                  Please click the submit &quot;action&quot; button below
+                </p>
+              </div>
+
+              {/* Toggle */}
+              <div className="flex items-center gap-4">
+                <span className={`text-sm font-bold ${!readyToSubmit ? "text-ink" : "text-muted/40"}`}>No</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !readyToSubmit;
+                    setReadyToSubmit(next);
+                    setSubmissionRequestedAt(next ? new Date().toISOString() : null);
+                  }}
+                  className={`relative inline-flex h-7 w-14 flex-shrink-0 rounded-full border-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400/40 ${
+                    readyToSubmit ? "bg-[#142850] border-[#142850]" : "bg-line border-line"
+                  }`}
+                >
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 mt-0.5 ${
+                    readyToSubmit ? "translate-x-7" : "translate-x-0.5"
+                  }`} />
+                </button>
+                <span className={`text-sm font-bold ${readyToSubmit ? "text-ink" : "text-muted/40"}`}>Yes</span>
+              </div>
+
+              {/* Timestamp */}
+              {submissionRequestedAt && (
+                <div className="rounded-xl border border-[#142850]/20 bg-[#142850]/5 px-4 py-3 space-y-0.5">
+                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Submission Requested Timestamp</p>
+                  <p className="text-sm font-bold text-ink">
+                    {new Date(submissionRequestedAt).toLocaleDateString("en-US", {
+                      month: "2-digit", day: "2-digit", year: "numeric",
+                    })} at {new Date(submissionRequestedAt).toLocaleTimeString("en-US", {
+                      hour: "2-digit", minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Certification */}
