@@ -6,5 +6,10 @@ export const dynamic = "force-dynamic";
 
 export default async function LicensesPage() {
   const settings = await readSettings();
-  return <LicensesClient initialStates={normalizeLicenseStates(settings.license_states)} />;
+  return (
+    <LicensesClient
+      initialStates={normalizeLicenseStates(settings.license_states)}
+      initialLicenseNumbers={settings.license_numbers ?? {}}
+    />
+  );
 }

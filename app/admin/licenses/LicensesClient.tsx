@@ -10,14 +10,22 @@ const OPTIONS: { value: LicenseStatus; label: string; short: string; color: stri
   { value: "unavailable", label: "Not Available", short: "Off", color: "#94A3B8", soft: "#F1F5F9" },
 ];
 
-export function LicensesClient({ initialStates }: { initialStates: Record<string, LicenseStatus> }) {
+export function LicensesClient({
+  initialStates,
+  initialLicenseNumbers,
+}: {
+  initialStates: Record<string, LicenseStatus>;
+  initialLicenseNumbers: Record<string, string>;
+}) {
   const [states, setStates] = useState(initialStates);
+  const [licenseNumbers, setLicenseNumbers] = useState<Record<string, string>>(initialLicenseNumbers);
   const [saved, setSaved] = useState(initialStates);
+  const [savedNumbers, setSavedNumbers] = useState(initialLicenseNumbers);
   const [filter, setFilter] = useState<LicenseStatus | "all">("all");
   const [query, setQuery] = useState("");
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
-  const dirty = JSON.stringify(states) !== JSON.stringify(saved);
+  const dirty = JSON.stringify(states) !== JSON.stringify(saved) || JSON.stringify(licenseNumbers) !== JSON.stringify(savedNumbers);
   const counts = useMemo(() => Object.fromEntries(OPTIONS.map(o => [o.value, STATE_CODES.filter(c => states[c] === o.value).length])), [states]);
   const visible = STATE_CODES.filter(code => (filter === "all" || states[code] === filter) && `${STATE_NAMES[code]} ${code}`.toLowerCase().includes(query.toLowerCase()));
 
@@ -26,13 +34,26 @@ export function LicensesClient({ initialStates }: { initialStates: Record<string
     setStates(current => ({ ...current, [code]: status }));
   }
 
+  function updateLicenseNumber(code: string, value: string) {
+    setNotice("");
+    setLicenseNumbers(current => ({ ...current, [code]: value }));
+  }
+
   async function save() {
     setSaving(true); setNotice("");
-    const response = await fetch("/api/admin/licenses", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ states }) });
+    const response = await fetch("/api/admin/licenses", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ states, license_numbers: licenseNumbers }),
+    });
     const data = await response.json().catch(() => ({}));
     setSaving(false);
     if (!response.ok) return setNotice(data.error ?? "Could not save license settings.");
-    setSaved(data.states); setStates(data.states); setNotice("Saved. The public maps are now updated.");
+    setSaved(data.states);
+    setStates(data.states);
+    setSavedNumbers(data.license_numbers ?? {});
+    setLicenseNumbers(data.license_numbers ?? {});
+    setNotice("Saved. The public licensing page is now updated.");
   }
 
   return (
@@ -41,9 +62,9 @@ export function LicensesClient({ initialStates }: { initialStates: Record<string
         <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-accent">Website controls</p>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">State licenses</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Control exactly how every state appears on the homepage and Find a Loan Officer map. Changes publish as soon as you save.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Control which states appear on the public licensing page. Set a state to "Licensed &amp; Active" and enter its license number to display it publicly. Changes publish as soon as you save.</p>
         </div>
-        <a href="/#where-we-lend" target="_blank" className="secondary-button whitespace-nowrap !px-4 !py-2.5 !text-sm">View public map ↗</a>
+        <a href="/licensing" target="_blank" className="secondary-button whitespace-nowrap !px-4 !py-2.5 !text-sm">View licensing page ↗</a>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -66,21 +87,50 @@ export function LicensesClient({ initialStates }: { initialStates: Record<string
 
         <section className="rounded-3xl border border-line bg-white shadow-card">
           <div className="flex flex-col gap-3 border-b border-line p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div><p className="text-sm font-extrabold text-ink">All states</p><p className="mt-1 text-xs text-muted">Choose one status per state.</p></div>
+            <div><p className="text-sm font-extrabold text-ink">All states</p><p className="mt-1 text-xs text-muted">Choose a status and enter the license number for active states.</p></div>
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search states…" className="input-base w-full rounded-xl border border-line px-3 py-2 text-sm sm:w-48" />
           </div>
           <div className="max-h-[610px] divide-y divide-line overflow-y-auto">
-            {visible.map(code => <div key={code} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-black text-white" style={{ background: OPTIONS.find(o => o.value === states[code])?.color }}>{code}</span><div><p className="text-sm font-bold text-ink">{STATE_NAMES[code]}</p><p className="text-xs text-muted">{OPTIONS.find(o => o.value === states[code])?.label}</p></div></div>
-              <div className="grid grid-cols-3 gap-1 rounded-xl bg-sand p-1">{OPTIONS.map(o => <button key={o.value} onClick={() => update(code, o.value)} title={o.label} className={`rounded-lg px-2.5 py-2 text-[11px] font-bold transition ${states[code] === o.value ? "text-white shadow-sm" : "text-muted hover:bg-white"}`} style={states[code] === o.value ? { background:o.color } : undefined}>{o.short}</button>)}</div>
-            </div>)}
+            {visible.map(code => (
+              <div key={code} className="flex flex-col gap-3 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-black text-white" style={{ background: OPTIONS.find(o => o.value === states[code])?.color }}>{code}</span>
+                    <div><p className="text-sm font-bold text-ink">{STATE_NAMES[code]}</p><p className="text-xs text-muted">{OPTIONS.find(o => o.value === states[code])?.label}</p></div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 rounded-xl bg-sand p-1">
+                    {OPTIONS.map(o => (
+                      <button key={o.value} onClick={() => update(code, o.value)} title={o.label} className={`rounded-lg px-2.5 py-2 text-[11px] font-bold transition ${states[code] === o.value ? "text-white shadow-sm" : "text-muted hover:bg-white"}`} style={states[code] === o.value ? { background: o.color } : undefined}>{o.short}</button>
+                    ))}
+                  </div>
+                </div>
+                {states[code] === "active" && (
+                  <input
+                    type="text"
+                    value={licenseNumbers[code] ?? ""}
+                    onChange={e => updateLicenseNumber(code, e.target.value)}
+                    placeholder={`${STATE_NAMES[code]} license number…`}
+                    className="input-base w-full rounded-xl border border-line px-3 py-2 font-mono text-xs text-ink placeholder:font-sans placeholder:text-muted"
+                  />
+                )}
+              </div>
+            ))}
             {!visible.length && <p className="p-10 text-center text-sm text-muted">No states match this filter.</p>}
           </div>
         </section>
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 p-4 shadow-[0_-10px_30px_rgba(15,23,42,.08)] backdrop-blur lg:left-56">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4"><div><p className={`text-sm font-bold ${dirty ? "text-accent" : "text-ink"}`}>{dirty ? "You have unpublished changes" : "Everything is up to date"}</p>{notice && <p className={`text-xs ${notice.startsWith("Saved") ? "text-green-700" : "text-red-600"}`}>{notice}</p>}</div><div className="flex gap-2"><button disabled={!dirty || saving} onClick={() => setStates(saved)} className="secondary-button !px-4 !py-2.5 !text-sm disabled:opacity-40">Discard</button><button disabled={!dirty || saving} onClick={save} className="primary-button !px-5 !py-2.5 !text-sm disabled:opacity-40">{saving ? "Publishing…" : "Save & publish"}</button></div></div>
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div>
+            <p className={`text-sm font-bold ${dirty ? "text-accent" : "text-ink"}`}>{dirty ? "You have unpublished changes" : "Everything is up to date"}</p>
+            {notice && <p className={`text-xs ${notice.startsWith("Saved") ? "text-green-700" : "text-red-600"}`}>{notice}</p>}
+          </div>
+          <div className="flex gap-2">
+            <button disabled={!dirty || saving} onClick={() => { setStates(saved); setLicenseNumbers(savedNumbers); }} className="secondary-button !px-4 !py-2.5 !text-sm disabled:opacity-40">Discard</button>
+            <button disabled={!dirty || saving} onClick={save} className="primary-button !px-5 !py-2.5 !text-sm disabled:opacity-40">{saving ? "Publishing…" : "Save & publish"}</button>
+          </div>
+        </div>
       </div>
     </div>
   );

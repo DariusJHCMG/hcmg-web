@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
+import { readSettings } from "@/lib/company-settings";
+import { STATE_NAMES } from "@/lib/license-states";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Licensing & Disclosures, HCMG · NMLS# 1918223",
   description: "State licensing information for Harris Capital Mortgage Group, LLC. NMLS# 1918223. Equal Housing Lender.",
   alternates: { canonical: "https://hcmgloans.com/licensing" },
 };
-
-const licenses = [
-  { state: "Michigan", abbr: "MI", license: "FR-0022873", status: "Active" },
-  { state: "Ohio", abbr: "OH", license: "RM.804867.000", status: "Active" },
-  { state: "Indiana", abbr: "IN", license: "26396", status: "Active" },
-  { state: "Illinois", abbr: "IL", license: "MB.6761398", status: "Active" },
-  { state: "Florida", abbr: "FL", license: "MLD2139", status: "Active" },
-  { state: "Texas", abbr: "TX", license: "RMLA-2310481", status: "Active" },
-  { state: "Georgia", abbr: "GA", license: "71855", status: "Active" },
-  { state: "Wisconsin", abbr: "WI", license: "1918223BA", status: "Active" },
-];
 
 function H2({ children }: { children: React.ReactNode }) {
   return <h2 className="mb-3 mt-10 text-xl font-bold text-ink">{children}</h2>;
@@ -26,14 +20,32 @@ function P({ children }: { children: React.ReactNode }) {
   return <p className="mb-4 text-sm leading-7 text-muted">{children}</p>;
 }
 
-export default function LicensingPage() {
+export default async function LicensingPage() {
+  const settings = await readSettings();
+
+  // Only show states that are "active"
+  const activeLicenses = Object.entries(settings.license_states)
+    .filter(([, status]) => status === "active")
+    .map(([code]) => ({
+      code,
+      state: STATE_NAMES[code] ?? code,
+      license: settings.license_numbers?.[code] ?? "",
+    }))
+    .sort((a, b) => a.state.localeCompare(b.state));
+
+  const lastUpdated = settings.licenses_last_updated
+    ? new Date(settings.licenses_last_updated).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    : null;
+
   return (
     <main>
       <NavBar />
       <section className="section-pad">
         <div className="container-shell max-w-3xl">
           <h1 className="mb-2 text-3xl font-extrabold text-ink">Licensing &amp; Disclosures</h1>
-          <p className="mb-8 text-sm text-muted">Last updated: January 1, 2026</p>
+          {lastUpdated && (
+            <p className="mb-8 text-sm text-muted">Last updated: {lastUpdated}</p>
+          )}
 
           <H2>Company Information</H2>
           <div className="rounded-2xl border border-line bg-sand p-6 text-sm leading-7 text-muted">
@@ -61,31 +73,35 @@ export default function LicensingPage() {
           <H2>State Licenses</H2>
           <P>Harris Capital Mortgage Group, LLC is licensed to originate mortgage loans in the following states:</P>
 
-          <div className="overflow-hidden rounded-2xl border border-line">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-line bg-sand">
-                  <th className="px-5 py-3 text-left font-semibold text-ink">State</th>
-                  <th className="px-5 py-3 text-left font-semibold text-ink">License Number</th>
-                  <th className="px-5 py-3 text-left font-semibold text-ink">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {licenses.map((row, i) => (
-                  <tr key={row.abbr} className={i % 2 === 0 ? "bg-white" : "bg-sand/50"}>
-                    <td className="px-5 py-3 text-muted">{row.state} ({row.abbr})</td>
-                    <td className="px-5 py-3 font-mono text-xs text-muted">{row.license}</td>
-                    <td className="px-5 py-3">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                        {row.status}
-                      </span>
-                    </td>
+          {activeLicenses.length > 0 ? (
+            <div className="overflow-hidden rounded-2xl border border-line">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-line bg-sand">
+                    <th className="px-5 py-3 text-left font-semibold text-ink">State</th>
+                    <th className="px-5 py-3 text-left font-semibold text-ink">License Number</th>
+                    <th className="px-5 py-3 text-left font-semibold text-ink">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {activeLicenses.map((row, i) => (
+                    <tr key={row.code} className={i % 2 === 0 ? "bg-white" : "bg-sand/50"}>
+                      <td className="px-5 py-3 text-muted">{row.state} ({row.code})</td>
+                      <td className="px-5 py-3 font-mono text-xs text-muted">{row.license || "—"}</td>
+                      <td className="px-5 py-3">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                          <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                          Active
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-muted">No active state licenses on file. Please check back soon.</p>
+          )}
 
           <H2>Equal Housing Lender</H2>
           <div className="flex items-start gap-4 rounded-2xl border border-line bg-sand p-6">

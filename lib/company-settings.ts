@@ -19,6 +19,8 @@ export interface CompanySettings {
   google_token_expiry:     string;  // ISO timestamp
   google_connected_email:  string;  // email of connected Google account
   license_states:          Record<string, LicenseStatus>;
+  license_numbers:         Record<string, string>;  // state code → license number (for active states)
+  licenses_last_updated:   string;  // ISO timestamp of last admin save
 }
 
 export const DEFAULT_SETTINGS: CompanySettings = {
@@ -36,6 +38,8 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   google_token_expiry:     "",
   google_connected_email:  "",
   license_states:          normalizeLicenseStates(),
+  license_numbers:         {},
+  licenses_last_updated:   "",
 };
 
 export async function readSettings(): Promise<CompanySettings> {
