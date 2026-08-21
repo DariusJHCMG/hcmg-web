@@ -3,17 +3,17 @@
 import { useState } from "react";
 
 interface FAQItem {
-  q: string;
+  q: string | ((name: string) => string);
   a: string;
 }
 
-const LAMONT_FAQS: FAQItem[] = [
+const FAQS: FAQItem[] = [
   {
     q: "How is working with HCMG different from going to my bank?",
     a: "Your bank can only offer you their own products and rates. As an independent mortgage broker, HCMG has access to dozens of lenders and hundreds of loan programs — which means we compare the market for you and find the deal that actually fits your situation, not just what one institution happens to offer this week.",
   },
   {
-    q: "Does it cost anything to work with Lamont or HCMG?",
+    q: (name: string) => `Does it cost anything to work with ${name} or HCMG?`,
     a: "Our consultation is completely free and there's no obligation. Lender-paid compensation means in most cases you pay nothing out of pocket for our origination services. We'll be transparent about all fees upfront — no surprises at closing.",
   },
   {
@@ -55,8 +55,9 @@ export function FAQSection({ firstName }: { firstName: string }) {
         </div>
 
         <div className="space-y-3">
-          {LAMONT_FAQS.map((faq, i) => {
-            const isOpen = open === i;
+          {FAQS.map((faq, i) => {
+              const isOpen = open === i;
+              const question = typeof faq.q === "function" ? faq.q(firstName) : faq.q;
             return (
               <div
                 key={i}
@@ -72,7 +73,7 @@ export function FAQSection({ firstName }: { firstName: string }) {
                   aria-expanded={isOpen}
                 >
                   <span className={`text-base font-bold leading-snug transition-colors ${isOpen ? "text-accent" : "text-ink"}`}>
-                    {faq.q}
+                    {question}
                   </span>
                   <span
                     className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border transition-all duration-200 ${

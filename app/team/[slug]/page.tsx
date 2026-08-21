@@ -8,6 +8,7 @@ import { FunnelFlow } from "@/components/funnel/FunnelFlow";
 import { Calculator } from "@/components/sections/Calculator";
 import { ReviewsSection } from "@/components/team/ReviewsSection";
 import { FAQSection } from "@/components/team/FAQSection";
+import { LoAttributionSetter } from "@/components/ui/LoAttributionSetter";
 import { teamMembers, getTeamMemberBySlug } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
 import type { Profile } from "@/lib/database.types";
@@ -177,6 +178,7 @@ export default async function TeamMemberPage({
 
   return (
     <main>
+      <LoAttributionSetter slug={slug} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <NavBar />

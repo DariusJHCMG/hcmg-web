@@ -10,6 +10,7 @@ import { getTeamMemberBySlug } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
 import { ReviewsSection } from "@/components/team/ReviewsSection";
 import { FAQSection } from "@/components/team/FAQSection";
+import { LoAttributionSetter } from "@/components/ui/LoAttributionSetter";
 import { formatCurrency } from "@/lib/calculators";
 import type { Profile } from "@/lib/database.types";
 
@@ -142,6 +143,7 @@ export default async function LamontPage() {
 
   return (
     <main>
+      <LoAttributionSetter slug={m.slug} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}

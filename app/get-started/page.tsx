@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { FunnelFlow } from "@/components/funnel/FunnelFlow";
 import { CalcFunnel } from "@/components/funnel/CalcFunnel";
 import { TeamPhoto } from "@/components/ui/TeamPhoto";
+import { LoAttributionRedirect } from "@/components/ui/LoAttributionRedirect";
 import { getTeamMemberBySlug } from "@/data/team";
 import { createServiceClient } from "@/lib/supabase";
 import { getFunnelBySlug } from "@/lib/funnel-catalog";
@@ -78,6 +80,9 @@ export default async function GetStartedPage({
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-sand pb-32 md:pb-0">
+      <Suspense fallback={null}>
+        <LoAttributionRedirect />
+      </Suspense>
       <NavBar />
 
       <section className="section-pad">
