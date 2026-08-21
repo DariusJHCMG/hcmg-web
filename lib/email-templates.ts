@@ -927,6 +927,172 @@ export function buildCoBrandedLeadConfirmationEmail({
 </html>`;
 }
 
+// ── 9b. Personal LO confirmation (non-co-branded LO funnels) ─────────────────
+
+export function buildPersonalLoConfirmationEmail({
+  firstName,
+  loName, loPhone, loNmls, loTitle,
+  buyingPowerLow, buyingPowerHigh, recommendedLoanType,
+  funnelType,
+  applicationUrl, calendarUrl,
+}: {
+  firstName: string;
+  loName: string;
+  loPhone: string | null;
+  loNmls: string | null;
+  loTitle: string | null;
+  buyingPowerLow?: number | null;
+  buyingPowerHigh?: number | null;
+  recommendedLoanType?: string | null;
+  funnelType?: string | null;
+  applicationUrl?: string | null;
+  calendarUrl?: string | null;
+}): string {
+  const fmt = (n?: number | null) => n ? `$${n.toLocaleString()}` : null;
+  const loFirst = loName.split(" ")[0];
+
+  const estimateRange = buyingPowerLow && buyingPowerHigh
+    ? `${fmt(buyingPowerLow)} – ${fmt(buyingPowerHigh)}`
+    : null;
+
+  const para    = `margin:0 0 18px;font-size:15px;line-height:1.8;color:#374151;`;
+  const label   = `margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:2px;color:#9ca3af;text-transform:uppercase;`;
+  const divider = `<tr><td style="padding:4px 0 20px;"><div style="height:1px;background:#f3f4f6;"></div></td></tr>`;
+
+  // Opening line varies by funnel type
+  const funnelLabel = funnelType
+    ? funnelType.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : null;
+  const openingLine = funnelLabel
+    ? `Thank you for your ${funnelLabel} inquiry.`
+    : `Thank you for taking the time to share your homebuying goals.`;
+
+  // Estimate block
+  const estimateBlock = (estimateRange || recommendedLoanType) ? `
+    <tr><td style="padding:0 0 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+        <tr><td style="padding:8px 20px;background:#f9fafb;">
+          <p style="${label}">Your Initial Estimate</p>
+        </td></tr>
+        <tr><td style="padding:12px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            ${estimateRange       ? `<tr><td style="font-size:13px;color:#6b7280;padding:5px 0;width:180px;">Estimated home price range</td><td style="font-size:13px;font-weight:600;color:#111827;padding:5px 0;">${estimateRange}</td></tr>` : ""}
+            ${recommendedLoanType ? `<tr><td style="font-size:13px;color:#6b7280;padding:5px 0;">Potential program to discuss</td><td style="font-size:13px;font-weight:600;color:#111827;padding:5px 0;">${recommendedLoanType}</td></tr>` : ""}
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>` : "";
+
+  // Application CTA
+  const appBlock = applicationUrl ? `
+    <tr><td style="padding:0 0 16px;">
+      <p style="${label}">Ready to Start Your Pre-Approval?</p>
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:#6b7280;">
+        Complete the full mortgage application and credit check so I can begin reviewing your information for pre-approval.
+      </p>
+      <a href="${applicationUrl}"
+        style="display:inline-block;background:#F37021;color:#ffffff;font-size:14px;font-weight:700;
+               padding:12px 24px;border-radius:8px;text-decoration:none;">
+        Continue to Full Application →
+      </a>
+    </td></tr>
+    ${divider}` : "";
+
+  // Calendar CTA
+  const calBlock = calendarUrl ? `
+    <tr><td style="padding:0 0 16px;">
+      <p style="${label}">Have Questions First?</p>
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:#6b7280;">
+        Choose a convenient time to speak with me about your estimate and financing options.
+      </p>
+      <a href="${calendarUrl}"
+        style="display:inline-block;background:#ffffff;border:2px solid #7c5cd8;color:#7c5cd8;font-size:14px;font-weight:700;
+               padding:12px 24px;border-radius:8px;text-decoration:none;">
+        Book a Call With ${loFirst} →
+      </a>
+    </td></tr>
+    ${divider}` : "";
+
+  // LO signature
+  const signatureBlock = `
+    <tr><td style="padding:0 0 24px;">
+      <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#111827;">I look forward to speaking with you soon.</p>
+      <p style="margin:16px 0 2px;font-size:14px;font-weight:700;color:#111827;">${loName}</p>
+      ${loTitle ? `<p style="margin:0 0 2px;font-size:13px;color:#6b7280;">${loTitle}</p>` : ""}
+      <p style="margin:0 0 2px;font-size:13px;color:#6b7280;">Harris Capital Mortgage Group</p>
+      ${loNmls  ? `<p style="margin:0 0 2px;font-size:13px;color:#6b7280;">NMLS #${loNmls}</p>` : ""}
+      ${loPhone ? `<p style="margin:0;font-size:13px;color:#6b7280;">${loPhone}</p>` : ""}
+    </td></tr>`;
+
+  const disclaimer = `
+    <tr><td style="padding:0 0 8px;">
+      <p style="margin:0;font-size:11px;line-height:1.7;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:16px;">
+        <strong>Initial estimate only.</strong> This estimate is based solely on the information you provided and has not been verified.
+        It is not a commitment to lend, loan approval, or pre-approval. A completed application, credit check, supporting
+        documentation, and underwriting review are required.
+      </p>
+    </td></tr>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="color-scheme" content="light"/>
+</head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="max-width:560px;background:#ffffff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
+
+        <!-- Thin accent bar -->
+        <tr><td style="height:4px;background:linear-gradient(90deg,#F37021,#FF9847);"></td></tr>
+
+        <!-- Body -->
+        <tr><td style="padding:32px 36px 8px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+
+            <!-- Greeting -->
+            <tr><td style="padding:0 0 18px;">
+              <p style="${para}">Hi ${firstName},</p>
+              <p style="${para}">${openingLine}</p>
+              <p style="${para}">
+                Based on the information you provided, here is your initial estimate.
+              </p>
+            </td></tr>
+
+            <!-- Estimate -->
+            ${estimateBlock}
+
+            <tr><td style="padding:0 0 18px;">
+              <p style="${para}">
+                I'll contact you within one business day to review your information, answer your questions, and walk through your next steps.
+              </p>
+            </td></tr>
+
+            ${divider}
+
+            <!-- CTAs -->
+            ${appBlock}
+            ${calBlock}
+
+            <!-- Signature -->
+            ${signatureBlock}
+
+            <!-- Disclaimer -->
+            ${disclaimer}
+
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 // ── 10. Co-branded LO lead alert (internal — to loan officer) ────────────────
 
 export function buildCoBrandedLoAlertEmail({

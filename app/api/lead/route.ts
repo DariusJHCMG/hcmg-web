@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { createServiceClient } from "@/lib/supabase";
 import { logAudit, getProfileBySlug } from "@/lib/auth";
+import { buildPersonalLoConfirmationEmail } from "@/lib/email-templates";
 import { readSettings } from "@/lib/company-settings";
 import { licenseStateLists } from "@/lib/license-states";
 import {
@@ -573,20 +574,22 @@ export async function POST(request: NextRequest) {
   }
 
   // ── 3. Resolve LO profile ─────────────────────────────────────────────────
-  let loNotifyEmail: string | null = null;
-  let loNmls: string | null = null;
-  let loPhone: string | null = null;
-  let loCalendarUrl: string | null = null;
-  let loTitle: string | null = null;
-  let loEmail: string | null = null;
+  let loNotifyEmail:    string | null = null;
+  let loNmls:           string | null = null;
+  let loPhone:          string | null = null;
+  let loCalendarUrl:    string | null = null;
+  let loApplicationUrl: string | null = null;
+  let loTitle:          string | null = null;
+  let loEmail:          string | null = null;
   if (lead.loSlug) {
     const loProfile = await getProfileBySlug(lead.loSlug);
-    loNotifyEmail = loProfile?.notify_email ?? loProfile?.email ?? null;
-    loEmail       = loProfile?.email ?? null;
-    loNmls        = loProfile?.nmls ?? null;
-    loPhone       = loProfile?.phone ?? null;
-    loCalendarUrl = loProfile?.calendar_url ?? null;
-    loTitle       = loProfile?.title ?? null;
+    loNotifyEmail    = loProfile?.notify_email ?? loProfile?.email ?? null;
+    loEmail          = loProfile?.email ?? null;
+    loNmls           = loProfile?.nmls ?? null;
+    loPhone          = loProfile?.phone ?? null;
+    loCalendarUrl    = loProfile?.calendar_url    ?? null;
+    loApplicationUrl = loProfile?.application_url ?? null;
+    loTitle          = loProfile?.title ?? null;
   }
 
   // ── 3b. Resolve co-branded page data (if applicable) ─────────────────────
@@ -658,6 +661,32 @@ export async function POST(request: NextRequest) {
             recommendedLoanType: lead.recommendedLoanType,
             applicationUrl:      coBrandedPageData.application_url,
             calendarUrl:         coBrandedPageData.calendar_url ?? loCalendarUrl,
+          }),
+        });
+      }
+
+      // Personal LO confirmation — for all non-co-branded, non-DSCR LO funnels
+      if (!isCoBrand && !isDscr && lead.loSlug && lead.loName) {
+        const fromAddr = loEmail?.endsWith("@hcmgloans.com")
+          ? `${lead.loName} <${loEmail}>`
+          : `${lead.loName} <noreply@hcmgloans.com>`;
+        return resendClient.emails.send({
+          from:    fromAddr,
+          to:      lead.email,
+          ...(loEmail && !loEmail.endsWith("@hcmgloans.com") ? { reply_to: loEmail } : {}),
+          subject: `Hi ${lead.firstName} — your estimate is ready`,
+          html: buildPersonalLoConfirmationEmail({
+            firstName:           lead.firstName,
+            loName:              lead.loName,
+            loPhone,
+            loNmls,
+            loTitle,
+            buyingPowerLow:      lead.estimatedBuyingPowerLow,
+            buyingPowerHigh:     lead.estimatedBuyingPowerHigh,
+            recommendedLoanType: lead.recommendedLoanType,
+            funnelType:          lead.funnelType,
+            applicationUrl:      loApplicationUrl,
+            calendarUrl:         loCalendarUrl,
           }),
         });
       }
