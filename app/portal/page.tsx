@@ -15,13 +15,27 @@ async function getMyLeads(loSlug: string): Promise<Lead[]> {
   return (data ?? []) as Lead[];
 }
 
+/** Returns a map of co_branded_page_id → "via <RealtorName>" for quick lookup */
+async function getCoBrandedMap(loSlug: string): Promise<Map<string, string>> {
+  const sb = createServiceClient();
+  const { data } = await sb
+    .from("co_branded_pages")
+    .select("id, realtor_name")
+    .eq("lo_slug", loSlug);
+  const map = new Map<string, string>();
+  for (const p of data ?? []) map.set(p.id, `via ${p.realtor_name}`);
+  return map;
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function PortalPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
-  const leads  = profile.lo_slug ? await getMyLeads(profile.lo_slug) : [];
+  const [leads, coBrandedMap] = profile.lo_slug
+    ? await Promise.all([getMyLeads(profile.lo_slug), getCoBrandedMap(profile.lo_slug)])
+    : [[], new Map<string, string>()];
   const SITE   = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
   const myLink = profile.lo_slug ? `${SITE}/go/${profile.lo_slug}` : null;
 
@@ -128,7 +142,12 @@ export default async function PortalPage() {
               </thead>
               <tbody>
                 {leads.map((lead) => (
-                   <LeadIntelPanel key={lead.id} lead={lead} patchEndpoint="portal" />
+                  <LeadIntelPanel
+                    key={lead.id}
+                    lead={lead}
+                    patchEndpoint="portal"
+                    sourceLabel={lead.co_branded_page_id ? coBrandedMap.get(lead.co_branded_page_id) : undefined}
+                  />
                 ))}
               </tbody>
             </table>

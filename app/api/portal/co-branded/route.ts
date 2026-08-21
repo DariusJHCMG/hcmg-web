@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { realtor_name, realtor_company, realtor_phone, realtor_email,
-            realtor_license, realtor_photo_url, realtor_logo_url, headline } = body;
+            realtor_license, realtor_photo_url, realtor_logo_url, headline,
+            application_url, calendar_url } = body;
 
     if (!realtor_name?.trim() || !realtor_company?.trim()) {
       return NextResponse.json({ error: "Realtor name and company are required" }, { status: 400 });
@@ -82,6 +83,8 @@ export async function POST(request: NextRequest) {
         realtor_photo_url: realtor_photo_url?.trim() || null,
         realtor_logo_url: realtor_logo_url?.trim() || null,
         headline: headline?.trim() || null,
+        application_url: application_url?.trim() || null,
+        calendar_url: calendar_url?.trim() || null,
       })
       .select()
       .single();

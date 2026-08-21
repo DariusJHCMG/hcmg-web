@@ -33,10 +33,12 @@ export interface LeadPayload {
   utmContent?: string;
   utmTerm?: string;
   // Session intelligence
-  sessionId?:  string;
-  entryPage?:  string;
-  referrer?:   string;
-  device?:     string;
+  sessionId?:        string;
+  entryPage?:        string;
+  referrer?:         string;
+  device?:           string;
+  // Co-branded page attribution
+  coBrandedPageId?:  string;
   // Bot protection fields are populated by submitLead, never by page code.
   website?: string;
   formStartedAt?: number;

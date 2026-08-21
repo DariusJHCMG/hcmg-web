@@ -29,6 +29,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const allowed = [
       "realtor_name", "realtor_company", "realtor_phone", "realtor_email",
       "realtor_license", "realtor_photo_url", "realtor_logo_url", "headline", "is_active",
+      "application_url", "calendar_url",
     ];
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
     for (const key of allowed) {

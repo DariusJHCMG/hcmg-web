@@ -91,6 +91,7 @@ interface Props {
 }
 
 export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint = "admin", dscrData }: Props) {
+  // sourceLabel already contains "via <RealtorName>" when set from co-branded
   const [open, setOpen]           = useState(false);
   const [events, setEvents]       = useState<LeadEvent[]>([]);
   const [loading, setLoading]     = useState(false);
@@ -243,13 +244,16 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
 
               {/* ── Attribution strip ── */}
               <div className="flex flex-wrap gap-2">
+                {lead.co_branded_page_id && sourceLabel && (
+                  <AttrBadge icon="🤝" label="Co-Branded Page" value={sourceLabel} />
+                )}
                 <AttrBadge icon={sourceIcon(lead.utm_source)} label="Source"    value={lead.utm_source} />
                 <AttrBadge icon="📡"                          label="Medium"    value={lead.utm_medium} />
                 <AttrBadge icon="🎯"                          label="Campaign"  value={lead.utm_campaign} />
                 <AttrBadge icon="📄"                          label="Entry page" value={lead.entry_page} />
                 <AttrBadge icon="↩️"                          label="Referrer"  value={lead.referrer} />
                 <AttrBadge icon={DEVICE_ICONS[lead.device ?? ""] ?? "💻"} label="Device" value={lead.device} />
-                {!hasUtm && !lead.entry_page && (
+                {!hasUtm && !lead.entry_page && !lead.co_branded_page_id && (
                   <p className="text-xs text-muted">No attribution data — lead predates tracking or came directly.</p>
                 )}
               </div>

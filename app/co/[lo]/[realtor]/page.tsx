@@ -55,6 +55,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
     realtor_phone: string | null; realtor_email: string | null;
     realtor_license: string | null; realtor_photo_url: string | null;
     realtor_logo_url: string | null; headline: string | null;
+    application_url: string | null; calendar_url: string | null;
     is_active: boolean; clicks: number;
   };
 
@@ -136,7 +137,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
             {headline}
           </h1>
           <p className="mx-auto mb-10 max-w-xl text-center text-base leading-7 text-muted">
-            No call centers. No runarounds. Get pre-qualified in 60 seconds — your file goes directly to {loFirst}.
+            Get an initial idea of what you may qualify for with no hard credit check or commitment. {loFirst} will then contact you personally to review your options and help you complete your application and pre-approval.
           </p>
 
           {/* Two-up partner cards */}
@@ -218,6 +219,9 @@ export default async function CoBrandedPublicPage({ params }: Props) {
           <FunnelFlow
             lo={funnelLo}
             source="co-brand"
+            coBrandedPageId={page.id}
+            applicationUrl={page.application_url ?? undefined}
+            calendarUrl={page.calendar_url ?? undefined}
             funnelConfig={{
               goalPreset: "buy",
               steps: [2, 3, 4, 5, 6],
@@ -230,6 +234,9 @@ export default async function CoBrandedPublicPage({ params }: Props) {
               submitLabel: "Get my personalized rate →",
             }}
           />
+          <p className="mt-6 text-center text-xs leading-5 text-muted/60">
+            <strong className="font-semibold text-muted">Initial estimate only.</strong> This is not a loan approval. A completed application and credit check are required for pre-approval.
+          </p>
         </div>
       </section>
 
@@ -320,6 +327,84 @@ export default async function CoBrandedPublicPage({ params }: Props) {
         </div>
       </section>
 
+      {/* ── FAQ ────────────────────────────────────────────────────── */}
+      <section className="bg-sand py-20">
+        <div className="container-shell max-w-3xl">
+
+          <div className="mb-10 text-center">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">Common Questions</p>
+            <h2 className="text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
+              Think You Need Perfect Credit or 20% Down?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-muted">
+              Let&apos;s clear that up. Most homebuyers have the same questions about credit, cash, debt, and qualification. Here are the answers you need before taking your next step.
+            </p>
+          </div>
+
+          <div className="divide-y divide-line rounded-2xl border border-line bg-white overflow-hidden shadow-soft">
+            {[
+              {
+                q: "Will checking my options hurt my credit?",
+                a: "No. Completing this quick questionnaire does not require a credit check. A completed application and credit check are only required later if you decide to move forward with pre-approval.",
+              },
+              {
+                q: "Do I really need 20% down?",
+                a: "Not necessarily. Different loan programs have different down-payment requirements. Some eligible buyers may qualify for low or no down-payment options.",
+              },
+              {
+                q: "My credit isn't perfect. Should I even start?",
+                a: "Yes. You do not need perfect credit to understand your options. Eligibility depends on your complete financial situation and the loan program. Starting now can help you learn what may be possible and what steps could improve your position.",
+              },
+              {
+                q: "I have student loans, car payments, or credit-card debt. Does that automatically rule me out?",
+                a: "No. Having debt does not automatically prevent you from buying a home. Lenders review your monthly obligations compared with your income, along with the requirements of the loan program.",
+              },
+              {
+                q: "How much money will I actually need?",
+                a: "Your total may include a down payment, closing costs, and prepaid expenses such as property taxes and homeowners insurance. Credits or assistance programs may help eligible buyers reduce their upfront costs.",
+              },
+              {
+                q: "How much home could I realistically afford?",
+                a: "That depends on your income, monthly debts, available funds, credit profile, interest rate, property taxes, insurance, and any HOA dues. This questionnaire gives you an initial estimate based on the information you provide.",
+              },
+              {
+                q: "Should I wait until I'm ready to buy?",
+                a: "Not necessarily. Starting early gives you time to understand your options, build a plan, and address anything that could affect your approval before finding the right home.",
+              },
+              {
+                q: `Why should I get pre-approved before looking at homes?`,
+                a: `A pre-approval helps you understand your budget and shows sellers that your financing has been reviewed. It also helps ${realtorFirst} focus your home search on properties that fit your goals.`,
+              },
+              {
+                q: "What happens after I complete the questionnaire?",
+                a: `You'll receive an initial estimate by email. ${loFirst} will personally contact you within one business day to review your financing options. You can also continue directly to the full application or schedule a call. ${realtorFirst} is available to help with your home search, properties, showings, and neighborhoods.`,
+              },
+            ].map(({ q, a }) => (
+              <details key={q} className="group px-6 py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-5 font-bold text-ink">
+                  <span>{q}</span>
+                  <span className="flex-shrink-0 text-xl text-accent transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-3 pr-8 text-sm leading-7 text-muted">{a}</p>
+              </details>
+            ))}
+          </div>
+
+          {/* CTA under FAQ */}
+          <div className="mt-10 rounded-2xl border border-line bg-white p-8 text-center shadow-soft">
+            <h3 className="text-xl font-extrabold text-ink">You Don&apos;t Need Every Answer Today</h3>
+            <p className="mt-2 text-base text-muted">You just need to understand where you stand and what your next step could be.</p>
+            <a href="#funnel"
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              style={{ background: "var(--ok-gradient)" }}>
+              See Where I Stand →
+            </a>
+            <p className="mt-3 text-xs text-muted/60">Takes about 60 seconds · No credit check · No commitment</p>
+          </div>
+
+        </div>
+      </section>
+
       {/* ── BOTTOM CTA ──────────────────────────────────────────────── */}
       <section className="py-16" style={{ background: "linear-gradient(135deg,#7c5cd8,#F37021)" }}>
         <div className="container-shell max-w-3xl text-center">
@@ -344,7 +429,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
             This page was created by {loName} (NMLS# {loNmls ?? "—"}) at Harris Capital Mortgage Group, LLC · NMLS# 1918223
           </p>
           <p className="mt-1 text-xs text-muted/60">
-            Not a commitment to lend. All loans subject to credit approval. Equal Housing Lender.
+            Initial estimate only. This is not a loan approval. A completed application and credit check are required for pre-approval. Not a commitment to lend. All loans subject to credit approval. Equal Housing Lender.
           </p>
           <div className="mt-3 flex flex-wrap justify-center gap-4 text-xs text-muted/50">
             <a href="/privacy" target="_blank" className="hover:text-muted transition-colors">Privacy Policy</a>

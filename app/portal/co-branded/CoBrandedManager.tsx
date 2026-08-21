@@ -14,8 +14,13 @@ interface CoBrandedPage {
   realtor_photo_url: string | null;
   realtor_logo_url: string | null;
   headline: string | null;
+  application_url: string | null;
+  calendar_url: string | null;
   is_active: boolean;
   clicks: number;
+  app_clicks: number;
+  book_call_clicks: number;
+  bookings_completed: number;
   created_at: string;
 }
 
@@ -155,14 +160,16 @@ function PageForm({
   onSave: (data: Partial<CoBrandedPage>) => Promise<void>;
   onCancel: () => void;
 }) {
-  const [realtorName,    setRealtorName]    = useState(initial?.realtor_name    ?? "");
-  const [company,        setCompany]        = useState(initial?.realtor_company ?? "");
-  const [phone,          setPhone]          = useState(initial?.realtor_phone   ?? "");
-  const [email,          setEmail]          = useState(initial?.realtor_email   ?? "");
-  const [license,        setLicense]        = useState(initial?.realtor_license ?? "");
-  const [headline,       setHeadline]       = useState(initial?.headline        ?? "");
+  const [realtorName,    setRealtorName]    = useState(initial?.realtor_name     ?? "");
+  const [company,        setCompany]        = useState(initial?.realtor_company  ?? "");
+  const [phone,          setPhone]          = useState(initial?.realtor_phone    ?? "");
+  const [email,          setEmail]          = useState(initial?.realtor_email    ?? "");
+  const [license,        setLicense]        = useState(initial?.realtor_license  ?? "");
+  const [headline,       setHeadline]       = useState(initial?.headline         ?? "");
   const [photoUrl,       setPhotoUrl]       = useState(initial?.realtor_photo_url ?? "");
   const [logoUrl,        setLogoUrl]        = useState(initial?.realtor_logo_url  ?? "");
+  const [applicationUrl, setApplicationUrl] = useState(initial?.application_url  ?? "");
+  const [calendarUrl,    setCalendarUrl]    = useState(initial?.calendar_url     ?? "");
   const [saving,         setSaving]         = useState(false);
   const [error,          setError]          = useState("");
 
@@ -177,7 +184,8 @@ function PageForm({
     try {
       await onSave({ realtor_name: realtorName, realtor_company: company, realtor_phone: phone || null,
         realtor_email: email || null, realtor_license: license || null, headline: headline || null,
-        realtor_photo_url: photoUrl || null, realtor_logo_url: logoUrl || null });
+        realtor_photo_url: photoUrl || null, realtor_logo_url: logoUrl || null,
+        application_url: applicationUrl || null, calendar_url: calendarUrl || null });
     } catch (err) {
       setError(String(err));
       setSaving(false);
@@ -229,6 +237,18 @@ function PageForm({
             <input type="text" value={headline} onChange={e => setHeadline(e.target.value)}
               placeholder="Let's get your clients to the closing table." className={IC} />
             <p className="mt-1 text-[11px] text-muted">Appears on the page hero. Leave blank for default.</p>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-[0.12em] text-muted">Application URL</label>
+            <input type="url" value={applicationUrl} onChange={e => setApplicationUrl(e.target.value)}
+              placeholder="https://apply.arive.com/your-link" className={IC} />
+            <p className="mt-1 text-[11px] text-muted">Direct Arive pre-approval link for this realtor. When set, a &ldquo;Continue to Full Application&rdquo; button appears on the funnel success screen.</p>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-[0.12em] text-muted">Calendar / Booking URL</label>
+            <input type="url" value={calendarUrl} onChange={e => setCalendarUrl(e.target.value)}
+              placeholder="https://calendly.com/your-link" className={IC} />
+            <p className="mt-1 text-[11px] text-muted">Calendly or other booking link. When set, a &ldquo;Book a Call&rdquo; button appears on the funnel success screen.</p>
           </div>
         </div>
       </div>

@@ -28,6 +28,7 @@ async function getCoBrandedLeads(cbPage: CoBrandedPage): Promise<Lead[]> {
     .select("*")
     .eq("lo_slug", cbPage.lo_slug)
     .or(
+      `co_branded_page_id.eq.${cbPage.id},` +
       `entry_page.ilike.%/co/${cbPage.lo_slug}/${cbPage.realtor_slug}%,` +
       `utm_campaign.ilike.%co-brand-${cbPage.realtor_slug}%`
     )

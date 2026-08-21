@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLicensedStates } from "@/lib/use-licensed-states";
 import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 import { Disclosure } from "@/components/ui/Disclosure";
@@ -57,6 +58,7 @@ function ContactInfo() {
 type FormState = "idle" | "loading" | "success" | "error";
 
 export default function ContactPage() {
+  const licensedStates = useLicensedStates();
   const [state, setState] = useState<FormState>("idle");
   const [consent, setConsent] = useState(false);
   const [propertyState, setPropertyState] = useState("");
@@ -68,19 +70,6 @@ export default function ContactPage() {
     phone: "",
     message: "",
   });
-
-  const LICENSED_STATES = [
-    { code: "FL", label: "Florida (FL)" },
-    { code: "TX", label: "Texas (TX)" },
-    { code: "GA", label: "Georgia (GA)" },
-    { code: "NV", label: "Nevada (NV)" },
-    { code: "CO", label: "Colorado (CO)" },
-    { code: "VA", label: "Virginia (VA)" },
-    { code: "DC", label: "Washington DC (DC)" },
-    { code: "MD", label: "Maryland (MD)" },
-    { code: "CA", label: "California (CA)" },
-    { code: "MS", label: "Mississippi (MS)" },
-  ];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -212,7 +201,7 @@ export default function ContactPage() {
                       className={`${inputClass} ${stateError ? "border-red-300" : ""} ${propertyState === "" ? "text-muted/60" : "text-ink"}`}
                     >
                       <option value="">Select a state…</option>
-                      {LICENSED_STATES.map((s) => (
+                      {licensedStates.map((s) => (
                         <option key={s.code} value={s.code}>{s.label}</option>
                       ))}
                     </select>

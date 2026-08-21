@@ -4,12 +4,16 @@ import { Resend } from "resend";
 import { createServiceClient } from "@/lib/supabase";
 import { logAudit, getProfileBySlug } from "@/lib/auth";
 import { readSettings } from "@/lib/company-settings";
+import { licenseStateLists } from "@/lib/license-states";
 import {
   buildLeadConfirmationEmail,
   buildLoNotificationEmail,
   buildCompanyAlertEmail,
   buildDscrLeadEmail,
   buildDscrLoAlertEmail,
+  buildCoBrandedLeadConfirmationEmail,
+  buildCoBrandedLoAlertEmail,
+  buildCoBrandedRealtorAlertEmail,
 } from "@/lib/email-templates";
 
 const RESEND_KEY = process.env.RESEND_API_KEY;
@@ -20,7 +24,6 @@ function getResend() {
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
 const ALLOWED_SOURCES = new Set(["funnel", "get-started", "team", "seo", "product", "home-calculator", "contact", "employment", "co-brand", "co-branded", "real-estate-agent", "corporate-benefits", "dscr-landing"]);
-const LICENSED_STATES = new Set(["FL", "TX", "GA", "NV", "CO", "VA", "DC", "MD", "CA", "MS"]);
 const NAME_RE = /^[\p{L}][\p{L}\p{M}' .-]{0,49}$/u;
 
 const LeadSchema = z.object({
@@ -56,6 +59,7 @@ const LeadSchema = z.object({
   entryPage:               z.string().optional(),
   referrer:                z.string().optional(),
   device:                  z.string().optional(),
+  coBrandedPageId:         z.string().uuid().optional(),
   website:                 z.literal(""),
   formStartedAt:           z.number().int().positive(),
   turnstileToken:          z.string().max(2048).optional(),
@@ -477,7 +481,8 @@ export async function POST(request: NextRequest) {
   if (elapsed < 2500 || elapsed > 24 * 60 * 60 * 1000 || suspiciousName(lead.firstName) || (lead.lastName && suspiciousName(lead.lastName))) {
     return NextResponse.json({ error: "Submission rejected" }, { status: 422 });
   }
-  if (lead.propertyState && !LICENSED_STATES.has(lead.propertyState)) {
+  const { active: activeStates } = licenseStateLists((await readSettings()).license_states);
+  if (lead.propertyState && !activeStates.includes(lead.propertyState)) {
     return NextResponse.json({ error: "Unsupported property state" }, { status: 422 });
   }
   if (lead.source !== "employment" && !lead.smsConsent) {
@@ -536,10 +541,11 @@ export async function POST(request: NextRequest) {
     utm_campaign: lead.utmCampaign ?? null,
     utm_content:  lead.utmContent  ?? null,
     utm_term:     lead.utmTerm     ?? null,
-    session_id:   lead.sessionId   ?? null,
-    entry_page:   lead.entryPage   ?? null,
-    referrer:     lead.referrer    ?? null,
-    device:       lead.device      ?? null,
+    session_id:          lead.sessionId        ?? null,
+    entry_page:          lead.entryPage        ?? null,
+    referrer:            lead.referrer         ?? null,
+    device:              lead.device           ?? null,
+    co_branded_page_id:  lead.coBrandedPageId  ?? null,
   }).select("id").single();
 
   logAudit("lead.created", {
@@ -566,17 +572,39 @@ export async function POST(request: NextRequest) {
     }).catch(() => {});
   }
 
-  // ── 3. Resolve LO notify email ────────────────────────────────────────────
+  // ── 3. Resolve LO profile ─────────────────────────────────────────────────
   let loNotifyEmail: string | null = null;
   let loNmls: string | null = null;
   let loPhone: string | null = null;
   let loCalendarUrl: string | null = null;
+  let loTitle: string | null = null;
+  let loEmail: string | null = null;
   if (lead.loSlug) {
     const loProfile = await getProfileBySlug(lead.loSlug);
     loNotifyEmail = loProfile?.notify_email ?? loProfile?.email ?? null;
+    loEmail       = loProfile?.email ?? null;
     loNmls        = loProfile?.nmls ?? null;
     loPhone       = loProfile?.phone ?? null;
     loCalendarUrl = loProfile?.calendar_url ?? null;
+    loTitle       = loProfile?.title ?? null;
+  }
+
+  // ── 3b. Resolve co-branded page data (if applicable) ─────────────────────
+  let coBrandedPageData: {
+    realtor_name: string; realtor_company: string;
+    realtor_phone: string | null; realtor_email: string | null;
+    application_url: string | null; calendar_url: string | null;
+  } | null = null;
+
+  const isCoBrand = (lead.source === "co-brand" || lead.source === "co-branded") && lead.coBrandedPageId;
+  if (isCoBrand) {
+    const sb = createServiceClient();
+    const { data: cbRow } = await sb
+      .from("co_branded_pages")
+      .select("realtor_name, realtor_company, realtor_phone, realtor_email, application_url, calendar_url")
+      .eq("id", lead.coBrandedPageId!)
+      .maybeSingle();
+    if (cbRow) coBrandedPageData = cbRow;
   }
 
   // ── 4. Send emails ────────────────────────────────────────────────────────
@@ -597,24 +625,64 @@ export async function POST(request: NextRequest) {
     const dscrNotes = isDscr ? parseDscrNotes(lead.notes) : {};
     const loSendEmail = isDscr && lead.loName && loNotifyEmail;
 
-    const emailJobs: Promise<unknown>[] = [
-      // Confirmation email to the lead
-      resend.emails.send(isDscr && loSendEmail ? {
-        // DSCR: personalised outreach from Darius, CC Darius
-        from:    `${lead.loName} at HCMG <noreply@hcmgloans.com>`,
-        to:      lead.email,
-        cc:      loNotifyEmail!,
-        reply_to: loNotifyEmail!,
-        subject: `Your DSCR Loan Inquiry`,
-        html: buildDscrLeadEmail({
-          firstName:   lead.firstName,
-          loName:      lead.loName!,
-          loPhone:     loPhone,
-          loNmls:      loNmls,
-          calendarUrl: loCalendarUrl,
-          dscrNotes,
-        }),
-      } : {
+    // ── Build the buyer-facing confirmation ──────────────────────────────────
+    const resendClient = resend;
+    function buildConfirmationSend() {
+      // Co-branded: natural-language email from the LO, reply-to LO, CC realtor
+      if (isCoBrand && coBrandedPageData && lead.loName) {
+        const realtorFirst = coBrandedPageData.realtor_name.split(" ")[0];
+        const ccList: string[] = [];
+        if (coBrandedPageData.realtor_email) ccList.push(coBrandedPageData.realtor_email);
+
+        const fromAddr = loEmail?.endsWith("@hcmgloans.com")
+          ? `${lead.loName} <${loEmail}>`
+          : `${lead.loName} <no-reply@hcmgloans.com>`;
+        return resendClient.emails.send({
+          from:      fromAddr,
+          to:        lead.email,
+          ...(loEmail && !loEmail.endsWith("@hcmgloans.com") ? { reply_to: loEmail } : {}),
+          ...(ccList.length ? { cc: ccList } : {}),
+          subject:   `Hi ${lead.firstName} — your initial estimate is ready`,
+          html: buildCoBrandedLeadConfirmationEmail({
+            firstName:           lead.firstName,
+            loName:              lead.loName,
+            loPhone,
+            loNmls,
+            loTitle,
+            realtorFirstName:    realtorFirst,
+            realtorName:         coBrandedPageData.realtor_name,
+            realtorCompany:      coBrandedPageData.realtor_company,
+            realtorPhone:        coBrandedPageData.realtor_phone,
+            buyingPowerLow:      lead.estimatedBuyingPowerLow,
+            buyingPowerHigh:     lead.estimatedBuyingPowerHigh,
+            recommendedLoanType: lead.recommendedLoanType,
+            applicationUrl:      coBrandedPageData.application_url,
+            calendarUrl:         coBrandedPageData.calendar_url ?? loCalendarUrl,
+          }),
+        });
+      }
+
+      // DSCR: personalised outreach from LO
+      if (isDscr && loSendEmail) {
+        return resendClient.emails.send({
+          from:      `${lead.loName} at HCMG <noreply@hcmgloans.com>`,
+          to:        lead.email,
+          cc:        loNotifyEmail!,
+          reply_to:  loNotifyEmail!,
+          subject:   `Your DSCR Loan Inquiry`,
+          html: buildDscrLeadEmail({
+            firstName:   lead.firstName,
+            loName:      lead.loName!,
+            loPhone,
+            loNmls,
+            calendarUrl: loCalendarUrl,
+            dscrNotes,
+          }),
+        });
+      }
+
+      // Standard confirmation
+      return resendClient.emails.send({
         from:    "HCMG <noreply@hcmgloans.com>",
         to:      lead.email,
         subject: lead.loName
@@ -623,7 +691,7 @@ export async function POST(request: NextRequest) {
         html: buildLeadConfirmationEmail({
           firstName:           lead.firstName,
           loName:              lead.loName,
-          loNmls:              loNmls,
+          loNmls,
           goal:                goalLabel(lead.goal),
           priceRange:          lead.priceRange,
           creditRange:         creditLabel(lead.creditRange),
@@ -633,8 +701,10 @@ export async function POST(request: NextRequest) {
           recommendedLoanType: lead.recommendedLoanType,
           siteUrl:             SITE_URL,
         }),
-      }),
-    ];
+      });
+    }
+
+    const emailJobs: Promise<unknown>[] = [buildConfirmationSend()];
 
     if (isDscr && loNotifyEmail && lead.loName) {
       // DSCR: send Darius a dedicated internal alert with all lead details
@@ -658,35 +728,97 @@ export async function POST(request: NextRequest) {
     }
 
     if (lead.loSlug && loNotifyEmail && lead.loName && !isDscr) {
-      // Standard LO notification for non-DSCR leads
-      emailJobs.push(
-        resend.emails.send({
-          from:    "HCMG Leads <noreply@hcmgloans.com>",
-          to:      loNotifyEmail,
-          subject: `🔔 New lead: ${fullName || lead.email}${lead.funnelType ? ` via ${lead.funnelType}` : ""}`,
-          html: buildLoNotificationEmail({
-            loFirstName:         lead.loName.split(" ")[0],
-            leadFullName:        fullName,
-            email:               lead.email,
-            phone:               lead.phone,
-            propertyState:       lead.propertyState,
-            goal:                goalLabel(lead.goal),
-            priceRange:          lead.priceRange,
-            creditRange:         creditLabel(lead.creditRange),
-            incomeRange:         lead.incomeRange,
-            utmSource:           lead.utmSource,
-            utmMedium:           lead.utmMedium,
-            utmCampaign:         lead.utmCampaign,
-            monthlyPayment:      lead.estimatedMonthlyPayment,
-            buyingPowerLow:      lead.estimatedBuyingPowerLow,
-            buyingPowerHigh:     lead.estimatedBuyingPowerHigh,
-            recommendedLoanType: lead.recommendedLoanType,
-            entryPage:           lead.entryPage,
-            device:              deviceLabel(lead.device),
-            portalUrl:           `${SITE_URL}/portal`,
-          }),
-        })
-      );
+      // Co-branded: use the dedicated co-branded LO alert template
+      if (isCoBrand && coBrandedPageData) {
+        emailJobs.push(
+          resend.emails.send({
+            from:    "HCMG Leads <noreply@hcmgloans.com>",
+            to:      loNotifyEmail,
+            subject: `🔔 New co-branded lead: ${fullName} via ${coBrandedPageData.realtor_name}`,
+            html: buildCoBrandedLoAlertEmail({
+              loFirstName:         lead.loName.split(" ")[0],
+              loName:              lead.loName,
+              leadFullName:        fullName,
+              leadFirstName:       lead.firstName,
+              email:               lead.email,
+              phone:               lead.phone,
+              submittedAt:         new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }),
+              realtorName:         coBrandedPageData.realtor_name,
+              realtorCompany:      coBrandedPageData.realtor_company,
+              propertyState:       lead.propertyState,
+              goal:                goalLabel(lead.goal),
+              priceRange:          lead.priceRange,
+              creditRange:         creditLabel(lead.creditRange),
+              incomeRange:         lead.incomeRange,
+              buyingPowerLow:      lead.estimatedBuyingPowerLow,
+              buyingPowerHigh:     lead.estimatedBuyingPowerHigh,
+              monthlyPayment:      lead.estimatedMonthlyPayment,
+              recommendedLoanType: lead.recommendedLoanType,
+              entryPage:           lead.entryPage,
+              device:              deviceLabel(lead.device),
+              utmSource:           lead.utmSource,
+              utmCampaign:         lead.utmCampaign,
+              portalUrl:           `${SITE_URL}/portal`,
+            }),
+          })
+        );
+
+        // Realtor notification — sent from the LO to the realtor when realtor_email is set
+        if (coBrandedPageData.realtor_email && lead.loName) {
+          const realtorFirst = coBrandedPageData.realtor_name.split(" ")[0];
+          const fromAddr = loEmail?.endsWith("@hcmgloans.com")
+            ? `${lead.loName} <${loEmail}>`
+            : `${lead.loName} <no-reply@hcmgloans.com>`;
+          emailJobs.push(
+            resend.emails.send({
+              from:     fromAddr,
+              to:       coBrandedPageData.realtor_email,
+              ...(loEmail && !loEmail.endsWith("@hcmgloans.com") ? { reply_to: loEmail } : {}),
+              subject:  `${fullName} completed your homebuying questionnaire`,
+              html: buildCoBrandedRealtorAlertEmail({
+                realtorFirstName: realtorFirst,
+                leadFullName:     fullName,
+                goal:             goalLabel(lead.goal),
+                propertyState:    lead.propertyState,
+                loName:           lead.loName,
+                loTitle,
+                loNmls,
+                loPhone,
+              }),
+            })
+          );
+        }
+      } else {
+        // Standard LO notification for non-co-branded, non-DSCR leads
+        emailJobs.push(
+          resend.emails.send({
+            from:    "HCMG Leads <noreply@hcmgloans.com>",
+            to:      loNotifyEmail,
+            subject: `🔔 New lead: ${fullName || lead.email}${lead.funnelType ? ` via ${lead.funnelType}` : ""}`,
+            html: buildLoNotificationEmail({
+              loFirstName:         lead.loName.split(" ")[0],
+              leadFullName:        fullName,
+              email:               lead.email,
+              phone:               lead.phone,
+              propertyState:       lead.propertyState,
+              goal:                goalLabel(lead.goal),
+              priceRange:          lead.priceRange,
+              creditRange:         creditLabel(lead.creditRange),
+              incomeRange:         lead.incomeRange,
+              utmSource:           lead.utmSource,
+              utmMedium:           lead.utmMedium,
+              utmCampaign:         lead.utmCampaign,
+              monthlyPayment:      lead.estimatedMonthlyPayment,
+              buyingPowerLow:      lead.estimatedBuyingPowerLow,
+              buyingPowerHigh:     lead.estimatedBuyingPowerHigh,
+              recommendedLoanType: lead.recommendedLoanType,
+              entryPage:           lead.entryPage,
+              device:              deviceLabel(lead.device),
+              portalUrl:           `${SITE_URL}/portal`,
+            }),
+          })
+        );
+      }
     } else if (!lead.loSlug) {
       // Unassigned — route to correct admin inbox
       const settings = await readSettings();

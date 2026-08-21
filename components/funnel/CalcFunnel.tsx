@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useLicensedStates } from "@/lib/use-licensed-states";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/calculators";
@@ -665,19 +666,6 @@ function TextField({
 const SMS_CONSENT_TEXT =
   "By submitting this form, I agree to be contacted by Harris Capital Mortgage Group, LLC (NMLS# 1918223) regarding my mortgage inquiry. I consent to receive calls, texts, and emails. Message and data rates may apply. Reply STOP to opt out of texts at any time.";
 
-const LICENSED_STATES = [
-  { code: "FL", label: "Florida (FL)" },
-  { code: "TX", label: "Texas (TX)" },
-  { code: "GA", label: "Georgia (GA)" },
-  { code: "NV", label: "Nevada (NV)" },
-  { code: "CO", label: "Colorado (CO)" },
-  { code: "VA", label: "Virginia (VA)" },
-  { code: "DC", label: "Washington DC (DC)" },
-  { code: "MD", label: "Maryland (MD)" },
-  { code: "CA", label: "California (CA)" },
-  { code: "MS", label: "Mississippi (MS)" },
-];
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 type Stage = "calc" | "form" | "success";
@@ -700,6 +688,7 @@ export function CalcFunnel({
   seoSlug?: string;
 }) {
   const def = CALC_DEFS[funnelType];
+  const licensedStates = useLicensedStates();
 
   // Per-field input state
   const initialInputs = Object.fromEntries((def?.fields ?? []).map((f) => [f.key, ""]));
@@ -968,7 +957,7 @@ export function CalcFunnel({
                     className={`input-base w-full ${errors.propertyState ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
                   >
                     <option value="">Select a state…</option>
-                    {LICENSED_STATES.map((s) => (
+                    {licensedStates.map((s) => (
                       <option key={s.code} value={s.code}>{s.label}</option>
                     ))}
                   </select>

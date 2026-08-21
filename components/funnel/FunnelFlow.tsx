@@ -11,6 +11,7 @@ import { getStoredUtms } from "@/lib/utm";
 import { getSessionMeta, trackFunnelStep } from "@/lib/tracker";
 import { identifyLead, getPostHog } from "@/lib/posthog";
 import type { FunnelConfig } from "@/lib/funnel-config";
+import { useLicensedStates } from "@/lib/use-licensed-states";
 
 // ── Types ──────────────────────────────────────────────────
 type Goal = "buy" | "refinance" | "compare";
@@ -18,19 +19,6 @@ type PriceBand = "under-250" | "250-400" | "400-600" | "600-plus";
 type CreditBand = "760-plus" | "700-759" | "640-699" | "below-640";
 type IncomeBand = "under-75" | "75-125" | "125-200" | "200-plus";
 type Step = 1 | 2 | 3 | 4 | 5 | 6 | "success";
-
-const LICENSED_STATES = [
-  { code: "FL", label: "Florida (FL)" },
-  { code: "TX", label: "Texas (TX)" },
-  { code: "GA", label: "Georgia (GA)" },
-  { code: "NV", label: "Nevada (NV)" },
-  { code: "CO", label: "Colorado (CO)" },
-  { code: "VA", label: "Virginia (VA)" },
-  { code: "DC", label: "Washington DC (DC)" },
-  { code: "MD", label: "Maryland (MD)" },
-  { code: "CA", label: "California (CA)" },
-  { code: "MS", label: "Mississippi (MS)" },
-];
 
 interface FunnelState {
   goal: Goal | null;
@@ -110,6 +98,9 @@ export function FunnelFlow({
   funnelSubhead,
   funnelBadge,
   funnelConfig,
+  coBrandedPageId,
+  applicationUrl,
+  calendarUrl,
 }: {
   lo?: FunnelLoContext;
   source?: string;
@@ -119,9 +110,13 @@ export function FunnelFlow({
   funnelSubhead?: string;
   funnelBadge?: string;
   funnelConfig?: FunnelConfig;
+  coBrandedPageId?: string;
+  applicationUrl?: string;
+  calendarUrl?: string;
 } = {}) {
   const cfg = funnelConfig ?? {};
   const activeSteps: Step[] = (cfg.steps ?? [1, 2, 3, 4, 5, 6]) as Step[];
+  const licensedStates = useLicensedStates();
 
   // Pre-seed goal from config
   const [state, setState] = useState<FunnelState>({
@@ -135,6 +130,22 @@ export function FunnelFlow({
     if (cfg.goalPreset) setState((s) => ({ ...s, goal: cfg.goalPreset! }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cfg.goalPreset]);
+
+  // Calendly booking_complete tracking — fires when user completes a Calendly booking
+  useEffect(() => {
+    if (!coBrandedPageId || !calendarUrl) return;
+    function onMessage(e: MessageEvent) {
+      if (e.data?.event === "calendly.event_scheduled") {
+        fetch(`/api/co-branded/${coBrandedPageId}/track`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event: "booking_complete" }),
+        }).catch(() => {});
+      }
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [coBrandedPageId, calendarUrl]);
 
   const [step, setStep] = useState<Step>(activeSteps[0] ?? 1);
   const [dir, setDir] = useState<1 | -1>(1);
@@ -220,6 +231,7 @@ export function FunnelFlow({
       loSlug: lo?.slug,
       loName: lo?.name,
       loNmls: lo?.nmls,
+      coBrandedPageId,
       ...utmsToPayload(getStoredUtms()),
       sessionId: meta.sessionId,
       entryPage: meta.entryPage,
@@ -536,7 +548,7 @@ export function FunnelFlow({
                     className={`input-base w-full ${errors.propertyState ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
                   >
                     <option value="">Select a state…</option>
-                    {LICENSED_STATES.map((s) => (
+                    {licensedStates.map((s) => (
                       <option key={s.code} value={s.code}>{s.label}</option>
                     ))}
                   </select>
@@ -588,34 +600,102 @@ export function FunnelFlow({
                 ✓
               </motion.div>
 
-              <h2 className="mb-3 text-2xl font-extrabold text-ink">
-                You&apos;re all set{state.firstName ? `, ${state.firstName}` : ""}!
+              <h2 className="mb-2 text-2xl font-extrabold text-ink">
+                You&apos;re All Set{state.firstName ? `, ${state.firstName}` : ""}!
               </h2>
-              <p className="mb-8 text-base leading-7 text-muted">
-                {lo
-                  ? `${lo.name} will reach out within one business day to discuss your options and walk you through next steps.`
-                  : "A licensed loan officer from Harris Capital Mortgage Group will reach out within one business day to discuss your options and walk you through next steps."}
+              <p className="mb-2 text-base leading-7 text-muted">
+                Your initial estimate is on the way.
               </p>
 
-              <div className="mb-8 space-y-3 text-left">
-                {[
-                  { icon: "📧", title: "Check your email",  body: "A confirmation with your estimate summary is on its way." },
-                  { icon: "📞", title: "Expect a call",     body: "Within 1 business day from our team in your market." },
-                  { icon: "🤝", title: "No pressure",       body: "We're here to help, not to push. You're in control." },
-                ].map((c) => (
-                  <div key={c.title} className="flex items-start gap-4 rounded-2xl border border-line bg-white px-5 py-4">
-                    <span className="text-xl">{c.icon}</span>
-                    <div>
-                      <div className="font-semibold text-ink">{c.title}</div>
-                      <div className="text-sm text-muted">{c.body}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {/* ── Co-branded next-step cards ── */}
+              {(applicationUrl || calendarUrl) ? (
+                <>
+                  <p className="mb-6 text-sm font-semibold text-muted">
+                    Ready to move forward? Choose the next step that works best for you.
+                  </p>
+                  <div className="mb-6 space-y-3 text-left">
 
-              <Link href="/" className="secondary-button inline-flex">
-                Return to home
-              </Link>
+                    {/* Application CTA */}
+                    {applicationUrl && (
+                      <div className="rounded-2xl border border-line bg-white px-5 py-5 shadow-soft">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-accent mb-1">Ready to Start Your Pre-Approval?</p>
+                        <p className="text-sm text-muted mb-4">
+                          Complete the full mortgage application and credit check so {lo ? lo.name.split(" ")[0] : "your loan officer"} can review your information for pre-approval.
+                        </p>
+                        <a
+                          href={applicationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => coBrandedPageId && fetch(`/api/co-branded/${coBrandedPageId}/track`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "app_click" }) }).catch(() => {})}
+                          className="inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                          style={{ background: "var(--ok-gradient)" }}
+                        >
+                          Continue to Full Application →
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Calendar CTA */}
+                    {calendarUrl && (
+                      <div className="rounded-2xl border border-line bg-white px-5 py-5 shadow-soft">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-1" style={{ color: "#7c5cd8" }}>Have Questions First?</p>
+                        <p className="text-sm text-muted mb-4">
+                          Choose a convenient time to speak directly with {lo ? lo.name.split(" ")[0] : "your loan officer"} about your estimate, options, and next steps.
+                        </p>
+                        <a
+                          href={calendarUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => coBrandedPageId && fetch(`/api/co-branded/${coBrandedPageId}/track`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "book_call_click" }) }).catch(() => {})}
+                          className="inline-flex w-full items-center justify-center rounded-xl border-2 px-5 py-3 text-sm font-bold transition-all hover:bg-purple-50"
+                          style={{ borderColor: "#7c5cd8", color: "#7c5cd8" }}
+                        >
+                          Book a Call With {lo ? lo.name.split(" ")[0] : "Your Loan Officer"} →
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Prefer to wait */}
+                    <div className="rounded-2xl border border-line bg-sand px-5 py-4">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted/70 mb-1">Prefer to Wait?</p>
+                      <p className="text-sm text-muted">
+                        No problem. {lo ? lo.name.split(" ")[0] : "Your loan officer"} will still contact you within one business day.
+                      </p>
+                    </div>
+
+                  </div>
+                  <p className="text-[11px] leading-5 text-muted/60">
+                    <strong className="font-semibold text-muted/80">Initial estimate only.</strong> A completed application and credit check are required for pre-approval. Submission does not guarantee loan approval.
+                  </p>
+                </>
+              ) : (
+                /* ── Standard (non-co-branded) success screen — unchanged ── */
+                <>
+                  <p className="mb-8 text-base leading-7 text-muted">
+                    {lo
+                      ? `${lo.name} will reach out within one business day to discuss your options and walk you through next steps.`
+                      : "A licensed loan officer from Harris Capital Mortgage Group will reach out within one business day to discuss your options and walk you through next steps."}
+                  </p>
+                  <div className="mb-8 space-y-3 text-left">
+                    {[
+                      { icon: "📧", title: "Check your email",  body: "A confirmation with your estimate summary is on its way." },
+                      { icon: "📞", title: "Expect a call",     body: "Within 1 business day from our team in your market." },
+                      { icon: "🤝", title: "No pressure",       body: "We're here to help, not to push. You're in control." },
+                    ].map((c) => (
+                      <div key={c.title} className="flex items-start gap-4 rounded-2xl border border-line bg-white px-5 py-4">
+                        <span className="text-xl">{c.icon}</span>
+                        <div>
+                          <div className="font-semibold text-ink">{c.title}</div>
+                          <div className="text-sm text-muted">{c.body}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Link href="/" className="secondary-button inline-flex">
+                    Return to home
+                  </Link>
+                </>
+              )}
             </div>
           )}
 

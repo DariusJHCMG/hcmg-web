@@ -726,3 +726,577 @@ export function buildDscrLoAlertEmail({
     ${emailFooter()}
   `);
 }
+
+// ── 9. Co-branded lead confirmation (to buyer — natural language, from LO) ────
+
+export function buildCoBrandedLeadConfirmationEmail({
+  firstName,
+  loName, loPhone, loNmls, loTitle,
+  realtorFirstName, realtorName, realtorCompany, realtorPhone,
+  buyingPowerLow, buyingPowerHigh, recommendedLoanType,
+  applicationUrl, calendarUrl,
+}: {
+  firstName: string;
+  loName: string;
+  loPhone: string | null;
+  loNmls: string | null;
+  loTitle: string | null;
+  realtorFirstName: string;
+  realtorName: string;
+  realtorCompany: string;
+  realtorPhone: string | null;
+  buyingPowerLow?: number | null;
+  buyingPowerHigh?: number | null;
+  recommendedLoanType?: string | null;
+  applicationUrl: string | null;
+  calendarUrl: string | null;
+}): string {
+  const fmt = (n?: number | null) => n ? `$${n.toLocaleString()}` : null;
+  const loFirst = loName.split(" ")[0];
+
+  const estimateRange = buyingPowerLow && buyingPowerHigh
+    ? `${fmt(buyingPowerLow)} – ${fmt(buyingPowerHigh)}`
+    : null;
+
+  // ── Shared text styles ──────────────────────────────────────
+  const para  = `margin:0 0 18px;font-size:15px;line-height:1.8;color:#374151;`;
+  const label = `margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:2px;color:#9ca3af;text-transform:uppercase;`;
+  const divider = `<tr><td style="padding:4px 0 20px;"><div style="height:1px;background:#f3f4f6;"></div></td></tr>`;
+
+  // ── Estimate block ──────────────────────────────────────────
+  const estimateBlock = (estimateRange || recommendedLoanType) ? `
+    <tr><td style="padding:0 0 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+        <tr><td style="padding:8px 20px;background:#f9fafb;">
+          <p style="${label}">Your Initial Estimate</p>
+        </td></tr>
+        <tr><td style="padding:12px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            ${estimateRange    ? `<tr><td style="font-size:13px;color:#6b7280;padding:5px 0;width:180px;">Estimated home price range</td><td style="font-size:13px;font-weight:600;color:#111827;padding:5px 0;">${estimateRange}</td></tr>` : ""}
+            ${recommendedLoanType ? `<tr><td style="font-size:13px;color:#6b7280;padding:5px 0;">Potential program to discuss</td><td style="font-size:13px;font-weight:600;color:#111827;padding:5px 0;">${recommendedLoanType}</td></tr>` : ""}
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>` : "";
+
+  // ── Application CTA ─────────────────────────────────────────
+  const appBlock = applicationUrl ? `
+    <tr><td style="padding:0 0 16px;">
+      <p style="${label}">Ready to Start Your Pre-Approval?</p>
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:#6b7280;">
+        Complete the full mortgage application and credit check so I can begin reviewing your information for pre-approval.
+      </p>
+      <a href="${applicationUrl}"
+        style="display:inline-block;background:#F37021;color:#ffffff;font-size:14px;font-weight:700;
+               padding:12px 24px;border-radius:8px;text-decoration:none;">
+        Continue to Full Application →
+      </a>
+    </td></tr>
+    ${divider}` : "";
+
+  // ── Calendar CTA ─────────────────────────────────────────────
+  const calBlock = calendarUrl ? `
+    <tr><td style="padding:0 0 16px;">
+      <p style="${label}">Want to Talk First?</p>
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:#6b7280;">
+        Choose a convenient time to speak with me about your estimate and financing options.
+      </p>
+      <a href="${calendarUrl}"
+        style="display:inline-block;background:#ffffff;border:2px solid #7c5cd8;color:#7c5cd8;font-size:14px;font-weight:700;
+               padding:12px 24px;border-radius:8px;text-decoration:none;">
+        Book a Call With Me →
+      </a>
+    </td></tr>
+    ${divider}` : "";
+
+  // ── Realtor contact ──────────────────────────────────────────
+  const realtorBlock = realtorPhone ? `
+    <tr><td style="padding:0 0 16px;">
+      <p style="${label}">Need Help With Your Home Search?</p>
+      <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:#6b7280;">
+        ${realtorFirstName} is available to help you find properties and navigate the homebuying process.
+      </p>
+      <a href="tel:${realtorPhone.replace(/[^0-9+]/g, "")}"
+        style="display:inline-block;background:#ffffff;border:1px solid #e5e7eb;color:#374151;font-size:14px;font-weight:600;
+               padding:12px 24px;border-radius:8px;text-decoration:none;">
+        Contact ${realtorFirstName} →
+      </a>
+    </td></tr>
+    ${divider}` : "";
+
+  // ── LO signature ─────────────────────────────────────────────
+  const signatureBlock = `
+    <tr><td style="padding:0 0 24px;">
+      <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#111827;">I look forward to speaking with you soon.</p>
+      <p style="margin:16px 0 2px;font-size:14px;font-weight:700;color:#111827;">${loName}</p>
+      ${loTitle ? `<p style="margin:0 0 2px;font-size:13px;color:#6b7280;">${loTitle}</p>` : ""}
+      <p style="margin:0 0 2px;font-size:13px;color:#6b7280;">Harris Capital Mortgage Group</p>
+      ${loNmls ? `<p style="margin:0 0 2px;font-size:13px;color:#6b7280;">NMLS #${loNmls}</p>` : ""}
+      ${loPhone ? `<p style="margin:0;font-size:13px;color:#6b7280;">${loPhone}</p>` : ""}
+    </td></tr>`;
+
+  // ── Realtor partner block ─────────────────────────────────────
+  const realtorPartnerBlock = `
+    <tr><td style="padding:0 0 24px;">
+      <div style="border-top:1px solid #f3f4f6;padding-top:16px;">
+        <p style="margin:0 0 6px;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;">Your Realtor Partner</p>
+        <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#111827;">${realtorName}</p>
+        <p style="margin:0 0 2px;font-size:13px;color:#6b7280;">${realtorCompany}</p>
+        ${realtorPhone ? `<p style="margin:0;font-size:13px;color:#6b7280;">${realtorPhone}</p>` : ""}
+      </div>
+    </td></tr>`;
+
+  // ── Legal disclaimer ─────────────────────────────────────────
+  const disclaimer = `
+    <tr><td style="padding:0 0 8px;">
+      <p style="margin:0;font-size:11px;line-height:1.7;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:16px;">
+        <strong>Initial estimate only.</strong> This estimate is based solely on the information you provided and has not been verified.
+        It is not a commitment to lend, loan approval, or pre-approval. A completed application, credit check, supporting
+        documentation, and underwriting review are required.
+      </p>
+    </td></tr>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="color-scheme" content="light"/>
+</head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="max-width:560px;background:#ffffff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
+
+        <!-- Thin accent bar -->
+        <tr><td style="height:4px;background:linear-gradient(90deg,#F37021,#FF9847);"></td></tr>
+
+        <!-- Body -->
+        <tr><td style="padding:32px 36px 8px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+
+            <!-- Greeting -->
+            <tr><td style="padding:0 0 18px;">
+              <p style="${para}">Hi ${firstName},</p>
+              <p style="${para}">
+                Thank you for sharing your homebuying goals.
+              </p>
+              <p style="${para}">
+                ${realtorFirstName} and I are working together to help make your homebuying journey easier.
+                I'll help you understand your financing options and work toward pre-approval, while
+                ${realtorFirstName} can help with properties, showings, neighborhoods, and your home search.
+              </p>
+              <p style="${para}">
+                Based on the information you provided, here is your initial estimate.
+              </p>
+            </td></tr>
+
+            <!-- Estimate -->
+            ${estimateBlock}
+
+            <tr><td style="padding:0 0 18px;">
+              <p style="${para}">
+                I'll contact you within one business day to review your information, answer your questions, and explain your next steps.
+              </p>
+            </td></tr>
+
+            ${divider}
+
+            <!-- CTAs -->
+            ${appBlock}
+            ${calBlock}
+            ${realtorBlock}
+
+            <!-- Signature -->
+            ${signatureBlock}
+
+            <!-- Realtor partner -->
+            ${realtorPartnerBlock}
+
+            <!-- Disclaimer -->
+            ${disclaimer}
+
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+// ── 10. Co-branded LO lead alert (internal — to loan officer) ────────────────
+
+export function buildCoBrandedLoAlertEmail({
+  loFirstName, loName,
+  leadFullName, leadFirstName, email, phone, submittedAt,
+  realtorName, realtorCompany,
+  propertyState, goal, priceRange, creditRange, incomeRange,
+  buyingPowerLow, buyingPowerHigh, monthlyPayment, recommendedLoanType,
+  entryPage, device, utmSource, utmCampaign,
+  portalUrl,
+}: {
+  loFirstName: string;
+  loName: string;
+  leadFullName: string;
+  leadFirstName: string;
+  email: string;
+  phone: string;
+  submittedAt: string;
+  realtorName: string;
+  realtorCompany: string;
+  propertyState?: string | null;
+  goal?: string | null;
+  priceRange?: string | null;
+  creditRange?: string | null;
+  incomeRange?: string | null;
+  buyingPowerLow?: number | null;
+  buyingPowerHigh?: number | null;
+  monthlyPayment?: number | null;
+  recommendedLoanType?: string | null;
+  entryPage?: string | null;
+  device?: string | null;
+  utmSource?: string | null;
+  utmCampaign?: string | null;
+  portalUrl: string;
+}): string {
+  const fmt = (n?: number | null) => n ? `$${n.toLocaleString()}` : null;
+  const phoneDigits = phone.replace(/[^0-9+]/g, "");
+
+  const estimateRange = buyingPowerLow && buyingPowerHigh
+    ? `${fmt(buyingPowerLow)} – ${fmt(buyingPowerHigh)}`
+    : null;
+
+  const monthlyStr = monthlyPayment
+    ? `${fmt(monthlyPayment)}/mo (est. principal, interest, taxes &amp; insurance)`
+    : null;
+
+  // ── Shared styles ───────────────────────────────────────────
+  const sectionLabel = `font-size:10px;font-weight:700;letter-spacing:2px;color:#94a3b8;text-transform:uppercase;`;
+  const tdLabel      = `padding:9px 0;border-bottom:1px solid #f0f4f8;color:#6b7280;font-size:13px;width:200px;vertical-align:top;`;
+  const tdValue      = `padding:9px 0;border-bottom:1px solid #f0f4f8;font-weight:600;color:#111827;font-size:13px;`;
+
+  function row(label: string, value: string | null | undefined, last = false): string {
+    if (!value) return "";
+    const border = last ? "border-bottom:none;" : "";
+    return `<tr>
+      <td style="${tdLabel}${border}">${label}</td>
+      <td style="${tdValue}${border}">${value}</td>
+    </tr>`;
+  }
+
+  function section(title: string, rows: string): string {
+    if (!rows.trim()) return "";
+    return `
+    <tr><td style="padding:0 0 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+        <tr><td style="padding:8px 20px;background:#142850;">
+          <p style="margin:0;${sectionLabel}">${title}</p>
+        </td></tr>
+        <tr><td style="padding:4px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0">${rows}</table>
+        </td></tr>
+      </table>
+    </td></tr>`;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="color-scheme" content="light"/>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="max-width:600px;background:#ffffff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+
+        <!-- Header -->
+        <tr><td style="background:#142850;padding:28px 32px 24px;">
+          <div style="margin-bottom:16px;">${LOGO_SVG}</div>
+          <div style="display:inline-block;background:rgba(243,112,33,0.2);border:1px solid rgba(243,112,33,0.5);
+                      border-radius:6px;padding:3px 10px;margin-bottom:10px;">
+            <span style="font-size:10px;font-weight:700;letter-spacing:2px;color:#F37021;text-transform:uppercase;">
+              New Co-Branded Buyer Lead
+            </span>
+          </div>
+          <p style="margin:0;font-size:22px;font-weight:900;color:#ffffff;line-height:1.2;">
+            Hi ${loFirstName},
+          </p>
+          <p style="margin:6px 0 0;font-size:14px;color:#94a3b8;line-height:1.5;">
+            <strong style="color:#ffffff;">${leadFullName}</strong> just completed your homebuying questionnaire with
+            <strong style="color:#ffffff;">${realtorName}</strong>.
+          </p>
+          <p style="margin:6px 0 0;font-size:13px;color:#F37021;font-weight:600;">
+            Contact this lead as soon as possible while the inquiry is fresh.
+          </p>
+        </td></tr>
+
+        <!-- Quick-action buttons -->
+        <tr><td style="padding:20px 32px 4px;">
+          <table cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding-right:10px;">
+                <a href="tel:${phoneDigits}"
+                  style="display:inline-block;background:#142850;color:#ffffff;font-size:13px;font-weight:700;
+                         padding:10px 20px;border-radius:8px;text-decoration:none;">
+                  📞 Call ${leadFirstName}
+                </a>
+              </td>
+              <td style="padding-right:10px;">
+                <a href="sms:${phoneDigits}"
+                  style="display:inline-block;background:#ffffff;border:1px solid #e2e8f0;color:#142850;font-size:13px;font-weight:700;
+                         padding:10px 20px;border-radius:8px;text-decoration:none;">
+                  💬 Text ${leadFirstName}
+                </a>
+              </td>
+              <td>
+                <a href="mailto:${email}"
+                  style="display:inline-block;background:#ffffff;border:1px solid #e2e8f0;color:#142850;font-size:13px;font-weight:700;
+                         padding:10px 20px;border-radius:8px;text-decoration:none;">
+                  ✉️ Email ${leadFirstName}
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <!-- Sections -->
+        <tr><td style="padding:20px 32px 0;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+
+            ${section("Contact Information",
+              row("Name", leadFullName) +
+              row("Phone", `<a href="tel:${phoneDigits}" style="color:#F37021;">${phone}</a>`) +
+              row("Email", `<a href="mailto:${email}" style="color:#F37021;">${email}</a>`) +
+              row("Submitted", submittedAt) +
+              row("Co-brand partner", `${realtorName}, ${realtorCompany}`, true)
+            )}
+
+            ${section("Lead Snapshot",
+              row("Goal", goal) +
+              row("Property state", propertyState) +
+              row("Target home price", priceRange) +
+              row("Credit range provided", creditRange) +
+              row("Income range provided", incomeRange, true)
+            )}
+
+            ${(estimateRange || monthlyStr || recommendedLoanType) ? section("Initial System Estimate",
+              row("Estimated home price range", estimateRange) +
+              row("Estimated monthly payment", monthlyStr) +
+              row("Potential program to review", recommendedLoanType, true)
+            ) : ""}
+
+            <!-- Estimate disclaimer -->
+            ${(estimateRange || monthlyStr) ? `
+            <tr><td style="padding:0 0 20px;">
+              <p style="margin:0;font-size:11px;line-height:1.7;color:#9ca3af;background:#f8fafc;
+                         border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;">
+                These estimates are based on self-reported information and have not been verified through
+                an application, credit report, or documentation.
+              </p>
+            </td></tr>` : ""}
+
+            <!-- Suggested opening -->
+            <tr><td style="padding:0 0 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+                <tr><td style="padding:8px 20px;background:#142850;">
+                  <p style="margin:0;${sectionLabel}">Suggested Opening</p>
+                </td></tr>
+                <tr><td style="padding:14px 20px;">
+                  <p style="margin:0;font-size:13px;line-height:1.8;color:#374151;font-style:italic;">
+                    &ldquo;Hi ${leadFirstName}, this is ${loName}. You just completed the homebuying
+                    questionnaire with ${realtorName.split(" ")[0]} and me. I wanted to personally
+                    introduce myself, review your estimate, and answer your questions.
+                    Do you have a few minutes?&rdquo;
+                  </p>
+                </td></tr>
+              </table>
+            </td></tr>
+
+            <!-- Portal CTA -->
+            <tr><td style="padding:0 0 20px;">
+              <a href="${portalUrl}"
+                style="display:inline-block;background:#F37021;color:#ffffff;font-size:14px;font-weight:700;
+                       padding:14px 28px;border-radius:10px;text-decoration:none;">
+                Open Lead in My Portal →
+              </a>
+            </td></tr>
+
+            ${(entryPage || device || utmSource || utmCampaign) ? section("Tracking Information",
+              row("Entry page", entryPage) +
+              row("Device", device) +
+              row("Lead source", utmSource) +
+              row("Campaign", utmCampaign, true)
+            ) : ""}
+
+          </table>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding:16px 32px 24px;border-top:1px solid #f1f5f9;">
+          <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.7;">
+            Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender<br/>
+            This is an automated lead notification. Do not reply to this email.
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+export function buildCoBrandedRealtorAlertEmail({
+  realtorFirstName,
+  leadFullName,
+  goal,
+  propertyState,
+  loName,
+  loTitle,
+  loNmls,
+  loPhone,
+}: {
+  realtorFirstName: string;
+  leadFullName: string;
+  goal?: string | null;
+  propertyState?: string | null;
+  loName: string;
+  loTitle?: string | null;
+  loNmls?: string | null;
+  loPhone?: string | null;
+}): string {
+  const goalLabel = goal ?? "Purchase a Home";
+  const stateLabel = propertyState ?? "Not provided";
+
+  const tdLabel = `padding:10px 0;border-bottom:1px solid #f0f4f8;color:#6b7280;font-size:13px;width:200px;vertical-align:top;`;
+  const tdValue = `padding:10px 0;border-bottom:1px solid #f0f4f8;font-weight:600;color:#111827;font-size:13px;`;
+
+  function row(label: string, value: string, last = false): string {
+    const border = last ? "border-bottom:none;" : "";
+    return `<tr>
+      <td style="${tdLabel}${border}">${label}</td>
+      <td style="${tdValue}${border}">${value}</td>
+    </tr>`;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="color-scheme" content="light"/>
+</head>
+<body style="margin:0;padding:0;background:#f5f0eb;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0eb;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="max-width:580px;background:#ffffff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
+
+        <!-- Header -->
+        <tr><td style="background:#142850;padding:24px 32px 20px;">
+          <div>${LOGO_SVG}</div>
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td style="padding:32px 36px 8px;">
+          <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#1f2328;">
+            Hi ${realtorFirstName},
+          </p>
+          <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#1f2328;">
+            Great news. <strong>${leadFullName}</strong> completed the homebuying questionnaire you shared.
+          </p>
+          <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#1f2328;">
+            I received their information and will personally contact them within one business day to review
+            their initial estimate, discuss financing options, and explain the next steps toward preapproval.
+          </p>
+        </td></tr>
+
+        <!-- Referral Status -->
+        <tr><td style="padding:0 36px 28px;">
+          <table width="100%" cellpadding="0" cellspacing="0"
+            style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+            <tr><td style="padding:8px 20px;background:#f7f8fa;border-bottom:1px solid #e5e7eb;">
+              <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:2px;color:#6b7280;text-transform:uppercase;">
+                Referral Status
+              </p>
+            </td></tr>
+            <tr><td style="padding:4px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${row("Client", leadFullName)}
+                ${row("Goal", goalLabel)}
+                ${row("Property state", stateLabel)}
+                ${row("Questionnaire", "Completed")}
+                ${row("Full application", "Not yet completed")}
+                ${row("Credit review", "Not yet completed")}
+                ${row("Next step", `${loName.split(" ")[0]} will contact the client`, true)}
+              </table>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- No action needed -->
+        <tr><td style="padding:0 36px 28px;">
+          <p style="margin:0;font-size:15px;line-height:1.7;color:#1f2328;">
+            No action is needed from you right now. I&rsquo;ll handle the financing conversation and keep
+            you updated as your client moves through the process.
+          </p>
+        </td></tr>
+
+        <!-- Additional context -->
+        <tr><td style="padding:0 36px 28px;">
+          <table width="100%" cellpadding="0" cellspacing="0"
+            style="background:#f7f8fa;border:1px solid #e5e7eb;border-radius:10px;">
+            <tr><td style="padding:18px 20px;">
+              <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:2px;color:#6b7280;text-transform:uppercase;">
+                Do You Have Additional Context?
+              </p>
+              <p style="margin:0;font-size:14px;line-height:1.7;color:#374151;">
+                If your client is interested in a specific property, has an offer deadline, or shared
+                information that would help me prepare for the conversation, reply directly to this email
+                and let me know.
+              </p>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- Closing -->
+        <tr><td style="padding:0 36px 28px;">
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#1f2328;">
+            Thank you for trusting me with your client. I&rsquo;ll take great care of them and keep you in the loop.
+          </p>
+          <!-- Signature -->
+          <table cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="border-left:3px solid #F37021;padding-left:14px;">
+                <p style="margin:0;font-size:15px;font-weight:700;color:#1f2328;line-height:1.4;">${loName}</p>
+                ${loTitle ? `<p style="margin:2px 0 0;font-size:13px;color:#57606a;">${loTitle}</p>` : ""}
+                <p style="margin:2px 0 0;font-size:13px;color:#57606a;">Harris Capital Mortgage Group</p>
+                ${loNmls ? `<p style="margin:2px 0 0;font-size:13px;color:#57606a;">NMLS #${loNmls}</p>` : ""}
+                ${loPhone ? `<p style="margin:4px 0 0;font-size:13px;color:#142850;font-weight:600;">${loPhone}</p>` : ""}
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding:16px 36px 24px;border-top:1px solid #f1f5f9;">
+          <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.7;">
+            Harris Capital Mortgage Group, LLC &middot; NMLS# 1918223 &middot; Equal Housing Lender<br/>
+            This notification was sent because a client submitted a homebuying questionnaire through your co-branded page.
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}

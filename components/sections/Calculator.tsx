@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLicensedStates } from "@/lib/use-licensed-states";
 import Link from "next/link";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { Disclosure } from "@/components/ui/Disclosure";
@@ -15,19 +16,6 @@ import { submitLead, utmsToPayload } from "@/lib/lead";
 import { getStoredUtms } from "@/lib/utm";
 import { getSessionMeta } from "@/lib/tracker";
 
-const LICENSED_STATES = [
-  { code: "FL", label: "Florida (FL)" },
-  { code: "TX", label: "Texas (TX)" },
-  { code: "GA", label: "Georgia (GA)" },
-  { code: "NV", label: "Nevada (NV)" },
-  { code: "CO", label: "Colorado (CO)" },
-  { code: "VA", label: "Virginia (VA)" },
-  { code: "DC", label: "Washington DC (DC)" },
-  { code: "MD", label: "Maryland (MD)" },
-  { code: "CA", label: "California (CA)" },
-  { code: "MS", label: "Mississippi (MS)" },
-];
-
 const SMS_CONSENT_TEXT =
   "By submitting this form, I agree to be contacted by Harris Capital Mortgage Group, LLC (NMLS# 1918223) regarding my mortgage inquiry. I consent to receive calls, texts, and emails. Message and data rates may apply. Reply STOP to opt out of texts at any time.";
 
@@ -40,7 +28,8 @@ const LOAN_PRESETS: Record<LoanType, { label: string; downMin: number; defaultDo
 };
 
 export function Calculator({ heading, subheading, seoSlug }: { heading?: string; subheading?: string; seoSlug?: string } = {}) {
-  const [loanType, setLoanType]   = useState<LoanType>("conventional");
+  const licensedStates = useLicensedStates();
+  const [loanType, setLoanType] = useState<LoanType>("conventional");
   const [calc, setCalc] = useState({
     homePrice:          425000,
     downPaymentPercent: 20,
@@ -390,7 +379,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
                       } ${propertyState === "" ? "text-muted/60" : "text-ink"}`}
                     >
                       <option value="">Property state…</option>
-                      {LICENSED_STATES.map((s) => (
+                      {licensedStates.map((s) => (
                         <option key={s.code} value={s.code}>{s.label}</option>
                       ))}
                     </select>

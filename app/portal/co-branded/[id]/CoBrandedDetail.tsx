@@ -18,8 +18,13 @@ interface CoBrandedPage {
   realtor_photo_url: string | null;
   realtor_logo_url: string | null;
   headline: string | null;
+  application_url: string | null;
+  calendar_url: string | null;
   is_active: boolean;
   clicks: number;
+  app_clicks: number;
+  book_call_clicks: number;
+  bookings_completed: number;
   created_at: string;
 }
 
@@ -214,12 +219,15 @@ export function CoBrandedDetail({ page, leads, loSlug, backHref }: Props) {
       </div>
 
       {/* ── Stat cards ── */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        <StatCard value={page.clicks}  label="Page Views"    color="ok-gradient-text" />
-        <StatCard value={total}        label="Total Leads"   color="ok-gradient-text" />
-        <StatCard value={newLeads}     label="New / Unworked" color="text-blue-600" />
-        <StatCard value={qualified}    label="Qualified"     color="text-purple-600" />
-        <StatCard value={thirtyDays}   label="Last 30 Days"  color="text-green-600" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+        <StatCard value={page.clicks}            label="Page Views"       color="ok-gradient-text" />
+        <StatCard value={total}                  label="Total Leads"      color="ok-gradient-text" />
+        <StatCard value={newLeads}               label="New / Unworked"   color="text-blue-600" />
+        <StatCard value={qualified}              label="Qualified"        color="text-purple-600" />
+        <StatCard value={thirtyDays}             label="Last 30 Days"     color="text-green-600" />
+        <StatCard value={page.app_clicks}        label="App Clicks"       color="text-orange-600" />
+        <StatCard value={page.book_call_clicks}  label="Book Call Clicks" color="text-pink-600" />
+        <StatCard value={page.bookings_completed} label="Bookings Made"   color="text-teal-600" />
       </div>
 
       {/* ── Analytics panels ── */}

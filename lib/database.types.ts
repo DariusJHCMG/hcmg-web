@@ -220,6 +220,7 @@ export interface Lead {
   entry_page: string | null;
   referrer:   string | null;
   device:     string | null;
+  co_branded_page_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -246,8 +247,13 @@ export interface CoBrandedPage {
   realtor_photo_url: string | null;
   realtor_logo_url: string | null;
   headline: string | null;
+  application_url: string | null;
+  calendar_url: string | null;
   is_active: boolean;
   clicks: number;
+  app_clicks: number;
+  book_call_clicks: number;
+  bookings_completed: number;
   created_at: string;
   updated_at: string;
 }
