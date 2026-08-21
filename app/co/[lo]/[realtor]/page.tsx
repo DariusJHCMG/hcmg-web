@@ -76,21 +76,22 @@ export default async function CoBrandedPublicPage({ params }: Props) {
   const funnelLo = { slug: loSlug, name: loName, nmls: loNmls };
 
   const headline = page.headline
-    ?? `${realtorFirst} + ${loFirst}: Let's get your clients to the closing table.`;
+    ?? `Your Next Move Starts With ${realtorFirst} and ${loFirst}`;
 
   return (
     <div className="min-h-screen bg-white">
 
-      {/* ── LOCKED HEADER — no nav links ───────────────────────────── */}
+      {/* ── LOCKED HEADER ─────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur">
-        <div className="container-shell flex h-14 max-w-5xl items-center justify-between">
-          {/* LO + Realtor co-brand lockup */}
-          <div className="flex items-center gap-3">
+        <div className="container-shell flex h-14 max-w-5xl items-center justify-between px-4">
+
+          {/* Stacked avatars + names */}
+          <div className="flex items-center gap-2.5">
             <div className="flex items-center -space-x-2">
-              <div className="h-8 w-8 overflow-hidden rounded-full border-2 border-white flex-shrink-0 z-10">
+              <div className="h-8 w-8 overflow-hidden rounded-full border-2 border-white flex-shrink-0 z-10 shadow-sm">
                 <TeamPhoto photo={loPhoto} name={loName} aspect="1/1" className="h-full w-full" />
               </div>
-              <div className="h-8 w-8 overflow-hidden rounded-full border-2 border-white flex-shrink-0">
+              <div className="h-8 w-8 overflow-hidden rounded-full border-2 border-white flex-shrink-0 shadow-sm">
                 {page.realtor_photo_url ? (
                   <img src={page.realtor_photo_url} alt={page.realtor_name} className="h-full w-full object-cover object-top" />
                 ) : (
@@ -101,43 +102,42 @@ export default async function CoBrandedPublicPage({ params }: Props) {
                 )}
               </div>
             </div>
-            <span className="text-xs font-bold text-muted hidden sm:block">
-              {loFirst} · {page.realtor_name.split(" ")[0]}
+            {/* Show names on all screen sizes — abbreviated on mobile */}
+            <span className="text-xs font-bold text-ink leading-tight">
+              <span className="sm:hidden">{loFirst} &amp; {realtorFirst}</span>
+              <span className="hidden sm:inline">{loFirst} · {realtorFirst} &nbsp;·&nbsp; Harris Capital Mortgage Group</span>
             </span>
-            <span className="hidden sm:block text-line">·</span>
-            <span className="text-xs font-semibold text-muted hidden sm:block">Harris Capital Mortgage Group</span>
           </div>
-          {/* Single CTA — anchors to funnel */}
+
+          {/* CTA */}
           <a href="#funnel"
-            className="rounded-xl px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
+            className="rounded-xl px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
             style={{ background: "var(--ok-gradient)" }}>
             Get pre-qualified →
           </a>
         </div>
       </header>
 
-      {/* ── CO-BRAND HERO ──────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-white" style={{ paddingTop: "clamp(60px, 8vw, 100px)", paddingBottom: "clamp(48px, 6vw, 80px)" }}>
+      {/* ── CO-BRAND HERO ─────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-white pt-10 pb-10 sm:pt-16 sm:pb-14 md:pt-20 md:pb-16">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[500px] bg-hero-glow" />
 
-        <div className="container-shell max-w-5xl">
+        <div className="container-shell max-w-5xl px-4">
 
           {/* Partnership badge */}
-          <div className="mb-8 flex justify-center">
-            <div className="inline-flex items-center gap-3 rounded-full border border-line bg-white px-5 py-2.5 shadow-soft">
-              {/* LO logo / initials */}
-              <div className="h-9 w-9 overflow-hidden rounded-full border border-line flex-shrink-0">
+          <div className="mb-6 flex justify-center">
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-line bg-white px-4 py-2 shadow-soft">
+              <div className="h-8 w-8 overflow-hidden rounded-full border border-line flex-shrink-0">
                 <TeamPhoto photo={loPhoto} name={loName} aspect="1/1" className="h-full w-full" />
               </div>
-              <span className="text-sm font-bold text-muted">partnered with</span>
-              {/* Realtor photo / initials */}
+              <span className="text-xs font-bold text-muted">partnered with</span>
               {page.realtor_photo_url ? (
-                <div className="h-9 w-9 overflow-hidden rounded-full border border-line flex-shrink-0">
+                <div className="h-8 w-8 overflow-hidden rounded-full border border-line flex-shrink-0">
                   <img src={page.realtor_photo_url} alt={page.realtor_name}
                     className="h-full w-full object-cover object-top" />
                 </div>
               ) : (
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-extrabold text-white"
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-extrabold text-white"
                   style={{ background: "linear-gradient(135deg,#7c5cd8,#5b4bc4)" }}>
                   <Initials name={page.realtor_name} />
                 </div>
@@ -147,29 +147,29 @@ export default async function CoBrandedPublicPage({ params }: Props) {
 
           {/* Headline */}
           <h1 className="mb-4 text-center font-extrabold leading-[1.1] tracking-tight text-ink"
-            style={{ fontSize: "clamp(32px, 5vw, 60px)" }}>
+            style={{ fontSize: "clamp(26px, 6.5vw, 58px)" }}>
             {headline}
           </h1>
-          <p className="mx-auto mb-10 max-w-xl text-center text-base leading-7 text-muted">
+          <p className="mx-auto mb-8 max-w-xl text-center text-[15px] leading-7 text-muted px-1">
             Get an initial idea of what you may qualify for with no hard credit check or commitment. {loFirst} will then contact you personally to review your options and help you complete your application and pre-approval.
           </p>
 
-          {/* Two-up partner cards */}
-          <div className="grid gap-4 sm:grid-cols-2 max-w-2xl mx-auto mb-10">
+          {/* Two-up partner cards — full-width stacked on mobile */}
+          <div className="grid gap-3 sm:grid-cols-2 max-w-2xl mx-auto mb-8">
 
             {/* LO card */}
-            <div className="rounded-2xl border border-line bg-white p-5 shadow-soft flex items-start gap-4">
-              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-line shadow-soft">
+            <div className="rounded-2xl border border-line bg-white p-4 sm:p-5 shadow-soft flex items-center gap-4">
+              <div className="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-line shadow-soft">
                 <TeamPhoto photo={loPhoto} name={loName} aspect="1/1" className="h-full w-full" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-accent mb-0.5">Your Loan Officer</p>
-                <p className="font-extrabold text-ink leading-tight truncate">{loName}</p>
+                <p className="font-extrabold text-ink leading-tight">{loName}</p>
                 <p className="text-xs text-muted">{loRole} · HCMG</p>
                 {loNmls && <p className="mt-0.5 text-[11px] text-muted">NMLS# {loNmls}</p>}
                 {loPhone && (
                   <a href={`tel:${loPhone.replace(/[^0-9+]/g, "")}`}
-                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline">
+                    className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-accent">
                     📞 {loPhone}
                   </a>
                 )}
@@ -177,8 +177,8 @@ export default async function CoBrandedPublicPage({ params }: Props) {
             </div>
 
             {/* Realtor card */}
-            <div className="rounded-2xl border border-line bg-white p-5 shadow-soft flex items-start gap-4">
-              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-line shadow-soft">
+            <div className="rounded-2xl border border-line bg-white p-4 sm:p-5 shadow-soft flex items-center gap-4">
+              <div className="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-line shadow-soft">
                 {page.realtor_photo_url ? (
                   <img src={page.realtor_photo_url} alt={page.realtor_name}
                     className="h-full w-full object-cover object-top" />
@@ -189,14 +189,14 @@ export default async function CoBrandedPublicPage({ params }: Props) {
                   </div>
                 )}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-0.5" style={{ color: "#7c5cd8" }}>Your Realtor</p>
-                <p className="font-extrabold text-ink leading-tight truncate">{page.realtor_name}</p>
-                <p className="text-xs text-muted truncate">{page.realtor_company}</p>
+                <p className="font-extrabold text-ink leading-tight">{page.realtor_name}</p>
+                <p className="text-xs text-muted">{page.realtor_company}</p>
                 {page.realtor_license && <p className="mt-0.5 text-[11px] text-muted">Lic# {page.realtor_license}</p>}
                 {page.realtor_phone && (
                   <a href={`tel:${page.realtor_phone.replace(/[^0-9+]/g, "")}`}
-                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold hover:underline" style={{ color: "#7c5cd8" }}>
+                    className="mt-2 flex items-center gap-1.5 text-sm font-semibold" style={{ color: "#7c5cd8" }}>
                     📞 {page.realtor_phone}
                   </a>
                 )}
@@ -205,8 +205,8 @@ export default async function CoBrandedPublicPage({ params }: Props) {
 
           </div>
 
-          {/* Trust row */}
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+          {/* Trust pills — 2-col grid on mobile, single row on larger */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-x-6 gap-y-3 max-w-sm sm:max-w-none mx-auto">
             {["No hard credit check", "Results in 60 seconds", "No commitment required", "File goes direct to " + loFirst].map(t => (
               <div key={t} className="flex items-center gap-2 text-sm font-semibold text-muted">
                 <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-white text-xs" style={{ background: "var(--ok-gradient)" }}>✓</span>
@@ -218,15 +218,15 @@ export default async function CoBrandedPublicPage({ params }: Props) {
         </div>
       </section>
 
-      {/* ── FUNNEL ──────────────────────────────────────────────────── */}
-      <section id="funnel" className="bg-sand py-20 scroll-mt-20">
-        <div className="container-shell max-w-3xl">
-          <div className="mb-8 text-center">
+      {/* ── FUNNEL ────────────────────────────────────────────────── */}
+      <section id="funnel" className="bg-sand py-12 sm:py-20 scroll-mt-16">
+        <div className="container-shell max-w-3xl px-4">
+          <div className="mb-6 sm:mb-8 text-center">
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">Find Out What You Can Afford</p>
-            <h2 className="text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-ink">
               Get pre-qualified in 60 seconds.
             </h2>
-            <p className="mx-auto mt-3 max-w-xl text-base text-muted">
+            <p className="mx-auto mt-3 max-w-xl text-sm sm:text-base text-muted">
               Home purchase · No hard credit check · No commitment
             </p>
           </div>
@@ -248,25 +248,25 @@ export default async function CoBrandedPublicPage({ params }: Props) {
               submitLabel: "Get my personalized rate →",
             }}
           />
-          <p className="mt-6 text-center text-xs leading-5 text-muted/60">
+          <p className="mt-6 text-center text-xs leading-5 text-muted/60 px-2">
             <strong className="font-semibold text-muted">Initial estimate only.</strong> This is not a loan approval. A completed application and credit check are required for pre-approval.
           </p>
         </div>
       </section>
 
-      {/* ── ABOUT THE PARTNERSHIP ───────────────────────────────────── */}
-      <section className="bg-white py-20">
-        <div className="container-shell max-w-5xl">
-          <div className="grid gap-10 lg:grid-cols-2">
+      {/* ── ABOUT THE PARTNERSHIP ─────────────────────────────────── */}
+      <section className="bg-white py-12 sm:py-20">
+        <div className="container-shell max-w-5xl px-4">
+          <div className="grid gap-5 lg:grid-cols-2">
 
             {/* LO bio */}
-            <div className="rounded-2xl border border-line bg-white p-6 shadow-soft">
+            <div className="rounded-2xl border border-line bg-white p-5 sm:p-6 shadow-soft">
               <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-accent">Your Mortgage Partner</p>
               <div className="mb-4 flex items-center gap-4">
-                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-line shadow-soft">
+                <div className="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-line shadow-soft">
                   <TeamPhoto photo={loPhoto} name={loName} aspect="1/1" className="h-full w-full" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-extrabold text-ink">{loName}</p>
                   <p className="text-sm text-muted">{loRole} · Harris Capital Mortgage Group</p>
                   {loNmls && <p className="text-xs text-muted">NMLS# {loNmls}</p>}
@@ -275,16 +275,16 @@ export default async function CoBrandedPublicPage({ params }: Props) {
               <p className="text-sm leading-7 text-muted">
                 {p.hero_bio ?? `${loFirst} is a licensed mortgage professional at Harris Capital Mortgage Group. HCMG has access to dozens of lenders and hundreds of loan programs — meaning ${loFirst} shops the market to find the deal that actually fits your situation.`}
               </p>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-2">
                 {loPhone && (
                   <a href={`tel:${loPhone.replace(/[^0-9+]/g, "")}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink hover:border-accent hover:text-accent transition-all shadow-soft">
+                    className="flex items-center justify-center gap-1.5 rounded-full border border-line bg-white px-4 py-3 text-sm font-semibold text-ink hover:border-accent hover:text-accent transition-all shadow-soft">
                     📞 {loPhone}
                   </a>
                 )}
                 {p.email && (
                   <a href={`mailto:${p.email}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink hover:border-accent hover:text-accent transition-all shadow-soft">
+                    className="flex items-center justify-center gap-1.5 rounded-full border border-line bg-white px-4 py-3 text-sm font-semibold text-ink hover:border-accent hover:text-accent transition-all shadow-soft">
                     ✉️ Email {loFirst}
                   </a>
                 )}
@@ -292,10 +292,10 @@ export default async function CoBrandedPublicPage({ params }: Props) {
             </div>
 
             {/* Realtor bio */}
-            <div className="rounded-2xl border border-line bg-white p-6 shadow-soft">
+            <div className="rounded-2xl border border-line bg-white p-5 sm:p-6 shadow-soft">
               <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: "#7c5cd8" }}>Your Real Estate Partner</p>
               <div className="mb-4 flex items-center gap-4">
-                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-line shadow-soft">
+                <div className="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-line shadow-soft">
                   {page.realtor_photo_url ? (
                     <img src={page.realtor_photo_url} alt={page.realtor_name}
                       className="h-full w-full object-cover object-top" />
@@ -306,7 +306,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
                     </div>
                   )}
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-extrabold text-ink">{page.realtor_name}</p>
                   <p className="text-sm text-muted">{page.realtor_company}</p>
                   {page.realtor_license && <p className="text-xs text-muted">Lic# {page.realtor_license}</p>}
@@ -321,16 +321,16 @@ export default async function CoBrandedPublicPage({ params }: Props) {
               <p className="text-sm leading-7 text-muted">
                 {realtorFirst} at {page.realtor_company} partners with HCMG to give their buyer clients a seamless path from offer acceptance to closing. When you work with {realtorFirst}, you get a full team behind you.
               </p>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-2">
                 {page.realtor_phone && (
                   <a href={`tel:${page.realtor_phone.replace(/[^0-9+]/g, "")}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition-all shadow-soft hover:border-[#7c5cd8] hover:text-[#7c5cd8]">
+                    className="flex items-center justify-center gap-1.5 rounded-full border border-line bg-white px-4 py-3 text-sm font-semibold text-ink transition-all shadow-soft hover:border-[#7c5cd8] hover:text-[#7c5cd8]">
                     📞 {page.realtor_phone}
                   </a>
                 )}
                 {page.realtor_email && (
                   <a href={`mailto:${page.realtor_email}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition-all shadow-soft">
+                    className="flex items-center justify-center gap-1.5 rounded-full border border-line bg-white px-4 py-3 text-sm font-semibold text-ink transition-all shadow-soft">
                     ✉️ Email {realtorFirst}
                   </a>
                 )}
@@ -341,16 +341,16 @@ export default async function CoBrandedPublicPage({ params }: Props) {
         </div>
       </section>
 
-      {/* ── FAQ ────────────────────────────────────────────────────── */}
-      <section className="bg-sand py-20">
-        <div className="container-shell max-w-3xl">
+      {/* ── FAQ ──────────────────────────────────────────────────── */}
+      <section className="bg-sand py-12 sm:py-20">
+        <div className="container-shell max-w-3xl px-4">
 
-          <div className="mb-10 text-center">
+          <div className="mb-8 sm:mb-10 text-center">
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">Common Questions</p>
-            <h2 className="text-3xl font-extrabold tracking-tight text-ink lg:text-4xl">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-ink">
               Think You Need Perfect Credit or 20% Down?
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-muted">
+            <p className="mx-auto mt-4 max-w-xl text-[15px] leading-7 text-muted">
               Let&apos;s clear that up. Most homebuyers have the same questions about credit, cash, debt, and qualification. Here are the answers you need before taking your next step.
             </p>
           </div>
@@ -394,22 +394,22 @@ export default async function CoBrandedPublicPage({ params }: Props) {
                 a: `You'll receive an initial estimate by email. ${loFirst} will personally contact you within one business day to review your financing options. You can also continue directly to the full application or schedule a call. ${realtorFirst} is available to help with your home search, properties, showings, and neighborhoods.`,
               },
             ].map(({ q, a }) => (
-              <details key={q} className="group px-6 py-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-5 font-bold text-ink">
-                  <span>{q}</span>
-                  <span className="flex-shrink-0 text-xl text-accent transition-transform group-open:rotate-45">+</span>
+              <details key={q} className="group px-5 py-4 sm:px-6 sm:py-5">
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-4 font-bold text-ink text-[15px]">
+                  <span className="leading-snug">{q}</span>
+                  <span className="flex-shrink-0 text-xl text-accent transition-transform group-open:rotate-45 mt-0.5">+</span>
                 </summary>
-                <p className="mt-3 pr-8 text-sm leading-7 text-muted">{a}</p>
+                <p className="mt-3 text-sm leading-7 text-muted">{a}</p>
               </details>
             ))}
           </div>
 
           {/* CTA under FAQ */}
-          <div className="mt-10 rounded-2xl border border-line bg-white p-8 text-center shadow-soft">
+          <div className="mt-8 rounded-2xl border border-line bg-white p-6 sm:p-8 text-center shadow-soft">
             <h3 className="text-xl font-extrabold text-ink">You Don&apos;t Need Every Answer Today</h3>
-            <p className="mt-2 text-base text-muted">You just need to understand where you stand and what your next step could be.</p>
+            <p className="mt-2 text-[15px] text-muted">You just need to understand where you stand and what your next step could be.</p>
             <a href="#funnel"
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              className="mt-5 flex w-full sm:inline-flex sm:w-auto items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-bold text-white transition-opacity hover:opacity-90"
               style={{ background: "var(--ok-gradient)" }}>
               See Where I Stand →
             </a>
@@ -419,33 +419,33 @@ export default async function CoBrandedPublicPage({ params }: Props) {
         </div>
       </section>
 
-      {/* ── BOTTOM CTA ──────────────────────────────────────────────── */}
-      <section className="py-16" style={{ background: "linear-gradient(135deg,#7c5cd8,#F37021)" }}>
-        <div className="container-shell max-w-3xl text-center">
+      {/* ── BOTTOM CTA ────────────────────────────────────────────── */}
+      <section className="py-14 sm:py-16" style={{ background: "linear-gradient(135deg,#7c5cd8,#F37021)" }}>
+        <div className="container-shell max-w-3xl px-4 text-center">
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-white/60">Ready to move forward?</p>
-          <h2 className="text-3xl font-extrabold text-white lg:text-4xl">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">
             Your dream home is one conversation away.
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-base text-white/80">
+          <p className="mx-auto mt-4 max-w-xl text-[15px] text-white/80">
             {realtorFirst} will find the home. {loFirst} will get you the financing. Start your free estimate above — no credit check, no commitment.
           </p>
           <a href="#funnel"
-            className="mt-8 inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white bg-white px-8 py-4 text-base font-bold text-accent transition hover:bg-white/90">
+            className="mt-7 flex w-full sm:inline-flex sm:w-auto items-center justify-center gap-2 rounded-2xl border-2 border-white bg-white px-8 py-4 text-base font-bold text-accent transition hover:bg-white/90">
             Get my free estimate →
           </a>
         </div>
       </section>
 
-      {/* ── LOCKED FOOTER ──────────────────────────────────────────── */}
+      {/* ── LOCKED FOOTER ─────────────────────────────────────────── */}
       <footer className="border-t border-line bg-white py-8">
-        <div className="container-shell max-w-5xl text-center">
-          <p className="text-xs text-muted">
+        <div className="container-shell max-w-5xl px-4 text-center">
+          <p className="text-xs text-muted leading-5">
             This page was created by {loName} (NMLS# {loNmls ?? "—"}) at Harris Capital Mortgage Group, LLC · NMLS# 1918223
           </p>
-          <p className="mt-1 text-xs text-muted/60">
+          <p className="mt-1 text-xs text-muted/60 leading-5">
             Initial estimate only. This is not a loan approval. A completed application and credit check are required for pre-approval. Not a commitment to lend. All loans subject to credit approval. Equal Housing Lender.
           </p>
-          <div className="mt-3 flex flex-wrap justify-center gap-4 text-xs text-muted/50">
+          <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-muted/50">
             <a href="/privacy" target="_blank" className="hover:text-muted transition-colors">Privacy Policy</a>
             <a href="/terms" target="_blank" className="hover:text-muted transition-colors">Terms of Use</a>
             <a href="/legal-disclaimer" target="_blank" className="hover:text-muted transition-colors">Legal Disclaimer</a>
