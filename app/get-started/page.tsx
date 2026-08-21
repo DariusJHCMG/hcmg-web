@@ -23,6 +23,8 @@ interface LoContext {
   nmls: string | null;
   role: string;
   photo: string | null;
+  applicationUrl: string | null;
+  calendarUrl: string | null;
 }
 
 // Resolve LO: try Supabase profiles first, fall back to data/team.ts
@@ -31,17 +33,19 @@ async function resolveLo(loSlug: string): Promise<LoContext | null> {
     const sb = createServiceClient();
     const { data } = await sb
       .from("profiles")
-      .select("lo_slug, full_name, nmls, title, role, avatar_url")
+      .select("lo_slug, full_name, nmls, title, role, avatar_url, application_url, calendar_url")
       .eq("lo_slug", loSlug)
       .eq("is_active", true)
       .single();
     if (data) {
       return {
-        slug:  data.lo_slug,
-        name:  data.full_name,
-        nmls:  data.nmls ?? null,
-        role:  data.title ?? data.role.replace("_", " "),
-        photo: data.avatar_url ?? null,
+        slug:           data.lo_slug,
+        name:           data.full_name,
+        nmls:           data.nmls ?? null,
+        role:           data.title ?? data.role.replace("_", " "),
+        photo:          data.avatar_url ?? null,
+        applicationUrl: data.application_url ?? null,
+        calendarUrl:    data.calendar_url    ?? null,
       };
     }
   } catch { /* fall through */ }
@@ -49,7 +53,7 @@ async function resolveLo(loSlug: string): Promise<LoContext | null> {
   // Fall back to static team data (covers pre-seeded LOs until patch 004 is run)
   const m = getTeamMemberBySlug(loSlug);
   if (m) {
-    return { slug: m.slug, name: m.name, nmls: m.nmls, role: m.role, photo: m.photo };
+    return { slug: m.slug, name: m.name, nmls: m.nmls, role: m.role, photo: m.photo, applicationUrl: null, calendarUrl: null };
   }
   return null;
 }
@@ -135,6 +139,8 @@ export default async function GetStartedPage({
               lo={funnelLo}
               source={effectiveSource}
               seoSlug={seoSlug}
+              applicationUrl={lo?.applicationUrl ?? undefined}
+              calendarUrl={lo?.calendarUrl ?? undefined}
             />
           ) : (
             <FunnelFlow
@@ -146,6 +152,8 @@ export default async function GetStartedPage({
               funnelSubhead={funnelDef?.subhead}
               funnelBadge={funnelDef?.badge}
               funnelConfig={funnelConfig}
+              applicationUrl={lo?.applicationUrl ?? undefined}
+              calendarUrl={lo?.calendarUrl ?? undefined}
             />
           )}
         </div>

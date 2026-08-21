@@ -126,6 +126,9 @@ export default async function TeamMemberPage({
 
   const phoneDigits = phone.replace(/[^0-9+]/g, "");
   const first       = name.replace(/['"()]/g, "").split(/\s+/)[0];
+  const applicationUrl = p?.application_url ?? undefined;
+  const calendarUrl    = p?.calendar_url    ?? undefined;
+
   const funnelLo    = { slug, name, nmls };
 
   const reviews = reviewData ?? [];
@@ -356,7 +359,12 @@ export default async function TeamMemberPage({
             No hard credit check. No commitment. Your info goes straight to {first}.
           </p>
           <div className="mx-auto max-w-xl">
-            <FunnelFlow lo={funnelLo} source="team" />
+            <FunnelFlow
+              lo={funnelLo}
+              source="team"
+              applicationUrl={applicationUrl}
+              calendarUrl={calendarUrl}
+            />
           </div>
         </div>
       </section>

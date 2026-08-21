@@ -171,6 +171,7 @@ export interface Profile {
   created_at: string;
   updated_at: string;
   calendar_url: string | null;
+  application_url: string | null;
   // Activity tracking
   last_seen_at: string | null;
   // SLICE v3 additions

@@ -14,6 +14,7 @@ export async function PATCH(request: NextRequest) {
     const allowed = [
       "full_name", "phone", "notify_email", "linkedin", "short_bio", "avatar_url",
       "hero_bio", "about_headline", "long_bio", "years_experience", "specialties",
+      "application_url", "calendar_url",
     ];
     const patch: Record<string, unknown> = {};
     for (const key of allowed) {

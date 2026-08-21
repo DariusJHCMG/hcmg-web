@@ -75,7 +75,7 @@ export default async function LamontPage() {
   // Pull from Supabase profile first, fall back to data/team.ts
   const sb = createServiceClient();
   const [{ data: profileData }, { data: reviewData }] = await Promise.all([
-    sb.from("profiles").select("*").eq("lo_slug", "lamont-harris-jr").single(),
+    sb.from("profiles").select("*, application_url, calendar_url").eq("lo_slug", "lamont-harris-jr").single(),
     sb.from("reviews").select("rating").eq("lo_slug", "lamont-harris-jr").eq("status", "approved"),
   ]);
 
@@ -98,6 +98,9 @@ export default async function LamontPage() {
 
   const phoneDigits  = phone.replace(/[^0-9+]/g, "");
   const firstName    = name.replace(/['"()]/g, "").split(/\s+/)[0];
+  const applicationUrl = p?.application_url ?? undefined;
+  const calendarUrl    = p?.calendar_url    ?? undefined;
+
   const funnelLo     = { slug: m.slug, name, nmls };
 
   // Split hero bio into two paragraphs at the em-dash sentence boundary
@@ -326,7 +329,12 @@ export default async function LamontPage() {
             No hard credit check. No commitment. Your info goes straight to {firstName}.
           </p>
           <div className="mx-auto max-w-xl">
-            <FunnelFlow lo={funnelLo} source="team" />
+            <FunnelFlow
+              lo={funnelLo}
+              source="team"
+              applicationUrl={applicationUrl}
+              calendarUrl={calendarUrl}
+            />
           </div>
         </div>
       </section>

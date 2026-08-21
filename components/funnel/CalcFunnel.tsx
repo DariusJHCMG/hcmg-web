@@ -678,6 +678,8 @@ export function CalcFunnel({
   lo,
   source,
   seoSlug,
+  applicationUrl,
+  calendarUrl,
 }: {
   funnelType: string;
   funnelHeadline?: string;
@@ -686,6 +688,8 @@ export function CalcFunnel({
   lo?: FunnelLoContext;
   source?: string;
   seoSlug?: string;
+  applicationUrl?: string;
+  calendarUrl?: string;
 }) {
   const def = CALC_DEFS[funnelType];
   const licensedStates = useLicensedStates();
@@ -1007,30 +1011,89 @@ export function CalcFunnel({
               >
                 ✓
               </motion.div>
-              <h2 className="mb-3 text-2xl font-extrabold text-ink">
-                You&apos;re all set{firstName ? `, ${firstName}` : ""}!
+              <h2 className="mb-2 text-2xl font-extrabold text-ink">
+                You&apos;re All Set{firstName ? `, ${firstName}` : ""}!
               </h2>
-              <p className="mb-8 text-base leading-7 text-muted">
-                {lo
-                  ? `${lo.name} will reach out within one business day to walk through your options.`
-                  : "A licensed loan officer from Harris Capital Mortgage Group will reach out within one business day to walk through your options."}
+              <p className="mb-2 text-base leading-7 text-muted">
+                Your initial estimate is on the way.
               </p>
-              <div className="mb-8 space-y-3 text-left">
-                {[
-                  { icon: "📧", title: "Check your email",  body: "A confirmation with your estimate summary is on its way." },
-                  { icon: "📞", title: "Expect a call",     body: "Within 1 business day from our team in your market." },
-                  { icon: "🤝", title: "No pressure",       body: "We're here to help, not to push. You're in control." },
-                ].map((c) => (
-                  <div key={c.title} className="flex items-start gap-4 rounded-2xl border border-line bg-white px-5 py-4">
-                    <span className="text-xl">{c.icon}</span>
-                    <div>
-                      <div className="font-semibold text-ink">{c.title}</div>
-                      <div className="text-sm text-muted">{c.body}</div>
+
+              {(applicationUrl || calendarUrl) ? (
+                <>
+                  <p className="mb-6 text-sm font-semibold text-muted">
+                    Ready to move forward? Choose the next step that works best for you.
+                  </p>
+                  <div className="mb-6 space-y-3 text-left">
+                    {applicationUrl && (
+                      <div className="rounded-2xl border border-line bg-white px-5 py-5 shadow-soft">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-accent mb-1">Ready to Start Your Pre-Approval?</p>
+                        <p className="text-sm text-muted mb-4">
+                          Complete the full mortgage application and credit check so {lo ? lo.name.split(" ")[0] : "your loan officer"} can review your information for pre-approval.
+                        </p>
+                        <a
+                          href={applicationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                          style={{ background: "var(--ok-gradient)" }}
+                        >
+                          Continue to Full Application →
+                        </a>
+                      </div>
+                    )}
+                    {calendarUrl && (
+                      <div className="rounded-2xl border border-line bg-white px-5 py-5 shadow-soft">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-1" style={{ color: "#7c5cd8" }}>Have Questions First?</p>
+                        <p className="text-sm text-muted mb-4">
+                          Choose a convenient time to speak directly with {lo ? lo.name.split(" ")[0] : "your loan officer"} about your estimate, options, and next steps.
+                        </p>
+                        <a
+                          href={calendarUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex w-full items-center justify-center rounded-xl border-2 px-5 py-3 text-sm font-bold transition-all hover:bg-purple-50"
+                          style={{ borderColor: "#7c5cd8", color: "#7c5cd8" }}
+                        >
+                          Book a Call With {lo ? lo.name.split(" ")[0] : "Your Loan Officer"} →
+                        </a>
+                      </div>
+                    )}
+                    <div className="rounded-2xl border border-line bg-sand px-5 py-4">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted/70 mb-1">Prefer to Wait?</p>
+                      <p className="text-sm text-muted">
+                        No problem. {lo ? lo.name.split(" ")[0] : "Your loan officer"} will still contact you within one business day.
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-              <Link href="/" className="secondary-button inline-flex">Return to home</Link>
+                  <p className="text-[11px] leading-5 text-muted/60">
+                    <strong className="font-semibold text-muted/80">Initial estimate only.</strong> A completed application and credit check are required for pre-approval.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="mb-8 text-base leading-7 text-muted">
+                    {lo
+                      ? `${lo.name} will reach out within one business day to walk through your options.`
+                      : "A licensed loan officer from Harris Capital Mortgage Group will reach out within one business day to walk through your options."}
+                  </p>
+                  <div className="mb-8 space-y-3 text-left">
+                    {[
+                      { icon: "📧", title: "Check your email",  body: "A confirmation with your estimate summary is on its way." },
+                      { icon: "📞", title: "Expect a call",     body: "Within 1 business day from our team in your market." },
+                      { icon: "🤝", title: "No pressure",       body: "We're here to help, not to push. You're in control." },
+                    ].map((c) => (
+                      <div key={c.title} className="flex items-start gap-4 rounded-2xl border border-line bg-white px-5 py-4">
+                        <span className="text-xl">{c.icon}</span>
+                        <div>
+                          <div className="font-semibold text-ink">{c.title}</div>
+                          <div className="text-sm text-muted">{c.body}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Link href="/" className="secondary-button inline-flex">Return to home</Link>
+                </>
+              )}
             </div>
           )}
 

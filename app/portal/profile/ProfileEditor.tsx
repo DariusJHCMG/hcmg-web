@@ -31,12 +31,14 @@ function Initials({ name }: { name: string }) {
 }
 
 export function ProfileEditor({ profile }: Props) {
-  const [fullName,      setFullName]      = useState(profile.full_name ?? "");
-  const [phone,         setPhone]         = useState(profile.phone ?? "");
-  const [notifyEmail,   setNotifyEmail]   = useState(profile.notify_email ?? "");
-  const [linkedin,      setLinkedin]      = useState(profile.linkedin ?? "");
-  const [shortBio,      setShortBio]      = useState(profile.short_bio ?? "");
-  const [avatarUrl,     setAvatarUrl]     = useState(profile.avatar_url ?? "");
+  const [fullName,        setFullName]        = useState(profile.full_name ?? "");
+  const [phone,           setPhone]           = useState(profile.phone ?? "");
+  const [notifyEmail,     setNotifyEmail]     = useState(profile.notify_email ?? "");
+  const [linkedin,        setLinkedin]        = useState(profile.linkedin ?? "");
+  const [shortBio,        setShortBio]        = useState(profile.short_bio ?? "");
+  const [avatarUrl,       setAvatarUrl]       = useState(profile.avatar_url ?? "");
+  const [applicationUrl,  setApplicationUrl]  = useState(profile.application_url ?? "");
+  const [calendarUrl,     setCalendarUrl]     = useState(profile.calendar_url ?? "");
   // New page content fields — fall back to defaults if not yet set
   const [heroBio,       setHeroBio]       = useState(profile.hero_bio       ?? DEFAULT_HERO_BIO);
   const [aboutHeadline, setAboutHeadline] = useState(profile.about_headline ?? DEFAULT_ABOUT_HEADLINE);
@@ -99,6 +101,8 @@ export function ProfileEditor({ profile }: Props) {
         long_bio:         longBioParsed.length  ? longBioParsed : null,
         years_experience: yearsExp ? parseInt(yearsExp, 10) : null,
         specialties:      specialtiesParsed.length ? specialtiesParsed : null,
+        application_url:  applicationUrl.trim() || null,
+        calendar_url:     calendarUrl.trim()    || null,
       }),
     });
 
@@ -229,6 +233,37 @@ export function ProfileEditor({ profile }: Props) {
           <input type="text" value={specialtiesRaw} onChange={(e) => setSpecialtiesRaw(e.target.value)}
             placeholder="Purchase Loans, Refinance, FHA / VA, First-Time Buyers" className={IC} />
           <p className="mt-1 text-[11px] text-muted">e.g. Purchase Loans, Refinance, FHA / VA, Jumbo</p>
+        </Field>
+      </div>
+
+      {/* ── Funnel Settings ── */}
+      <div className="rounded-2xl border border-line bg-white p-6 shadow-soft space-y-6">
+        <div>
+          <h2 className="mb-1 text-sm font-black uppercase tracking-[0.16em] text-muted">Funnel Settings</h2>
+          <p className="text-xs text-muted">
+            These links appear as action buttons after a lead completes any funnel on your pages.
+            Leave blank to hide the button.
+          </p>
+        </div>
+
+        <Field label="Application Link" hint="Your Arive (or other) full application URL. Shows a 'Continue to Full Application' button after every funnel.">
+          <input
+            type="url"
+            value={applicationUrl}
+            onChange={(e) => setApplicationUrl(e.target.value)}
+            placeholder="https://app.arive.com/apply/..."
+            className={IC}
+          />
+        </Field>
+
+        <Field label="Calendar / Booking Link" hint="Your Calendly or other scheduling link. Shows a 'Book a Call' button after every funnel.">
+          <input
+            type="url"
+            value={calendarUrl}
+            onChange={(e) => setCalendarUrl(e.target.value)}
+            placeholder="https://calendly.com/yourname"
+            className={IC}
+          />
         </Field>
       </div>
 
