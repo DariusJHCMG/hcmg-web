@@ -86,8 +86,20 @@ export default async function CoBrandedPublicPage({ params }: Props) {
         <div className="container-shell flex h-14 max-w-5xl items-center justify-between">
           {/* LO + Realtor co-brand lockup */}
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 overflow-hidden rounded-full border border-line flex-shrink-0">
-              <TeamPhoto photo={loPhoto} name={loName} aspect="1/1" className="h-full w-full" />
+            <div className="flex items-center -space-x-2">
+              <div className="h-8 w-8 overflow-hidden rounded-full border-2 border-white flex-shrink-0 z-10">
+                <TeamPhoto photo={loPhoto} name={loName} aspect="1/1" className="h-full w-full" />
+              </div>
+              <div className="h-8 w-8 overflow-hidden rounded-full border-2 border-white flex-shrink-0">
+                {page.realtor_photo_url ? (
+                  <img src={page.realtor_photo_url} alt={page.realtor_name} className="h-full w-full object-cover object-top" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-[10px] font-extrabold text-white"
+                    style={{ background: "linear-gradient(135deg,#7c5cd8,#5b4bc4)" }}>
+                    <Initials name={page.realtor_name} />
+                  </div>
+                )}
+              </div>
             </div>
             <span className="text-xs font-bold text-muted hidden sm:block">
               {loFirst} · {page.realtor_name.split(" ")[0]}
@@ -118,10 +130,12 @@ export default async function CoBrandedPublicPage({ params }: Props) {
                 <TeamPhoto photo={loPhoto} name={loName} aspect="1/1" className="h-full w-full" />
               </div>
               <span className="text-sm font-bold text-muted">partnered with</span>
-              {/* Realtor logo / initials */}
-              {page.realtor_logo_url ? (
-                <img src={page.realtor_logo_url} alt={page.realtor_company}
-                  className="h-9 w-auto max-w-[80px] rounded-lg object-contain flex-shrink-0" />
+              {/* Realtor photo / initials */}
+              {page.realtor_photo_url ? (
+                <div className="h-9 w-9 overflow-hidden rounded-full border border-line flex-shrink-0">
+                  <img src={page.realtor_photo_url} alt={page.realtor_name}
+                    className="h-full w-full object-cover object-top" />
+                </div>
               ) : (
                 <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-extrabold text-white"
                   style={{ background: "linear-gradient(135deg,#7c5cd8,#5b4bc4)" }}>
