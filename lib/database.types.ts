@@ -145,6 +145,7 @@ export interface LiftOffRequest {
   stage: string | null;
   owner_role: string | null;
   sla_deadline_at: string | null;
+  sla_severity: "normal" | "warning" | "critical" | null;
   priority_score: number | null;
   stage_history_json: { stage: string; changed_at: string; changed_by: string }[] | null;
   assigned_processor_name: string | null;

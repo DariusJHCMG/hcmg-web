@@ -3,6 +3,8 @@ import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import { sendLiftOffNotification } from "@/lib/liftoff-mailer";
 import type { LiftOffEmailPayload } from "@/lib/liftoff-mailer";
+import { computeSla } from "@/lib/liftoff-sla";
+import type { LiftOffRequestType } from "@/lib/database.types";
 
 export async function POST(req: NextRequest) {
   const profile = await getCurrentProfile();
@@ -16,7 +18,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Enforce submitter identity from session — never trust client
-  const now = new Date().toISOString();
+  const submittedAt = new Date();
+  const now = submittedAt.toISOString();
+  const slaFields = computeSla(body.request_type as LiftOffRequestType, submittedAt);
   const payload = {
     ...body,
     submitter_id:    profile.id,
@@ -26,6 +30,7 @@ export async function POST(req: NextRequest) {
     submitter_phone: profile.phone  ?? null,
     request_status:  "pending",
     created_at:      now,
+    ...slaFields,
   };
 
   const sb = createServiceClient();
