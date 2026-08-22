@@ -261,9 +261,13 @@ export function LiftOffSLATrackerClient({
   }, [initialRequests, filters, viewerId]);
 
   // ── Derived stats ──────────────────────────────────────────────────────────
+  // A completed row "met" SLA if: no deadline set (legacy row), OR completed before deadline.
+  const slaMetForRow = (r: LiftOffRequest) =>
+    !r.sla_deadline_at || !r.completed_at || new Date(r.completed_at) <= new Date(r.sla_deadline_at);
+
   const stats = useMemo(() => {
     const completed  = filtered.filter(r => r.request_status === "completed");
-    const metSla     = completed.filter(r => r.sla_deadline_at && r.completed_at && new Date(r.completed_at) <= new Date(r.sla_deadline_at));
+    const metSla     = completed.filter(r => slaMetForRow(r));
     const breached   = filtered.filter(r => isSlaBreached(r));
     const respMins   = filtered.map(r => computeResponseMinutes(r)).filter((n): n is number => n !== null);
     const handleMins = completed.map(r => computeActualHandleMinutes(r)).filter((n): n is number => n !== null);
@@ -292,7 +296,7 @@ export function LiftOffSLATrackerClient({
       .filter(t => !lockOnly || t === "lock_request")
       .map(t => {
         const rows = filtered.filter(r => r.request_type === t && r.request_status === "completed");
-        const met  = rows.filter(r => r.sla_deadline_at && r.completed_at && new Date(r.completed_at) <= new Date(r.sla_deadline_at)).length;
+        const met  = rows.filter(r => slaMetForRow(r)).length;
         const br   = rows.length - met;
         return { label: REQUEST_TYPE_LABELS[t].split(" ")[0], values: [met, br] };
       })
@@ -309,7 +313,7 @@ export function LiftOffSLATrackerClient({
       const day = r.created_at.slice(0, 10);
       const cur = map.get(day) ?? { met: 0, total: 0 };
       cur.total++;
-      if (r.sla_deadline_at && r.completed_at && new Date(r.completed_at) <= new Date(r.sla_deadline_at)) cur.met++;
+      if (slaMetForRow(r)) cur.met++;
       map.set(day, cur);
     });
     return Array.from(map.entries())
@@ -634,7 +638,11 @@ export function LiftOffSLATrackerClient({
                           : <span className="text-muted italic font-normal">—</span>
                       }
                     </td>
-                    <td className="px-4 py-3 text-muted whitespace-nowrap">{fmtDateTime(r.sla_deadline_at)}</td>
+                    <td className="px-4 py-3 text-muted whitespace-nowrap">
+                      {r.sla_deadline_at
+                        ? fmtDateTime(r.sla_deadline_at)
+                        : <span className="italic text-muted/50 text-[11px]">No SLA set</span>}
+                    </td>
                     <td className="px-4 py-3"><SlaResultChip r={r} /></td>
                     <td className="px-4 py-3 text-ink">
                       {r.claimed_by_name ?? <span className="text-muted italic">Unclaimed</span>}
