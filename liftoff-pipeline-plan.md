@@ -81,7 +81,7 @@ pipeline dashboard can read directly without any runtime calculation.
 
 ### Sub-Task 2 — Pipeline page + server component
 
-**Status:** `[ ] pending`
+**Status:** `[-] cancelled — not building`
 
 **Intent**
 Create `app/liftoff/pipeline/page.tsx` — server component that fetches all
@@ -116,7 +116,7 @@ everything to the client component. Also adds the Pipeline nav link to the layou
 
 ### Sub-Task 3 — Pipeline client component
 
-**Status:** `[ ] pending`
+**Status:** `[-] cancelled — not building`
 
 **Intent**
 Build `components/liftoff/LiftOffPipelineClient.tsx` — the full interactive
