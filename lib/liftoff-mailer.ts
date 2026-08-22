@@ -361,3 +361,96 @@ export async function sendLiftOffCompleted(p: LiftOffWorkflowPayload): Promise<v
     buildCompletedEmail(p, viewUrl),
   );
 }
+
+// ── Incomplete Email (LO notification) ───────────────────────────────────────
+
+export interface LiftOffIncompletePayload {
+  request:          Record<string, unknown>;
+  reasons:          string[];
+  notes:            string | null;
+  incompleteByName: string;
+  incompleteAt:     string;
+}
+
+function buildIncompleteEmail(p: LiftOffIncompletePayload, viewUrl: string): string {
+  const r         = p.request;
+  const borrower  = [requestField(r, "borrower_first_name"), requestField(r, "borrower_last_name")].filter(Boolean).join(" ");
+  const typeLabel = TYPE_LABELS[requestField(r, "request_type") ?? ""] ?? requestField(r, "request_type") ?? "";
+
+  const reasonsList = p.reasons
+    .map(reason => `<li style="margin-bottom:6px;font-size:13px;color:#1A2B42;">${reason}</li>`)
+    .join("");
+
+  const reasonsSection = `
+    <table width="100%" cellpadding="0" cellspacing="0"
+        style="margin-bottom:20px;border:1px solid #fecaca;border-radius:12px;overflow:hidden;background:#fff5f5;">
+      <tr><td style="padding:10px 20px;background:#dc2626;">
+        <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:2px;color:#fff;text-transform:uppercase;">What Needs to Be Fixed</p>
+      </td></tr>
+      <tr><td style="padding:14px 20px;">
+        <ul style="margin:0;padding-left:18px;">
+          ${reasonsList}
+        </ul>
+      </td></tr>
+    </table>`;
+
+  const notesSection = p.notes
+    ? `<table width="100%" cellpadding="0" cellspacing="0"
+        style="margin-bottom:20px;border:1px solid #fed7aa;border-radius:12px;overflow:hidden;background:#fff7ed;">
+        <tr><td style="padding:10px 20px;background:#F37021;">
+          <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:2px;color:#fff;text-transform:uppercase;">Notes from the Team</p>
+        </td></tr>
+        <tr><td style="padding:14px 20px;font-size:13px;color:#1A2B42;line-height:1.6;">
+          ${p.notes.replace(/\n/g, "<br/>")}
+        </td></tr>
+      </table>`
+    : "";
+
+  const detailRows =
+    infoRow("Request Type",  typeLabel) +
+    infoRow("ARIVE Loan #",  requestField(r, "arive_loan_number")) +
+    infoRow("Borrower",      borrower) +
+    infoRow("Submitted At",  fmt.ts(requestField(r, "created_at") ?? new Date().toISOString())) +
+    infoRow("Returned At",   fmt.ts(p.incompleteAt)) +
+    infoRow("Returned By",   p.incompleteByName);
+
+  const alertBanner = `
+    <div style="margin-bottom:20px;padding:16px 20px;background:#fff5f5;border:1px solid #fecaca;border-radius:12px;">
+      <p style="margin:0;font-size:14px;font-weight:700;color:#dc2626;">
+        Your Lift Off request has been returned by ${p.incompleteByName} and requires attention before it can be processed.
+      </p>
+    </div>`;
+
+  const body = `
+    <div style="padding:32px 36px 8px;">
+      ${alertBanner}
+      ${reasonsSection}
+      ${notesSection}
+      ${emailSection("Request Details", detailRows)}
+      <div style="margin:24px 0 32px;">
+        ${ctaButton("Review & Fix Your Request →", viewUrl)}
+      </div>
+    </div>`;
+
+  return emailWrap(
+    emailHeader(
+      "⚠️ Action Required",
+      `⚠️ Action Required — ${typeLabel}`,
+      `${borrower} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
+    ) + body + emailFooter(),
+  );
+}
+
+export async function sendLiftOffIncomplete(p: LiftOffIncompletePayload): Promise<void> {
+  const r         = p.request;
+  const viewUrl   = `${BASE_URL}/liftoff/${requestField(r, "id")}`;
+  const borrower  = [requestField(r, "borrower_first_name"), requestField(r, "borrower_last_name")].filter(Boolean).join(" ");
+  const typeLabel = TYPE_LABELS[requestField(r, "request_type") ?? ""] ?? "Lift Off";
+  const toEmail   = requestField(r, "submitter_email");
+  if (!toEmail) return;
+  await send(
+    toEmail,
+    `⚠️ Action Required: ${typeLabel} — ${borrower}`,
+    buildIncompleteEmail(p, viewUrl),
+  );
+}

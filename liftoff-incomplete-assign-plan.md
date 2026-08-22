@@ -141,7 +141,7 @@ feature can be built against them.
 
 ### Sub-Task A2 — Incomplete reasons catalogue
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 Define the per-request-type incomplete reason options as a shared constant so both
@@ -192,7 +192,7 @@ the ops queue modal and the LO resubmission confirmation can use the same list.
 
 ### Sub-Task A3 — Incomplete API route
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 `PATCH /api/liftoff/[id]/incomplete` — marks the request as incomplete, stores
