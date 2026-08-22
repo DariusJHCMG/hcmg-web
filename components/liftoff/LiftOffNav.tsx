@@ -30,8 +30,9 @@ export function LiftOffNav({
   const navItems: NavItem[] = [
     { href: "/liftoff",     label: "My Requests", icon: "🏠", exact: true },
     { href: "/liftoff/new", label: "New Request",  icon: "✨" },
-    ...(isQueueUser ? [{ href: "/liftoff/queue", label: "Ops Queue", icon: "📥" }] : []),
-    ...(isAdmin     ? [{ href: "/liftoff/users", label: "Team & Roles", icon: "👥" }] : []),
+    ...(isQueueUser ? [{ href: "/liftoff/queue",    label: "Ops Queue",   icon: "📥" }] : []),
+    ...(isQueueUser ? [{ href: "/liftoff/pipeline", label: "Pipeline",    icon: "📊" }] : []),
+    ...(isAdmin     ? [{ href: "/liftoff/users",    label: "Team & Roles", icon: "👥" }] : []),
   ];
 
   function isActive(item: NavItem) {
