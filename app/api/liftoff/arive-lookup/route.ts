@@ -151,9 +151,10 @@ export async function POST(req: NextRequest) {
   try {
     bearerToken = await getAriveToken(clientId, clientSecret);
   } catch (err) {
-    console.error("[arive-lookup] token exchange failed", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[arive-lookup] token exchange failed", msg);
     return NextResponse.json(
-      { error: "Could not authenticate with ARIVE. Please fill in manually." },
+      { error: "Could not authenticate with ARIVE. Please fill in manually.", _debug: msg },
       { status: 502 },
     );
   }
