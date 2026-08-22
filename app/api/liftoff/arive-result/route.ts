@@ -88,10 +88,32 @@ export async function POST(req: NextRequest) {
   const mortgageType  = String(body.mortgageType ?? "");
   const loanType = mapLoanType(loanPurpose, mortgageType);
 
+  // ── Map property type (ARIVE Housing Type → our values) ─────────────────
+  const propTypeRaw = String(body.propertyType ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const propertyType =
+    propTypeRaw.includes("single") || propTypeRaw === "singlefamily" ? "sfr" :
+    propTypeRaw.includes("condo")                                    ? "condo" :
+    propTypeRaw.includes("town")                                     ? "townhome" :
+    propTypeRaw.includes("multi") || propTypeRaw.includes("2") || propTypeRaw.includes("pud") ? "2_4_unit" :
+    propTypeRaw.includes("manuf") || propTypeRaw.includes("mobile")  ? "manufactured" :
+    propTypeRaw ? "other" : null;
+
+  // ── Map occupancy type (ARIVE Property Usage Type → our values) ──────────
+  const occRaw = String(body.occupancyType ?? "").toLowerCase();
+  const occupancyType =
+    occRaw.includes("primary")    ? "primary" :
+    occRaw.includes("second")     ? "secondary" :
+    occRaw.includes("invest")     ? "investment" :
+    null;
+
   const result = {
-    found:             true as const,
-    borrowerFirstName: (body.borrowerFirstName as string) || null,
-    borrowerLastName:  (body.borrowerLastName  as string) || null,
+    found:               true as const,
+    borrowerFirstName:   (body.borrowerFirstName   as string) || null,
+    borrowerLastName:    (body.borrowerLastName    as string) || null,
+    coBorrowerFirstName: (body.coBorrowerFirstName as string) || null,
+    coBorrowerLastName:  (body.coBorrowerLastName  as string) || null,
+    propertyType,
+    occupancyType,
     loanType,
     loanAmount:        body.loanAmount    ? Number(body.loanAmount)    : null,
     purchasePrice:     body.purchasePrice ? Number(body.purchasePrice) : null,

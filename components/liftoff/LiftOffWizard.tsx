@@ -527,8 +527,12 @@ function WizardInner() {
       return;
     }
     setAriveLookupRaw(data as AriveLoanData);
-    if (data.borrowerFirstName)  setBorrowerFirst(data.borrowerFirstName as string);
-    if (data.borrowerLastName)   setBorrowerLast(data.borrowerLastName   as string);
+    if (data.borrowerFirstName)   setBorrowerFirst(data.borrowerFirstName   as string);
+    if (data.borrowerLastName)    setBorrowerLast(data.borrowerLastName     as string);
+    if (data.coBorrowerFirstName) setCoBorrowerFirst(data.coBorrowerFirstName as string);
+    if (data.coBorrowerLastName)  setCoBorrowerLast(data.coBorrowerLastName  as string);
+    if (data.propertyType)        setPropertyType(data.propertyType          as string);
+    if (data.occupancyType)       setOccupancyType(data.occupancyType        as string);
     if (data.loanType) {
       // loanType from ARIVE result is e.g. "purchase", "purchase_fha", "refinance_va", "non_qm"
       const lt = data.loanType as string;

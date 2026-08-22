@@ -13,9 +13,13 @@
 
 interface AriveResult {
   found: boolean;
-  borrowerFirstName: string | null;
-  borrowerLastName:  string | null;
-  loanType:          string | null;
+  borrowerFirstName:   string | null;
+  borrowerLastName:    string | null;
+  coBorrowerFirstName: string | null;
+  coBorrowerLastName:  string | null;
+  propertyType:        string | null;
+  occupancyType:       string | null;
+  loanType:            string | null;
   loanAmount:        number | null;
   purchasePrice:     number | null;
   propertyAddress:   string | null;
