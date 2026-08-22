@@ -144,9 +144,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      console.error("[arive-lookup] search failed", res.status, await res.text().catch(() => ""));
+      const ariveBody = await res.text().catch(() => "");
+      console.error("[arive-lookup] search failed", res.status, ariveBody);
+      // Return the raw ARIVE error so we can diagnose — strip sensitive info in prod later
       return NextResponse.json(
-        { error: `ARIVE lookup failed (${res.status}). Please fill in manually.` },
+        { error: `ARIVE lookup failed (${res.status}). Please fill in manually.`, _debug: ariveBody, _url: searchUrl.toString().replace(apiKey, "***") },
         { status: 502 },
       );
     }
