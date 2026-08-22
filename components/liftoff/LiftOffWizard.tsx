@@ -37,6 +37,7 @@ const DOC_CHECKLISTS: Record<LiftOffRequestType, DocItem[]> = {
     { id: "exception_ltr", label: "Exception Letter",        category: "compliance" },
     { id: "support_docs",  label: "Supporting Documents",    category: "compliance" },
   ],
+  lock_request: [],
 };
 
 // ── File status pipeline per request type ────────────────────
@@ -45,6 +46,7 @@ const FILE_STATUS_STEPS: Record<LiftOffRequestType, string[]> = {
   disclosure_only:      ["Request Submitted", "Pre-Process Review", "Disclosure Sent"],
   submission:           ["Request Submitted", "Pre-Process Review", "Registered in ARIVE", "Disclosure Sent", "Processor Assigned"],
   restructure_suspense: ["Request Submitted", "Compliance Review", "Ops Decision", "Resolution Confirmed"],
+  lock_request:         ["Request Submitted", "Lock Desk Review", "Locked in Portal", "LO Notified"],
 };
 
 // ── Demo data ─────────────────────────────────────────────────
@@ -110,6 +112,13 @@ const REQUEST_TYPES: {
     description: "Resolve a blocker on an existing loan — restructure if no solution, or submit an exception request when you have one.",
     tags: ["RESTRUCTURE", "EXCEPTION", "COMPLIANCE"],
     icon: "🔄",
+  },
+  {
+    id: "lock_request",
+    label: "Lock Desk Request",
+    description: "Request a rate lock on a registered loan. Confirm current ARIVE pricing before submitting — the lock desk will execute in the lender portal.",
+    tags: ["LOCK", "RATE", "PRICING"],
+    icon: "🔒",
   },
 ];
 
@@ -404,9 +413,23 @@ function WizardInner() {
   const [certNmls, setCertNmls]     = useState("");
   const [certLoName, setCertLoName] = useState("");
 
+  // Step 2 — Lock Request pricing
+  const [lockRate, setLockRate]               = useState("");
+  const [lockPrice, setLockPrice]             = useState("");
+  const [lockApr, setLockApr]                 = useState("");
+  const [lockMonthlyPmt, setLockMonthlyPmt]   = useState("");
+  const [lockLender, setLockLender]           = useState("");
+  const [lockProduct, setLockProduct]         = useState("");
+  const [lockPeriod, setLockPeriod]           = useState<15|30|45|60>(30);
+  const [lockCloseDate, setLockCloseDate]     = useState("");
+  const [lockLoNotes, setLockLoNotes]         = useState("");
+  const [lockChkArive, setLockChkArive]       = useState(false);
+  const [lockChkLos, setLockChkLos]           = useState(false);
+
   const selectedType  = REQUEST_TYPES.find(t => t.id === requestType);
   const lockRequired  = selectedType?.lockRequired ?? false;
   const isRestructure = requestType === "restructure_suspense";
+  const isLockRequest = requestType === "lock_request";
   const docItems      = requestType ? DOC_CHECKLISTS[requestType] ?? [] : [];
   const checkedCount  = isDemo ? docItems.length : docItems.filter(d => docChecked[d.id]).length;
   const pendingDocs   = docItems.length - checkedCount;
@@ -480,6 +503,9 @@ function WizardInner() {
       if (data.targetCloseDate)     setTargetClose(data.targetCloseDate.split("T")[0]);
       if (data.lockStatus)          setLockStatus(data.lockStatus as LockStatus);
       if (data.floatReason)         setFloatReason(data.floatReason);
+      // Pre-fill lock request pricing fields from ARIVE
+      if (data.loanAmount)          setLockMonthlyPmt("");  // monthly pmt not in arive lookup yet
+      if (data.loanAmount)          setLockRate("");        // rate must be entered manually — confirm in ARIVE
       setAriveLookupStatus("found");
       setAriveLookupMessage("Loan found — fields auto-filled from ARIVE. Review and adjust if needed.");
     } catch {
@@ -493,8 +519,15 @@ function WizardInner() {
     if (step === 1 && !requestType) { setError("Please select a request type."); return; }
     if (step === 2) {
       if (!ariveLoanNumber.trim()) { setError("ARIVE loan number is required."); return; }
-      if (lockRequired && !lockStatus) { setError("Lock status is required for this request type."); return; }
-      if (lockStatus === "floating" && !floatReason.trim()) { setError("Float reason is required when floating."); return; }
+      if (isLockRequest) {
+        if (!lockRate.trim())  { setError("Rate is required for a lock request."); return; }
+        if (!lockPrice.trim()) { setError("Price / points is required for a lock request."); return; }
+        if (!lockChkArive)     { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
+        if (!lockChkLos)       { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
+      } else {
+        if (lockRequired && !lockStatus) { setError("Lock status is required for this request type."); return; }
+        if (lockStatus === "floating" && !floatReason.trim()) { setError("Float reason is required when floating."); return; }
+      }
     }
     setError("");
     setStep(s => (s < 3 ? (s + 1) as 1|2|3 : s));
@@ -508,11 +541,13 @@ function WizardInner() {
     if (!certNmls.trim())              { setError("Your NMLS # is required for certification."); return; }
     if (!borrowerFirst || !borrowerLast) { setError("Borrower name is required."); return; }
     if (!isDemo) {
-      if (!incomeNote.trim())   { setError("IPAC — Income note is required."); return; }
-      if (!propertyNote.trim()) { setError("IPAC — Property note is required."); return; }
-      if (!assetsNote.trim())   { setError("IPAC — Assets note is required."); return; }
-      if (!creditNote.trim())   { setError("IPAC — Credit note is required."); return; }
-      if (pendingDocs > 0)      { setError(`Resolve ${pendingDocs} pending document${pendingDocs > 1 ? "s" : ""} before submitting.`); return; }
+      if (!isLockRequest) {
+        if (!incomeNote.trim())   { setError("IPAC — Income note is required."); return; }
+        if (!propertyNote.trim()) { setError("IPAC — Property note is required."); return; }
+        if (!assetsNote.trim())   { setError("IPAC — Assets note is required."); return; }
+        if (!creditNote.trim())   { setError("IPAC — Credit note is required."); return; }
+        if (pendingDocs > 0)      { setError(`Resolve ${pendingDocs} pending document${pendingDocs > 1 ? "s" : ""} before submitting.`); return; }
+      }
     }
     if (isDemo) { router.push("/liftoff?demo=1&submitted=1"); return; }
 
@@ -574,6 +609,19 @@ function WizardInner() {
       payload.suspense_reason = suspenseReason || null;
       payload.suspense_notes  = suspenseNotes  || null;
       payload.reason_fixed    = reasonFixed;
+    }
+    if (isLockRequest) {
+      payload.lock_requested_rate        = lockRate        ? parseFloat(lockRate)        : null;
+      payload.lock_requested_price       = lockPrice       ? parseFloat(lockPrice)       : null;
+      payload.lock_requested_apr         = lockApr         ? parseFloat(lockApr)         : null;
+      payload.lock_requested_monthly_pmt = lockMonthlyPmt  ? parseFloat(lockMonthlyPmt)  : null;
+      payload.lock_requested_lender      = lockLender      || null;
+      payload.lock_requested_product     = lockProduct     || null;
+      payload.lock_period_days           = lockPeriod;
+      payload.lock_requested_close_date  = lockCloseDate   || null;
+      payload.lock_lo_notes              = lockLoNotes     || null;
+      payload.lock_pricing_confirmed_by_lo = lockChkArive && lockChkLos;
+      payload.lock_pricing_confirmed_at  = new Date().toISOString();
     }
     try {
       const res  = await fetch("/api/liftoff/submit", {
@@ -715,13 +763,97 @@ function WizardInner() {
               )}
             </div>
 
+            {/* Lock Request — Pricing Panel (replaces prior-progress + loan/lock sections) */}
+            {isLockRequest ? (
+              <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-5">
+                <div>
+                  <h3 className="text-sm font-bold text-ink">Pricing from ARIVE</h3>
+                  <p className="text-xs text-muted mt-0.5">
+                    Run pricing in ARIVE first, then enter the confirmed rate and price below.
+                    Both confirmation boxes must be checked before you can continue.
+                  </p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Rate %" required>
+                    <Input type="number" step="0.001" min="0" value={lockRate}
+                      onChange={e => setLockRate(e.target.value)} placeholder="e.g. 6.875" />
+                  </Field>
+                  <Field label="Price / Points" required hint="e.g. 100.000 = par, 99.500 = 0.5 pts cost">
+                    <Input type="number" step="0.001" value={lockPrice}
+                      onChange={e => setLockPrice(e.target.value)} placeholder="e.g. 99.500" />
+                  </Field>
+                  <Field label="APR %">
+                    <Input type="number" step="0.001" min="0" value={lockApr}
+                      onChange={e => setLockApr(e.target.value)} placeholder="e.g. 7.024" />
+                  </Field>
+                  <Field label="Est. Monthly Payment">
+                    <Input type="number" step="1" min="0" value={lockMonthlyPmt}
+                      onChange={e => setLockMonthlyPmt(e.target.value)} placeholder="e.g. 2850" />
+                  </Field>
+                  <Field label="Lender">
+                    <Input value={lockLender} onChange={e => setLockLender(e.target.value)} placeholder="e.g. UWM" />
+                  </Field>
+                  <Field label="Product">
+                    <Input value={lockProduct} onChange={e => setLockProduct(e.target.value)} placeholder="e.g. 30-Yr Fixed Conventional" />
+                  </Field>
+                </div>
+
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70 mb-2">Lock Period</p>
+                  <div className="flex flex-wrap gap-4">
+                    {([15, 30, 45, 60] as const).map(d => (
+                      <label key={d} className={`flex items-center gap-2 cursor-pointer rounded-xl border px-4 py-2 text-sm font-semibold transition-all ${
+                        lockPeriod === d ? "border-orange-400 bg-orange-50 text-ink" : "border-line bg-white text-muted hover:border-orange-200"
+                      }`}>
+                        <input type="radio" name="lockPeriod" checked={lockPeriod === d}
+                          onChange={() => setLockPeriod(d)} className="accent-orange-500" />
+                        {d} days
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <Field label="Requested Close Date">
+                  <Input type="date" value={lockCloseDate} onChange={e => setLockCloseDate(e.target.value)} />
+                </Field>
+
+                <Field label="Notes to Lock Desk" hint="Any special instructions, rush details, or lender portal info.">
+                  <Textarea value={lockLoNotes} onChange={e => setLockLoNotes(e.target.value)}
+                    placeholder="e.g. Rush — client needs lock confirmed today. Lender portal credentials on file." rows={3} />
+                </Field>
+
+                {/* Confirmations */}
+                <div className="rounded-xl border border-[#142850]/20 bg-[#142850]/5 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Required Confirmations</p>
+                  <label className="flex items-start gap-3 cursor-pointer text-sm">
+                    <input type="checkbox" checked={lockChkArive} onChange={e => setLockChkArive(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded accent-orange-500 flex-shrink-0" />
+                    <span className="leading-relaxed text-ink">
+                      I have run pricing in ARIVE within the last 20 minutes and the rate / price above reflects current market pricing.
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer text-sm">
+                    <input type="checkbox" checked={lockChkLos} onChange={e => setLockChkLos(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded accent-orange-500 flex-shrink-0" />
+                    <span className="leading-relaxed text-ink">
+                      I have confirmed the pricing in the LOS (ARIVE) is updated and matches what I want to lock.
+                    </span>
+                  </label>
+                  <p className="text-[11px] text-muted/60">Both boxes must be checked before you can continue.</p>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* Prior progress */}
             <div className="rounded-2xl border border-line bg-white p-6">
               <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Prior Progress for This Loan</h3>
             </div>
+            </>
+            )}
 
-            {/* Loan details */}
-            <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
+            {/* Loan details — hidden for lock requests (pricing already captured above) */}
+            {!isLockRequest && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Loan Information</h3>
                 {ariveLookupStatus === "found" && (
@@ -756,10 +888,10 @@ function WizardInner() {
                   </Field>
                 )}
               </div>
-            </div>
+            </div>}
 
             {/* Lock */}
-            {!isRestructure && (
+            {!isRestructure && !isLockRequest && (
               <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">
@@ -893,8 +1025,41 @@ function WizardInner() {
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-6">
 
+            {/* Lock Request — Step 3 summary + borrower confirm */}
+            {isLockRequest && (
+              <div className="rounded-2xl border-2 border-[#142850] bg-[#142850]/5 p-6 space-y-4">
+                <div>
+                  <h3 className="text-sm font-bold text-ink">🔒 Lock Request Summary</h3>
+                  <p className="text-xs text-muted mt-0.5">Review the details below. Once submitted, the lock desk will execute this lock in the lender portal.</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                  {[
+                    { label: "Rate",          value: lockRate     ? `${lockRate}%`     : "—" },
+                    { label: "Price",         value: lockPrice    ? lockPrice           : "—" },
+                    { label: "APR",           value: lockApr      ? `${lockApr}%`      : "—" },
+                    { label: "Monthly Pmt",   value: lockMonthlyPmt ? `$${parseFloat(lockMonthlyPmt).toLocaleString()}` : "—" },
+                    { label: "Lender",        value: lockLender   || "—" },
+                    { label: "Product",       value: lockProduct  || "—" },
+                    { label: "Lock Period",   value: `${lockPeriod} days` },
+                    { label: "Requested Close", value: lockCloseDate ? new Date(lockCloseDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—" },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex gap-3 border-b border-line py-2 last:border-0">
+                      <span className="w-32 flex-shrink-0 text-xs font-bold uppercase tracking-[0.08em] text-muted/70">{label}</span>
+                      <span className="text-ink font-semibold">{value}</span>
+                    </div>
+                  ))}
+                </div>
+                {lockLoNotes && (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted/70 mb-1">Notes to Lock Desk</p>
+                    <p className="text-sm text-ink whitespace-pre-wrap">{lockLoNotes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* 1003 Matches Registration */}
-            {!isRestructure && (
+            {!isRestructure && !isLockRequest && (
               <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
                 <div>
                   <h3 className="text-sm font-bold text-ink">1003 Matches Registration</h3>
@@ -977,8 +1142,8 @@ function WizardInner() {
               </div>
             )}
 
-            {/* IPAC Notes */}
-            <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
+            {/* IPAC Notes — hidden for lock requests */}
+            {!isLockRequest && <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
               <div className="text-center pb-2 border-b border-line">
                 <h3 className="text-lg font-extrabold text-ink">IPAC</h3>
                 <p className="text-xs font-semibold text-muted italic mt-0.5">Summary on Income Property Assets &amp; Credit</p>
@@ -1009,10 +1174,10 @@ function WizardInner() {
                     placeholder="And/Or is there anything unique that could impact the process?" />
                 </Field>
               </div>
-            </div>
+            </div>}
 
             {/* Gift Funds */}
-            {!isRestructure && (
+            {!isRestructure && !isLockRequest && (
               <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Gift Funds</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -1058,13 +1223,13 @@ function WizardInner() {
               </div>
             )}
 
-            {/* Document Checklist */}
-            <DocChecklist
+            {/* Document Checklist — hidden for lock requests */}
+            {!isLockRequest && <DocChecklist
               items={docItems}
               checked={docChecked}
               onToggle={id => setDocChecked(prev => ({ ...prev, [id]: !prev[id] }))}
               isDemo={isDemo}
-            />
+            />}
 
             {/* Special Instructions */}
             <div className="rounded-2xl border border-line bg-white p-6">

@@ -11,6 +11,7 @@ const TYPE_LABELS: Record<string, string> = {
   disclosure_only:       "Disclosure Only",
   submission:            "Submission",
   restructure_suspense:  "Restructure / Suspense",
+  lock_request:          "Lock Desk Request",
 };
 
 const PROPERTY_TYPE_LABELS: Record<string, string> = {
@@ -217,6 +218,65 @@ export default async function LiftOffDetailPage({
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Lock Desk Request */}
+      {request.request_type === "lock_request" && (
+        <div className="rounded-2xl border border-line bg-white overflow-hidden">
+          <div className="border-b border-line px-6 py-4 bg-sand">
+            <h2 className="font-bold text-ink text-sm">Lock Request — Pricing Snapshot</h2>
+          </div>
+          <div className="px-6 py-2">
+            <Row label="Rate"
+              value={request.lock_requested_rate != null ? `${request.lock_requested_rate}%` : null} />
+            <Row label="Price / Points"
+              value={request.lock_requested_price != null ? String(request.lock_requested_price) : null} />
+            <Row label="APR"
+              value={request.lock_requested_apr != null ? `${request.lock_requested_apr}%` : null} />
+            <Row label="Est. Monthly Pmt"
+              value={request.lock_requested_monthly_pmt != null
+                ? `$${request.lock_requested_monthly_pmt.toLocaleString()}`
+                : null} />
+            <Row label="Lender"        value={request.lock_requested_lender} />
+            <Row label="Product"       value={request.lock_requested_product} />
+            <Row label="Lock Period"
+              value={request.lock_period_days != null ? `${request.lock_period_days} days` : null} />
+            <Row label="Requested Close" value={fmt(request.lock_requested_close_date)} />
+            <Row label="Notes to Lock Desk" value={request.lock_lo_notes} />
+          </div>
+        </div>
+      )}
+
+      {/* Lock Desk — Confirmed Lock (ops-filled) */}
+      {request.request_type === "lock_request" && request.lock_confirmed_rate != null && (
+        <div className="rounded-2xl border border-line bg-white overflow-hidden">
+          <div className="border-b border-line px-6 py-4 bg-sand flex items-center justify-between">
+            <h2 className="font-bold text-ink text-sm">Confirmed Lock</h2>
+            <span className="rounded-full px-2.5 py-1 text-[10px] font-bold border bg-green-50 text-green-700 border-green-200">
+              LOCKED
+            </span>
+          </div>
+          <div className="px-6 py-2">
+            <Row label="Confirmed Rate"
+              value={request.lock_confirmed_rate != null ? `${request.lock_confirmed_rate}%` : null} />
+            <Row label="Confirmed Price"
+              value={request.lock_confirmed_price != null ? String(request.lock_confirmed_price) : null} />
+            <Row label="Confirmed APR"
+              value={request.lock_confirmed_apr != null ? `${request.lock_confirmed_apr}%` : null} />
+            <Row label="Lock Period"
+              value={request.lock_confirmed_lock_period != null
+                ? `${request.lock_confirmed_lock_period} days`
+                : null} />
+            <Row label="Lock Date"       value={fmt(request.lock_confirmed_lock_date)} />
+            <Row label="Expiration Date" value={fmt(request.lock_confirmed_exp_date)} />
+            <Row label="Confirmation #"  value={request.lock_confirmation_number} />
+            <Row label="Lender"          value={request.lock_confirmed_lender} />
+            {request.lock_desk_notes && (
+              <Row label="Lock Desk Notes"
+                value={<span className="whitespace-pre-wrap">{request.lock_desk_notes}</span>} />
+            )}
           </div>
         </div>
       )}

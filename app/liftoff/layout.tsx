@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
+import { canAccessLiftOffQueue } from "@/lib/auth";
 import Link from "next/link";
 import { OrangeKeyLogo } from "@/components/ui/OrangeKeyLogo";
 import type { Metadata } from "next";
@@ -21,7 +22,8 @@ export default async function LiftOffLayout({ children }: { children: React.Reac
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login?next=/liftoff");
 
-  const isAdmin = profile.role === "admin" || profile.role === "developer";
+  const isAdmin      = profile.role === "admin" || profile.role === "developer";
+  const isQueueUser  = canAccessLiftOffQueue(profile);
 
   return (
     <div className="min-h-screen bg-sand">
@@ -47,10 +49,16 @@ export default async function LiftOffLayout({ children }: { children: React.Reac
                 style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
                 + New Request
               </Link>
-              {isAdmin && (
-                <Link href="/admin/liftoff"
+              {isQueueUser && (
+                <Link href="/liftoff/queue"
                   className="rounded-lg px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-sand hover:text-ink">
-                  Admin Queue
+                  Ops Queue
+                </Link>
+              )}
+              {isAdmin && (
+                <Link href="/liftoff/users"
+                  className="rounded-lg px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-sand hover:text-ink">
+                  Team & Roles
                 </Link>
               )}
             </nav>

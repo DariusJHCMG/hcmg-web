@@ -3,6 +3,8 @@ import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import type { LiftOffRequest } from "@/lib/database.types";
+import { LockDeskHoursCard } from "@/components/liftoff/LockDeskHoursCard";
+import { LiftOffSLACard } from "@/components/liftoff/LiftOffSLACard";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,7 @@ const TYPE_LABELS: Record<string, string> = {
   restructure_suspense:  "Restructure / Suspense",
   wire_request:          "Wire Request",
   adverse:               "Adverse",
+  lock_request:          "Lock Desk Request",
 };
 
 const STATUS_STYLES: Record<string, string> = {
@@ -70,6 +73,12 @@ export default async function LiftOffDashboardPage() {
           style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
           + New Request
         </Link>
+      </div>
+
+      {/* Info cards — hours + SLA */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <LockDeskHoursCard />
+        <LiftOffSLACard />
       </div>
 
       {/* Stats */}

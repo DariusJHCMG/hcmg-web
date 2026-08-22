@@ -1,5 +1,5 @@
 import { createSupabaseServerClient, createServiceClient } from "./supabase";
-import type { Profile, Role } from "./database.types";
+import type { Profile, Role, LiftOffRole } from "./database.types";
 
 // ── Get current session + profile (server components / API routes) ──
 export async function getSession() {
@@ -38,6 +38,39 @@ export function isDeveloper(profile: Profile | null): boolean {
 
 export function isLoanOfficer(profile: Profile | null): boolean {
   return profile?.role === "loan_officer";
+}
+
+// ── Lift Off role checks ──────────────────────────────────────
+export function hasLiftOffAccess(profile: Profile | null): boolean {
+  if (!profile) return false;
+  if (profile.role === "admin" || profile.role === "developer") return true;
+  return profile.liftoff_role != null;
+}
+
+export function canAccessLiftOffQueue(profile: Profile | null): boolean {
+  return hasLiftOffAccess(profile);
+}
+
+export function canSeeLockRequests(profile: Profile | null): boolean {
+  if (!profile) return false;
+  if (profile.role === "admin" || profile.role === "developer") return true;
+  return profile.liftoff_role === "liftoff_admin" || profile.liftoff_role === "lock_desk_admin";
+}
+
+export function canSeeGeneralRequests(profile: Profile | null): boolean {
+  if (!profile) return false;
+  if (profile.role === "admin" || profile.role === "developer") return true;
+  return profile.liftoff_role === "liftoff_admin" || profile.liftoff_role === "liftoff_team";
+}
+
+export function getLiftOffRoleLabel(role: LiftOffRole | null): string {
+  if (!role) return "—";
+  const labels: Record<LiftOffRole, string> = {
+    liftoff_admin:   "Lift Off Admin",
+    liftoff_team:    "Lift Off Team",
+    lock_desk_admin: "Lock Desk Admin",
+  };
+  return labels[role];
 }
 
 export function redirectPath(role: Role): string {

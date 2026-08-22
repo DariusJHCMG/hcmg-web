@@ -1,4 +1,5 @@
 export type Role = "admin" | "developer" | "loan_officer";
+export type LiftOffRole = "liftoff_admin" | "liftoff_team" | "lock_desk_admin";
 
 // ── Lift Off Types ────────────────────────────────────────────
 
@@ -6,7 +7,8 @@ export type LiftOffRequestType =
   | "register_disclosure"
   | "disclosure_only"
   | "submission"
-  | "restructure_suspense";
+  | "restructure_suspense"
+  | "lock_request";
 
 export type LiftOffRequestStatus =
   | "pending"
@@ -113,6 +115,31 @@ export interface LiftOffRequest {
   adverse_open_appraisal_order: boolean | null;
   adverse_appraisal_disposition: string | null;
 
+  // Lock Request fields
+  lock_requested_rate: number | null;
+  lock_requested_price: number | null;
+  lock_requested_apr: number | null;
+  lock_requested_monthly_pmt: number | null;
+  lock_requested_lender: string | null;
+  lock_requested_product: string | null;
+  lock_requested_loan_amount: number | null;
+  lock_requested_loan_type: string | null;
+  lock_period_days: number | null;
+  lock_requested_close_date: string | null;
+  lock_pricing_confirmed_by_lo: boolean;
+  lock_pricing_confirmed_at: string | null;
+  lock_pricing_age_minutes: number | null;
+  lock_lo_notes: string | null;
+  lock_confirmed_rate: number | null;
+  lock_confirmed_price: number | null;
+  lock_confirmed_apr: number | null;
+  lock_confirmed_lock_period: number | null;
+  lock_confirmed_lock_date: string | null;
+  lock_confirmed_exp_date: string | null;
+  lock_confirmation_number: string | null;
+  lock_confirmed_lender: string | null;
+  lock_desk_notes: string | null;
+
   // Ops / Stage
   stage: string | null;
   owner_role: string | null;
@@ -137,6 +164,15 @@ export interface LiftOffRequest {
   // Certification
   certified_at: string | null;
   certified_by_name: string | null;
+
+  // Workflow tracking
+  claimed_by_id: string | null;
+  claimed_by_name: string | null;
+  claimed_at: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  inflight_email_sent_at: string | null;
+  completed_email_sent_at: string | null;
 }
 
 
@@ -182,6 +218,7 @@ export interface Profile {
   arive_lo_id: string | null;
   porchy_user_id: string | null;
   last_login_at: string | null;
+  liftoff_role: LiftOffRole | null;
 }
 
 export interface Lead {
