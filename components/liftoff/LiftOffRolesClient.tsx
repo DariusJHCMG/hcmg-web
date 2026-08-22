@@ -3,13 +3,7 @@
 import { useState } from "react";
 import type { Profile, LiftOffRole } from "@/lib/database.types";
 
-const LIFTOFF_ROLES: { value: LiftOffRole | ""; label: string; description: string; color: string }[] = [
-  {
-    value:       "",
-    label:       "No Lift Off Role",
-    description: "Standard access only — cannot access the ops queue.",
-    color:       "bg-gray-50 border-gray-200 text-gray-500",
-  },
+const LIFTOFF_ROLES: { value: LiftOffRole; label: string; description: string; color: string }[] = [
   {
     value:       "liftoff_admin",
     label:       "Lift Off Admin",
@@ -28,31 +22,50 @@ const LIFTOFF_ROLES: { value: LiftOffRole | ""; label: string; description: stri
     description: "Queue access for lock requests only — approves and executes rate locks.",
     color:       "bg-green-50 border-green-200 text-green-700",
   },
+  {
+    value:       "ops_manager",
+    label:       "Ops Manager",
+    description: "Can assign and reassign requests. Sees all general request types.",
+    color:       "bg-purple-50 border-purple-200 text-purple-700",
+  },
 ];
 
-function roleMeta(role: LiftOffRole | null) {
-  return LIFTOFF_ROLES.find(r => r.value === (role ?? "")) ?? LIFTOFF_ROLES[0];
+function roleLabels(roles: LiftOffRole[]): string {
+  if (!roles || roles.length === 0) return "No Lift Off Role";
+  const map: Record<LiftOffRole, string> = {
+    liftoff_admin:   "Lift Off Admin",
+    liftoff_team:    "Lift Off Team",
+    lock_desk_admin: "Lock Desk Admin",
+    ops_manager:     "Ops Manager",
+  };
+  return roles.map(r => map[r] ?? r).join(", ");
 }
 
-function UserRow({ user, onSaved }: { user: Profile; onSaved: (id: string, role: LiftOffRole | null) => void }) {
-  const [editing, setEditing] = useState(false);
-  const [selected, setSelected] = useState<LiftOffRole | "">(user.liftoff_role ?? "");
+function UserRow({ user, onSaved }: { user: Profile; onSaved: (id: string, roles: LiftOffRole[]) => void }) {
+  const [editing, setEditing]   = useState(false);
+  const [selected, setSelected] = useState<LiftOffRole[]>(user.liftoff_roles ?? []);
   const [saving, setSaving]     = useState(false);
   const [err, setErr]           = useState("");
 
-  const meta = roleMeta(user.liftoff_role);
+  const hasAnyRole = user.liftoff_roles.length > 0;
+
+  function toggleRole(role: LiftOffRole) {
+    setSelected(prev =>
+      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    );
+  }
 
   async function save() {
     setSaving(true); setErr("");
     const res = await fetch(`/api/liftoff/users/${user.id}/role`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ liftoff_role: selected || null }),
+      body:    JSON.stringify({ liftoff_roles: selected }),
     });
     const data = await res.json();
     setSaving(false);
     if (!res.ok) { setErr(data.error ?? "Save failed"); return; }
-    onSaved(user.id, (selected as LiftOffRole) || null);
+    onSaved(user.id, selected);
     setEditing(false);
   }
 
@@ -76,38 +89,44 @@ function UserRow({ user, onSaved }: { user: Profile; onSaved: (id: string, role:
         {user.nmls && <p className="text-[10px] text-muted/60">NMLS# {user.nmls}</p>}
       </div>
 
-      {/* Current Lift Off role pill */}
+      {/* Current Lift Off role pill(s) */}
       {!editing ? (
         <div className="flex items-center gap-3">
-          <span className={`rounded-full px-3 py-1 text-[11px] font-bold border ${meta.color}`}>
-            {meta.label}
+          <span className={`rounded-full px-3 py-1 text-[11px] font-bold border ${hasAnyRole ? "bg-orange-50 border-orange-200 text-orange-700" : "bg-gray-50 border-gray-200 text-gray-500"}`}>
+            {roleLabels(user.liftoff_roles)}
           </span>
-          <button onClick={() => { setEditing(true); setSelected(user.liftoff_role ?? ""); }}
+          <button onClick={() => { setEditing(true); setSelected(user.liftoff_roles ?? []); }}
             className="rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-semibold text-muted hover:bg-sand transition-colors">
             Edit
           </button>
         </div>
       ) : (
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          <select
-            value={selected}
-            onChange={e => setSelected(e.target.value as LiftOffRole | "")}
-            className="rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-orange-400/40"
-          >
+        <div className="flex flex-col gap-2 items-end">
+          <div className="flex flex-col gap-1.5">
             {LIFTOFF_ROLES.map(r => (
-              <option key={r.value} value={r.value}>{r.label}</option>
+              <label key={r.value} className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(r.value)}
+                  onChange={() => toggleRole(r.value)}
+                  className="rounded border-gray-300 text-orange-500 focus:ring-orange-400"
+                />
+                <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold border ${r.color}`}>{r.label}</span>
+              </label>
             ))}
-          </select>
-          <button disabled={saving} onClick={save}
-            className="rounded-xl px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
-            {saving ? "Saving…" : "Save"}
-          </button>
-          <button onClick={() => setEditing(false)}
-            className="rounded-xl border border-line px-3 py-2 text-xs font-semibold text-muted hover:bg-sand">
-            Cancel
-          </button>
-          {err && <p className="w-full text-xs text-red-600">{err}</p>}
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <button disabled={saving} onClick={save}
+              className="rounded-xl px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
+              {saving ? "Saving…" : "Save"}
+            </button>
+            <button onClick={() => setEditing(false)}
+              className="rounded-xl border border-line px-3 py-2 text-xs font-semibold text-muted hover:bg-sand">
+              Cancel
+            </button>
+          </div>
+          {err && <p className="text-xs text-red-600">{err}</p>}
         </div>
       )}
     </div>
@@ -117,19 +136,19 @@ function UserRow({ user, onSaved }: { user: Profile; onSaved: (id: string, role:
 export function LiftOffRolesClient({ initialUsers }: { initialUsers: Profile[] }) {
   const [users, setUsers] = useState<Profile[]>(initialUsers);
 
-  function handleSaved(id: string, role: LiftOffRole | null) {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, liftoff_role: role } : u));
+  function handleSaved(id: string, roles: LiftOffRole[]) {
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, liftoff_roles: roles } : u));
   }
 
-  // Group by whether they have a role
-  const withRole    = users.filter(u => u.liftoff_role);
-  const withoutRole = users.filter(u => !u.liftoff_role);
+  // Group by whether they have any role
+  const withRole    = users.filter(u => u.liftoff_roles.length > 0);
+  const withoutRole = users.filter(u => u.liftoff_roles.length === 0);
 
   return (
     <div className="space-y-6">
       {/* Role legend */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        {LIFTOFF_ROLES.filter(r => r.value !== "").map(r => (
+      <div className="grid gap-3 sm:grid-cols-4">
+        {LIFTOFF_ROLES.map(r => (
           <div key={r.value} className={`rounded-2xl border p-4 ${r.color}`}>
             <p className="text-xs font-bold">{r.label}</p>
             <p className="text-[11px] mt-1 opacity-80">{r.description}</p>

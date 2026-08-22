@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { canAccessLiftOffQueue, canSeeLockRequests, canSeeGeneralRequests } from "@/lib/auth";
+import { canAccessLiftOffQueue, canSeeLockRequests, canSeeGeneralRequests, getLiftOffRoleLabel } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import type { LiftOffRequest } from "@/lib/database.types";
 import { LiftOffQueueClient } from "@/components/liftoff/LiftOffQueueClient";
@@ -88,6 +88,10 @@ const DEMO_REQUESTS: LiftOffRequest[] = [
     claimed_by_id: null, claimed_by_name: null, claimed_at: null,
     started_at: null, completed_at: null,
     inflight_email_sent_at: null, completed_email_sent_at: null,
+    incomplete_reasons: null, incomplete_notes: null, incomplete_at: null,
+    incomplete_by_name: null, resubmission_of: null, has_resubmission: false,
+    resubmission_notes: null, resubmission_confirmed_at: null,
+    assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
   },
   {
     id: "demo-lock-2",
@@ -165,6 +169,10 @@ const DEMO_REQUESTS: LiftOffRequest[] = [
     claimed_at: mins(18),
     started_at: null, completed_at: null,
     inflight_email_sent_at: null, completed_email_sent_at: null,
+    incomplete_reasons: null, incomplete_notes: null, incomplete_at: null,
+    incomplete_by_name: null, resubmission_of: null, has_resubmission: false,
+    resubmission_notes: null, resubmission_confirmed_at: null,
+    assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
   },
   {
     id: "demo-reg-1",
@@ -243,6 +251,10 @@ const DEMO_REQUESTS: LiftOffRequest[] = [
     claimed_by_id: null, claimed_by_name: null, claimed_at: null,
     started_at: null, completed_at: null,
     inflight_email_sent_at: null, completed_email_sent_at: null,
+    incomplete_reasons: null, incomplete_notes: null, incomplete_at: null,
+    incomplete_by_name: null, resubmission_of: null, has_resubmission: false,
+    resubmission_notes: null, resubmission_confirmed_at: null,
+    assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
   },
   {
     id: "demo-sub-1",
@@ -328,6 +340,10 @@ const DEMO_REQUESTS: LiftOffRequest[] = [
     started_at: mins(40),
     completed_at: null,
     inflight_email_sent_at: mins(40), completed_email_sent_at: null,
+    incomplete_reasons: null, incomplete_notes: null, incomplete_at: null,
+    incomplete_by_name: null, resubmission_of: null, has_resubmission: false,
+    resubmission_notes: null, resubmission_confirmed_at: null,
+    assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
   },
 ];
 
@@ -375,11 +391,7 @@ export default async function LiftOffQueuePage({
 
   const roleLabel = isDemo
     ? "Demo Mode"
-    : profile.liftoff_role === "lock_desk_admin"
-    ? "Lock Desk Admin"
-    : profile.liftoff_role === "liftoff_team"
-    ? "Lift Off Team"
-    : "Lift Off Admin";
+    : getLiftOffRoleLabel(profile.liftoff_roles);
 
   return (
     <div className="space-y-6">

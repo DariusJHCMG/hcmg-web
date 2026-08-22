@@ -41,10 +41,15 @@ export function isLoanOfficer(profile: Profile | null): boolean {
 }
 
 // ── Lift Off role checks ──────────────────────────────────────
+function hasRole(profile: Profile | null, role: LiftOffRole): boolean {
+  if (!profile) return false;
+  return profile.liftoff_roles.includes(role);
+}
+
 export function hasLiftOffAccess(profile: Profile | null): boolean {
   if (!profile) return false;
   if (profile.role === "admin" || profile.role === "developer") return true;
-  return profile.liftoff_role != null;
+  return profile.liftoff_roles.length > 0;
 }
 
 export function canAccessLiftOffQueue(profile: Profile | null): boolean {
@@ -54,23 +59,34 @@ export function canAccessLiftOffQueue(profile: Profile | null): boolean {
 export function canSeeLockRequests(profile: Profile | null): boolean {
   if (!profile) return false;
   if (profile.role === "admin" || profile.role === "developer") return true;
-  return profile.liftoff_role === "liftoff_admin" || profile.liftoff_role === "lock_desk_admin";
+  return hasRole(profile, "liftoff_admin") || hasRole(profile, "lock_desk_admin");
 }
 
 export function canSeeGeneralRequests(profile: Profile | null): boolean {
   if (!profile) return false;
   if (profile.role === "admin" || profile.role === "developer") return true;
-  return profile.liftoff_role === "liftoff_admin" || profile.liftoff_role === "liftoff_team";
+  return hasRole(profile, "liftoff_admin") || hasRole(profile, "liftoff_team") || hasRole(profile, "ops_manager");
 }
 
-export function getLiftOffRoleLabel(role: LiftOffRole | null): string {
-  if (!role) return "—";
+export function isOpsManager(profile: Profile | null): boolean {
+  if (!profile) return false;
+  if (profile.role === "admin" || profile.role === "developer") return true;
+  return hasRole(profile, "ops_manager") || hasRole(profile, "liftoff_admin");
+}
+
+export function canAssignRequests(profile: Profile | null): boolean {
+  return isOpsManager(profile);
+}
+
+export function getLiftOffRoleLabel(roles: LiftOffRole[]): string {
+  if (!roles || roles.length === 0) return "—";
   const labels: Record<LiftOffRole, string> = {
     liftoff_admin:   "Lift Off Admin",
     liftoff_team:    "Lift Off Team",
     lock_desk_admin: "Lock Desk Admin",
+    ops_manager:     "Ops Manager",
   };
-  return labels[role];
+  return roles.map(r => labels[r] ?? r).join(", ");
 }
 
 export function redirectPath(role: Role): string {

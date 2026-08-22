@@ -1,5 +1,5 @@
 export type Role = "admin" | "developer" | "loan_officer";
-export type LiftOffRole = "liftoff_admin" | "liftoff_team" | "lock_desk_admin";
+export type LiftOffRole = "liftoff_admin" | "liftoff_team" | "lock_desk_admin" | "ops_manager";
 export type LockPreference = "lock" | "lock_requested" | "float";
 
 // ── Lift Off Types ────────────────────────────────────────────
@@ -180,6 +180,22 @@ export interface LiftOffRequest {
   completed_at: string | null;
   inflight_email_sent_at: string | null;
   completed_email_sent_at: string | null;
+
+  // Incomplete flow
+  incomplete_reasons: string[] | null;
+  incomplete_notes: string | null;
+  incomplete_at: string | null;
+  incomplete_by_name: string | null;
+  resubmission_of: string | null;
+  has_resubmission: boolean;
+  resubmission_notes: string | null;
+  resubmission_confirmed_at: string | null;
+
+  // Assignment
+  assigned_to_id: string | null;
+  assigned_to_name: string | null;
+  assigned_at_ts: string | null;
+  assigned_by_name: string | null;
 }
 
 
@@ -225,7 +241,7 @@ export interface Profile {
   arive_lo_id: string | null;
   porchy_user_id: string | null;
   last_login_at: string | null;
-  liftoff_role: LiftOffRole | null;
+  liftoff_roles: LiftOffRole[];
 }
 
 export interface Lead {
