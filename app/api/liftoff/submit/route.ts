@@ -111,6 +111,10 @@ export async function POST(req: NextRequest) {
     lock_lo_notes:             (body.lock_lo_notes             as string) ?? null,
     channel_type:              (body.channel_type              as string) ?? null,
     compensation_type:         (body.compensation_type         as string) ?? null,
+
+    // Help Desk
+    help_desk_sub_type:        (body.help_desk_sub_type        as string) ?? null,
+    help_desk_description:     (body.help_desk_description     as string) ?? null,
   };
 
   void sendLiftOffNotification(emailPayload).catch(err =>

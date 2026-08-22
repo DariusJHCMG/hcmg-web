@@ -205,9 +205,28 @@ function buildProcessingEmail(r: LiftOffEmailPayload, viewUrl: string): string {
       </table>`
     : "";
 
+  const helpDeskSection = r.request_type === "loan_help_desk"
+    ? `<table width="100%" cellpadding="0" cellspacing="0"
+        style="margin-bottom:20px;border:1px solid #fed7aa;border-radius:12px;overflow:hidden;background:#fff7ed;">
+        <tr><td style="padding:10px 20px;background:#F37021;">
+          <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:2px;color:#fff;text-transform:uppercase;">Help Desk Request</p>
+        </td></tr>
+        <tr><td style="padding:14px 20px;">
+          ${infoRow("Sub-type",    r.help_desk_sub_type)}
+          ${r.help_desk_description
+            ? `<tr>
+                <td style="padding:6px 0;font-size:11px;font-weight:700;color:#57606a;text-transform:uppercase;letter-spacing:0.08em;width:140px;vertical-align:top;">Description</td>
+                <td style="padding:6px 0;font-size:13px;color:#1A2B42;line-height:1.6;">${r.help_desk_description.replace(/\n/g, "<br/>")}</td>
+               </tr>`
+            : ""}
+        </td></tr>
+      </table>`
+    : "";
+
   const body = `
     <div style="padding:32px 36px 8px;">
       ${emailSection("Loan Information", loanRows)}
+      ${helpDeskSection}
       ${notesSection}
       ${emailSection("Loan Officer", loRows)}
       <div style="margin:24px 0 32px;">

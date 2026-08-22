@@ -152,18 +152,23 @@ function StepBar({ step, requestType, onChangeType }: {
   requestType: LiftOffRequestType | "";
   onChangeType: () => void;
 }) {
-  const isLock = requestType === "lock_request";
-  const steps = isLock
+  const isTwoStep = requestType === "lock_request" || requestType === "loan_help_desk";
+  const steps = requestType === "lock_request"
     ? [
-        { n: 1, label: "Pick request type",  sub: "Choose what kind of lift off" },
-        { n: 2, label: "Pricing & Submit",    sub: "Borrower, pricing, certify" },
+        { n: 1, label: "Pick request type", sub: "Choose what kind of lift off" },
+        { n: 2, label: "Pricing & Submit",   sub: "Borrower, pricing, certify" },
+      ]
+    : requestType === "loan_help_desk"
+    ? [
+        { n: 1, label: "Pick request type", sub: "Choose what kind of lift off" },
+        { n: 2, label: "Details & Submit",  sub: "Borrower, issue description, certify" },
       ]
     : [
-        { n: 1, label: "Pick request type",        sub: "Choose what kind of lift off" },
-        { n: 2, label: "Loan + prior progress",    sub: "ARIVE # + lock status" },
-        { n: 3, label: "Borrower / IPAC / docs",   sub: "Fill details, checklist, certify" },
+        { n: 1, label: "Pick request type",      sub: "Choose what kind of lift off" },
+        { n: 2, label: "Loan + prior progress",  sub: "ARIVE # + lock status" },
+        { n: 3, label: "Borrower / IPAC / docs", sub: "Fill details, checklist, certify" },
       ];
-  const cols = isLock ? "grid-cols-2" : "grid-cols-3";
+  const cols = isTwoStep ? "grid-cols-2" : "grid-cols-3";
   return (
     <div className="mb-8 space-y-3">
       {requestType && (
@@ -1094,6 +1099,46 @@ function WizardInner() {
             </>
             )}
 
+            {/* Borrower & Property — for help desk, shown ABOVE loan info (hidden for lock — already shown above) */}
+            {isHelpDesk && (
+              <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Borrower &amp; Property</h3>
+                  {ariveLookupStatus === "found" && borrowerFirst && (
+                    <span className="text-[10px] font-bold text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
+                      Auto-filled from ARIVE
+                    </span>
+                  )}
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Borrower First Name" required>
+                    <Input value={borrowerFirst} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setBorrowerFirst(e.target.value)}
+                      placeholder="First"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                  <Field label="Borrower Last Name" required>
+                    <Input value={borrowerLast} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setBorrowerLast(e.target.value)}
+                      placeholder="Last"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                  <Field label="Co-Borrower First">
+                    <Input value={coBorrowerFirst} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setCoBorrowerFirst(e.target.value)}
+                      placeholder={ariveFieldsLocked ? "—" : "Optional"}
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                  <Field label="Co-Borrower Last">
+                    <Input value={coBorrowerLast} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setCoBorrowerLast(e.target.value)}
+                      placeholder={ariveFieldsLocked ? "—" : "Optional"}
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                </div>
+              </div>
+            )}
+
             {/* Loan details — hidden for lock requests (pricing already captured above) */}
             {!isLockRequest && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
@@ -1190,6 +1235,26 @@ function WizardInner() {
                     <p className="mt-1.5 text-[11px] text-green-600 font-semibold">✓ Description looks good</p>
                   )}
                 </Field>
+
+                {/* Certification — inline for help desk (no Step 3) */}
+                <div className="rounded-xl border-2 border-orange-200 bg-orange-50 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Certification</p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={certified} onChange={e => setCertified(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded accent-orange-500 flex-shrink-0" />
+                    <span className="text-sm text-ink leading-relaxed">
+                      By submitting this form, I certify this file is complete and ready for the Lift Off review process.
+                    </span>
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="NMLS #" required>
+                      <Input value={certNmls} onChange={e => setCertNmls(e.target.value)} placeholder="e.g. 1234567" />
+                    </Field>
+                    <Field label="LO Name">
+                      <Input value={certLoName} onChange={e => setCertLoName(e.target.value)} placeholder="Your full name" />
+                    </Field>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1222,8 +1287,8 @@ function WizardInner() {
               </div>
             )}
 
-            {/* Borrower & Property — hidden for lock requests (shown above pricing panel instead) */}
-            {!isLockRequest && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
+            {/* Borrower & Property — hidden for lock + help desk (shown above their own panels instead) */}
+            {!isLockRequest && !isHelpDesk && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Borrower &amp; Property</h3>
                 {ariveLookupStatus === "found" && borrowerFirst && (
@@ -1634,7 +1699,7 @@ function WizardInner() {
           )}
         </div>
         <div className="flex items-center gap-3">
-          {/* Lock request: step 2 is final — show Submit directly */}
+          {/* Lock request: step 2 is final */}
           {isLockRequest && step === 2 && (
             <button type="submit"
               disabled={submitting || (!isDemo && (!certified || !certNmls.trim()))}
@@ -1643,22 +1708,31 @@ function WizardInner() {
               {submitting ? "Submitting…" : "Submit Lock Request 🔒"}
             </button>
           )}
+          {/* Help desk: step 2 is final */}
+          {isHelpDesk && step === 2 && (
+            <button type="submit"
+              disabled={submitting || (!isDemo && (!certified || !certNmls.trim()))}
+              className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
+              {submitting ? "Submitting…" : "Submit Help Desk Request 🛎"}
+            </button>
+          )}
           {/* All other types: Continue on steps 1–2, Submit on step 3 */}
-          {!isLockRequest && step < 3 && (
+          {!isLockRequest && !isHelpDesk && step < 3 && (
             <button type="button" onClick={next}
               className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
               style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
               Continue →
             </button>
           )}
-          {!isLockRequest && step === 3 && (
+          {!isLockRequest && !isHelpDesk && step === 3 && (
             <button type="submit"
-              disabled={submitting || (!isDemo && (!certified || (!isHelpDesk && pendingDocs > 0)))}
+              disabled={submitting || (!isDemo && (!certified || (pendingDocs > 0)))}
               className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
               {submitting
                 ? "Submitting…"
-                : (!isDemo && !isHelpDesk && pendingDocs > 0)
+                : (!isDemo && pendingDocs > 0)
                 ? `Resolve ${pendingDocs} Pending Item${pendingDocs > 1 ? "s" : ""} to Submit`
                 : "Submit Lift Off Request 🚀"}
             </button>
