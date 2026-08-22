@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import type { LiftOffRequest } from "@/lib/database.types";
+import { LiftOffResubmitPanel } from "@/components/liftoff/LiftOffResubmitPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -111,8 +112,31 @@ export default async function LiftOffDetailPage({
         </span>
       </div>
 
-      {/* Return note */}
-      {request.request_status === "action_needed" && request.return_reason && (
+      {/* Resubmit panel — shown to LO when action_needed and no existing resubmission */}
+      {request.request_status === "action_needed" &&
+       !request.resubmission_of &&
+       !request.has_resubmission && (
+        <LiftOffResubmitPanel
+          requestId={request.id}
+          incompleteReasons={Array.isArray(request.incomplete_reasons) ? (request.incomplete_reasons as string[]) : []}
+          incompleteNotes={request.incomplete_notes}
+          submitterName={request.submitter_name}
+        />
+      )}
+
+      {/* Has resubmission banner */}
+      {request.has_resubmission && (
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 px-6 py-4 flex items-center gap-3">
+          <span className="text-xl">↩</span>
+          <div>
+            <p className="font-bold text-blue-800 text-sm">Resubmission sent</p>
+            <p className="text-xs text-blue-700">You have already resubmitted this request. It is back in the ops queue.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Return note (legacy field) */}
+      {request.request_status === "action_needed" && request.return_reason && !request.incomplete_reasons?.length && (
         <div className="rounded-2xl border-2 border-orange-300 bg-orange-50 px-6 py-4">
           <p className="text-xs font-bold uppercase tracking-[0.1em] text-orange-700 mb-1">Action Required</p>
           <p className="text-sm text-ink">{request.return_reason}</p>

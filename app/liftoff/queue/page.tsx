@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { canAccessLiftOffQueue, canSeeLockRequests, canSeeGeneralRequests, getLiftOffRoleLabel } from "@/lib/auth";
+import { canAccessLiftOffQueue, canSeeLockRequests, canSeeGeneralRequests, getLiftOffRoleLabel, canAssignRequests } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import type { LiftOffRequest } from "@/lib/database.types";
 import { LiftOffQueueClient } from "@/components/liftoff/LiftOffQueueClient";
@@ -385,6 +385,7 @@ export default async function LiftOffQueuePage({
 
   const showLock    = isDemo || canSeeLockRequests(profile);
   const showGeneral = isDemo || canSeeGeneralRequests(profile);
+  const canAssign   = isDemo || canAssignRequests(profile);
   const requests    = isDemo
     ? DEMO_REQUESTS
     : await getQueueRequests(showLock, showGeneral);
@@ -430,6 +431,7 @@ export default async function LiftOffQueuePage({
         initialRequests={requests}
         processorName={isDemo ? "Demo User" : profile.full_name}
         isDemo={isDemo}
+        canAssign={canAssign}
       />
     </div>
   );

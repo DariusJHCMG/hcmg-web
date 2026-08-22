@@ -224,7 +224,7 @@ reasons + notes, sets `request_status = "action_needed"`, stops the SLA clock
 
 ### Sub-Task A4 — Incomplete modal in queue client
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 Add an "Incomplete" button to each active queue card. Clicking it opens a 2-step
@@ -269,7 +269,7 @@ optional notes. Confirming fires the API route and updates the card state.
 
 ### Sub-Task A5 — LO "Needs Attention" section + resubmit flow
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 On the main `/liftoff` page, surface a prominent "Needs Attention" section above
@@ -331,7 +331,7 @@ flagged as a resubmission, and sends it back to the ops queue.
 
 ### Sub-Task B1 — Assign API route + team member lookup
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 `PATCH /api/liftoff/[id]/assign` — allows an ops_manager (or admin) to assign a
@@ -363,7 +363,7 @@ Also create `GET /api/liftoff/team-members` — returns all profiles where
 
 ### Sub-Task B2 — Assign / Reassign buttons in queue client
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 Ops managers see an "Assign →" button next to Claim on pending unclaimed cards,

@@ -6,6 +6,14 @@ import type { LiftOffRequest } from "@/lib/database.types";
 import { LockDeskHoursCard } from "@/components/liftoff/LockDeskHoursCard";
 import { LiftOffSLACard } from "@/components/liftoff/LiftOffSLACard";
 
+const TYPE_ICONS: Record<string, string> = {
+  register_disclosure:  "📋",
+  disclosure_only:      "📄",
+  submission:           "🚀",
+  restructure_suspense: "🔄",
+  lock_request:         "🔒",
+};
+
 export const dynamic = "force-dynamic";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -50,6 +58,8 @@ export default async function LiftOffDashboardPage() {
 
   const isAdmin   = profile.role === "admin" || profile.role === "developer";
   const requests  = await getMyRequests(profile.id);
+
+  const actionNeededRequests = requests.filter(r => r.request_status === "action_needed");
 
   const stats = {
     total:        requests.length,
@@ -96,6 +106,88 @@ export default async function LiftOffDashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* ── Needs Attention section ── */}
+      {actionNeededRequests.length > 0 && (
+        <div className="space-y-4">
+          {/* Section header */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-extrabold text-red-700">⚠️ Needs Attention</h2>
+              <span className="rounded-full bg-red-100 border border-red-300 px-2 py-0.5 text-[11px] font-black text-red-700">
+                {actionNeededRequests.length}
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted -mt-2">
+            The following requests were returned by the ops team and require your action before they can be processed.
+          </p>
+
+          <div className="space-y-3">
+            {actionNeededRequests.map(r => {
+              const reasons = Array.isArray(r.incomplete_reasons) ? (r.incomplete_reasons as string[]) : [];
+              return (
+                <div key={r.id}
+                  className="rounded-2xl border-l-4 border-red-500 border border-red-200 bg-white p-5 space-y-3">
+                  {/* Card top */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl flex-shrink-0 mt-0.5">{TYPE_ICONS[r.request_type] ?? "📁"}</span>
+                      <div>
+                        <p className="font-bold text-ink text-sm">
+                          {r.borrower_first_name} {r.borrower_last_name}
+                          {r.co_borrower_first_name && (
+                            <span className="ml-1 font-normal text-muted text-xs">+ {r.co_borrower_first_name}</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted">{TYPE_LABELS[r.request_type] ?? r.request_type}</p>
+                        {r.arive_loan_number && (
+                          <p className="text-[11px] font-mono text-muted/60">{r.arive_loan_number}</p>
+                        )}
+                      </div>
+                    </div>
+                    {r.incomplete_at && (
+                      <p className="text-[11px] text-muted flex-shrink-0 text-right">
+                        Returned {new Date(r.incomplete_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        {r.incomplete_by_name && <><br /><span className="font-semibold text-ink">by {r.incomplete_by_name}</span></>}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Incomplete reasons */}
+                  {reasons.length > 0 && (
+                    <ul className="space-y-1">
+                      {reasons.map((reason, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-orange-800">
+                          <span className="text-orange-500 mt-0.5 flex-shrink-0">•</span>
+                          {reason}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {/* Team notes callout */}
+                  {r.incomplete_notes && (
+                    <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-orange-700 mb-1">Notes from the team</p>
+                      <p className="text-xs text-orange-900 whitespace-pre-wrap">{r.incomplete_notes}</p>
+                    </div>
+                  )}
+
+                  {/* CTA */}
+                  <div>
+                    <Link href={`/liftoff/${r.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold text-white"
+                      style={{ background: "linear-gradient(135deg,#f97316,#ef4444)" }}>
+                      Review &amp; Fix →
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {isAdmin && (
         <div className="rounded-xl border border-line bg-white px-5 py-3 flex items-center justify-between">

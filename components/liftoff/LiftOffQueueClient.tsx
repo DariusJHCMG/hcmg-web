@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { LiftOffRequest } from "@/lib/database.types";
+import type { LiftOffRequest, LiftOffRole } from "@/lib/database.types";
+import { getIncompleteReasons } from "@/lib/liftoff-incomplete-reasons";
 
 const TYPE_LABELS: Record<string, string> = {
   register_disclosure:  "Register + Disclosure",
@@ -76,21 +77,52 @@ function WorkflowBadge({ r }: { r: LiftOffRequest }) {
   );
 }
 
+// ── TeamMember type ────────────────────────────────────────────────────────────
+
+interface TeamMember {
+  id:            string;
+  full_name:     string;
+  liftoff_roles: LiftOffRole[];
+  avatar_url:    string | null;
+}
+
+// ── RequestRow ─────────────────────────────────────────────────────────────────
+
 function RequestRow({
   request,
   onUpdated,
   isDemo = false,
   allRequests,
+  canAssign = false,
 }: {
-  request: LiftOffRequest;
-  onUpdated: (updated: Partial<LiftOffRequest> & { id: string }) => void;
-  isDemo?: boolean;
+  request:    LiftOffRequest;
+  onUpdated:  (updated: Partial<LiftOffRequest> & { id: string }) => void;
+  isDemo?:    boolean;
   allRequests: LiftOffRequest[];
+  canAssign?: boolean;
 }) {
   const [busy, setBusy]           = useState(false);
   const [err, setErr]             = useState("");
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes]         = useState("");
+
+  // ── Incomplete modal state ─────────────────────────────────────────────────
+  const [showIncomplete, setShowIncomplete]   = useState(false);
+  const [incompleteStep, setIncompleteStep]   = useState<1 | 2>(1);
+  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
+  const [customChecked, setCustomChecked]     = useState(false);
+  const [customReason, setCustomReason]       = useState("");
+  const [incompleteNotes, setIncompleteNotes] = useState("");
+  const [incompleteBusy, setIncompleteBusy]   = useState(false);
+  const [incompleteErr, setIncompleteErr]     = useState("");
+
+  // ── Assign modal state ─────────────────────────────────────────────────────
+  const [showAssign, setShowAssign]           = useState(false);
+  const [assigneeList, setAssigneeList]       = useState<TeamMember[]>([]);
+  const [assignListLoaded, setAssignListLoaded] = useState(false);
+  const [selectedAssignee, setSelectedAssignee] = useState("");
+  const [assignBusy, setAssignBusy]           = useState(false);
+  const [assignErr, setAssignErr]             = useState("");
 
   const r = request;
 
@@ -106,7 +138,7 @@ function RequestRow({
 
     // Demo mode — purely client-side, no API calls
     if (isDemo) {
-      await new Promise(res => setTimeout(res, 600)); // simulate latency
+      await new Promise(res => setTimeout(res, 600));
       if (action === "claim") {
         onUpdated({ id: r.id, request_status: "in_review", claimed_at: now, claimed_by_id: "demo-me", claimed_by_name: "Demo User" });
       } else if (action === "start") {
@@ -138,11 +170,166 @@ function RequestRow({
     }
   }
 
+  // ── Incomplete helpers ────────────────────────────────────────────────────
+
+  function openIncompleteModal() {
+    setSelectedReasons([]);
+    setCustomChecked(false);
+    setCustomReason("");
+    setIncompleteNotes("");
+    setIncompleteStep(1);
+    setIncompleteErr("");
+    setShowIncomplete(true);
+  }
+
+  function closeIncompleteModal() {
+    setShowIncomplete(false);
+    setIncompleteStep(1);
+    setIncompleteErr("");
+  }
+
+  function toggleReason(reason: string) {
+    setSelectedReasons(prev =>
+      prev.includes(reason) ? prev.filter(x => x !== reason) : [...prev, reason]
+    );
+  }
+
+  async function doIncomplete() {
+    setIncompleteBusy(true); setIncompleteErr("");
+    const finalReasons = [
+      ...selectedReasons,
+      ...(customChecked && customReason.trim() ? [customReason.trim()] : []),
+    ];
+    if (finalReasons.length === 0) {
+      setIncompleteErr("Please select at least one reason.");
+      setIncompleteBusy(false);
+      return;
+    }
+
+    const now = new Date().toISOString();
+
+    if (isDemo) {
+      await new Promise(res => setTimeout(res, 600));
+      onUpdated({
+        id: r.id,
+        request_status: "action_needed",
+        incomplete_at: now,
+        incomplete_by_name: "Demo User",
+        incomplete_reasons: finalReasons,
+        incomplete_notes: incompleteNotes.trim() || null,
+      });
+      setIncompleteBusy(false);
+      closeIncompleteModal();
+      return;
+    }
+
+    const res = await fetch(`/api/liftoff/${r.id}/incomplete`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        reasons: finalReasons,
+        notes:   incompleteNotes.trim() || undefined,
+      }),
+    });
+    const data = await res.json();
+    setIncompleteBusy(false);
+    if (!res.ok) { setIncompleteErr(data.error ?? "Failed"); return; }
+
+    onUpdated({
+      id: r.id,
+      request_status:   "action_needed",
+      incomplete_at:    data.incomplete_at ?? now,
+      incomplete_by_name: data.incomplete_by_name ?? "",
+      incomplete_reasons: finalReasons,
+      incomplete_notes: incompleteNotes.trim() || null,
+    });
+    closeIncompleteModal();
+  }
+
+  // ── Assign helpers ────────────────────────────────────────────────────────
+
+  async function openAssignModal() {
+    setSelectedAssignee("");
+    setAssignErr("");
+    setShowAssign(true);
+    if (!assignListLoaded) {
+      try {
+        const res = await fetch("/api/liftoff/team-members");
+        const data: TeamMember[] = await res.json();
+        setAssigneeList(data);
+        setAssignListLoaded(true);
+      } catch {
+        setAssignErr("Failed to load team members.");
+      }
+    }
+  }
+
+  function closeAssignModal() {
+    setShowAssign(false);
+    setAssignErr("");
+  }
+
+  async function doAssign() {
+    if (!selectedAssignee) return;
+    setAssignBusy(true); setAssignErr("");
+    const now = new Date().toISOString();
+    const assignee = assigneeList.find(m => m.id === selectedAssignee);
+
+    if (isDemo) {
+      await new Promise(res => setTimeout(res, 600));
+      onUpdated({
+        id: r.id,
+        request_status:   "in_review",
+        claimed_by_name:  assignee?.full_name ?? "Demo User",
+        claimed_at:       now,
+        assigned_to_name: assignee?.full_name ?? "Demo User",
+        assigned_at_ts:   now,
+      });
+      setAssignBusy(false);
+      closeAssignModal();
+      return;
+    }
+
+    const res = await fetch(`/api/liftoff/${r.id}/assign`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ assignee_id: selectedAssignee }),
+    });
+    const data = await res.json();
+    setAssignBusy(false);
+    if (!res.ok) { setAssignErr(data.error ?? "Failed"); return; }
+
+    onUpdated({
+      id: r.id,
+      request_status:   "in_review",
+      claimed_by_name:  data.assigned_to_name ?? assignee?.full_name ?? "",
+      claimed_at:       data.claimed_at ?? now,
+      assigned_to_name: data.assigned_to_name ?? assignee?.full_name ?? "",
+      assigned_at_ts:   data.claimed_at ?? now,
+    });
+    closeAssignModal();
+  }
+
+  // ── Derived booleans ──────────────────────────────────────────────────────
+
   const canClaim    = r.request_status === "pending" && !r.claimed_by_id;
   const canStart    = r.request_status === "in_review" && r.claimed_at && !r.started_at;
   const canComplete = r.request_status !== "completed" && r.request_status !== "cancelled" && r.claimed_at;
+  const canIncomplete = Boolean(
+    r.claimed_at &&
+    r.request_status !== "completed" &&
+    r.request_status !== "cancelled" &&
+    r.request_status !== "action_needed"
+  );
 
-  // Border styling: gold for lock_request cards, else standard workflow colours
+  const isAssignButton   = canAssign && canClaim;
+  const isReassignButton = canAssign && r.claimed_at && r.request_status !== "completed" && r.request_status !== "cancelled";
+
+  const reasons = getIncompleteReasons(r.request_type as Parameters<typeof getIncompleteReasons>[0]);
+  const typeLabel = TYPE_LABELS[r.request_type] ?? r.request_type;
+
+  // ── Border styling ────────────────────────────────────────────────────────
+
   const cardBorder =
     r.request_type === "lock_request"
       ? r.request_status === "completed"
@@ -154,6 +341,8 @@ function RequestRow({
         : "border-amber-400 border-2"
       : r.request_status === "completed"
       ? "border-green-200 opacity-75"
+      : r.request_status === "action_needed"
+      ? "border-red-300"
       : r.started_at
       ? "border-blue-300"
       : r.claimed_at
@@ -177,8 +366,20 @@ function RequestRow({
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold border ${STATUS_STYLES[r.request_status] ?? ""}`}>
                 {STATUS_LABELS[r.request_status] ?? r.request_status}
               </span>
+              {/* Sent Back badge */}
+              {r.request_status === "action_needed" && r.incomplete_at && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-300 px-2 py-0.5 text-[10px] font-bold text-red-700">
+                  ⚠️ Sent Back to LO
+                </span>
+              )}
+              {/* Resubmission badge */}
+              {r.resubmission_of && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                  ↩ Resubmission
+                </span>
+              )}
             </div>
-            <p className="text-xs text-muted mt-0.5">{TYPE_LABELS[r.request_type] ?? r.request_type}</p>
+            <p className="text-xs text-muted mt-0.5">{typeLabel}</p>
             <p className="text-[11px] text-muted/60 mt-0.5 font-mono">{r.arive_loan_number ?? "No ARIVE #"}</p>
             {lockIsPending && (
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-700 mt-1">
@@ -216,10 +417,36 @@ function RequestRow({
         </div>
       )}
 
-      {/* Error */}
-      {err && (
-        <p className="text-xs text-red-600 font-medium">{err}</p>
+      {/* Assigned-by info */}
+      {r.assigned_to_name && (
+        <div className="text-[11px] text-muted/70">
+          Assigned to <span className="font-semibold text-ink">{r.assigned_to_name}</span>
+          {r.assigned_by_name && <> by {r.assigned_by_name}</>}
+          {r.assigned_at_ts && <> · {fmtTs(r.assigned_at_ts)}</>}
+        </div>
       )}
+
+      {/* Incomplete reasons (if action_needed) */}
+      {r.request_status === "action_needed" && r.incomplete_reasons && r.incomplete_reasons.length > 0 && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 space-y-1.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-red-700">Needs Fixing</p>
+          <ul className="space-y-0.5">
+            {r.incomplete_reasons.map((reason, i) => (
+              <li key={i} className="text-xs text-red-800 flex items-start gap-1.5">
+                <span className="text-red-500 mt-0.5">•</span>{reason}
+              </li>
+            ))}
+          </ul>
+          {r.incomplete_notes && (
+            <p className="text-xs text-orange-800 border-t border-red-200 pt-2 mt-2">
+              <span className="font-bold">Team notes:</span> {r.incomplete_notes}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Error */}
+      {err && <p className="text-xs text-red-600 font-medium">{err}</p>}
 
       {/* Completion notes textarea */}
       {showNotes && (
@@ -247,6 +474,15 @@ function RequestRow({
             className="rounded-lg px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
             style={{ background: "linear-gradient(135deg,#a855f7,#7c3aed)" }}>
             {busy ? "…" : "Claim"}
+          </button>
+        )}
+
+        {/* Assign button — shown next to Claim for pending unclaimed */}
+        {isAssignButton && (
+          <button onClick={openAssignModal}
+            className="rounded-lg px-3 py-1.5 text-xs font-bold text-white"
+            style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+            Assign →
           </button>
         )}
 
@@ -291,7 +527,228 @@ function RequestRow({
             </button>
           </>
         )}
+
+        {/* Incomplete button */}
+        {canIncomplete && (
+          <button onClick={openIncompleteModal}
+            className="rounded-lg px-3 py-1.5 text-xs font-bold text-white"
+            style={{ background: "linear-gradient(135deg,#ef4444,#f97316)" }}>
+            ⚠️ Incomplete
+          </button>
+        )}
+
+        {/* Reassign button — shown for claimed/in-progress */}
+        {isReassignButton && !canClaim && (
+          <button onClick={openAssignModal}
+            className="rounded-lg px-3 py-1.5 text-xs font-bold border border-indigo-400 text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
+            Reassign →
+          </button>
+        )}
       </div>
+
+      {/* ── Incomplete modal ──────────────────────────────────────────────────── */}
+      {showIncomplete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="w-full max-w-[520px] rounded-2xl bg-white border-2 border-[#142850] shadow-2xl overflow-hidden">
+            {/* Modal header */}
+            <div className="px-6 py-4 border-b border-[#142850]/20 bg-[#142850]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
+                {typeLabel} · {r.borrower_first_name} {r.borrower_last_name}
+              </p>
+              <p className="text-base font-extrabold text-white mt-0.5">
+                {incompleteStep === 1 ? "What needs to be fixed?" : "Add notes for the LO (optional)"}
+              </p>
+            </div>
+
+            {/* Modal body */}
+            <div className="px-6 py-5">
+              {incompleteStep === 1 ? (
+                <>
+                  <p className="text-xs text-muted mb-4">
+                    Select all that apply for this {typeLabel} request.
+                  </p>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {reasons.map(reason => (
+                      <label key={reason} className="flex items-start gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={selectedReasons.includes(reason)}
+                          onChange={() => toggleReason(reason)}
+                          className="mt-0.5 rounded border-gray-300 text-orange-500 focus:ring-orange-400"
+                        />
+                        <span className="text-sm text-ink group-hover:text-ink/80">{reason}</span>
+                      </label>
+                    ))}
+                    {/* Other / Custom */}
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={customChecked}
+                        onChange={() => setCustomChecked(p => !p)}
+                        className="mt-0.5 rounded border-gray-300 text-orange-500 focus:ring-orange-400"
+                      />
+                      <span className="text-sm text-muted italic">Other / Custom…</span>
+                    </label>
+                    {customChecked && (
+                      <input
+                        type="text"
+                        value={customReason}
+                        onChange={e => setCustomReason(e.target.value)}
+                        placeholder="Describe the issue…"
+                        className="w-full rounded-xl border border-line px-3 py-2 text-sm text-ink
+                                   placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40"
+                      />
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-muted mb-4">
+                    These will appear in the email sent to {r.submitter_name}.
+                  </p>
+                  <textarea
+                    value={incompleteNotes}
+                    onChange={e => setIncompleteNotes(e.target.value)}
+                    rows={4}
+                    placeholder="Optional notes for the LO — what to fix, where to look, etc."
+                    className="w-full rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink
+                               placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40 resize-none"
+                  />
+                </>
+              )}
+              {incompleteErr && (
+                <p className="mt-3 text-xs text-red-600 font-medium">{incompleteErr}</p>
+              )}
+            </div>
+
+            {/* Modal footer */}
+            <div className="px-6 py-4 border-t border-line flex items-center justify-between gap-3">
+              {incompleteStep === 1 ? (
+                <>
+                  <button onClick={closeIncompleteModal}
+                    className="rounded-lg border border-line px-4 py-2 text-xs font-semibold text-muted hover:bg-sand">
+                    Cancel
+                  </button>
+                  <button
+                    disabled={selectedReasons.length === 0 && !(customChecked && customReason.trim())}
+                    onClick={() => { setIncompleteErr(""); setIncompleteStep(2); }}
+                    className="rounded-lg px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
+                    style={{ background: "linear-gradient(135deg,#142850,#1e3a6e)" }}>
+                    Next →
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => setIncompleteStep(1)}
+                    className="rounded-lg border border-line px-4 py-2 text-xs font-semibold text-muted hover:bg-sand">
+                    ← Back
+                  </button>
+                  <button
+                    disabled={incompleteBusy}
+                    onClick={doIncomplete}
+                    className="rounded-lg px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+                    style={{ background: "linear-gradient(135deg,#ef4444,#f97316)" }}>
+                    {incompleteBusy ? "Sending…" : "⚠️ Send Back to LO"}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Assign / Reassign modal ───────────────────────────────────────────── */}
+      {showAssign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="w-full max-w-[480px] rounded-2xl bg-white border-2 border-[#142850] shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-[#142850]/20 bg-[#142850]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
+                {typeLabel} · {r.borrower_first_name} {r.borrower_last_name}
+              </p>
+              <p className="text-base font-extrabold text-white mt-0.5">
+                {r.claimed_at ? "Reassign to Team Member" : "Assign to Team Member"}
+              </p>
+              <p className="text-xs text-white/60 mt-0.5">Select a team member to assign this request to.</p>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-4 max-h-72 overflow-y-auto space-y-2">
+              {!assignListLoaded && !assignErr && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="h-5 w-5 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+                  <span className="ml-2 text-xs text-muted">Loading team…</span>
+                </div>
+              )}
+              {assignErr && (
+                <p className="text-xs text-red-600 py-4 text-center">{assignErr}</p>
+              )}
+              {assignListLoaded && assigneeList.map(member => {
+                const roleLabels = member.liftoff_roles
+                  .map(role => {
+                    const map: Record<string, string> = {
+                      liftoff_admin:   "Admin",
+                      liftoff_team:    "Team",
+                      lock_desk_admin: "Lock Desk",
+                      ops_manager:     "Ops Mgr",
+                    };
+                    return map[role] ?? role;
+                  })
+                  .join(", ");
+                const initials = member.full_name.trim().split(/\s+/).map((p: string) => p[0]).slice(0, 2).join("").toUpperCase();
+                const isSelected = selectedAssignee === member.id;
+                return (
+                  <button
+                    key={member.id}
+                    onClick={() => setSelectedAssignee(member.id)}
+                    className={`w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
+                      isSelected
+                        ? "border-[#142850] bg-[#142850]/5"
+                        : "border-line bg-white hover:bg-sand"
+                    }`}>
+                    {member.avatar_url ? (
+                      <img src={member.avatar_url} alt={member.full_name}
+                        className="h-8 w-8 rounded-full object-cover flex-shrink-0 border border-line" />
+                    ) : (
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-black text-white flex-shrink-0"
+                        style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
+                        {initials}
+                      </span>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-ink">{member.full_name}</p>
+                      {roleLabels && (
+                        <p className="text-[11px] text-muted">{roleLabels}</p>
+                      )}
+                    </div>
+                    {isSelected && (
+                      <span className="text-[#142850] font-bold text-sm flex-shrink-0">✓</span>
+                    )}
+                  </button>
+                );
+              })}
+              {assignListLoaded && assigneeList.length === 0 && (
+                <p className="text-xs text-muted text-center py-4">No team members found.</p>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-line flex items-center justify-between gap-3">
+              <button onClick={closeAssignModal}
+                className="rounded-lg border border-line px-4 py-2 text-xs font-semibold text-muted hover:bg-sand">
+                Cancel
+              </button>
+              <button
+                disabled={!selectedAssignee || assignBusy}
+                onClick={doAssign}
+                className="rounded-lg px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+                {assignBusy ? "Assigning…" : "Confirm Assignment"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -304,10 +761,12 @@ export function LiftOffQueueClient({
   initialRequests,
   processorName,
   isDemo = false,
+  canAssign = false,
 }: {
   initialRequests: LiftOffRequest[];
-  processorName: string;
-  isDemo?: boolean;
+  processorName:   string;
+  isDemo?:         boolean;
+  canAssign?:      boolean;
 }) {
   const [requests, setRequests] = useState<LiftOffRequest[]>(initialRequests);
   const [tab, setTab]           = useState<Tab>("active");
@@ -377,7 +836,14 @@ export function LiftOffQueueClient({
       ) : (
         <div className="space-y-4">
           {filtered.map(r => (
-            <RequestRow key={r.id} request={r} onUpdated={handleUpdated} isDemo={isDemo} allRequests={requests} />
+            <RequestRow
+              key={r.id}
+              request={r}
+              onUpdated={handleUpdated}
+              isDemo={isDemo}
+              allRequests={requests}
+              canAssign={canAssign}
+            />
           ))}
         </div>
       )}
