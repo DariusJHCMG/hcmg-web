@@ -152,11 +152,18 @@ function StepBar({ step, requestType, onChangeType }: {
   requestType: LiftOffRequestType | "";
   onChangeType: () => void;
 }) {
-  const steps = [
-    { n: 1, label: "Pick request type",        sub: "Choose what kind of lift off" },
-    { n: 2, label: "Loan + prior progress",    sub: "ARIVE # + lock status" },
-    { n: 3, label: "Borrower / IPAC / docs",   sub: "Fill details, checklist, certify" },
-  ];
+  const isLock = requestType === "lock_request";
+  const steps = isLock
+    ? [
+        { n: 1, label: "Pick request type",  sub: "Choose what kind of lift off" },
+        { n: 2, label: "Pricing & Submit",    sub: "Borrower, pricing, certify" },
+      ]
+    : [
+        { n: 1, label: "Pick request type",        sub: "Choose what kind of lift off" },
+        { n: 2, label: "Loan + prior progress",    sub: "ARIVE # + lock status" },
+        { n: 3, label: "Borrower / IPAC / docs",   sub: "Fill details, checklist, certify" },
+      ];
+  const cols = isLock ? "grid-cols-2" : "grid-cols-3";
   return (
     <div className="mb-8 space-y-3">
       {requestType && (
@@ -167,7 +174,7 @@ function StepBar({ step, requestType, onChangeType }: {
           <span className="text-xs font-bold text-accent cursor-pointer hover:underline" onClick={onChangeType}>CHANGE</span>
         </div>
       )}
-      <div className="grid grid-cols-3 gap-px rounded-xl overflow-hidden border border-line">
+      <div className={`grid ${cols} gap-px rounded-xl overflow-hidden border border-line`}>
         {steps.map((s) => (
           <div key={s.n} className={`px-5 py-3 text-sm ${
             step === s.n ? "bg-[#142850] text-white" : step > s.n ? "bg-sand text-muted" : "bg-white text-muted/50"
@@ -606,9 +613,17 @@ function WizardInner() {
   // ── Submit ────────────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!certified)                    { setError("Please check the certification box."); return; }
-    if (!certNmls.trim())              { setError("Your NMLS # is required for certification."); return; }
+    if (!certified)                      { setError("Please check the certification box."); return; }
+    if (!certNmls.trim())                { setError("Your NMLS # is required for certification."); return; }
     if (!borrowerFirst || !borrowerLast) { setError("Borrower name is required."); return; }
+    // Lock request — validate pricing confirmations on submit (step 2 is final)
+    if (isLockRequest) {
+      if (!ariveLoanNumber.trim())   { setError("ARIVE loan number is required."); return; }
+      if (!lockRate.trim())          { setError("Rate is required for a lock request."); return; }
+      if (!lockPrice.trim())         { setError("Discount Points is required for a lock request."); return; }
+      if (!isDemo && !lockChkArive)  { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
+      if (!isDemo && !lockChkLos)    { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
+    }
     if (!isDemo) {
       if (!isLockRequest && !isHelpDesk) {
         if (!incomeNote.trim())   { setError("IPAC — Income note is required."); return; }
@@ -1048,6 +1063,26 @@ function WizardInner() {
                     </span>
                   </label>
                   <p className="text-[11px] text-muted/60">Both boxes must be checked before you can continue.</p>
+                </div>
+
+                {/* Certification — inline for lock requests (no Step 3) */}
+                <div className="rounded-xl border-2 border-orange-200 bg-orange-50 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Certification</p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={certified} onChange={e => setCertified(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded accent-orange-500 flex-shrink-0" />
+                    <span className="text-sm text-ink leading-relaxed">
+                      By submitting this form, I certify this file is complete and ready for the Lift Off review process.
+                    </span>
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="NMLS #" required>
+                      <Input value={certNmls} onChange={e => setCertNmls(e.target.value)} placeholder="e.g. 1234567" />
+                    </Field>
+                    <Field label="LO Name">
+                      <Input value={certLoName} onChange={e => setCertLoName(e.target.value)} placeholder="Your full name" />
+                    </Field>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -1599,21 +1634,31 @@ function WizardInner() {
           )}
         </div>
         <div className="flex items-center gap-3">
-          {step < 3 && (
+          {/* Lock request: step 2 is final — show Submit directly */}
+          {isLockRequest && step === 2 && (
+            <button type="submit"
+              disabled={submitting || (!isDemo && (!certified || !certNmls.trim()))}
+              className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
+              {submitting ? "Submitting…" : "Submit Lock Request 🔒"}
+            </button>
+          )}
+          {/* All other types: Continue on steps 1–2, Submit on step 3 */}
+          {!isLockRequest && step < 3 && (
             <button type="button" onClick={next}
               className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
               style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
               Continue →
             </button>
           )}
-          {step === 3 && (
+          {!isLockRequest && step === 3 && (
             <button type="submit"
-              disabled={submitting || (!isDemo && (!certified || (!isLockRequest && !isHelpDesk && pendingDocs > 0)))}
+              disabled={submitting || (!isDemo && (!certified || (!isHelpDesk && pendingDocs > 0)))}
               className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
               {submitting
                 ? "Submitting…"
-                : (!isDemo && !isLockRequest && !isHelpDesk && pendingDocs > 0)
+                : (!isDemo && !isHelpDesk && pendingDocs > 0)
                 ? `Resolve ${pendingDocs} Pending Item${pendingDocs > 1 ? "s" : ""} to Submit`
                 : "Submit Lift Off Request 🚀"}
             </button>
