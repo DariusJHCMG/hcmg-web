@@ -28,7 +28,7 @@ export function LiftOffNav({
   const pathname = usePathname();
 
   const navItems: NavItem[] = [
-    { href: "/liftoff",     label: "My Requests", icon: "🏠", exact: true },
+    { href: "/liftoff",     label: "Dashboard",   icon: "🏠", exact: true },
     { href: "/liftoff/new", label: "New Request",  icon: "✨" },
     ...(isQueueUser ? [{ href: "/liftoff/queue",    label: "Ops Queue",   icon: "📥" }] : []),
     ...(isQueueUser ? [{ href: "/liftoff/pipeline", label: "Pipeline",    icon: "📊" }] : []),
