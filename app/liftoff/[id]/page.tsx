@@ -153,7 +153,8 @@ export default async function LiftOffDetailPage({
           <Row label="Submitted"         value={fmt(request.created_at)} />
           <Row label="Type"              value={TYPE_LABELS[request.request_type]} />
           <Row label="ARIVE Loan #"      value={request.arive_loan_number} />
-          <Row label="Loan Type"         value={request.loan_type} />
+          <Row label="Loan Purpose"      value={request.loan_purpose} />
+          <Row label="Loan Program"      value={request.loan_program} />
           <Row label="Loan Amount"       value={request.loan_amount ? `$${request.loan_amount.toLocaleString()}` : null} />
           <Row label="Purchase Price"    value={request.purchase_price ? `$${request.purchase_price.toLocaleString()}` : null} />
           <Row label="Lock Status"       value={request.lock_status} />

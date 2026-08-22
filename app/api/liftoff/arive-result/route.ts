@@ -27,26 +27,39 @@ import { resultStore } from "@/lib/arive-lookup-store";
 // Our wizard loan_type options: "purchase" | "purchase_fha" | "purchase_va" |
 //   "purchase_usda" | "refinance" | "refinance_fha" | "refinance_va" | "refinance_usda"
 // We combine both ARIVE fields to get the most specific value.
+// Returns a value the wizard's applyAriveData() can parse into loanPurpose + loanProgram.
+// Convention: "purchase_fha", "purchase_va", "purchase_non_qm", "refinance", etc.
 function mapLoanType(loanPurpose: string, mortgageType: string): string {
   const purpose  = loanPurpose.toLowerCase().trim();
-  const mortgage = mortgageType.toLowerCase().trim();
-  const isFHA    = mortgage === "fha";
-  const isVA     = mortgage === "va";
-  const isUSDA   = mortgage.includes("usda") || mortgage.includes("rural");
+  const mortgage = mortgageType.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-  if (purpose === "purchase") {
-    if (isFHA)  return "purchase_fha";
-    if (isVA)   return "purchase_va";
-    if (isUSDA) return "purchase_usda";
+  // Resolve program from ARIVE Mortgage Type
+  const program =
+    mortgage === "fha"                              ? "fha"         :
+    mortgage === "va"                               ? "va"          :
+    mortgage.includes("usda") || mortgage.includes("rural") ? "usda" :
+    mortgage === "nonqm"  || mortgage.includes("nonqm")     ? "non_qm" :
+    mortgage === "heloc"                            ? "heloc"       :
+    mortgage === "heloan"                           ? "heloan"      :
+    mortgage === "reverse"                          ? "reverse"     :
+    "conventional";
+
+  if (purpose === "purchase" || mortgage === "heloc") {
+    if (program === "heloc")  return "heloc";
+    if (program === "fha")    return "purchase_fha";
+    if (program === "va")     return "purchase_va";
+    if (program === "usda")   return "purchase_usda";
+    if (program === "non_qm") return "purchase_non_qm";
     return "purchase";
   }
   if (purpose === "refinance") {
-    if (isFHA)  return "refinance_fha";
-    if (isVA)   return "refinance_va";
-    if (isUSDA) return "refinance_usda";
+    if (program === "fha")    return "refinance_fha";
+    if (program === "va")     return "refinance_va";
+    if (program === "usda")   return "refinance_usda";
+    if (program === "non_qm") return "refinance_non_qm";
     return "refinance";
   }
-  // Fallback — return raw purpose lowercased
+  // Fallback
   return purpose || "purchase";
 }
 

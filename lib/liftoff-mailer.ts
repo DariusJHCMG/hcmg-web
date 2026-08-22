@@ -47,6 +47,8 @@ export interface LiftOffEmailPayload {
 
   // Loan
   arive_loan_number?: string | null;
+  loan_purpose?:      string | null;
+  loan_program?:      string | null;
   loan_type?:         string | null;
   loan_amount?:       number | null;
   purchase_price?:    number | null;
@@ -118,7 +120,8 @@ function buildLockDeskEmail(r: LiftOffEmailPayload, viewUrl: string): string {
 
   const loanRows =
     infoRow("ARIVE Loan #",   r.arive_loan_number) +
-    infoRow("Loan Type",      r.loan_type) +
+    infoRow("Loan Purpose",   r.loan_purpose) +
+    infoRow("Loan Program",   r.loan_program) +
     infoRow("Loan Amount",    fmt.money(r.loan_amount)) +
     infoRow("Purchase Price", fmt.money(r.purchase_price));
 
@@ -170,7 +173,8 @@ function buildProcessingEmail(r: LiftOffEmailPayload, viewUrl: string): string {
 
   const loanRows =
     infoRow("ARIVE Loan #",   r.arive_loan_number) +
-    infoRow("Loan Type",      r.loan_type) +
+    infoRow("Loan Purpose",   r.loan_purpose) +
+    infoRow("Loan Program",   r.loan_program) +
     infoRow("Loan Amount",    fmt.money(r.loan_amount)) +
     infoRow("Purchase Price", fmt.money(r.purchase_price)) +
     infoRow("Target Close",   fmt.date(r.target_close_date)) +

@@ -351,7 +351,8 @@ function WizardInner() {
   const [ariveLookupMessage, setAriveLookupMessage] = useState("");
   const [ariveLookupRaw, setAriveLookupRaw]         = useState<AriveLoanData | null>(null);
   const [carriedForwardIds, setCarriedForwardIds]   = useState("");
-  const [loanType, setLoanType]                     = useState("");
+  const [loanPurpose, setLoanPurpose]               = useState("");  // purchase | refinance
+  const [loanProgram, setLoanProgram]               = useState("");  // conventional | fha | va | non_qm | heloc | etc.
   const [loanAmount, setLoanAmount]                 = useState("");
   const [purchasePrice, setPurchasePrice]           = useState("");
   const [lockStatus, setLockStatus]                 = useState<LockStatus | "">("");
@@ -446,7 +447,8 @@ function WizardInner() {
     setOccupancyType("primary");
     setRequestType(DEMO_DATA.requestType);
     setAriveLoanNumber(DEMO_DATA.ariveLoanNumber);
-    setLoanType(DEMO_DATA.loanType);
+    setLoanPurpose("purchase");
+    setLoanProgram("conventional");
     setLoanAmount(DEMO_DATA.loanAmount);
     setPurchasePrice(DEMO_DATA.purchasePrice);
     setLockStatus(DEMO_DATA.lockStatus);
@@ -527,7 +529,24 @@ function WizardInner() {
     setAriveLookupRaw(data as AriveLoanData);
     if (data.borrowerFirstName)  setBorrowerFirst(data.borrowerFirstName as string);
     if (data.borrowerLastName)   setBorrowerLast(data.borrowerLastName   as string);
-    if (data.loanType)           setLoanType(data.loanType               as string);
+    if (data.loanType) {
+      // loanType from ARIVE result is e.g. "purchase", "purchase_fha", "refinance_va", "non_qm"
+      const lt = data.loanType as string;
+      // Purpose
+      if (lt === "heloc" || lt === "heloan")              setLoanPurpose("purchase");
+      else if (lt.startsWith("purchase"))                 setLoanPurpose("purchase");
+      else if (lt.startsWith("refinance") || lt === "cash_out_refi") setLoanPurpose("refinance");
+      // Program
+      if (lt.includes("non_qm") || lt.includes("nonqm")) setLoanProgram("non_qm");
+      else if (lt.includes("fha"))                        setLoanProgram("fha");
+      else if (lt.includes("va"))                         setLoanProgram("va");
+      else if (lt.includes("usda"))                       setLoanProgram("usda");
+      else if (lt === "heloc")                            setLoanProgram("heloc");
+      else if (lt === "heloan")                           setLoanProgram("heloan");
+      else if (lt === "construction")                     setLoanProgram("construction");
+      else if (lt === "renovation")                       setLoanProgram("renovation");
+      else                                                setLoanProgram("conventional");
+    }
     if (data.loanAmount)         setLoanAmount(String(data.loanAmount));
     if (data.purchasePrice)      setPurchasePrice(String(data.purchasePrice));
     if (data.propertyAddress)    setPropAddress(data.propertyAddress     as string);
@@ -590,7 +609,15 @@ function WizardInner() {
       arive_lookup_raw:       ariveLookupRaw ?? null,
       arive_looked_up_at:     ariveLookupStatus === "found" ? new Date().toISOString() : null,
       carried_forward_ids:    carriedForwardIds || null,
-      loan_type:              loanType          || null,
+      loan_purpose:           loanPurpose       || null,
+      loan_program:           loanProgram       || null,
+      loan_type:              loanPurpose && loanProgram
+                                ? (loanPurpose === "purchase" && loanProgram !== "heloc"
+                                    ? (loanProgram === "conventional" ? "purchase" : `purchase_${loanProgram}`)
+                                    : loanPurpose === "refinance"
+                                      ? (loanProgram === "conventional" ? "refinance" : `refinance_${loanProgram}`)
+                                      : loanProgram)
+                                : null,
       loan_amount:            loanAmount        ? parseFloat(loanAmount)    : null,
       purchase_price:         purchasePrice     ? parseFloat(purchasePrice) : null,
       lock_status:            lockPref === "lock" ? "locked" : lockPref === "float" ? "floating" : lockPref === "lock_requested" ? "lock_required" : (lockStatus || null),
@@ -891,14 +918,21 @@ function WizardInner() {
                 )}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Loan Type">
-                  <Select value={loanType} onChange={e => setLoanType(e.target.value)}
+                <Field label="Loan Purpose">
+                  <Select value={loanPurpose} onChange={e => setLoanPurpose(e.target.value)}
                     options={[
-                      { value: "purchase",      label: "Purchase — Conventional" },
-                      { value: "purchase_fha",  label: "Purchase — FHA" },
-                      { value: "purchase_va",   label: "Purchase — VA" },
-                      { value: "refinance",     label: "Refinance — Conventional" },
-                      { value: "cash_out_refi", label: "Cash-Out Refinance" },
+                      { value: "purchase",  label: "Purchase" },
+                      { value: "refinance", label: "Refinance" },
+                    ]} />
+                </Field>
+                <Field label="Loan Program">
+                  <Select value={loanProgram} onChange={e => setLoanProgram(e.target.value)}
+                    options={[
+                      { value: "conventional",  label: "Conventional" },
+                      { value: "fha",           label: "FHA" },
+                      { value: "va",            label: "VA" },
+                      { value: "usda",          label: "USDA / Rural" },
+                      { value: "non_qm",        label: "Non-QM / DSCR" },
                       { value: "heloc",         label: "HELOC" },
                       { value: "construction",  label: "Construction" },
                       { value: "renovation",    label: "Renovation" },
@@ -909,7 +943,7 @@ function WizardInner() {
                   <Input type="number" min="0" step="1000" value={loanAmount}
                     onChange={e => setLoanAmount(e.target.value)} placeholder="e.g. 425,000" />
                 </Field>
-                {(loanType.startsWith("purchase") || purchasePrice) && (
+                {(loanPurpose === "purchase" || loanProgram === "heloc" || purchasePrice) && (
                   <Field label="Purchase / Appraised Value">
                     <Input type="number" min="0" step="1000" value={purchasePrice}
                       onChange={e => setPurchasePrice(e.target.value)} placeholder="e.g. 500,000" />
@@ -934,7 +968,7 @@ function WizardInner() {
                     coBorrowerFirst: coBorrowerFirst,
                     loanAmount:      loanAmount,
                     purchasePrice:   purchasePrice,
-                    loanType:        loanType,
+                    loanType:        loanPurpose && loanProgram ? `${loanPurpose}_${loanProgram}` : loanPurpose || "",
                     targetClose:     targetClose,
                     propAddress:     propAddress,
                     propCity:        propCity,

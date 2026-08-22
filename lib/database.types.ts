@@ -37,7 +37,9 @@ export interface LiftOffRequest {
   // Loan identity
   arive_loan_number: string | null;
   carried_forward_ids: string | null;
-  loan_type: string | null;
+  loan_type: string | null;       // legacy — kept for backcompat; use loan_purpose + loan_program
+  loan_purpose: string | null;    // purchase | refinance
+  loan_program: string | null;    // conventional | fha | va | non_qm | heloc | construction | renovation | other
   loan_amount: number | null;
   purchase_price: number | null;
 
