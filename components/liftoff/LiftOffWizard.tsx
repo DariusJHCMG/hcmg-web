@@ -214,11 +214,12 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 function Select(props: React.SelectHTMLAttributes<HTMLSelectElement> & { options: { value: string; label: string }[] }) {
-  const { options, ...rest } = props;
+  const { options, disabled, ...rest } = props;
   return (
-    <select {...rest}
-      className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink
-                 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400">
+    <select {...rest} disabled={disabled}
+      className={`w-full rounded-xl border border-line px-4 py-2.5 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400
+                 ${disabled ? "bg-sand text-muted cursor-not-allowed" : "bg-white text-ink"}`}>
       <option value="">Select…</option>
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
@@ -563,11 +564,18 @@ function WizardInner() {
     setAriveLookupMessage("Loan found — fields auto-filled from ARIVE. Review and adjust if needed.");
   }
 
+  // ── Whether ARIVE fields are locked (read-only) ───────────────
+  const ariveFieldsLocked = !isDemo && ariveLookupStatus === "found";
+
   // ── Navigation ────────────────────────────────────────────────
   function next() {
     if (step === 1 && !requestType) { setError("Please select a request type."); return; }
     if (step === 2) {
       if (!ariveLoanNumber.trim()) { setError("ARIVE loan number is required."); return; }
+      // Require successful ARIVE lookup before proceeding (non-demo)
+      if (!isDemo && ariveLookupStatus !== "found") {
+        setError("Please look up the ARIVE loan number before continuing."); return;
+      }
       if (isLockRequest) {
         if (!lockRate.trim())  { setError("Rate is required for a lock request."); return; }
         if (!lockPrice.trim()) { setError("Price / points is required for a lock request."); return; }
@@ -576,6 +584,10 @@ function WizardInner() {
       } else {
         if (lockRequired && !lockPref) { setError("Please select Lock or Float for this loan."); return; }
         if (lockPref === "float" && !floatReason.trim()) { setError("Float reason is required when floating."); return; }
+        // Require target closing date for all non-lock, non-restructure requests
+        if (!isRestructure && !targetClose.trim()) {
+          setError("Target closing date is required."); return;
+        }
       }
     }
     setError("");
@@ -923,14 +935,18 @@ function WizardInner() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Loan Purpose">
-                  <Select value={loanPurpose} onChange={e => setLoanPurpose(e.target.value)}
+                  <Select value={loanPurpose}
+                    onChange={e => !ariveFieldsLocked && setLoanPurpose(e.target.value)}
+                    disabled={ariveFieldsLocked}
                     options={[
                       { value: "purchase",  label: "Purchase" },
                       { value: "refinance", label: "Refinance" },
                     ]} />
                 </Field>
                 <Field label="Loan Program">
-                  <Select value={loanProgram} onChange={e => setLoanProgram(e.target.value)}
+                  <Select value={loanProgram}
+                    onChange={e => !ariveFieldsLocked && setLoanProgram(e.target.value)}
+                    disabled={ariveFieldsLocked}
                     options={[
                       { value: "conventional",  label: "Conventional" },
                       { value: "fha",           label: "FHA" },
@@ -945,12 +961,18 @@ function WizardInner() {
                 </Field>
                 <Field label="Loan Amount">
                   <Input type="number" min="0" step="1000" value={loanAmount}
-                    onChange={e => setLoanAmount(e.target.value)} placeholder="e.g. 425,000" />
+                    readOnly={ariveFieldsLocked}
+                    onChange={e => !ariveFieldsLocked && setLoanAmount(e.target.value)}
+                    placeholder="e.g. 425,000"
+                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                 </Field>
                 {(loanPurpose === "purchase" || loanProgram === "heloc" || purchasePrice) && (
                   <Field label="Purchase / Appraised Value">
                     <Input type="number" min="0" step="1000" value={purchasePrice}
-                      onChange={e => setPurchasePrice(e.target.value)} placeholder="e.g. 500,000" />
+                      readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setPurchasePrice(e.target.value)}
+                      placeholder="e.g. 500,000"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                   </Field>
                 )}
               </div>
@@ -997,37 +1019,63 @@ function WizardInner() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Borrower First Name" required>
-                  <Input value={borrowerFirst} onChange={e => setBorrowerFirst(e.target.value)} placeholder="First" />
+                  <Input value={borrowerFirst} readOnly={ariveFieldsLocked}
+                    onChange={e => !ariveFieldsLocked && setBorrowerFirst(e.target.value)}
+                    placeholder="First"
+                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                 </Field>
                 <Field label="Borrower Last Name" required>
-                  <Input value={borrowerLast} onChange={e => setBorrowerLast(e.target.value)} placeholder="Last" />
+                  <Input value={borrowerLast} readOnly={ariveFieldsLocked}
+                    onChange={e => !ariveFieldsLocked && setBorrowerLast(e.target.value)}
+                    placeholder="Last"
+                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                 </Field>
                 <Field label="Co-Borrower First">
-                  <Input value={coBorrowerFirst} onChange={e => setCoBorrowerFirst(e.target.value)} placeholder="Optional" />
+                  <Input value={coBorrowerFirst} readOnly={ariveFieldsLocked}
+                    onChange={e => !ariveFieldsLocked && setCoBorrowerFirst(e.target.value)}
+                    placeholder={ariveFieldsLocked ? "—" : "Optional"}
+                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                 </Field>
                 <Field label="Co-Borrower Last">
-                  <Input value={coBorrowerLast} onChange={e => setCoBorrowerLast(e.target.value)} placeholder="Optional" />
+                  <Input value={coBorrowerLast} readOnly={ariveFieldsLocked}
+                    onChange={e => !ariveFieldsLocked && setCoBorrowerLast(e.target.value)}
+                    placeholder={ariveFieldsLocked ? "—" : "Optional"}
+                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                 </Field>
               </div>
 
               {!isRestructure && (
                 <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-line mt-2">
                   <Field label="Property Address" className="sm:col-span-2">
-                    <Input value={propAddress} onChange={e => setPropAddress(e.target.value)} placeholder="123 Main St" />
+                    <Input value={propAddress} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setPropAddress(e.target.value)}
+                      placeholder="123 Main St"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                   </Field>
                   <Field label="City">
-                    <Input value={propCity} onChange={e => setPropCity(e.target.value)} placeholder="City" />
+                    <Input value={propCity} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setPropCity(e.target.value)}
+                      placeholder="City"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                   </Field>
                   <div className="grid grid-cols-2 gap-2">
                     <Field label="State">
-                      <Input value={propState} onChange={e => setPropState(e.target.value)} placeholder="FL" maxLength={2} />
+                      <Input value={propState} readOnly={ariveFieldsLocked}
+                        onChange={e => !ariveFieldsLocked && setPropState(e.target.value)}
+                        placeholder="FL" maxLength={2}
+                        className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                     </Field>
                     <Field label="ZIP">
-                      <Input value={propZip} onChange={e => setPropZip(e.target.value)} placeholder="32801" maxLength={10} />
+                      <Input value={propZip} readOnly={ariveFieldsLocked}
+                        onChange={e => !ariveFieldsLocked && setPropZip(e.target.value)}
+                        placeholder="32801" maxLength={10}
+                        className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                     </Field>
                   </div>
                   <Field label="Property Type">
-                    <Select value={propertyType} onChange={e => setPropertyType(e.target.value)}
+                    <Select value={propertyType}
+                      onChange={e => !ariveFieldsLocked && setPropertyType(e.target.value)}
+                      disabled={ariveFieldsLocked}
                       options={[
                         { value: "sfr",          label: "Single Family Residence (SFR)" },
                         { value: "condo",        label: "Condo" },
@@ -1038,14 +1086,16 @@ function WizardInner() {
                       ]} />
                   </Field>
                   <Field label="Occupancy Type">
-                    <Select value={occupancyType} onChange={e => setOccupancyType(e.target.value)}
+                    <Select value={occupancyType}
+                      onChange={e => !ariveFieldsLocked && setOccupancyType(e.target.value)}
+                      disabled={ariveFieldsLocked}
                       options={[
-                        { value: "primary",   label: "Primary Residence" },
-                        { value: "secondary", label: "Second Home" },
+                        { value: "primary",    label: "Primary Residence" },
+                        { value: "secondary",  label: "Second Home" },
                         { value: "investment", label: "Investment Property" },
                       ]} />
                   </Field>
-                  <Field label="Target Closing Date">
+                  <Field label="Target Closing Date" required>
                     <Input type="date" value={targetClose} onChange={e => setTargetClose(e.target.value)} />
                   </Field>
                 </div>
