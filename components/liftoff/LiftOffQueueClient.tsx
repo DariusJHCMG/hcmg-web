@@ -79,19 +79,38 @@ function WorkflowBadge({ r }: { r: LiftOffRequest }) {
 function RequestRow({
   request,
   onUpdated,
+  isDemo = false,
 }: {
   request: LiftOffRequest;
   onUpdated: (updated: Partial<LiftOffRequest> & { id: string }) => void;
+  isDemo?: boolean;
 }) {
-  const [busy, setBusy]         = useState(false);
-  const [err, setErr]           = useState("");
+  const [busy, setBusy]           = useState(false);
+  const [err, setErr]             = useState("");
   const [showNotes, setShowNotes] = useState(false);
-  const [notes, setNotes]       = useState("");
+  const [notes, setNotes]         = useState("");
 
   const r = request;
 
   async function doAction(action: "claim" | "start" | "complete") {
     setBusy(true); setErr("");
+    const now = new Date().toISOString();
+
+    // Demo mode — purely client-side, no API calls
+    if (isDemo) {
+      await new Promise(res => setTimeout(res, 600)); // simulate latency
+      if (action === "claim") {
+        onUpdated({ id: r.id, request_status: "in_review", claimed_at: now, claimed_by_id: "demo-me", claimed_by_name: "Demo User" });
+      } else if (action === "start") {
+        onUpdated({ id: r.id, started_at: now, inflight_email_sent_at: now });
+      } else {
+        onUpdated({ id: r.id, request_status: "completed", completed_at: now, completed_email_sent_at: now });
+        setShowNotes(false);
+      }
+      setBusy(false);
+      return;
+    }
+
     const body = action === "complete" && notes.trim() ? { notes: notes.trim() } : undefined;
     const res = await fetch(`/api/liftoff/${r.id}/${action}`, {
       method: "PATCH",
@@ -241,9 +260,11 @@ type Tab = "active" | "completed" | "all";
 export function LiftOffQueueClient({
   initialRequests,
   processorName,
+  isDemo = false,
 }: {
   initialRequests: LiftOffRequest[];
   processorName: string;
+  isDemo?: boolean;
 }) {
   const [requests, setRequests] = useState<LiftOffRequest[]>(initialRequests);
   const [tab, setTab]           = useState<Tab>("active");
@@ -313,7 +334,7 @@ export function LiftOffQueueClient({
       ) : (
         <div className="space-y-4">
           {filtered.map(r => (
-            <RequestRow key={r.id} request={r} onUpdated={handleUpdated} />
+            <RequestRow key={r.id} request={r} onUpdated={handleUpdated} isDemo={isDemo} />
           ))}
         </div>
       )}
