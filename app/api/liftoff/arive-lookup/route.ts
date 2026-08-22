@@ -1,26 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 
-// ── ARIVE Lookup — direct REST API call ──────────────────────────────────────
+// ── ARIVE Lookup — direct REST API call (OAuth 2.0) ──────────────────────────
 //
 // Flow:
 //   1. LO types ARIVE loan number → clicks "Look up"
-//   2. This route calls GET https://api.arive.com/api/loans
-//      with searchField=DISPLAY_ID (numeric) or LENDER_LOAN_ID (raw string)
-//   3. Maps the first result to AriveLoanData and returns it to the wizard
-//   4. The wizard auto-fills all matching fields
+//   2. This route exchanges Client ID + Secret Key for a Bearer token
+//   3. Calls GET https://api.arive.com/api/loans with Authorization: Bearer <token>
+//   4. Maps the first result to AriveLoanData and returns it to the wizard
+//   5. The wizard auto-fills all matching fields
 //
-// Required env var:
-//   ARIVE_API_KEY=<from ARIVE Settings → API Integrations → API Key>
+// Required env vars (all from ARIVE Settings → API Integrations):
+//   ARIVE_CLIENT_ID=<Client ID>
+//   ARIVE_CLIENT_SECRET=<Secret Key>
+//   ARIVE_API_KEY=<API Key>   ← sent as X-API-KEY alongside Bearer token
 //
 // ── REVERT NOTES ────────────────────────────────────────────────────────────
-// To revert to the previous Zapier-webhook version, restore from git:
-//   git checkout HEAD -- app/api/liftoff/arive-lookup/route.ts
-//   and swap ARIVE_API_KEY back to ARIVE_ZAPIER_WEBHOOK_URL in your env.
+// To revert: git checkout HEAD~2 -- app/api/liftoff/arive-lookup/route.ts
 // The wizard (LiftOffWizard.tsx) was NOT changed — no wizard revert needed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ARIVE_BASE = "https://api.arive.com";
+
+// ── OAuth token exchange ─────────────────────────────────────────────────────
+// ARIVE uses OAuth 2.0 client_credentials grant.
+// Token endpoint pattern used by their Zapier integration.
+async function getAriveToken(clientId: string, clientSecret: string): Promise<string> {
+  const res = await fetch(`${ARIVE_BASE}/oauth/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type:    "client_credentials",
+      client_id:     clientId,
+      client_secret: clientSecret,
+    }),
+    signal: AbortSignal.timeout(8_000),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`ARIVE token exchange failed (${res.status}): ${body}`);
+  }
+  const data = await res.json() as { access_token?: string };
+  if (!data.access_token) throw new Error("ARIVE token response missing access_token");
+  return data.access_token;
+}
 
 // ── Demo loans — returned instantly without any API call ─────────────────────
 // Share these loan numbers with the team for presentations / testing.
@@ -112,12 +135,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(DEMO_LOANS[demoKey]);
   }
 
-  // ── Require ARIVE API key ────────────────────────────────────────────────
-  const apiKey = process.env.ARIVE_API_KEY;
-  if (!apiKey) {
+  // ── Require ARIVE credentials ────────────────────────────────────────────
+  const clientId     = process.env.ARIVE_CLIENT_ID;
+  const clientSecret = process.env.ARIVE_CLIENT_SECRET;
+  const apiKey       = process.env.ARIVE_API_KEY;
+  if (!clientId || !clientSecret || !apiKey) {
     return NextResponse.json(
       { error: "ARIVE lookup is not configured yet. Please fill in the loan details manually.", notConfigured: true },
       { status: 503 },
+    );
+  }
+
+  // ── Exchange credentials for Bearer token ────────────────────────────────
+  let bearerToken: string;
+  try {
+    bearerToken = await getAriveToken(clientId, clientSecret);
+  } catch (err) {
+    console.error("[arive-lookup] token exchange failed", err);
+    return NextResponse.json(
+      { error: "Could not authenticate with ARIVE. Please fill in manually." },
+      { status: 502 },
     );
   }
 
@@ -137,8 +174,9 @@ export async function POST(req: NextRequest) {
     const res = await fetch(searchUrl.toString(), {
       method: "GET",
       headers: {
-        "X-API-KEY":    apiKey,
-        "Content-Type": "application/json",
+        "Authorization": `Bearer ${bearerToken}`,
+        "X-API-KEY":     apiKey,
+        "Content-Type":  "application/json",
       },
       signal: AbortSignal.timeout(8_000),
     });
@@ -146,9 +184,8 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
       const ariveBody = await res.text().catch(() => "");
       console.error("[arive-lookup] search failed", res.status, ariveBody);
-      // Return the raw ARIVE error so we can diagnose — strip sensitive info in prod later
       return NextResponse.json(
-        { error: `ARIVE lookup failed (${res.status}). Please fill in manually.`, _debug: ariveBody, _url: searchUrl.toString().replace(apiKey, "***") },
+        { error: `ARIVE lookup failed (${res.status}). Please fill in manually.`, _debug: ariveBody },
         { status: 502 },
       );
     }
@@ -175,8 +212,9 @@ export async function POST(req: NextRequest) {
       const detailRes = await fetch(`${ARIVE_BASE}/api/loans/${sysGUID}`, {
         method: "GET",
         headers: {
-          "X-API-KEY":    apiKey,
-          "Content-Type": "application/json",
+          "Authorization": `Bearer ${bearerToken}`,
+          "X-API-KEY":     apiKey,
+          "Content-Type":  "application/json",
         },
         signal: AbortSignal.timeout(5_000),
       });
