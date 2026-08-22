@@ -137,6 +137,11 @@ interface AriveLoanData {
   targetCloseDate?: string;
   lockStatus?: string;
   floatReason?: string;
+  // Lock pricing from ARIVE
+  noteRate?: number | null;
+  discountPoints?: number | null;
+  lenderName?: string | null;
+  productName?: string | null;
 }
 
 // ── Step indicator ────────────────────────────────────────────
@@ -418,8 +423,6 @@ function WizardInner() {
   // Step 2 — Lock Request pricing
   const [lockRate, setLockRate]               = useState("");
   const [lockPrice, setLockPrice]             = useState("");
-  const [lockApr, setLockApr]                 = useState("");
-  const [lockMonthlyPmt, setLockMonthlyPmt]   = useState("");
   const [lockLender, setLockLender]           = useState("");
   const [lockProduct, setLockProduct]         = useState("");
   const [lockPeriod, setLockPeriod]           = useState<15|30|45|60>(30);
@@ -555,6 +558,11 @@ function WizardInner() {
     if (data.propertyZip)        setPropZip(data.propertyZip             as string);
     if (data.targetCloseDate)    setTargetClose((data.targetCloseDate as string).split("T")[0]);
     if (data.lockStatus)         setLockStatus(data.lockStatus           as LockStatus);
+    // Auto-fill lock pricing fields if this is a lock request
+    if (data.noteRate      != null) setLockRate(String(data.noteRate));
+    if (data.discountPoints != null) setLockPrice(String(data.discountPoints));
+    if (data.lenderName)         setLockLender(data.lenderName  as string);
+    if (data.productName)        setLockProduct(data.productName as string);
     setAriveLookupStatus("found");
     setAriveLookupMessage("Loan found — fields auto-filled from ARIVE. Review and adjust if needed.");
   }
@@ -675,15 +683,13 @@ function WizardInner() {
       payload.help_desk_description = helpDeskDescription || null;
     }
     if (isLockRequest) {
-      payload.lock_requested_rate        = lockRate        ? parseFloat(lockRate)        : null;
-      payload.lock_requested_price       = lockPrice       ? parseFloat(lockPrice)       : null;
-      payload.lock_requested_apr         = lockApr         ? parseFloat(lockApr)         : null;
-      payload.lock_requested_monthly_pmt = lockMonthlyPmt  ? parseFloat(lockMonthlyPmt)  : null;
-      payload.lock_requested_lender      = lockLender      || null;
-      payload.lock_requested_product     = lockProduct     || null;
+      payload.lock_requested_rate        = lockRate    ? parseFloat(lockRate)    : null;
+      payload.lock_requested_price       = lockPrice   ? parseFloat(lockPrice)   : null;
+      payload.lock_requested_lender      = lockLender  || null;
+      payload.lock_requested_product     = lockProduct || null;
       payload.lock_period_days           = lockPeriod;
-      payload.lock_requested_close_date  = lockCloseDate   || null;
-      payload.lock_lo_notes              = lockLoNotes     || null;
+      payload.lock_requested_close_date  = lockCloseDate || null;
+      payload.lock_lo_notes              = lockLoNotes   || null;
       payload.lock_pricing_confirmed_by_lo = lockChkArive && lockChkLos;
       payload.lock_pricing_confirmed_at  = new Date().toISOString();
     }
@@ -830,36 +836,50 @@ function WizardInner() {
             {/* Lock Request — Pricing Panel (replaces prior-progress + loan/lock sections) */}
             {isLockRequest ? (
               <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-5">
-                <div>
-                  <h3 className="text-sm font-bold text-ink">Pricing from ARIVE</h3>
-                  <p className="text-xs text-muted mt-0.5">
-                    Run pricing in ARIVE first, then enter the confirmed rate and price below.
-                    Both confirmation boxes must be checked before you can continue.
-                  </p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-ink">Pricing from ARIVE</h3>
+                    <p className="text-xs text-muted mt-0.5">
+                      {ariveFieldsLocked
+                        ? "Fields auto-filled from ARIVE. Confirm the pricing is current, then check both boxes below."
+                        : "Look up the loan above first — rate, price, lender and product will auto-fill from ARIVE."}
+                    </p>
+                  </div>
+                  {ariveFieldsLocked && (
+                    <span className="text-[10px] font-bold text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5 flex-shrink-0 ml-3">
+                      Auto-filled from ARIVE
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Rate %" required>
                     <Input type="number" step="0.001" min="0" value={lockRate}
-                      onChange={e => setLockRate(e.target.value)} placeholder="e.g. 6.875" />
+                      readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setLockRate(e.target.value)}
+                      placeholder="e.g. 6.875"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                   </Field>
-                  <Field label="Price / Points" required hint="e.g. 100.000 = par, 99.500 = 0.5 pts cost">
+                  <Field label="Discount Points" required hint="e.g. -0.123 = rebate, 0.500 = cost">
                     <Input type="number" step="0.001" value={lockPrice}
-                      onChange={e => setLockPrice(e.target.value)} placeholder="e.g. 99.500" />
-                  </Field>
-                  <Field label="APR %">
-                    <Input type="number" step="0.001" min="0" value={lockApr}
-                      onChange={e => setLockApr(e.target.value)} placeholder="e.g. 7.024" />
-                  </Field>
-                  <Field label="Est. Monthly Payment">
-                    <Input type="number" step="1" min="0" value={lockMonthlyPmt}
-                      onChange={e => setLockMonthlyPmt(e.target.value)} placeholder="e.g. 2850" />
+                      readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setLockPrice(e.target.value)}
+                      placeholder="e.g. -0.123"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                   </Field>
                   <Field label="Lender">
-                    <Input value={lockLender} onChange={e => setLockLender(e.target.value)} placeholder="e.g. UWM" />
+                    <Input value={lockLender}
+                      readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setLockLender(e.target.value)}
+                      placeholder="e.g. UWM"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                   </Field>
                   <Field label="Product">
-                    <Input value={lockProduct} onChange={e => setLockProduct(e.target.value)} placeholder="e.g. 30-Yr Fixed Conventional" />
+                    <Input value={lockProduct}
+                      readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setLockProduct(e.target.value)}
+                      placeholder="e.g. 30-Yr Fixed Conventional"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                   </Field>
                 </div>
 
@@ -1171,13 +1191,11 @@ function WizardInner() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 text-sm">
                   {[
-                    { label: "Rate",          value: lockRate     ? `${lockRate}%`     : "—" },
-                    { label: "Price",         value: lockPrice    ? lockPrice           : "—" },
-                    { label: "APR",           value: lockApr      ? `${lockApr}%`      : "—" },
-                    { label: "Monthly Pmt",   value: lockMonthlyPmt ? `$${parseFloat(lockMonthlyPmt).toLocaleString()}` : "—" },
-                    { label: "Lender",        value: lockLender   || "—" },
-                    { label: "Product",       value: lockProduct  || "—" },
-                    { label: "Lock Period",   value: `${lockPeriod} days` },
+                    { label: "Rate",            value: lockRate   ? `${lockRate}%` : "—" },
+                    { label: "Discount Points", value: lockPrice  ? lockPrice      : "—" },
+                    { label: "Lender",          value: lockLender || "—" },
+                    { label: "Product",         value: lockProduct || "—" },
+                    { label: "Lock Period",     value: `${lockPeriod} days` },
                     { label: "Requested Close", value: lockCloseDate ? new Date(lockCloseDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—" },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex gap-3 border-b border-line py-2 last:border-0">

@@ -122,9 +122,10 @@ export async function POST(req: NextRequest) {
     propertyState:     (body.propertyState   as string) || null,
     propertyZip:       (body.propertyZip     as string) || null,
     lockStatus,
-    noteRate:          body.noteRate    ? Number(body.noteRate)    : null,
-    lenderName:        (body.lenderName  as string) || null,
-    productName:       (body.productName as string) || null,
+    noteRate:          body.noteRate       ? Number(body.noteRate)       : null,
+    discountPoints:    body.discountPoints != null ? Number(body.discountPoints) : null,
+    lenderName:        (body.lenderName    as string) || null,
+    productName:       (body.productName   as string) || null,
   };
 
   resultStore.set(requestId, result);
