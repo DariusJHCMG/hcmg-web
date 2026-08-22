@@ -8,7 +8,7 @@ export type LiftOffRequestType =
   | "register_disclosure"
   | "disclosure_only"
   | "submission"
-  | "restructure_suspense"
+  | "loan_help_desk"
   | "lock_request";
 
 export type LiftOffRequestStatus =
@@ -198,6 +198,10 @@ export interface LiftOffRequest {
   assigned_to_name: string | null;
   assigned_at_ts: string | null;
   assigned_by_name: string | null;
+
+  // Loan Help Desk
+  help_desk_sub_type: string | null;
+  help_desk_description: string | null;
 }
 
 

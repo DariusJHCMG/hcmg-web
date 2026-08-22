@@ -7,23 +7,23 @@ import { LockDeskHoursCard } from "@/components/liftoff/LockDeskHoursCard";
 import { LiftOffSLACard } from "@/components/liftoff/LiftOffSLACard";
 
 const TYPE_ICONS: Record<string, string> = {
-  register_disclosure:  "📋",
-  disclosure_only:      "📄",
-  submission:           "🚀",
-  restructure_suspense: "🔄",
-  lock_request:         "🔒",
+  register_disclosure: "📋",
+  disclosure_only:     "📄",
+  submission:          "🚀",
+  loan_help_desk:      "🛎",
+  lock_request:        "🔒",
 };
 
 export const dynamic = "force-dynamic";
 
 const TYPE_LABELS: Record<string, string> = {
-  register_disclosure:   "Register + Disclosure",
-  disclosure_only:       "Disclosure Only",
-  submission:            "Submission",
-  restructure_suspense:  "Restructure / Suspense",
-  wire_request:          "Wire Request",
-  adverse:               "Adverse",
-  lock_request:          "Lock Desk Request",
+  register_disclosure: "Register + Disclosure",
+  disclosure_only:     "Disclosure Only",
+  submission:          "Submission",
+  loan_help_desk:      "Loan Help Desk",
+  wire_request:        "Wire Request",
+  adverse:             "Adverse",
+  lock_request:        "Lock Desk Request",
 };
 
 const STATUS_STYLES: Record<string, string> = {

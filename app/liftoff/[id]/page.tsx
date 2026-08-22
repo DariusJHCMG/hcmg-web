@@ -8,11 +8,11 @@ import { LiftOffResubmitPanel } from "@/components/liftoff/LiftOffResubmitPanel"
 export const dynamic = "force-dynamic";
 
 const TYPE_LABELS: Record<string, string> = {
-  register_disclosure:   "Register + Disclosure",
-  disclosure_only:       "Disclosure Only",
-  submission:            "Submission",
-  restructure_suspense:  "Restructure / Suspense",
-  lock_request:          "Lock Desk Request",
+  register_disclosure: "Register + Disclosure",
+  disclosure_only:     "Disclosure Only",
+  submission:          "Submission",
+  loan_help_desk:      "Loan Help Desk",
+  lock_request:        "Lock Desk Request",
 };
 
 const PROPERTY_TYPE_LABELS: Record<string, string> = {
@@ -306,16 +306,19 @@ export default async function LiftOffDetailPage({
         </div>
       )}
 
-      {/* Restructure */}
-      {request.request_type === "restructure_suspense" && (
+      {/* Loan Help Desk */}
+      {request.request_type === "loan_help_desk" && (
         <div className="rounded-2xl border border-line bg-white overflow-hidden">
           <div className="border-b border-line px-6 py-4 bg-sand">
-            <h2 className="font-bold text-ink text-sm">Restructure / Suspense</h2>
+            <h2 className="font-bold text-ink text-sm">🛎 Loan Help Desk</h2>
           </div>
           <div className="px-6 py-2">
-            <Row label="Reason"         value={request.suspense_reason} />
-            <Row label="Has Solution"   value={request.reason_fixed == null ? null : request.reason_fixed ? "Yes" : "No"} />
-            <Row label="Notes"          value={request.suspense_notes} />
+            <Row label="Sub-Type"    value={request.help_desk_sub_type} />
+            <Row label="Description" value={
+              request.help_desk_description
+                ? <span className="whitespace-pre-wrap">{request.help_desk_description}</span>
+                : null
+            } />
           </div>
         </div>
       )}

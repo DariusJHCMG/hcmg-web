@@ -6,19 +6,19 @@ import type { LiftOffRequest, LiftOffRole } from "@/lib/database.types";
 import { getIncompleteReasons } from "@/lib/liftoff-incomplete-reasons";
 
 const TYPE_LABELS: Record<string, string> = {
-  register_disclosure:  "Register + Disclosure",
-  disclosure_only:      "Disclosure Only",
-  submission:           "Submission",
-  restructure_suspense: "Restructure / Suspense",
-  lock_request:         "Lock Desk Request",
+  register_disclosure: "Register + Disclosure",
+  disclosure_only:     "Disclosure Only",
+  submission:          "Submission",
+  loan_help_desk:      "Loan Help Desk",
+  lock_request:        "Lock Desk Request",
 };
 
 const TYPE_ICONS: Record<string, string> = {
-  register_disclosure:  "📋",
-  disclosure_only:      "📄",
-  submission:           "🚀",
-  restructure_suspense: "🔄",
-  lock_request:         "🔒",
+  register_disclosure: "📋",
+  disclosure_only:     "📄",
+  submission:          "🚀",
+  loan_help_desk:      "🛎",
+  lock_request:        "🔒",
 };
 
 const STATUS_STYLES: Record<string, string> = {

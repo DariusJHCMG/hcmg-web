@@ -33,11 +33,11 @@ export const INCOMPLETE_REASONS: Record<LiftOffRequestType, string[]> = {
     "IPAC notes incomplete",
     "Loan does not match 1003",
   ],
-  restructure_suspense: [
-    "Exception letter missing",
-    "Supporting documents incomplete",
-    "Suspense reason not specified",
-    "Resolution unclear — needs clarification",
+  loan_help_desk: [
+    "Issue description too vague — please provide more detail",
+    "ARIVE loan number not found or not provided",
+    "Sub-type not selected",
+    "Supporting documents missing",
   ],
   lock_request: [
     "Pricing not confirmed in ARIVE",

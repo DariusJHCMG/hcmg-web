@@ -25,6 +25,7 @@ const FROM         = "Lift Off · HCMG <noreply@hcmgloans.com>";
 const BASE_URL     = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com";
 
 const LOCK_DESK_EMAIL  = "lockdesk@hcmgloans.com";
+const HELP_DESK_EMAIL  = "helpdesk@hcmgloans.com";
 const PROCESSING_EMAIL = "processing@hcmgloans.com";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -68,16 +69,20 @@ export interface LiftOffEmailPayload {
   lock_period_days?:           number | null;
   lock_requested_close_date?:  string | null;
   lock_lo_notes?:              string | null;
+
+  // Loan Help Desk
+  help_desk_sub_type?:    string | null;
+  help_desk_description?: string | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const TYPE_LABELS: Record<string, string> = {
-  register_disclosure:  "Register + Disclosure",
-  disclosure_only:      "Disclosure Only",
-  submission:           "Submission",
-  restructure_suspense: "Restructure / Suspense",
-  lock_request:         "Lock Desk Request",
+  register_disclosure: "Register + Disclosure",
+  disclosure_only:     "Disclosure Only",
+  submission:          "Submission",
+  loan_help_desk:      "Loan Help Desk",
+  lock_request:        "Lock Desk Request",
 };
 
 const fmt = {
@@ -230,6 +235,12 @@ export async function sendLiftOffNotification(r: LiftOffEmailPayload): Promise<v
       LOCK_DESK_EMAIL,
       `🔒 Lock Request — ${borrower} · ${r.arive_loan_number ?? "No ARIVE #"}`,
       buildLockDeskEmail(r, viewUrl),
+    );
+  } else if (r.request_type === "loan_help_desk") {
+    await send(
+      HELP_DESK_EMAIL,
+      `🛎 Help Desk: ${typeLabel} — ${borrower} · ${r.arive_loan_number ?? "No ARIVE #"}`,
+      buildProcessingEmail(r, viewUrl),
     );
   } else {
     await send(

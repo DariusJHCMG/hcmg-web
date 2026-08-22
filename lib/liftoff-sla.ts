@@ -15,11 +15,11 @@ import type { LiftOffRequestType, LiftOffRequest } from "@/lib/database.types";
 
 /** Number of business hours allowed per request type. */
 export const SLA_WINDOWS: Record<LiftOffRequestType, number> = {
-  lock_request:         1,
-  register_disclosure:  1,
-  disclosure_only:      1,
-  restructure_suspense: 24,
-  submission:           48,
+  lock_request:        1,
+  register_disclosure: 1,
+  disclosure_only:     1,
+  loan_help_desk:      4,
+  submission:          48,
 };
 
 // ── ET helpers ────────────────────────────────────────────────────────────────
@@ -143,11 +143,11 @@ export function addBusinessHours(from: Date, hours: number): Date {
 export type SLASeverity = "normal" | "warning" | "critical";
 
 const BASE_SCORES: Record<LiftOffRequestType, number> = {
-  lock_request:         100,
-  register_disclosure:  80,
-  disclosure_only:      70,
-  restructure_suspense: 60,
-  submission:           50,
+  lock_request:        100,
+  register_disclosure: 80,
+  disclosure_only:     70,
+  loan_help_desk:      65,
+  submission:          50,
 };
 
 /** Re-evaluate severity at read time for live colour coding. */

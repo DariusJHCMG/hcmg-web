@@ -23,15 +23,15 @@ interface FilterState {
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const REQUEST_TYPE_LABELS: Record<LiftOffRequestType, string> = {
-  lock_request:         "Lock Request",
-  register_disclosure:  "Register & Disclose",
-  disclosure_only:      "Disclosure Only",
-  restructure_suspense: "Restructure / Suspense",
-  submission:           "Submission",
+  lock_request:        "Lock Request",
+  register_disclosure: "Register & Disclose",
+  disclosure_only:     "Disclosure Only",
+  loan_help_desk:      "Loan Help Desk",
+  submission:          "Submission",
 };
 
 const ALL_TYPES: LiftOffRequestType[] = [
-  "lock_request", "register_disclosure", "disclosure_only", "restructure_suspense", "submission",
+  "lock_request", "register_disclosure", "disclosure_only", "loan_help_desk", "submission",
 ];
 
 const COLUMNS: { key: LiftOffRequestStatus; label: string; color: string }[] = [

@@ -34,11 +34,7 @@ const DOC_CHECKLISTS: Record<LiftOffRequestType, DocItem[]> = {
     { id: "title",         label: "Title Order",             category: "property" },
     { id: "appraisal",     label: "Appraisal",               category: "property" },
   ],
-  restructure_suspense: [
-    { id: "1003",          label: "1003 Application",        category: "loan" },
-    { id: "exception_ltr", label: "Exception Letter",        category: "compliance" },
-    { id: "support_docs",  label: "Supporting Documents",    category: "compliance" },
-  ],
+  loan_help_desk: [],
   lock_request: [],
 };
 
@@ -47,7 +43,7 @@ const FILE_STATUS_STEPS: Record<LiftOffRequestType, string[]> = {
   register_disclosure:  ["Request Submitted", "Pre-Process Review", "Registered in ARIVE", "Disclosure Sent"],
   disclosure_only:      ["Request Submitted", "Pre-Process Review", "Disclosure Sent"],
   submission:           ["Request Submitted", "Pre-Process Review", "Registered in ARIVE", "Disclosure Sent", "Processor Assigned"],
-  restructure_suspense: ["Request Submitted", "Compliance Review", "Ops Decision", "Resolution Confirmed"],
+  loan_help_desk:       ["Request Submitted", "Help Desk Review", "Ops Response", "Resolved"],
   lock_request:         ["Request Submitted", "Lock Desk Review", "Locked in Portal", "LO Notified"],
 };
 
@@ -109,11 +105,11 @@ const REQUEST_TYPES: {
     icon: "🚀",
   },
   {
-    id: "restructure_suspense",
-    label: "Restructure / Suspense",
-    description: "Resolve a blocker on an existing loan — restructure if no solution, or submit an exception request when you have one.",
-    tags: ["RESTRUCTURE", "EXCEPTION", "COMPLIANCE"],
-    icon: "🔄",
+    id: "loan_help_desk",
+    label: "Loan Help Desk",
+    description: "Need help on an existing loan? Select a sub-type and describe the issue — ops will respond within 4 business hours.",
+    tags: ["HELP", "OPS", "SUPPORT"],
+    icon: "🛎",
   },
   {
     id: "lock_request",
@@ -387,10 +383,9 @@ function WizardInner() {
   const [loanGoal, setLoanGoal]             = useState("");
   const [specialInstructions, setSpecialInstructions] = useState("");
 
-  // Step 3 — Restructure
-  const [suspenseReason, setSuspenseReason] = useState("");
-  const [suspenseNotes, setSuspenseNotes]   = useState("");
-  const [reasonFixed, setReasonFixed]       = useState<boolean | null>(null);
+  // Step 2 — Help Desk
+  const [helpDeskSubType, setHelpDeskSubType]       = useState("");
+  const [helpDeskDescription, setHelpDeskDescription] = useState("");
 
   // Step 3 — 1003 matches registration
   const [matches1003, setMatches1003]               = useState<boolean | null>(null);
@@ -433,13 +428,13 @@ function WizardInner() {
   const [lockChkArive, setLockChkArive]       = useState(false);
   const [lockChkLos, setLockChkLos]           = useState(false);
 
-  const selectedType  = REQUEST_TYPES.find(t => t.id === requestType);
-  const lockRequired  = selectedType?.lockRequired ?? false;
-  const isRestructure = requestType === "restructure_suspense";
-  const isLockRequest = requestType === "lock_request";
-  const docItems      = requestType ? DOC_CHECKLISTS[requestType] ?? [] : [];
-  const checkedCount  = isDemo ? docItems.length : docItems.filter(d => docChecked[d.id]).length;
-  const pendingDocs   = docItems.length - checkedCount;
+  const selectedType   = REQUEST_TYPES.find(t => t.id === requestType);
+  const lockRequired   = selectedType?.lockRequired ?? false;
+  const isHelpDesk     = requestType === "loan_help_desk";
+  const isLockRequest  = requestType === "lock_request";
+  const docItems       = requestType ? DOC_CHECKLISTS[requestType] ?? [] : [];
+  const checkedCount   = isDemo ? docItems.length : docItems.filter(d => docChecked[d.id]).length;
+  const pendingDocs    = docItems.length - checkedCount;
 
   // ── Demo prefill ─────────────────────────────────────────────
   useEffect(() => {
@@ -581,13 +576,12 @@ function WizardInner() {
         if (!lockPrice.trim()) { setError("Price / points is required for a lock request."); return; }
         if (!lockChkArive)     { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
         if (!lockChkLos)       { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
+      } else if (isHelpDesk) {
+        if (!helpDeskSubType)              { setError("Please select a sub-type for your help desk request."); return; }
+        if (helpDeskDescription.trim().length < 100) { setError("Please describe the issue in at least 100 characters."); return; }
       } else {
         if (lockRequired && !lockPref) { setError("Please select Lock or Float for this loan."); return; }
         if (lockPref === "float" && !floatReason.trim()) { setError("Float reason is required when floating."); return; }
-        // Require target closing date for all non-lock, non-restructure requests
-        if (!isRestructure && !targetClose.trim()) {
-          setError("Target closing date is required."); return;
-        }
       }
     }
     setError("");
@@ -602,7 +596,7 @@ function WizardInner() {
     if (!certNmls.trim())              { setError("Your NMLS # is required for certification."); return; }
     if (!borrowerFirst || !borrowerLast) { setError("Borrower name is required."); return; }
     if (!isDemo) {
-      if (!isLockRequest) {
+      if (!isLockRequest && !isHelpDesk) {
         if (!incomeNote.trim())   { setError("IPAC — Income note is required."); return; }
         if (!propertyNote.trim()) { setError("IPAC — Property note is required."); return; }
         if (!assetsNote.trim())   { setError("IPAC — Assets note is required."); return; }
@@ -676,10 +670,9 @@ function WizardInner() {
       certified_by_name:      certLoName        || null,
       submitter_nmls:         certNmls          || null,
     };
-    if (isRestructure) {
-      payload.suspense_reason = suspenseReason || null;
-      payload.suspense_notes  = suspenseNotes  || null;
-      payload.reason_fixed    = reasonFixed;
+    if (isHelpDesk) {
+      payload.help_desk_sub_type    = helpDeskSubType    || null;
+      payload.help_desk_description = helpDeskDescription || null;
     }
     if (isLockRequest) {
       payload.lock_requested_rate        = lockRate        ? parseFloat(lockRate)        : null;
@@ -978,8 +971,52 @@ function WizardInner() {
               </div>
             </div>}
 
+            {/* Help Desk — Sub-type + Description */}
+            {isHelpDesk && (
+              <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-5">
+                <div>
+                  <h3 className="text-sm font-bold text-ink">🛎 Help Desk Request</h3>
+                  <p className="text-xs text-muted mt-0.5">Select the sub-type and describe the issue in detail. Minimum 100 characters so ops can understand what help is needed.</p>
+                </div>
+                <Field label="Sub-Type" required>
+                  <Select
+                    value={helpDeskSubType}
+                    onChange={e => setHelpDeskSubType(e.target.value)}
+                    options={[
+                      { value: "aus_underwriting",    label: "AUS / Underwriting Question" },
+                      { value: "suspense_conditions",  label: "Suspense / Conditions" },
+                      { value: "restructure_loan",     label: "Restructure Loan" },
+                      { value: "ptd_ptf_conditions",   label: "PTD / PTF Conditions" },
+                      { value: "appraisal_issue",      label: "Appraisal Issue" },
+                      { value: "title_closing_issue",  label: "Title / Closing Issue" },
+                      { value: "income_asset_question",label: "Income / Asset Question" },
+                      { value: "credit_issue",         label: "Credit Issue" },
+                      { value: "exception_request",    label: "Exception Request" },
+                      { value: "general_help",         label: "General Help" },
+                    ]}
+                  />
+                </Field>
+                <Field label="Describe the Issue" required hint={`${helpDeskDescription.length} / 100 min characters`}>
+                  <Textarea
+                    value={helpDeskDescription}
+                    onChange={e => setHelpDeskDescription(e.target.value)}
+                    rows={6}
+                    placeholder="Describe the issue in detail — what loan, what problem, what you've already tried, and what help you need from ops."
+                  />
+                  {helpDeskDescription.trim().length > 0 && helpDeskDescription.trim().length < 100 && (
+                    <p className="mt-1.5 text-[11px] text-orange-600 font-semibold">
+                      {100 - helpDeskDescription.trim().length} more characters needed
+                    </p>
+                  )}
+                  {helpDeskDescription.trim().length >= 100 && (
+                    <p className="mt-1.5 text-[11px] text-green-600 font-semibold">✓ Description looks good</p>
+                  )}
+                </Field>
+              </div>
+            )}
+
             {/* Lock / Float Preference */}
-            {!isRestructure && !isLockRequest && (
+            {!isHelpDesk && !isLockRequest && (
               <div className="rounded-2xl border border-line bg-white p-6">
                 <LockPreferenceField
                   value={lockPref}
@@ -1044,7 +1081,7 @@ function WizardInner() {
                 </Field>
               </div>
 
-              {!isRestructure && (
+              {!isHelpDesk && (
                 <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-line mt-2">
                   <Field label="Property Address" className="sm:col-span-2">
                     <Input value={propAddress} readOnly={ariveFieldsLocked}
@@ -1094,9 +1131,6 @@ function WizardInner() {
                         { value: "secondary",  label: "Second Home" },
                         { value: "investment", label: "Investment Property" },
                       ]} />
-                  </Field>
-                  <Field label="Target Closing Date" required>
-                    <Input type="date" value={targetClose} onChange={e => setTargetClose(e.target.value)} />
                   </Field>
                 </div>
               )}
@@ -1162,7 +1196,7 @@ function WizardInner() {
             )}
 
             {/* 1003 Matches Registration */}
-            {!isRestructure && !isLockRequest && (
+            {!isHelpDesk && !isLockRequest && (
               <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
                 <div>
                   <h3 className="text-sm font-bold text-ink">1003 Matches Registration</h3>
@@ -1207,46 +1241,8 @@ function WizardInner() {
               </div>
             )}
 
-            {/* Restructure specific */}
-            {isRestructure && (
-              <div className="rounded-2xl border border-orange-200 bg-orange-50 p-6 space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-orange-700">Restructure / Suspense Details</h3>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Suspense Reason" required>
-                    <Select value={suspenseReason} onChange={e => setSuspenseReason(e.target.value)}
-                      options={[
-                        { value: "appraisal_issue",     label: "Appraisal Issue" },
-                        { value: "title_issue",         label: "Title Issue" },
-                        { value: "income_issue",        label: "Income / Employment Issue" },
-                        { value: "credit_issue",        label: "Credit Issue" },
-                        { value: "asset_issue",         label: "Asset Issue" },
-                        { value: "property_condition",  label: "Property Condition" },
-                        { value: "pricing_restructure", label: "Pricing / Rate Restructure" },
-                        { value: "borrower_change",     label: "Borrower Change" },
-                        { value: "other",               label: "Other" },
-                      ]} />
-                  </Field>
-                  <Field label="Do you have a solution?">
-                    <div className="flex gap-4 pt-1">
-                      {[{ v: true, label: "Yes — exception ready" }, { v: false, label: "No — suspend" }].map(({ v, label }) => (
-                        <label key={String(v)} className="flex items-center gap-2 cursor-pointer text-sm">
-                          <input type="radio" name="reasonFixed" checked={reasonFixed === v}
-                            onChange={() => setReasonFixed(v)} className="accent-orange-500" />
-                          {label}
-                        </label>
-                      ))}
-                    </div>
-                  </Field>
-                  <Field label="Suspense Notes" hint="Describe the blocker in detail." className="sm:col-span-2">
-                    <Textarea value={suspenseNotes} onChange={e => setSuspenseNotes(e.target.value)}
-                      placeholder="Describe the issue…" rows={4} />
-                  </Field>
-                </div>
-              </div>
-            )}
-
-            {/* IPAC Notes — hidden for lock requests */}
-            {!isLockRequest && <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
+            {/* IPAC Notes — hidden for lock and help desk requests */}
+            {!isLockRequest && !isHelpDesk && <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
               <div className="text-center pb-2 border-b border-line">
                 <h3 className="text-lg font-extrabold text-ink">IPAC</h3>
                 <p className="text-xs font-semibold text-muted italic mt-0.5">Summary on Income Property Assets &amp; Credit</p>
@@ -1280,7 +1276,7 @@ function WizardInner() {
             </div>}
 
             {/* Gift Funds */}
-            {!isRestructure && !isLockRequest && (
+            {!isHelpDesk && !isLockRequest && (
               <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Gift Funds</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -1326,8 +1322,8 @@ function WizardInner() {
               </div>
             )}
 
-            {/* Document Checklist — hidden for lock requests */}
-            {!isLockRequest && <DocChecklist
+            {/* Document Checklist — hidden for lock and help desk requests */}
+            {!isLockRequest && !isHelpDesk && <DocChecklist
               items={docItems}
               checked={docChecked}
               onToggle={id => setDocChecked(prev => ({ ...prev, [id]: !prev[id] }))}
@@ -1467,12 +1463,12 @@ function WizardInner() {
           )}
           {step === 3 && (
             <button type="submit"
-              disabled={submitting || (!isDemo && (!certified || pendingDocs > 0))}
+              disabled={submitting || (!isDemo && (!certified || (!isLockRequest && !isHelpDesk && pendingDocs > 0)))}
               className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
               {submitting
                 ? "Submitting…"
-                : (!isDemo && pendingDocs > 0)
+                : (!isDemo && !isLockRequest && !isHelpDesk && pendingDocs > 0)
                 ? `Resolve ${pendingDocs} Pending Item${pendingDocs > 1 ? "s" : ""} to Submit`
                 : "Submit Lift Off Request 🚀"}
             </button>

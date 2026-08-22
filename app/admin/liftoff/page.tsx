@@ -8,10 +8,10 @@ import { LiftOffAdminActions } from "@/components/liftoff/LiftOffAdminActions";
 export const dynamic = "force-dynamic";
 
 const TYPE_LABELS: Record<string, string> = {
-  register_disclosure:   "Register + Disclosure",
-  disclosure_only:       "Disclosure Only",
-  submission:            "Submission",
-  restructure_suspense:  "Restructure / Suspense",
+  register_disclosure: "Register + Disclosure",
+  disclosure_only:     "Disclosure Only",
+  submission:          "Submission",
+  loan_help_desk:      "Loan Help Desk",
 };
 
 const STAGE_LABELS: Record<string, string> = {
