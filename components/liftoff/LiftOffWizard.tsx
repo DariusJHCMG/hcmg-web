@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { LiftOffRequestType, LockStatus } from "@/lib/database.types";
+import { LockPreferenceField } from "@/components/liftoff/LockPreferenceField";
+import type { LockPref } from "@/components/liftoff/LockPreferenceField";
 
 // ── Doc checklist per request type ───────────────────────────
 interface DocItem { id: string; label: string; category: string; }
@@ -354,6 +356,9 @@ function WizardInner() {
   const [purchasePrice, setPurchasePrice]           = useState("");
   const [lockStatus, setLockStatus]                 = useState<LockStatus | "">("");
   const [floatReason, setFloatReason]               = useState("");
+  // Lock preference (replaces old lockStatus for non-lock-request types)
+  const [lockPref, setLockPref]                     = useState<LockPref>("");
+  const [linkedLockRequestId, setLinkedLockRequestId] = useState<string | null>(null);
 
   // Step 2 — Property type / occupancy
   const [propertyType, setPropertyType] = useState("");
@@ -525,8 +530,8 @@ function WizardInner() {
         if (!lockChkArive)     { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
         if (!lockChkLos)       { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
       } else {
-        if (lockRequired && !lockStatus) { setError("Lock status is required for this request type."); return; }
-        if (lockStatus === "floating" && !floatReason.trim()) { setError("Float reason is required when floating."); return; }
+        if (lockRequired && !lockPref) { setError("Please select Lock or Float for this loan."); return; }
+        if (lockPref === "float" && !floatReason.trim()) { setError("Float reason is required when floating."); return; }
       }
     }
     setError("");
@@ -567,8 +572,10 @@ function WizardInner() {
       loan_type:              loanType          || null,
       loan_amount:            loanAmount        ? parseFloat(loanAmount)    : null,
       purchase_price:         purchasePrice     ? parseFloat(purchasePrice) : null,
-      lock_status:            lockStatus        || null,
+      lock_status:            lockPref === "lock" ? "locked" : lockPref === "float" ? "floating" : lockPref === "lock_requested" ? "lock_required" : (lockStatus || null),
+      lock_preference:        lockPref          || null,
       float_reason:           floatReason       || null,
+      linked_lock_request_id: linkedLockRequestId || null,
       borrower_first_name:    borrowerFirst,
       borrower_last_name:     borrowerLast,
       co_borrower_first_name: coBorrowerFirst   || null,
@@ -890,45 +897,32 @@ function WizardInner() {
               </div>
             </div>}
 
-            {/* Lock */}
+            {/* Lock / Float Preference */}
             {!isRestructure && !isLockRequest && (
-              <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">
-                    Lock Desk Status
-                    {lockRequired && <span className="text-orange-500 ml-2">— Required</span>}
-                  </h3>
-                  {lockStatus && (
-                    <span className={`rounded-full px-3 py-0.5 text-[10px] font-bold border ${
-                      lockStatus === "locked"
-                        ? "bg-green-50 border-green-200 text-green-700"
-                        : lockStatus === "floating"
-                        ? "bg-yellow-50 border-yellow-200 text-yellow-700"
-                        : "bg-orange-50 border-orange-200 text-orange-700"
-                    }`}>
-                      {lockStatus === "locked" ? "LOCKED" : lockStatus === "floating" ? "FLOAT / PENDING" : "LOCK REQUIRED"}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted/70 -mt-1">
-                  Rate lock is handled in the Lock Desk — make sure you&apos;ve locked before or after submitting this request.
-                </p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Lock Status" required={lockRequired}>
-                    <Select value={lockStatus} onChange={e => setLockStatus(e.target.value as LockStatus)}
-                      options={[
-                        { value: "locked",        label: "Locked" },
-                        { value: "floating",      label: "Floating" },
-                        { value: "lock_required", label: "Lock Required" },
-                      ]} />
-                  </Field>
-                  {lockStatus === "floating" && (
-                    <Field label="Float Reason" required>
-                      <Input value={floatReason} onChange={e => setFloatReason(e.target.value)}
-                        placeholder="Reason for floating" />
-                    </Field>
-                  )}
-                </div>
+              <div className="rounded-2xl border border-line bg-white p-6">
+                <LockPreferenceField
+                  value={lockPref}
+                  onChange={setLockPref}
+                  floatReason={floatReason}
+                  onFloatReasonChange={setFloatReason}
+                  required={lockRequired}
+                  prefill={{
+                    ariveLoanNumber: ariveLoanNumber,
+                    borrowerFirst:   borrowerFirst,
+                    borrowerLast:    borrowerLast,
+                    coBorrowerFirst: coBorrowerFirst,
+                    loanAmount:      loanAmount,
+                    purchasePrice:   purchasePrice,
+                    loanType:        loanType,
+                    targetClose:     targetClose,
+                    propAddress:     propAddress,
+                    propCity:        propCity,
+                    propState:       propState,
+                    propZip:         propZip,
+                  }}
+                  linkedLockRequestId={linkedLockRequestId}
+                  onLockRequestLinked={setLinkedLockRequestId}
+                />
               </div>
             )}
 

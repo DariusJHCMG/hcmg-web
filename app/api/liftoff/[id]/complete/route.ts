@@ -29,6 +29,22 @@ export async function PATCH(
   if (!r) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (r.request_status === "completed") return NextResponse.json({ error: "Already completed" }, { status: 409 });
 
+  // Block completion if a linked lock request is still pending
+  if (r.linked_lock_request_id) {
+    const { data: lockReq } = await sb
+      .from("lift_off_requests")
+      .select("request_status")
+      .eq("id", r.linked_lock_request_id)
+      .maybeSingle();
+
+    if (lockReq && lockReq.request_status !== "completed") {
+      return NextResponse.json(
+        { error: "Cannot complete — linked lock request is still pending. Complete the lock request first." },
+        { status: 409 },
+      );
+    }
+  }
+
   const now = new Date().toISOString();
   const update: Record<string, unknown> = {
     request_status: "completed",

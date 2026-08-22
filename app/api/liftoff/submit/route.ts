@@ -40,6 +40,39 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // ── Link inline lock request if one was submitted during the wizard ──
+  // The slide-over submits a lock_request row using only the ARIVE loan number
+  // (parent has no ID yet). Now that the parent has an ID, wire up both sides.
+  const ariveLoan = (body.arive_loan_number as string) ?? null;
+  const hasInlineLock = body.lock_preference === "lock_requested" && ariveLoan;
+  if (hasInlineLock) {
+    const { data: lockRow } = await sb
+      .from("lift_off_requests")
+      .select("id")
+      .eq("request_type", "lock_request")
+      .eq("arive_loan_number", ariveLoan)
+      .eq("submitter_id", profile.id)
+      .is("parent_request_id", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lockRow) {
+      // Set parent_request_id on the lock row
+      void sb
+        .from("lift_off_requests")
+        .update({ parent_request_id: data.id })
+        .eq("id", lockRow.id)
+        .then();
+      // Set linked_lock_request_id on the parent row
+      void sb
+        .from("lift_off_requests")
+        .update({ linked_lock_request_id: lockRow.id })
+        .eq("id", data.id)
+        .then();
+    }
+  }
+
   // ── Fire notification email (non-blocking — never fail the request over email) ──
   const emailPayload: LiftOffEmailPayload = {
     id:               data.id,

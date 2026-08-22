@@ -1,5 +1,6 @@
 export type Role = "admin" | "developer" | "loan_officer";
 export type LiftOffRole = "liftoff_admin" | "liftoff_team" | "lock_desk_admin";
+export type LockPreference = "lock" | "lock_requested" | "float";
 
 // ── Lift Off Types ────────────────────────────────────────────
 
@@ -160,6 +161,11 @@ export interface LiftOffRequest {
   // ARIVE lookup
   arive_lookup_raw: Record<string, unknown> | null;
   arive_looked_up_at: string | null;
+
+  // Lock preference + linking
+  lock_preference: LockPreference | null;
+  parent_request_id: string | null;
+  linked_lock_request_id: string | null;
 
   // Certification
   certified_at: string | null;

@@ -80,10 +80,12 @@ function RequestRow({
   request,
   onUpdated,
   isDemo = false,
+  allRequests,
 }: {
   request: LiftOffRequest;
   onUpdated: (updated: Partial<LiftOffRequest> & { id: string }) => void;
   isDemo?: boolean;
+  allRequests: LiftOffRequest[];
 }) {
   const [busy, setBusy]           = useState(false);
   const [err, setErr]             = useState("");
@@ -91,6 +93,12 @@ function RequestRow({
   const [notes, setNotes]         = useState("");
 
   const r = request;
+
+  // Determine linked lock request status for parent cards
+  const linkedLockStatus = r.linked_lock_request_id
+    ? (allRequests.find(x => x.id === r.linked_lock_request_id)?.request_status ?? null)
+    : null;
+  const lockIsPending = linkedLockStatus !== null && linkedLockStatus !== "completed";
 
   async function doAction(action: "claim" | "start" | "complete") {
     setBusy(true); setErr("");
@@ -134,13 +142,26 @@ function RequestRow({
   const canStart    = r.request_status === "in_review" && r.claimed_at && !r.started_at;
   const canComplete = r.request_status !== "completed" && r.request_status !== "cancelled" && r.claimed_at;
 
+  // Border styling: gold for lock_request cards, else standard workflow colours
+  const cardBorder =
+    r.request_type === "lock_request"
+      ? r.request_status === "completed"
+        ? "border-green-200 opacity-75"
+        : r.started_at
+        ? "border-amber-400"
+        : r.claimed_at
+        ? "border-amber-300"
+        : "border-amber-400 border-2"
+      : r.request_status === "completed"
+      ? "border-green-200 opacity-75"
+      : r.started_at
+      ? "border-blue-300"
+      : r.claimed_at
+      ? "border-purple-200"
+      : "border-line";
+
   return (
-    <div className={`rounded-2xl border bg-white p-5 space-y-3 transition-all ${
-      r.request_status === "completed" ? "border-green-200 opacity-75" :
-      r.started_at ? "border-blue-300" :
-      r.claimed_at ? "border-purple-200" :
-      "border-line"
-    }`}>
+    <div className={`rounded-2xl border bg-white p-5 space-y-3 transition-all ${cardBorder}`}>
       {/* Top row */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
@@ -159,6 +180,16 @@ function RequestRow({
             </div>
             <p className="text-xs text-muted mt-0.5">{TYPE_LABELS[r.request_type] ?? r.request_type}</p>
             <p className="text-[11px] text-muted/60 mt-0.5 font-mono">{r.arive_loan_number ?? "No ARIVE #"}</p>
+            {lockIsPending && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-700 mt-1">
+                ⏳ Lock Pending
+              </span>
+            )}
+            {linkedLockStatus === "completed" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-[10px] font-bold text-green-700 mt-1">
+                🔒 Locked ✓
+              </span>
+            )}
           </div>
         </div>
         <div className="flex-shrink-0 text-right space-y-1">
@@ -228,11 +259,23 @@ function RequestRow({
         )}
 
         {canComplete && !showNotes && (
-          <button disabled={busy} onClick={() => setShowNotes(true)}
-            className="rounded-lg px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}>
-            ✅ Complete
-          </button>
+          lockIsPending ? (
+            <div className="flex items-center gap-2">
+              <button disabled
+                className="rounded-lg px-3 py-1.5 text-xs font-bold text-white opacity-40 cursor-not-allowed"
+                style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}
+                title="Cannot complete — linked lock request is still pending">
+                ✅ Complete
+              </button>
+              <span className="text-[11px] text-amber-700 font-semibold">⏳ Lock pending</span>
+            </div>
+          ) : (
+            <button disabled={busy} onClick={() => setShowNotes(true)}
+              className="rounded-lg px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}>
+              ✅ Complete
+            </button>
+          )
         )}
 
         {showNotes && (
@@ -334,7 +377,7 @@ export function LiftOffQueueClient({
       ) : (
         <div className="space-y-4">
           {filtered.map(r => (
-            <RequestRow key={r.id} request={r} onUpdated={handleUpdated} isDemo={isDemo} />
+            <RequestRow key={r.id} request={r} onUpdated={handleUpdated} isDemo={isDemo} allRequests={requests} />
           ))}
         </div>
       )}
