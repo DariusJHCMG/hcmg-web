@@ -841,7 +841,98 @@ function WizardInner() {
               )}
             </div>
 
-            {/* Lock Request — Pricing Panel (replaces prior-progress + loan/lock sections) */}
+            {/* Lock Request — Borrower & Property (shown above pricing for lock requests) */}
+            {isLockRequest && (
+              <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Borrower &amp; Property</h3>
+                  {ariveLookupStatus === "found" && borrowerFirst && (
+                    <span className="text-[10px] font-bold text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
+                      Auto-filled from ARIVE
+                    </span>
+                  )}
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Borrower First Name" required>
+                    <Input value={borrowerFirst} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setBorrowerFirst(e.target.value)}
+                      placeholder="First"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                  <Field label="Borrower Last Name" required>
+                    <Input value={borrowerLast} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setBorrowerLast(e.target.value)}
+                      placeholder="Last"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                  <Field label="Co-Borrower First">
+                    <Input value={coBorrowerFirst} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setCoBorrowerFirst(e.target.value)}
+                      placeholder={ariveFieldsLocked ? "—" : "Optional"}
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                  <Field label="Co-Borrower Last">
+                    <Input value={coBorrowerLast} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setCoBorrowerLast(e.target.value)}
+                      placeholder={ariveFieldsLocked ? "—" : "Optional"}
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-line mt-2">
+                  <Field label="Property Address" className="sm:col-span-2">
+                    <Input value={propAddress} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setPropAddress(e.target.value)}
+                      placeholder="123 Main St"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                  <Field label="City">
+                    <Input value={propCity} readOnly={ariveFieldsLocked}
+                      onChange={e => !ariveFieldsLocked && setPropCity(e.target.value)}
+                      placeholder="City"
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label="State">
+                      <Input value={propState} readOnly={ariveFieldsLocked}
+                        onChange={e => !ariveFieldsLocked && setPropState(e.target.value)}
+                        placeholder="FL" maxLength={2}
+                        className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                    </Field>
+                    <Field label="ZIP">
+                      <Input value={propZip} readOnly={ariveFieldsLocked}
+                        onChange={e => !ariveFieldsLocked && setPropZip(e.target.value)}
+                        placeholder="32801" maxLength={10}
+                        className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                    </Field>
+                  </div>
+                  <Field label="Property Type">
+                    <Select value={propertyType}
+                      onChange={e => !ariveFieldsLocked && setPropertyType(e.target.value)}
+                      disabled={ariveFieldsLocked}
+                      options={[
+                        { value: "sfr",          label: "Single Family Residence (SFR)" },
+                        { value: "condo",        label: "Condo" },
+                        { value: "townhome",     label: "Townhome" },
+                        { value: "2_4_unit",     label: "2–4 Unit" },
+                        { value: "manufactured", label: "Manufactured / Mobile" },
+                        { value: "other",        label: "Other" },
+                      ]} />
+                  </Field>
+                  <Field label="Occupancy Type">
+                    <Select value={occupancyType}
+                      onChange={e => !ariveFieldsLocked && setOccupancyType(e.target.value)}
+                      disabled={ariveFieldsLocked}
+                      options={[
+                        { value: "primary",    label: "Primary Residence" },
+                        { value: "secondary",  label: "Second Home" },
+                        { value: "investment", label: "Investment Property" },
+                      ]} />
+                  </Field>
+                </div>
+              </div>
+            )}
+
+            {/* Lock Request — Pricing Panel */}
             {isLockRequest ? (
               <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-5">
                 <div className="flex items-start justify-between">
@@ -1096,8 +1187,8 @@ function WizardInner() {
               </div>
             )}
 
-            {/* Borrower & Property */}
-            <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
+            {/* Borrower & Property — hidden for lock requests (shown above pricing panel instead) */}
+            {!isLockRequest && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Borrower &amp; Property</h3>
                 {ariveLookupStatus === "found" && borrowerFirst && (
@@ -1133,7 +1224,7 @@ function WizardInner() {
                 </Field>
               </div>
 
-              {!isHelpDesk && (
+              {!isHelpDesk && !isLockRequest && (
                 <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-line mt-2">
                   <Field label="Property Address" className="sm:col-span-2">
                     <Input value={propAddress} readOnly={ariveFieldsLocked}
@@ -1186,7 +1277,7 @@ function WizardInner() {
                   </Field>
                 </div>
               )}
-            </div>
+            </div>}
           </div>
 
           {/* Sidebar */}
