@@ -137,11 +137,13 @@ interface AriveLoanData {
   targetCloseDate?: string;
   lockStatus?: string;
   floatReason?: string;
-  // Lock pricing from ARIVE
+  // Lock pricing + channel from ARIVE
   noteRate?: number | null;
   discountPoints?: number | null;
   lenderName?: string | null;
   productName?: string | null;
+  channelType?: string | null;
+  compensationType?: string | null;
 }
 
 // ── Step indicator ────────────────────────────────────────────
@@ -420,10 +422,12 @@ function WizardInner() {
   const [certNmls, setCertNmls]     = useState("");
   const [certLoName, setCertLoName] = useState("");
 
-  // Step 2 — Lock Request pricing
+  // Step 2 — Lock Request pricing + channel
   const [lockRate, setLockRate]               = useState("");
   const [lockPrice, setLockPrice]             = useState("");
   const [lockLender, setLockLender]           = useState("");
+  const [channelType, setChannelType]         = useState("");
+  const [compensationType, setCompensationType] = useState("");
   const [lockProduct, setLockProduct]         = useState("");
   const [lockPeriod, setLockPeriod]           = useState<15|30|45|60>(30);
   const [lockCloseDate, setLockCloseDate]     = useState("");
@@ -558,11 +562,13 @@ function WizardInner() {
     if (data.propertyZip)        setPropZip(data.propertyZip             as string);
     if (data.targetCloseDate)    setTargetClose((data.targetCloseDate as string).split("T")[0]);
     if (data.lockStatus)         setLockStatus(data.lockStatus           as LockStatus);
-    // Auto-fill lock pricing fields if this is a lock request
-    if (data.noteRate      != null) setLockRate(String(data.noteRate));
+    // Auto-fill lock pricing + channel fields
+    if (data.noteRate       != null) setLockRate(String(data.noteRate));
     if (data.discountPoints != null) setLockPrice(String(data.discountPoints));
-    if (data.lenderName)         setLockLender(data.lenderName  as string);
-    if (data.productName)        setLockProduct(data.productName as string);
+    if (data.lenderName)         setLockLender(data.lenderName     as string);
+    if (data.productName)        setLockProduct(data.productName   as string);
+    if (data.channelType)        setChannelType(data.channelType   as string);
+    if (data.compensationType)   setCompensationType(data.compensationType as string);
     setAriveLookupStatus("found");
     setAriveLookupMessage("Loan found — fields auto-filled from ARIVE. Review and adjust if needed.");
   }
@@ -692,6 +698,8 @@ function WizardInner() {
       payload.lock_lo_notes              = lockLoNotes   || null;
       payload.lock_pricing_confirmed_by_lo = lockChkArive && lockChkLos;
       payload.lock_pricing_confirmed_at  = new Date().toISOString();
+      payload.channel_type               = channelType      || null;
+      payload.compensation_type          = compensationType || null;
     }
     try {
       const res  = await fetch("/api/liftoff/submit", {
@@ -882,6 +890,30 @@ function WizardInner() {
                       className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
                   </Field>
                 </div>
+
+                {/* Channel + Compensation — shown after ARIVE lookup */}
+                {ariveFieldsLocked && channelType && (
+                  <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-sand px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Channel</span>
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${
+                        channelType.toLowerCase() === "broker"
+                          ? "bg-purple-50 border-purple-200 text-purple-700"
+                          : "bg-blue-50 border-blue-200 text-blue-700"
+                      }`}>
+                        {channelType}
+                      </span>
+                    </div>
+                    {channelType.toLowerCase() === "broker" && compensationType && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Compensation</span>
+                        <span className="rounded-full px-2.5 py-0.5 text-xs font-bold border bg-amber-50 border-amber-200 text-amber-700">
+                          {compensationType}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70 mb-2">Lock Period</p>
@@ -1191,10 +1223,14 @@ function WizardInner() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 text-sm">
                   {[
-                    { label: "Rate",            value: lockRate   ? `${lockRate}%` : "—" },
-                    { label: "Discount Points", value: lockPrice  ? lockPrice      : "—" },
-                    { label: "Lender",          value: lockLender || "—" },
-                    { label: "Product",         value: lockProduct || "—" },
+                    { label: "Rate",            value: lockRate        ? `${lockRate}%` : "—" },
+                    { label: "Discount Points", value: lockPrice       ? lockPrice      : "—" },
+                    { label: "Lender",          value: lockLender      || "—" },
+                    { label: "Product",         value: lockProduct     || "—" },
+                    { label: "Channel",         value: channelType     || "—" },
+                    ...(channelType.toLowerCase() === "broker" && compensationType
+                      ? [{ label: "Compensation", value: compensationType }]
+                      : []),
                     { label: "Lock Period",     value: `${lockPeriod} days` },
                     { label: "Requested Close", value: lockCloseDate ? new Date(lockCloseDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—" },
                   ].map(({ label, value }) => (

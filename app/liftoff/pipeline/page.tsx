@@ -78,6 +78,7 @@ function demoBase(overrides: Partial<LiftOffRequest>): LiftOffRequest {
     resubmission_notes: null, resubmission_confirmed_at: null,
     assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
     help_desk_sub_type: null, help_desk_description: null,
+    channel_type: null, compensation_type: null,
     ...overrides,
   };
 }

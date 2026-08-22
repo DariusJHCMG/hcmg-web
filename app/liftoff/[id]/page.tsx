@@ -254,16 +254,22 @@ export default async function LiftOffDetailPage({
             <h2 className="font-bold text-ink text-sm">Lock Request — Pricing Snapshot</h2>
           </div>
           <div className="px-6 py-2">
+            <Row label="Channel"
+              value={request.channel_type
+                ? <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${
+                    request.channel_type.toLowerCase() === "broker"
+                      ? "bg-purple-50 border-purple-200 text-purple-700"
+                      : "bg-blue-50 border-blue-200 text-blue-700"
+                  }`}>{request.channel_type}</span>
+                : null} />
+            {request.channel_type?.toLowerCase() === "broker" && request.compensation_type && (
+              <Row label="Compensation"
+                value={<span className="rounded-full px-2.5 py-0.5 text-xs font-bold border bg-amber-50 border-amber-200 text-amber-700">{request.compensation_type}</span>} />
+            )}
             <Row label="Rate"
               value={request.lock_requested_rate != null ? `${request.lock_requested_rate}%` : null} />
-            <Row label="Price / Points"
+            <Row label="Discount Points"
               value={request.lock_requested_price != null ? String(request.lock_requested_price) : null} />
-            <Row label="APR"
-              value={request.lock_requested_apr != null ? `${request.lock_requested_apr}%` : null} />
-            <Row label="Est. Monthly Pmt"
-              value={request.lock_requested_monthly_pmt != null
-                ? `$${request.lock_requested_monthly_pmt.toLocaleString()}`
-                : null} />
             <Row label="Lender"        value={request.lock_requested_lender} />
             <Row label="Product"       value={request.lock_requested_product} />
             <Row label="Lock Period"

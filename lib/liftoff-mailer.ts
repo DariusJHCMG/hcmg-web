@@ -62,13 +62,13 @@ export interface LiftOffEmailPayload {
   // Lock Request pricing
   lock_requested_rate?:        number | null;
   lock_requested_price?:       number | null;
-  lock_requested_apr?:         number | null;
-  lock_requested_monthly_pmt?: number | null;
   lock_requested_lender?:      string | null;
   lock_requested_product?:     string | null;
   lock_period_days?:           number | null;
   lock_requested_close_date?:  string | null;
   lock_lo_notes?:              string | null;
+  channel_type?:               string | null;
+  compensation_type?:          string | null;
 
   // Loan Help Desk
   help_desk_sub_type?:    string | null;
@@ -113,15 +113,16 @@ function buildLockDeskEmail(r: LiftOffEmailPayload, viewUrl: string): string {
   const borrower = [r.borrower_first_name, r.borrower_last_name].filter(Boolean).join(" ");
   const co       = r.co_borrower_first_name ? ` + ${r.co_borrower_first_name}` : "";
 
+  const isBroker = r.channel_type?.toLowerCase() === "broker";
   const pricingRows =
-    infoRow("Rate",           r.lock_requested_rate  != null ? `${r.lock_requested_rate}%`  : null) +
-    infoRow("Price / Points", r.lock_requested_price != null ? String(r.lock_requested_price) : null) +
-    infoRow("APR",            r.lock_requested_apr   != null ? `${r.lock_requested_apr}%`   : null) +
-    infoRow("Monthly Pmt",    fmt.money(r.lock_requested_monthly_pmt)) +
-    infoRow("Lender",         r.lock_requested_lender) +
-    infoRow("Product",        r.lock_requested_product) +
-    infoRow("Lock Period",    r.lock_period_days != null ? `${r.lock_period_days} days` : null) +
-    infoRow("Req. Close",     fmt.date(r.lock_requested_close_date));
+    infoRow("Channel",          r.channel_type) +
+    (isBroker && r.compensation_type ? infoRow("Compensation", r.compensation_type) : "") +
+    infoRow("Rate",             r.lock_requested_rate  != null ? `${r.lock_requested_rate}%` : null) +
+    infoRow("Discount Points",  r.lock_requested_price != null ? String(r.lock_requested_price) : null) +
+    infoRow("Lender",           r.lock_requested_lender) +
+    infoRow("Product",          r.lock_requested_product) +
+    infoRow("Lock Period",      r.lock_period_days != null ? `${r.lock_period_days} days` : null) +
+    infoRow("Req. Close",       fmt.date(r.lock_requested_close_date));
 
   const loanRows =
     infoRow("ARIVE Loan #",   r.arive_loan_number) +

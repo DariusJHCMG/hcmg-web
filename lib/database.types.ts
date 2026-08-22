@@ -202,6 +202,10 @@ export interface LiftOffRequest {
   // Loan Help Desk
   help_desk_sub_type: string | null;
   help_desk_description: string | null;
+
+  // Channel / compensation
+  channel_type: string | null;       // "Broker" | "Non-Del" from ARIVE
+  compensation_type: string | null;  // "Borrower Paid" | "Lender Paid" etc. — brokered only
 }
 
 

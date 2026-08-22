@@ -102,15 +102,15 @@ export async function POST(req: NextRequest) {
     special_instructions: (body.special_instructions as string) ?? null,
 
     // Lock Request pricing
-    lock_requested_rate:        (body.lock_requested_rate        as number) ?? null,
-    lock_requested_price:       (body.lock_requested_price       as number) ?? null,
-    lock_requested_apr:         (body.lock_requested_apr         as number) ?? null,
-    lock_requested_monthly_pmt: (body.lock_requested_monthly_pmt as number) ?? null,
-    lock_requested_lender:      (body.lock_requested_lender      as string) ?? null,
-    lock_requested_product:     (body.lock_requested_product     as string) ?? null,
-    lock_period_days:           (body.lock_period_days           as number) ?? null,
-    lock_requested_close_date:  (body.lock_requested_close_date  as string) ?? null,
-    lock_lo_notes:              (body.lock_lo_notes              as string) ?? null,
+    lock_requested_rate:       (body.lock_requested_rate       as number) ?? null,
+    lock_requested_price:      (body.lock_requested_price      as number) ?? null,
+    lock_requested_lender:     (body.lock_requested_lender     as string) ?? null,
+    lock_requested_product:    (body.lock_requested_product    as string) ?? null,
+    lock_period_days:          (body.lock_period_days          as number) ?? null,
+    lock_requested_close_date: (body.lock_requested_close_date as string) ?? null,
+    lock_lo_notes:             (body.lock_lo_notes             as string) ?? null,
+    channel_type:              (body.channel_type              as string) ?? null,
+    compensation_type:         (body.compensation_type         as string) ?? null,
   };
 
   void sendLiftOffNotification(emailPayload).catch(err =>

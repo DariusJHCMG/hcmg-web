@@ -93,6 +93,7 @@ const DEMO_REQUESTS: LiftOffRequest[] = [
     resubmission_notes: null, resubmission_confirmed_at: null,
     assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
     help_desk_sub_type: null, help_desk_description: null,
+    channel_type: null, compensation_type: null,
   },
   {
     id: "demo-lock-2",
@@ -175,6 +176,7 @@ const DEMO_REQUESTS: LiftOffRequest[] = [
     resubmission_notes: null, resubmission_confirmed_at: null,
     assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
     help_desk_sub_type: null, help_desk_description: null,
+    channel_type: null, compensation_type: null,
   },
   {
     id: "demo-reg-1",
@@ -258,6 +260,7 @@ const DEMO_REQUESTS: LiftOffRequest[] = [
     resubmission_notes: null, resubmission_confirmed_at: null,
     assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
     help_desk_sub_type: null, help_desk_description: null,
+    channel_type: null, compensation_type: null,
   },
   {
     id: "demo-sub-1",
@@ -348,6 +351,7 @@ const DEMO_REQUESTS: LiftOffRequest[] = [
     resubmission_notes: null, resubmission_confirmed_at: null,
     assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
     help_desk_sub_type: null, help_desk_description: null,
+    channel_type: null, compensation_type: null,
   },
 ];
 

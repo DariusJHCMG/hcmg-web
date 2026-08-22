@@ -126,6 +126,8 @@ export async function POST(req: NextRequest) {
     discountPoints:    body.discountPoints != null ? Number(body.discountPoints) : null,
     lenderName:        (body.lenderName    as string) || null,
     productName:       (body.productName   as string) || null,
+    channelType:       (body.channelType   as string) || null,
+    compensationType:  (body.compensationType as string) || null,
   };
 
   resultStore.set(requestId, result);
