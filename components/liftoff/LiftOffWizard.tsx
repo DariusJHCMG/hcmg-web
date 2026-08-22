@@ -477,6 +477,7 @@ function WizardInner() {
     setAriveLookupMessage("");
     setError("");
     try {
+      // Step 1 — fire the lookup (triggers Zapier → ARIVE)
       const res  = await fetch("/api/liftoff/arive-lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -488,35 +489,55 @@ function WizardInner() {
         setAriveLookupMessage(data.error ?? "Lookup failed.");
         return;
       }
-      if (data.found === false) {
-        setAriveLookupStatus("not_found");
-        setAriveLookupMessage("Loan number not found in ARIVE. Fill in manually.");
+
+      // Step 2 — if direct result (demo loans), fill immediately
+      if (!data.pending) {
+        applyAriveData(data);
         return;
       }
-      setAriveLookupRaw(data);
-      if (data.borrowerFirstName)   setBorrowerFirst(data.borrowerFirstName);
-      if (data.borrowerLastName)    setBorrowerLast(data.borrowerLastName);
-      if (data.coBorrowerFirstName) setCoBorrowerFirst(data.coBorrowerFirstName);
-      if (data.coBorrowerLastName)  setCoBorrowerLast(data.coBorrowerLastName);
-      if (data.loanType)            setLoanType(data.loanType);
-      if (data.loanAmount)          setLoanAmount(String(data.loanAmount));
-      if (data.purchasePrice)       setPurchasePrice(String(data.purchasePrice));
-      if (data.propertyAddress)     setPropAddress(data.propertyAddress);
-      if (data.propertyCity)        setPropCity(data.propertyCity);
-      if (data.propertyState)       setPropState(data.propertyState);
-      if (data.propertyZip)         setPropZip(data.propertyZip);
-      if (data.targetCloseDate)     setTargetClose(data.targetCloseDate.split("T")[0]);
-      if (data.lockStatus)          setLockStatus(data.lockStatus as LockStatus);
-      if (data.floatReason)         setFloatReason(data.floatReason);
-      // Pre-fill lock request pricing fields from ARIVE
-      if (data.loanAmount)          setLockMonthlyPmt("");  // monthly pmt not in arive lookup yet
-      if (data.loanAmount)          setLockRate("");        // rate must be entered manually — confirm in ARIVE
-      setAriveLookupStatus("found");
-      setAriveLookupMessage("Loan found — fields auto-filled from ARIVE. Review and adjust if needed.");
+
+      // Step 3 — poll for Zapier result (max 15s, every 1.5s)
+      const { requestId } = data;
+      const deadline = Date.now() + 15_000;
+      while (Date.now() < deadline) {
+        await new Promise(r => setTimeout(r, 1_500));
+        const pollRes = await fetch(`/api/liftoff/arive-poll?id=${requestId}`);
+        const pollData = await pollRes.json();
+        if (!pollData.pending) {
+          applyAriveData(pollData);
+          return;
+        }
+      }
+      // Timed out
+      setAriveLookupStatus("error");
+      setAriveLookupMessage("ARIVE lookup timed out. Fill in manually.");
     } catch {
       setAriveLookupStatus("error");
       setAriveLookupMessage("Network error. Fill in manually.");
     }
+  }
+
+  // ── Apply ARIVE data to wizard fields ────────────────────────
+  function applyAriveData(data: Record<string, unknown>) {
+    if (data.found === false) {
+      setAriveLookupStatus("not_found");
+      setAriveLookupMessage("Loan number not found in ARIVE. Fill in manually.");
+      return;
+    }
+    setAriveLookupRaw(data as AriveLoanData);
+    if (data.borrowerFirstName)  setBorrowerFirst(data.borrowerFirstName as string);
+    if (data.borrowerLastName)   setBorrowerLast(data.borrowerLastName   as string);
+    if (data.loanType)           setLoanType(data.loanType               as string);
+    if (data.loanAmount)         setLoanAmount(String(data.loanAmount));
+    if (data.purchasePrice)      setPurchasePrice(String(data.purchasePrice));
+    if (data.propertyAddress)    setPropAddress(data.propertyAddress     as string);
+    if (data.propertyCity)       setPropCity(data.propertyCity           as string);
+    if (data.propertyState)      setPropState(data.propertyState         as string);
+    if (data.propertyZip)        setPropZip(data.propertyZip             as string);
+    if (data.targetCloseDate)    setTargetClose((data.targetCloseDate as string).split("T")[0]);
+    if (data.lockStatus)         setLockStatus(data.lockStatus           as LockStatus);
+    setAriveLookupStatus("found");
+    setAriveLookupMessage("Loan found — fields auto-filled from ARIVE. Review and adjust if needed.");
   }
 
   // ── Navigation ────────────────────────────────────────────────
