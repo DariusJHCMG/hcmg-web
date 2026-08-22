@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { canAccessLiftOffQueue, getLiftOffRoleLabel } from "@/lib/auth";
+import {
+  canAccessLiftOffQueue,
+  getLiftOffRoleLabel,
+  canSeeLockRequests,
+  canSeeGeneralRequests,
+} from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import type { LiftOffRequest } from "@/lib/database.types";
 import { LiftOffPipelineClient } from "@/components/liftoff/LiftOffPipelineClient";
@@ -75,25 +80,35 @@ function demoBase(overrides: Partial<LiftOffRequest>): LiftOffRequest {
   };
 }
 
+// Demo viewer ID so "Mine" scope can be pre-wired in demo mode
+const DEMO_VIEWER_ID   = "demo-proc-1";
+const DEMO_VIEWER_NAME = "Alex Chen";
+
 const DEMO_REQUESTS: LiftOffRequest[] = [
   demoBase({ id: "demo-p-lock-1", request_type: "lock_request", request_status: "pending", submitter_name: "Sarah Mitchell", borrower_first_name: "Marcus", borrower_last_name: "Thompson", arive_loan_number: "HCMG-2025-4471", loan_type: "purchase", loan_amount: 485000, priority_score: 140, sla_deadline_at: slaDeadline("lock_request", 45), sla_severity: "warning", created_at: mins(45), updated_at: mins(45), certified_at: mins(45), lock_requested_rate: 6.875, lock_requested_lender: "UWM", lock_requested_product: "30-Yr Fixed Conv" }),
-  demoBase({ id: "demo-p-lock-2", request_type: "lock_request", request_status: "in_review", submitter_name: "James Rivera", borrower_first_name: "Patricia", borrower_last_name: "Okafor", arive_loan_number: "HCMG-2025-4468", loan_type: "refinance", loan_amount: 320000, priority_score: 120, sla_deadline_at: slaDeadline("lock_request", 20), sla_severity: "normal", created_at: mins(20), updated_at: mins(15), certified_at: mins(20), claimed_by_id: "demo-proc-1", claimed_by_name: "Alex Chen", claimed_at: mins(15), started_at: mins(12), lock_requested_rate: 7.125, lock_requested_lender: "Rocket", lock_requested_product: "30-Yr Fixed FHA" }),
+  demoBase({ id: "demo-p-lock-2", request_type: "lock_request", request_status: "in_review", submitter_name: "James Rivera", borrower_first_name: "Patricia", borrower_last_name: "Okafor", arive_loan_number: "HCMG-2025-4468", loan_type: "refinance", loan_amount: 320000, priority_score: 120, sla_deadline_at: slaDeadline("lock_request", 20), sla_severity: "normal", created_at: mins(20), updated_at: mins(15), certified_at: mins(20), claimed_by_id: DEMO_VIEWER_ID, claimed_by_name: DEMO_VIEWER_NAME, claimed_at: mins(15), started_at: mins(12), lock_requested_rate: 7.125, lock_requested_lender: "Rocket", lock_requested_product: "30-Yr Fixed FHA" }),
   demoBase({ id: "demo-p-reg-1", request_type: "register_disclosure", request_status: "pending", submitter_name: "Keisha Brown", borrower_first_name: "DeShawn", borrower_last_name: "Williams", arive_loan_number: "HCMG-2025-4465", loan_type: "purchase_fha", loan_amount: 295000, priority_score: 80, sla_deadline_at: slaDeadline("register_disclosure", 30), sla_severity: "normal", created_at: mins(30), updated_at: mins(30), certified_at: mins(30), lock_status: "locked" }),
   demoBase({ id: "demo-p-sub-1", request_type: "submission", request_status: "in_review", submitter_name: "Tony Marchetti", borrower_first_name: "Ethan", borrower_last_name: "Goldstein", arive_loan_number: "HCMG-2025-4460", loan_type: "purchase", loan_amount: 720000, priority_score: 90, sla_deadline_at: slaDeadline("submission", 1440), sla_severity: "warning", created_at: mins(1440), updated_at: mins(40), certified_at: mins(1440), claimed_by_id: "demo-proc-2", claimed_by_name: "Jordan Patel", claimed_at: mins(60), started_at: mins(40) }),
   demoBase({ id: "demo-p-sub-2", request_type: "submission", request_status: "action_needed", submitter_name: "Carla Nguyen", borrower_first_name: "Robert", borrower_last_name: "Kim", arive_loan_number: "HCMG-2025-4455", loan_type: "refinance", loan_amount: 380000, priority_score: 110, sla_deadline_at: slaDeadline("submission", 2880), sla_severity: "critical", created_at: mins(2880), updated_at: mins(200), certified_at: mins(2880), incomplete_reasons: ["Missing W-2s", "Bank statements incomplete"], incomplete_notes: "Need last 2 months bank statements and both years W-2s.", incomplete_at: mins(200), incomplete_by_name: "Jordan Patel" }),
-  demoBase({ id: "demo-p-disc-1", request_type: "disclosure_only", request_status: "completed", submitter_name: "Mike Torres", borrower_first_name: "Linda", borrower_last_name: "Nguyen", arive_loan_number: "HCMG-2025-4450", loan_type: "purchase", loan_amount: 260000, priority_score: 70, sla_deadline_at: slaDeadline("disclosure_only", 480), sla_severity: "normal", created_at: mins(480), updated_at: mins(5), certified_at: mins(480), claimed_by_id: "demo-proc-1", claimed_by_name: "Alex Chen", claimed_at: mins(400), started_at: mins(380), completed_at: mins(5), completed_email_sent_at: mins(5) }),
-  demoBase({ id: "demo-p-lock-3", request_type: "lock_request", request_status: "action_needed", submitter_name: "Diana Wallace", borrower_first_name: "James", borrower_last_name: "Cho", arive_loan_number: "HCMG-2025-4448", loan_type: "purchase", loan_amount: 510000, priority_score: 130, sla_deadline_at: slaDeadline("lock_request", 75), sla_severity: "critical", created_at: mins(75), updated_at: mins(50), certified_at: mins(75), incomplete_reasons: ["Pricing confirmation expired"], incomplete_at: mins(50), incomplete_by_name: "Alex Chen", lock_requested_rate: 6.75, lock_requested_lender: "PennyMac", lock_requested_product: "30-Yr Fixed VA" }),
+  demoBase({ id: "demo-p-disc-1", request_type: "disclosure_only", request_status: "completed", submitter_name: "Mike Torres", borrower_first_name: "Linda", borrower_last_name: "Nguyen", arive_loan_number: "HCMG-2025-4450", loan_type: "purchase", loan_amount: 260000, priority_score: 70, sla_deadline_at: slaDeadline("disclosure_only", 480), sla_severity: "normal", created_at: mins(480), updated_at: mins(5), certified_at: mins(480), claimed_by_id: DEMO_VIEWER_ID, claimed_by_name: DEMO_VIEWER_NAME, claimed_at: mins(400), started_at: mins(380), completed_at: mins(5), completed_email_sent_at: mins(5) }),
+  demoBase({ id: "demo-p-lock-3", request_type: "lock_request", request_status: "action_needed", submitter_name: "Diana Wallace", borrower_first_name: "James", borrower_last_name: "Cho", arive_loan_number: "HCMG-2025-4448", loan_type: "purchase", loan_amount: 510000, priority_score: 130, sla_deadline_at: slaDeadline("lock_request", 75), sla_severity: "critical", created_at: mins(75), updated_at: mins(50), certified_at: mins(75), incomplete_reasons: ["Pricing confirmation expired"], incomplete_at: mins(50), incomplete_by_name: DEMO_VIEWER_NAME, lock_requested_rate: 6.75, lock_requested_lender: "PennyMac", lock_requested_product: "30-Yr Fixed VA" }),
 ];
 
 // ── Real data fetch ────────────────────────────────────────────────────────────
-async function getPipelineRequests(): Promise<LiftOffRequest[]> {
+async function getPipelineRequests(lockOnly: boolean): Promise<LiftOffRequest[]> {
   const sb = createServiceClient();
-  const { data } = await sb
+  let query = sb
     .from("lift_off_requests")
     .select("*")
     .not("request_status", "eq", "cancelled")
     .order("priority_score", { ascending: false })
     .limit(500);
+
+  if (lockOnly) {
+    query = query.eq("request_type", "lock_request");
+  }
+
+  const { data } = await query;
   return (data ?? []) as LiftOffRequest[];
 }
 
@@ -111,8 +126,51 @@ export default async function LiftOffPipelinePage({
 
   if (!isDemo && !canAccessLiftOffQueue(profile)) redirect("/liftoff");
 
-  const requests = isDemo ? DEMO_REQUESTS : await getPipelineRequests();
-  const roleLabel = isDemo ? "Demo Mode" : getLiftOffRoleLabel(profile.liftoff_roles);
+  // ── Role-derived viewer context ──────────────────────────────────────────────
+  const isAdmin  = profile.role === "admin" || profile.role === "developer";
+  const roles    = profile.liftoff_roles;
+
+  // liftoff_team: always self-only, no scope toggle
+  const isSelfOnly = !isDemo && !isAdmin &&
+    !roles.includes("liftoff_admin") &&
+    !roles.includes("ops_manager") &&
+    !roles.includes("lock_desk_admin") &&
+    roles.includes("liftoff_team");
+
+  // lock_desk_admin who is not also an admin/liftoff_admin: sees lock requests only
+  const lockOnly = !isDemo && !isAdmin &&
+    !roles.includes("liftoff_admin") &&
+    !roles.includes("ops_manager") &&
+    roles.includes("lock_desk_admin");
+
+  // canSeeAll: can toggle to Everyone view + drill by owner
+  const canSeeAll = isDemo || isAdmin ||
+    roles.includes("liftoff_admin") ||
+    roles.includes("ops_manager") ||
+    roles.includes("lock_desk_admin");
+
+  const viewerId   = isDemo ? DEMO_VIEWER_ID   : profile.id;
+  const viewerName = isDemo ? DEMO_VIEWER_NAME : profile.full_name;
+  const roleLabel  = isDemo ? "Demo Mode"      : getLiftOffRoleLabel(roles);
+
+  // Validate visibility for non-demo real users
+  const showLock    = isDemo || canSeeLockRequests(profile);
+  const showGeneral = isDemo || canSeeGeneralRequests(profile);
+  if (!isDemo && !showLock && !showGeneral) redirect("/liftoff");
+
+  const allRequests = isDemo
+    ? DEMO_REQUESTS
+    : await getPipelineRequests(lockOnly);
+
+  // For non-lock-only real users, additionally enforce type-level visibility
+  const requests = isDemo ? allRequests : allRequests.filter(r => {
+    if (r.request_type === "lock_request") return showLock;
+    return showGeneral;
+  });
+
+  const activeCount = requests.filter(
+    r => r.request_status !== "completed" && r.request_status !== "cancelled"
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -122,7 +180,8 @@ export default async function LiftOffPipelinePage({
           <div>
             <p className="font-bold text-purple-800 text-sm">Demo Mode — Pipeline</p>
             <p className="text-xs text-purple-700 mt-0.5">
-              Showing 7 demo requests across all pipeline stages with live SLA countdowns.
+              Logged in as <strong>{viewerName}</strong>. Toggle between Mine and Everyone to see scoping.
+              7 demo requests across all pipeline stages with live SLA countdowns.
             </p>
           </div>
         </div>
@@ -132,14 +191,26 @@ export default async function LiftOffPipelinePage({
         <div>
           <p className="ok-gradient-text text-xs font-bold uppercase tracking-[0.2em]">Harris Capital Mortgage Group</p>
           <h1 className="mt-1 text-2xl font-extrabold text-ink">Pipeline</h1>
-          <p className="mt-0.5 text-sm text-muted">Live request board · {roleLabel}</p>
+          <p className="mt-0.5 text-sm text-muted">
+            Live request board · {roleLabel}
+            {lockOnly && <span className="ml-2 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">Lock Requests Only</span>}
+            {isSelfOnly && <span className="ml-2 rounded-full bg-sand border border-line px-2 py-0.5 text-[10px] font-semibold text-muted">Your Queue</span>}
+          </p>
         </div>
         <span className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted">
-          {requests.filter(r => r.request_status !== "completed" && r.request_status !== "cancelled").length} active
+          {activeCount} active
         </span>
       </div>
 
-      <LiftOffPipelineClient initialRequests={requests} isDemo={isDemo} />
+      <LiftOffPipelineClient
+        initialRequests={requests}
+        isDemo={isDemo}
+        viewerId={viewerId}
+        viewerName={viewerName}
+        isSelfOnly={isSelfOnly}
+        canSeeAll={canSeeAll}
+        lockOnly={lockOnly}
+      />
     </div>
   );
 }
