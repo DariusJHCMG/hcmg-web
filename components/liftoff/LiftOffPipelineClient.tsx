@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { PipelineTabBar } from "@/components/liftoff/PipelineTabBar";
 import type { LiftOffRequest, LiftOffRequestType, LiftOffRequestStatus } from "@/lib/database.types";
 import { SLA_WINDOWS, liveSeverity, formatSlaCountdown } from "@/lib/liftoff-sla";
 
@@ -320,6 +321,7 @@ export function LiftOffPipelineClient({
 
   return (
     <div className="space-y-5">
+      <PipelineTabBar />
       {/* Metric tiles */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <MetricTile label="Active"        value={metrics.active}    sub={filters.scope === "mine" ? "in your queue" : "non-completed"} />

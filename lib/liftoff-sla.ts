@@ -9,7 +9,7 @@
  * Closed window:  7:00 AM ET → 10:00 AM ET (3h dead zone).
  */
 
-import type { LiftOffRequestType } from "@/lib/database.types";
+import type { LiftOffRequestType, LiftOffRequest } from "@/lib/database.types";
 
 // ── SLA window map ────────────────────────────────────────────────────────────
 
@@ -188,4 +188,51 @@ export function formatSlaCountdown(slaDeadlineAt: string): string {
   const label = h > 0 ? `${h}h ${m}m` : `${m}m`;
   if (diffMs < 0) return `BREACHED ${label} ago`;
   return `${label} left`;
+}
+
+// ── SLA Tracker helpers ───────────────────────────────────────────────────────
+
+/**
+ * Returns true if the request has breached SLA.
+ * - Completed: completed_at > sla_deadline_at
+ * - Active:    now > sla_deadline_at
+ */
+export function isSlaBreached(r: LiftOffRequest): boolean {
+  if (!r.sla_deadline_at) return false;
+  const deadline = new Date(r.sla_deadline_at).getTime();
+  const end = r.completed_at ? new Date(r.completed_at).getTime() : Date.now();
+  return end > deadline;
+}
+
+/**
+ * Calendar minutes from submission to first claim (response time).
+ * Returns null if the request has never been claimed.
+ */
+export function computeResponseMinutes(r: LiftOffRequest): number | null {
+  if (!r.claimed_at) return null;
+  return Math.round(
+    (new Date(r.claimed_at).getTime() - new Date(r.created_at).getTime()) / 60_000,
+  );
+}
+
+/**
+ * Actual work minutes from Start to Complete.
+ * Returns null if the request has not been started or not yet completed.
+ */
+export function computeActualHandleMinutes(r: LiftOffRequest): number | null {
+  if (!r.started_at || !r.completed_at) return null;
+  return Math.round(
+    (new Date(r.completed_at).getTime() - new Date(r.started_at).getTime()) / 60_000,
+  );
+}
+
+/**
+ * Format a minute count as a compact human label: "5m", "1h 12m", "2h 30m".
+ */
+export function formatMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 }
