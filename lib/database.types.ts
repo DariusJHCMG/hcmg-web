@@ -242,6 +242,7 @@ export interface Profile {
   porchy_user_id: string | null;
   last_login_at: string | null;
   liftoff_roles: LiftOffRole[];
+  liftoff_only: boolean;
 }
 
 export interface Lead {

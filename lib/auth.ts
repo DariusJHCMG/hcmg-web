@@ -89,8 +89,9 @@ export function getLiftOffRoleLabel(roles: LiftOffRole[]): string {
   return roles.map(r => labels[r] ?? r).join(", ");
 }
 
-export function redirectPath(role: Role): string {
+export function redirectPath(role: Role, liftoffOnly?: boolean): string {
   if (role === "admin" || role === "developer") return "/admin";
+  if (liftoffOnly) return "/liftoff";
   return "/portal";
 }
 

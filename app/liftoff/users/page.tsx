@@ -11,7 +11,7 @@ async function getAllUsers(): Promise<Profile[]> {
   const sb = createServiceClient();
   const { data } = await sb
     .from("profiles")
-    .select("id, full_name, email, role, nmls, title, liftoff_roles, is_active, avatar_url")
+    .select("id, full_name, email, role, nmls, title, liftoff_roles, liftoff_only, is_active, avatar_url")
     .order("full_name");
   return (data ?? []) as Profile[];
 }
