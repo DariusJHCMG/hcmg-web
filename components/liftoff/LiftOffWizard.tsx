@@ -1717,8 +1717,8 @@ function WizardInner() {
               {submitting ? "Submitting…" : "Submit Help Desk Request 🛎"}
             </button>
           )}
-          {/* All other types: Continue on steps 1–2, Submit on step 3 */}
-          {!isLockRequest && !isHelpDesk && step < 3 && (
+          {/* Continue button — all types on step 1; non-lock/non-helpdesk on steps 1–2 */}
+          {(step === 1 || (!isLockRequest && !isHelpDesk && step < 3)) && (
             <button type="button" onClick={next}
               className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
               style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
