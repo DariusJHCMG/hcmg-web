@@ -18,7 +18,8 @@ import { createServiceClient } from "@/lib/supabase";
 // Lambda instance than the browser poll.
 //
 // Required env var:
-//   ARIVE_ZAPIER_LOOKUP_HOOK=https://hooks.zapier.com/hooks/catch/...
+//   ARIVE_ZAPIER_LOOKUP_HOOK=https://hooks.zapier.com/hooks/catch/28624289/<hook-id>/
+//   (set in Vercel env vars — never commit the actual URL)
 //
 // ── REVERT NOTES ────────────────────────────────────────────────────────────
 // To revert: git checkout HEAD~1 -- app/api/liftoff/arive-lookup/route.ts
