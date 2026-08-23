@@ -726,3 +726,200 @@ export async function sendLiftOffAssigned(p: LiftOffAssignedPayload): Promise<vo
     buildAssignedEmail(p, viewUrl),
   );
 }
+
+// ── Preview: send every email template to a single address ───────────────────
+// Used by the admin test-emails button. Calls the internal HTML builders
+// directly and force-routes every email to the requested address.
+// Small sequential delays prevent Resend rate limiting (10 req/s free tier).
+
+export async function sendAllPreviewEmails(to: string): Promise<{ sent: string[]; errors: string[] }> {
+  const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+  const sent: string[] = [];
+  const errors: string[] = [];
+
+  const fakeId  = "preview-00000000-0000-0000-0000-000000000001";
+  const now     = new Date().toISOString();
+  const ago     = (n: number) => new Date(Date.now() - n * 60_000).toISOString();
+  const viewAdm = `${BASE_URL}/admin/liftoff/${fakeId}`;
+  const viewLO  = `${BASE_URL}/liftoff/${fakeId}`;
+
+  // Shared dummy data
+  const submissionPayload: LiftOffEmailPayload = {
+    id: fakeId, request_type: "submission", created_at: ago(120),
+    submitter_name: "Sarah Mitchell", submitter_nmls: "1234567",
+    submitter_email: to, submitter_phone: "(702) 555-0182",
+    borrower_first_name: "Marcus", borrower_last_name: "Thompson",
+    co_borrower_first_name: "Tanya",
+    arive_loan_number: "HCMG-2025-PREVIEW",
+    loan_purpose: "purchase", loan_program: "conventional",
+    loan_amount: 485000, purchase_price: 545000,
+    target_close_date: "2025-10-31", lock_status: "locked",
+    special_instructions: "First-time buyer — please prioritize disclosures.",
+  };
+
+  const lockPayload: LiftOffEmailPayload = {
+    id: fakeId, request_type: "lock_request", created_at: ago(45),
+    submitter_name: "Sarah Mitchell", submitter_nmls: "1234567",
+    submitter_email: to, submitter_phone: "(702) 555-0182",
+    borrower_first_name: "Marcus", borrower_last_name: "Thompson",
+    arive_loan_number: "HCMG-2025-PREVIEW",
+    loan_purpose: "purchase", loan_program: "conventional",
+    loan_amount: 485000, purchase_price: 545000,
+    channel_type: "Broker", compensation_type: "Borrower Paid",
+    lock_requested_rate: 6.875, lock_requested_price: 99.5,
+    lock_requested_lender: "UWM", lock_requested_product: "30-Yr Fixed Conventional",
+    lock_period_days: 30, lock_requested_close_date: "2025-10-31",
+    lock_lo_notes: "Rush — rate commitment expires today. Please lock ASAP.",
+  };
+
+  const helpDeskPayload: LiftOffEmailPayload = {
+    id: fakeId, request_type: "loan_help_desk", created_at: ago(30),
+    submitter_name: "Sarah Mitchell", submitter_nmls: "1234567",
+    submitter_email: to, submitter_phone: "(702) 555-0182",
+    borrower_first_name: "Marcus", borrower_last_name: "Thompson",
+    arive_loan_number: "HCMG-2025-PREVIEW",
+    loan_purpose: "purchase", loan_program: "fha", loan_amount: 295000,
+    help_desk_sub_type: "aus_underwriting",
+    help_desk_description: "AUS returned Refer/Eligible on DU. Borrower has 680 mid score, 2yr W2 income, stable employment. Would LP give a better result? Guidance needed before we rerun.",
+  };
+
+  const baseReq: Record<string, unknown> = {
+    id: fakeId, request_type: "submission", request_status: "in_review",
+    created_at: ago(120), updated_at: ago(30),
+    arive_loan_number: "HCMG-2025-PREVIEW",
+    borrower_first_name: "Marcus", borrower_last_name: "Thompson",
+    co_borrower_first_name: "Tanya",
+    submitter_name: "Sarah Mitchell", submitter_nmls: "1234567",
+    submitter_email: to, submitter_phone: "(702) 555-0182",
+    loan_purpose: "purchase", loan_program: "conventional",
+    loan_amount: 485000, purchase_price: 545000,
+    target_close_date: "2025-10-31", lock_status: "locked",
+    claimed_by_name: "Jordan Patel",
+    team_notes: "All docs verified. Submitted to UW. Approval expected within 48 hrs.",
+  };
+
+  const lockReq: Record<string, unknown> = {
+    ...baseReq,
+    request_type: "lock_request",
+    channel_type: "Broker", compensation_type: "Borrower Paid",
+    lock_requested_rate: 6.875, lock_requested_price: 99.5,
+    lock_requested_lender: "UWM", lock_requested_product: "30-Yr Fixed Conventional",
+    lock_period_days: 30, lock_requested_close_date: "2025-10-31",
+    lock_lo_notes: "Rush — rate commitment expires today. Please lock ASAP.",
+    lock_confirmed_rate: 6.875, lock_confirmed_price: 99.5,
+    lock_confirmed_apr: 7.02, lock_confirmed_lock_period: 30,
+    lock_confirmed_lock_date: "2025-09-15", lock_confirmed_exp_date: "2025-10-15",
+    lock_confirmation_number: "UWM-LOCK-20250915-4471",
+    lock_confirmed_lender: "UWM",
+    lock_desk_notes: "Locked at requested terms. Confirmation sent to all parties.",
+  };
+
+  // Helper: send one email directly to `to`, labelled with what it represents
+  async function fireOne(label: string, subject: string, html: string) {
+    try {
+      await resend.emails.send({ from: FROM, to, subject: `[PREVIEW] ${subject}`, html });
+      sent.push(label);
+    } catch (e) {
+      errors.push(`${label}: ${e}`);
+    }
+  }
+
+  // 1a — New Request: Submission (normally → processing@hcmgloans.com)
+  await fireOne(
+    "1a. New Request — Submission (→ processing@)",
+    `New Lift Off: Submission — Marcus Thompson · HCMG-2025-PREVIEW`,
+    buildProcessingEmail(submissionPayload, viewAdm),
+  );
+  await delay(150);
+
+  // 1b — New Request: Register + Disclosure (normally → processing@hcmgloans.com)
+  await fireOne(
+    "1b. New Request — Register + Disclosure (→ processing@)",
+    `New Lift Off: Register + Disclosure — Marcus Thompson · HCMG-2025-PREVIEW`,
+    buildProcessingEmail({ ...submissionPayload, request_type: "register_disclosure" }, viewAdm),
+  );
+  await delay(150);
+
+  // 1c — New Request: Disclosure Only (normally → processing@hcmgloans.com)
+  await fireOne(
+    "1c. New Request — Disclosure Only (→ processing@)",
+    `New Lift Off: Disclosure Only — Marcus Thompson · HCMG-2025-PREVIEW`,
+    buildProcessingEmail({ ...submissionPayload, request_type: "disclosure_only" }, viewAdm),
+  );
+  await delay(150);
+
+  // 1d — New Request: Lock Desk (normally → lockdesk@hcmgloans.com)
+  await fireOne(
+    "1d. New Request — Lock Desk (→ lockdesk@)",
+    `🔒 Lock Request — Marcus Thompson · HCMG-2025-PREVIEW`,
+    buildLockDeskEmail(lockPayload, viewAdm),
+  );
+  await delay(150);
+
+  // 1e — New Request: Help Desk (normally → helpdesk@hcmgloans.com)
+  await fireOne(
+    "1e. New Request — Help Desk (→ helpdesk@)",
+    `🛎 Help Desk: Loan Help Desk — Marcus Thompson · HCMG-2025-PREVIEW`,
+    buildProcessingEmail(helpDeskPayload, viewAdm),
+  );
+  await delay(150);
+
+  // 2 — In Flight (normally → LO submitter_email)
+  await fireOne(
+    "2. In Flight (→ LO)",
+    `✈️ In Flight: Submission — Marcus Thompson`,
+    buildInFlightEmail({ request: baseReq, processorName: "Jordan Patel", startedAt: ago(30) }, viewLO),
+  );
+  await delay(150);
+
+  // 3 — Completed (normally → LO submitter_email)
+  await fireOne(
+    "3. Completed (→ LO)",
+    `✅ Completed: Submission — Marcus Thompson`,
+    buildCompletedEmail({ request: baseReq, processorName: "Jordan Patel", completedAt: now }, viewLO),
+  );
+  await delay(150);
+
+  // 4 — Action Required / Incomplete (normally → LO submitter_email)
+  await fireOne(
+    "4. Action Required (→ LO)",
+    `⚠️ Action Required: Submission — Marcus Thompson`,
+    buildIncompleteEmail({
+      request: baseReq,
+      reasons: ["Missing W-2s (both years)", "Bank statements incomplete — need last 2 months"],
+      notes: "Please upload the missing documents directly to ARIVE and resubmit through Lift Off.",
+      incompleteByName: "Jordan Patel",
+      incompleteAt: ago(15),
+    }, viewLO),
+  );
+  await delay(150);
+
+  // 5 — Resubmission (normally → processing@ or lockdesk@)
+  await fireOne(
+    "5. Resubmission (→ processing@)",
+    `↩ Resubmission: Submission — Marcus Thompson`,
+    buildResubmissionEmail({
+      request: { ...baseReq, id: fakeId, resubmission_of: "original-preview-id" },
+      originalRequest: baseReq,
+      resubmissionNotes: "Uploaded both W-2s and 2 months bank statements to ARIVE. All items confirmed resolved.",
+      resubmittedAt: now,
+      confirmedReasons: ["Missing W-2s (both years)", "Bank statements incomplete — need last 2 months"],
+    }, viewAdm),
+  );
+  await delay(150);
+
+  // 6 — Assigned (normally → assignee email)
+  await fireOne(
+    "6. Assigned to You (→ ops team member)",
+    `📋 Assigned to you: Submission — Marcus Thompson`,
+    buildAssignedEmail({
+      request: baseReq,
+      assigneeName: "Jordan Patel",
+      assigneeEmail: to,
+      assignedByName: "Darius Harris",
+      assignedAt: now,
+    }, viewAdm),
+  );
+
+  return { sent, errors };
+}

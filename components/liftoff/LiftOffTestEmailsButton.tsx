@@ -23,7 +23,7 @@ export function LiftOffTestEmailsButton() {
         return;
       }
       setState("done");
-      setResult(json.emails ?? []);
+      setResult(json.emails ?? [`${json.sent_count} emails sent`]);
     } catch (err) {
       setState("error");
       setResult([String(err)]);
@@ -46,7 +46,7 @@ export function LiftOffTestEmailsButton() {
       {state === "done" && (
         <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-xs max-w-xs">
           <p className="font-bold text-green-800 mb-1.5">
-            ✅ {result.length} emails sent to darius@hcmgloans.com
+            ✅ {result.length} of 10 emails sent to darius@hcmgloans.com
           </p>
           <ul className="space-y-0.5">
             {result.map((line, i) => (
