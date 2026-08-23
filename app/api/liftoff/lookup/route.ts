@@ -36,12 +36,12 @@ export async function GET(req: NextRequest) {
   // pipeline → no type filter
 
   // ── Mode branching ───────────────────────────────────────────────────────────
-  const wq = `%${q}%`; // wrap with wildcards for partial matching
   if (mode === "arive") {
-    query = query.ilike("arive_loan_number", wq);
+    query = query.ilike("arive_loan_number", `%${q}%`);
   } else if (mode === "borrower") {
+    const p = `%${q}%`;
     query = query.or(
-      `borrower_first_name.ilike.${wq},borrower_last_name.ilike.${wq},co_borrower_first_name.ilike.${wq},co_borrower_last_name.ilike.${wq}`
+      `borrower_first_name.ilike.${p},borrower_last_name.ilike.${p},co_borrower_first_name.ilike.${p},co_borrower_last_name.ilike.${p}`
     );
   } else if (mode === "user") {
     query = query.or(`submitter_id.eq.${q},claimed_by_id.eq.${q}`);

@@ -32,27 +32,29 @@ export async function GET() {
     }
   }
 
-  // ── Team members: profiles with any liftoff role ─────────────────────────────
-  const { data: teamRows } = await sb
+  // ── All profiles (every LO + admin in the system) ────────────────────────────
+  const { data: allProfiles } = await sb
     .from("profiles")
-    .select("id, full_name")
-    .not("liftoff_roles", "eq", "{}")
+    .select("id, full_name, liftoff_roles")
     .order("full_name");
 
-  const teamMap = new Map<string, string>();
-  for (const r of teamRows ?? []) {
-    if (r.id && r.full_name) teamMap.set(r.id, r.full_name);
-  }
-
-  // ── Merge: team members override LO entries for the same id ─────────────────
+  // ── Merge: all profiles, tag anyone with liftoff roles as "team" ─────────────
   const merged = new Map<string, LookupUser>();
 
+  // Seed with LO submitters first
   for (const [id, full_name] of loMap) {
     merged.set(id, { id, full_name, type: "lo" });
   }
-  for (const [id, full_name] of teamMap) {
-    // If they also submitted requests, label them as team (higher privilege)
-    merged.set(id, { id, full_name, type: "team" });
+
+  // Add / override with every profile
+  for (const r of allProfiles ?? []) {
+    if (!r.id || !r.full_name) continue;
+    const hasLiftoffRole = Array.isArray(r.liftoff_roles) && r.liftoff_roles.length > 0;
+    merged.set(r.id, {
+      id:        r.id,
+      full_name: r.full_name,
+      type:      hasLiftoffRole ? "team" : "lo",
+    });
   }
 
   const result = Array.from(merged.values()).sort((a, b) =>
