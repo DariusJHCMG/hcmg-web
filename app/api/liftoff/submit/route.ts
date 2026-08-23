@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
-import { sendLiftOffNotification } from "@/lib/liftoff-mailer";
+import { sendLiftOffNotification, sendLiftOffConfirmation } from "@/lib/liftoff-mailer";
 import type { LiftOffEmailPayload } from "@/lib/liftoff-mailer";
 import { computeSla } from "@/lib/liftoff-sla";
 import type { LiftOffRequestType } from "@/lib/database.types";
@@ -117,8 +117,13 @@ export async function POST(req: NextRequest) {
     help_desk_description:     (body.help_desk_description     as string) ?? null,
   };
 
+  // Notify ops queue
   void sendLiftOffNotification(emailPayload).catch(err =>
     console.error("[liftoff/submit] email notification failed", err),
+  );
+  // Confirm receipt to the LO
+  void sendLiftOffConfirmation(emailPayload).catch(err =>
+    console.error("[liftoff/submit] confirmation email failed", err),
   );
 
   return NextResponse.json({ id: data.id }, { status: 201 });

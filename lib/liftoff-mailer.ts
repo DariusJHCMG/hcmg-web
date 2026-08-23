@@ -352,6 +352,76 @@ export async function sendLiftOffNotification(r: LiftOffEmailPayload): Promise<v
   }
 }
 
+// ── Submission Confirmation Email (LO → sent immediately on submit) ──────────
+
+function buildConfirmationEmail(r: LiftOffEmailPayload, viewUrl: string): string {
+  const borrower  = [r.borrower_first_name, r.borrower_last_name].filter(Boolean).join(" ");
+  const co        = r.co_borrower_first_name ? ` + ${r.co_borrower_first_name}` : "";
+  const typeLabel = TYPE_LABELS[r.request_type] ?? r.request_type;
+
+  const detailRows =
+    infoRow("Request Type",  typeLabel) +
+    infoRow("ARIVE Loan #",  r.arive_loan_number) +
+    infoRow("Borrower",      borrower + co) +
+    infoRow("Loan Purpose",  r.loan_purpose) +
+    infoRow("Loan Program",  r.loan_program) +
+    infoRow("Loan Amount",   fmt.money(r.loan_amount)) +
+    infoRow("Submitted At",  fmt.ts(r.created_at));
+
+  const lockRows = r.request_type === "lock_request"
+    ? infoRow("Rate",         r.lock_requested_rate  != null ? `${r.lock_requested_rate}%`  : null) +
+      infoRow("Lender",       r.lock_requested_lender) +
+      infoRow("Product",      r.lock_requested_product) +
+      infoRow("Lock Period",  r.lock_period_days != null ? `${r.lock_period_days} days` : null)
+    : "";
+
+  const helpDeskRows = r.request_type === "loan_help_desk"
+    ? infoRow("Sub-Type",    r.help_desk_sub_type)
+    : "";
+
+  const slaNote = r.request_type === "lock_request"
+    ? "Our lock desk will process your request within <strong>1 business hour</strong>."
+    : r.request_type === "loan_help_desk"
+    ? "Our help desk will respond within <strong>4 business hours</strong>."
+    : "Our ops team will begin processing within <strong>2 business hours</strong>.";
+
+  const body = `
+    <div style="padding:32px 36px 8px;">
+      <div style="margin-bottom:20px;padding:16px 20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;">
+        <p style="margin:0;font-size:14px;font-weight:700;color:#15803d;">
+          🚀 We've received your Lift Off request and it's in the queue.
+        </p>
+      </div>
+      <p style="margin:0 0 20px;font-size:13px;color:#57606a;line-height:1.7;">
+        ${slaNote} You'll receive another email as soon as we start working on it.
+      </p>
+      ${emailSection("Request Summary", detailRows + lockRows + helpDeskRows)}
+      <div style="margin:24px 0 32px;">
+        ${ctaButton("View Your Request →", viewUrl)}
+      </div>
+    </div>`;
+
+  return liftoffEmailWrap(
+    liftoffEmailHeader(
+      "Request Received",
+      `🚀 Request received — ${typeLabel}`,
+      `${borrower}${co} · ARIVE #${r.arive_loan_number ?? "—"}`,
+    ) + body + liftoffEmailFooter(),
+  );
+}
+
+export async function sendLiftOffConfirmation(r: LiftOffEmailPayload): Promise<void> {
+  if (!r.submitter_email) return;
+  const viewUrl   = `${BASE_URL}/liftoff/${r.id}`;
+  const borrower  = [r.borrower_first_name, r.borrower_last_name].filter(Boolean).join(" ");
+  const typeLabel = TYPE_LABELS[r.request_type] ?? "Lift Off";
+  await send(
+    r.submitter_email,
+    `🚀 Request received: ${typeLabel} — ${borrower}`,
+    buildConfirmationEmail(r, viewUrl),
+  );
+}
+
 // ── In-Flight Email (LO notification) ────────────────────────────────────────
 
 export interface LiftOffWorkflowPayload {
@@ -821,6 +891,14 @@ export async function sendAllPreviewEmails(to: string): Promise<{ sent: string[]
       errors.push(`${label}: ${e}`);
     }
   }
+
+  // 0 — Submission Confirmation (normally → LO submitter_email)
+  await fireOne(
+    "0. Submission Confirmation (→ LO)",
+    `🚀 Request received: Submission — Marcus Thompson`,
+    buildConfirmationEmail(submissionPayload, viewLO),
+  );
+  await delay(150);
 
   // 1a — New Request: Submission (normally → processing@hcmgloans.com)
   await fireOne(
