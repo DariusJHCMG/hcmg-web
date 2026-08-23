@@ -5,7 +5,9 @@
  * Pure TypeScript — no external dependencies.
  * Safe to import from both server routes and client components.
  *
- * Business hours: Mon–Sun, 10:00 AM ET → 7:00 PM ET (9h open).
+ * Business hours:
+ *   Lock requests:  Mon–Sun, 10:00 AM ET → 7:00 PM ET (9h open, Sunday counts)
+ *   All others:     Mon–Sat, 10:00 AM ET → 7:00 PM ET (9h open, Sunday CLOSED)
  * Closed window:  7:00 PM ET → 10:00 AM ET (15h dead zone).
  */
 
@@ -21,6 +23,9 @@ export const SLA_WINDOWS: Record<LiftOffRequestType, number> = {
   loan_help_desk:      4,
   submission:          48,
 };
+
+/** Request types that count Sunday as a business day. */
+const SUNDAY_OPEN_TYPES = new Set<LiftOffRequestType>(["lock_request"]);
 
 // ── ET helpers ────────────────────────────────────────────────────────────────
 
@@ -86,29 +91,64 @@ function etToUtc(year: number, month: number, day: number, hour: number, minute:
   return candidate;
 }
 
+// ── ET day-of-week helper ─────────────────────────────────────────────────────
+
+/** Return the ET day of week (0 = Sunday, 6 = Saturday) for a given Date. */
+function etDayOfWeek(d: Date): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+  }).format(d);
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(parts);
+}
+
 // ── addBusinessHours ──────────────────────────────────────────────────────────
 
 /**
- * Advance `from` by `hours` business hours, skipping the 7:00 PM–10:00 AM ET dead zone.
+ * Advance `from` by `hours` business hours.
  * Open window: 10:00 AM ET → 7:00 PM ET (9h).
+ * Closed window: 7:00 PM ET → 10:00 AM ET (15h dead zone).
+ * For non-lock request types, Sunday is fully closed — rolls to Monday 10AM.
  */
-export function addBusinessHours(from: Date, hours: number): Date {
+export function addBusinessHours(from: Date, hours: number, requestType?: LiftOffRequestType): Date {
+  const sundayOpen = requestType ? SUNDAY_OPEN_TYPES.has(requestType) : false;
   let current = new Date(from.getTime());
   let remainingMinutes = hours * 60;
 
-  // If we start inside the closed window (7 PM–10 AM ET), snap forward to 10:00 AM ET.
+  // Snap forward past the closed window AND skip Sunday for non-lock types.
   const snapToOpen = (d: Date): Date => {
-    const h = etHour(d);
-    if (h >= 19 || h < 10) {
-      const p = etParts(d);
-      // If it's after 7 PM, snap to 10 AM the *next* day
-      if (h >= 19) {
-        const tomorrow = new Date(etToUtc(p.year, p.month, p.day, 0, 0).getTime() + 24 * 60 * 60 * 1000);
-        const tp = etParts(tomorrow);
-        return etToUtc(tp.year, tp.month, tp.day, 10, 0);
+    // Loop because skipping Sunday might land inside the closed window
+    for (let guard = 0; guard < 10; guard++) {
+      const h    = etHour(d);
+      const dow  = etDayOfWeek(d);
+      const isSunday = dow === 0;
+
+      // Skip Sunday entirely for non-lock types
+      if (!sundayOpen && isSunday) {
+        const p = etParts(d);
+        // Jump to Monday 10:00 AM ET
+        const monday = new Date(etToUtc(p.year, p.month, p.day, 0, 0).getTime() + 24 * 60 * 60 * 1000);
+        const mp = etParts(monday);
+        d = etToUtc(mp.year, mp.month, mp.day, 10, 0);
+        continue;
       }
-      // Before 10 AM — snap to 10 AM same day
-      return etToUtc(p.year, p.month, p.day, 10, 0);
+
+      // Inside the closed window (before 10AM or at/after 7PM)
+      if (h >= 19 || h < 10) {
+        const p = etParts(d);
+        if (h >= 19) {
+          // After 7PM → snap to next day 10AM
+          const tomorrow = new Date(etToUtc(p.year, p.month, p.day, 0, 0).getTime() + 24 * 60 * 60 * 1000);
+          const tp = etParts(tomorrow);
+          d = etToUtc(tp.year, tp.month, tp.day, 10, 0);
+        } else {
+          // Before 10AM → snap to 10AM same day
+          d = etToUtc(p.year, p.month, p.day, 10, 0);
+        }
+        continue;
+      }
+
+      break; // open window and not Sunday — done
     }
     return d;
   };
@@ -117,8 +157,7 @@ export function addBusinessHours(from: Date, hours: number): Date {
 
   while (remainingMinutes > 0) {
     const p = etParts(current);
-    // Minutes until 7:00 PM ET (19:00) — the close of the open window
-    // Open window is 10:00–19:00 (9h = 540 min)
+    // Minutes until 7:00 PM ET (19:00)
     const minutesUntilClose = (19 - p.hour) * 60 - p.minute;
 
     if (remainingMinutes <= minutesUntilClose) {
@@ -126,9 +165,9 @@ export function addBusinessHours(from: Date, hours: number): Date {
       current = new Date(current.getTime() + remainingMinutes * 60 * 1000);
       remainingMinutes = 0;
     } else {
-      // Consume up to close (7:00 PM ET), skip the 15h gap, resume at 10:00 AM ET next day.
+      // Consume up to close, skip overnight gap, snap to next open window
       current = new Date(current.getTime() + minutesUntilClose * 60 * 1000 + 15 * 60 * 60 * 1000);
-      current = snapToOpen(current); // safety snap in case of DST edge
+      current = snapToOpen(current);
       remainingMinutes -= minutesUntilClose;
     }
   }
@@ -165,7 +204,7 @@ export function computeSla(
   submittedAt: Date,
 ): { sla_deadline_at: string; sla_severity: SLASeverity; priority_score: number } {
   const windowHours = SLA_WINDOWS[requestType];
-  const deadline = addBusinessHours(submittedAt, windowHours);
+  const deadline = addBusinessHours(submittedAt, windowHours, requestType);
   const sla_deadline_at = deadline.toISOString();
   const sla_severity = liveSeverity(sla_deadline_at, windowHours);
   const base = BASE_SCORES[requestType];

@@ -85,6 +85,13 @@ export default async function LiftOffDetailPage({
   const fmt = (d: string | null) =>
     d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null;
 
+  const fmtDateTime = (d: string | null) =>
+    d ? new Date(d).toLocaleString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+      hour: "numeric", minute: "2-digit", timeZoneName: "short",
+      timeZone: "America/New_York",
+    }) : null;
+
   return (
     <div className="space-y-6">
       {/* Success banner */}
@@ -341,7 +348,7 @@ export default async function LiftOffDetailPage({
             <Row label="Processor Email" value={request.assigned_processor_email} />
             <Row label="Assigned At"     value={fmt(request.assigned_at)} />
             <Row label="Registered At"   value={fmt(request.registered_at)} />
-            <Row label="SLA Deadline"    value={fmt(request.sla_deadline_at)} />
+            <Row label="SLA Deadline"    value={fmtDateTime(request.sla_deadline_at)} />
             {request.team_notes && <Row label="Ops Notes" value={<span className="whitespace-pre-wrap">{request.team_notes}</span>} />}
           </div>
         </div>
