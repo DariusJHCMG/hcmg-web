@@ -412,8 +412,7 @@ function buildCompletedEmail(p: LiftOffWorkflowPayload, viewUrl: string): string
     infoRow("ARIVE Loan #",  requestField(r, "arive_loan_number")) +
     infoRow("Borrower",      borrower) +
     infoRow("Submitted At",  fmt.ts(requestField(r, "created_at") ?? new Date().toISOString())) +
-    infoRow("Completed At",  fmt.ts(p.completedAt ?? new Date().toISOString())) +
-    infoRow("Completed By",  p.processorName);
+    infoRow("Completed At",  fmt.ts(p.completedAt ?? new Date().toISOString()));
 
   const notesSection = notes
     ? `<table width="100%" cellpadding="0" cellspacing="0"
@@ -527,8 +526,7 @@ function buildIncompleteEmail(p: LiftOffIncompletePayload, viewUrl: string): str
     infoRow("ARIVE Loan #",  requestField(r, "arive_loan_number")) +
     infoRow("Borrower",      borrower) +
     infoRow("Submitted At",  fmt.ts(requestField(r, "created_at") ?? new Date().toISOString())) +
-    infoRow("Returned At",   fmt.ts(p.incompleteAt)) +
-    infoRow("Returned By",   p.incompleteByName);
+    infoRow("Returned At",   fmt.ts(p.incompleteAt));
 
   const alertBanner = `
     <div style="margin-bottom:20px;padding:16px 20px;background:#fff5f5;border:1px solid #fecaca;border-radius:12px;">
