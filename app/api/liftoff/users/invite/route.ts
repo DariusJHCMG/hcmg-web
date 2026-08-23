@@ -12,12 +12,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  let body: { full_name?: string; email?: string; liftoff_roles?: string[]; title?: string };
+  let body: { full_name?: string; email?: string; liftoff_roles?: string[]; title?: string; send_invite?: boolean };
   try { body = await req.json(); } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { full_name, email, liftoff_roles, title } = body;
+  const { full_name, email, liftoff_roles, title, send_invite = true } = body;
 
   if (!full_name?.trim()) return NextResponse.json({ error: "full_name is required" }, { status: 400 });
   if (!email?.trim())     return NextResponse.json({ error: "email is required" }, { status: 400 });
@@ -27,14 +27,89 @@ export async function POST(req: NextRequest) {
   const invalid = liftoff_roles.find(r => !VALID_ROLES.includes(r));
   if (invalid) return NextResponse.json({ error: `Invalid role: ${invalid}` }, { status: 400 });
 
-  // Use service-role admin client for auth.admin calls
+  const sb = createServiceClient();
+
+  const patchPayload: Record<string, unknown> = {
+    full_name:      full_name.trim(),
+    liftoff_roles,
+    liftoff_only:   true,
+    show_on_website: false,
+    role:           "loan_officer",
+    invite_pending: !send_invite,
+  };
+  if (title?.trim()) patchPayload.title = title.trim();
+
+  if (!send_invite) {
+    // ── Save without inviting — upsert the profile row only ─────────────────
+    const { data: existing } = await sb
+      .from("profiles")
+      .select("id")
+      .eq("email", email.trim().toLowerCase())
+      .maybeSingle();
+
+    if (existing?.id) {
+      await sb.from("profiles").update(patchPayload).eq("id", existing.id);
+      return NextResponse.json({ ok: true, invite_pending: true, id: existing.id });
+    }
+
+    // No auth user yet — create a placeholder profile row via a Supabase auth invite
+    // but immediately mark invite_pending so we know the email wasn't sent.
+    // We still need an auth user row for the profile FK — use inviteUserByEmail
+    // but the user won't get a usable link until we send it properly.
+    // Instead: create a disabled auth user with a random password placeholder.
+    const adminClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } },
+    );
+
+    // Create the user without sending an email (using createUser instead of inviteUserByEmail)
+    const { data: createdUser, error: createErr } = await adminClient.auth.admin.createUser({
+      email: email.trim().toLowerCase(),
+      email_confirm: false,
+      user_metadata: {
+        full_name: full_name.trim(),
+        liftoff_roles,
+        liftoff_only: true,
+      },
+    });
+
+    if (createErr) {
+      // User already exists in auth — find their profile and patch it
+      const { data: byEmail } = await sb
+        .from("profiles")
+        .select("id")
+        .eq("email", email.trim().toLowerCase())
+        .maybeSingle();
+      if (byEmail?.id) {
+        await sb.from("profiles").update(patchPayload).eq("id", byEmail.id);
+        return NextResponse.json({ ok: true, invite_pending: true, id: byEmail.id });
+      }
+      return NextResponse.json({ error: createErr.message }, { status: 500 });
+    }
+
+    const userId = createdUser.user?.id;
+    if (userId) {
+      await sb.from("profiles").upsert({
+        id:        userId,
+        email:     email.trim().toLowerCase(),
+        tenant_id: profile.tenant_id,
+        slice_role: "loan_officer",
+        is_active:  true,
+        ...patchPayload,
+      });
+    }
+
+    return NextResponse.json({ ok: true, invite_pending: true, id: userId });
+  }
+
+  // ── Send invite immediately (original flow) ──────────────────────────────────
   const adminClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
 
-  // Invite the user — Supabase sends the invite email automatically
   const { data: inviteData, error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(
     email.trim().toLowerCase(),
     {
@@ -47,7 +122,6 @@ export async function POST(req: NextRequest) {
   );
 
   if (inviteErr) {
-    // 422 = user already exists — still usable, just patch the profile
     const alreadyExists = inviteErr.status === 422 ||
       inviteErr.message?.toLowerCase().includes("already been registered") ||
       inviteErr.message?.toLowerCase().includes("already registered");
@@ -59,37 +133,23 @@ export async function POST(req: NextRequest) {
 
   const userId = inviteData?.user?.id;
 
-  // Patch the profile row — covers both new invite and existing user
-  const sb = createServiceClient();
-  const patchPayload: Record<string, unknown> = {
-    full_name:      full_name.trim(),
-    liftoff_roles,
-    liftoff_only:   true,
-    show_on_website: false,
-    role:           "loan_officer",
-  };
-  if (title?.trim()) patchPayload.title = title.trim();
-
   if (userId) {
-    // New user — profile row may not exist yet (trigger creates it); upsert to be safe
     const { error: patchErr } = await sb
       .from("profiles")
       .update(patchPayload)
       .eq("id", userId);
 
     if (patchErr) {
-      // Trigger may not have fired yet — try upsert
       await sb.from("profiles").upsert({
-        id:           userId,
-        email:        email.trim().toLowerCase(),
-        tenant_id:    profile.tenant_id,
-        slice_role:   "loan_officer",
-        is_active:    true,
+        id:        userId,
+        email:     email.trim().toLowerCase(),
+        tenant_id: profile.tenant_id,
+        slice_role: "loan_officer",
+        is_active:  true,
         ...patchPayload,
       });
     }
   } else {
-    // User already existed — find by email and patch
     const { data: existing } = await sb
       .from("profiles")
       .select("id")

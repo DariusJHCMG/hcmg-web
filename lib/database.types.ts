@@ -253,6 +253,7 @@ export interface Profile {
   last_login_at: string | null;
   liftoff_roles: LiftOffRole[];
   liftoff_only: boolean;
+  invite_pending: boolean;
 }
 
 export interface Lead {

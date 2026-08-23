@@ -62,20 +62,24 @@ function UserRow({
   user,
   onRolesSaved,
   onActiveToggled,
+  onInviteSent,
 }: {
   user: Profile;
   onRolesSaved:    (id: string, roles: LiftOffRole[]) => void;
   onActiveToggled: (id: string, is_active: boolean)   => void;
+  onInviteSent:    (id: string) => void;
 }) {
-  const [editing,    setEditing]    = useState(false);
-  const [selected,   setSelected]   = useState<LiftOffRole[]>(user.liftoff_roles ?? []);
-  const [saving,     setSaving]     = useState(false);
-  const [toggling,   setToggling]   = useState(false);
-  const [err,        setErr]        = useState("");
+  const [editing,       setEditing]       = useState(false);
+  const [selected,      setSelected]      = useState<LiftOffRole[]>(user.liftoff_roles ?? []);
+  const [saving,        setSaving]        = useState(false);
+  const [toggling,      setToggling]      = useState(false);
+  const [sendingInvite, setSendingInvite] = useState(false);
+  const [err,           setErr]           = useState("");
 
-  const hasAnyRole  = user.liftoff_roles.length > 0;
-  const isInactive  = !user.is_active;
-  const isExternal  = user.liftoff_only;
+  const hasAnyRole      = user.liftoff_roles.length > 0;
+  const isInactive      = !user.is_active;
+  const isExternal      = user.liftoff_only;
+  const isInvitePending = user.invite_pending;
 
   function toggleRole(role: LiftOffRole) {
     setSelected(prev =>
@@ -111,6 +115,15 @@ function UserRow({
     onActiveToggled(user.id, next);
   }
 
+  async function sendInviteNow() {
+    setSendingInvite(true); setErr("");
+    const res  = await fetch(`/api/liftoff/users/${user.id}/send-invite`, { method: "POST" });
+    const data = await res.json();
+    setSendingInvite(false);
+    if (!res.ok) { setErr(data.error ?? "Failed to send invite"); return; }
+    onInviteSent(user.id);
+  }
+
   return (
     <div className={`flex items-center gap-4 border-b border-line py-4 last:border-0 transition-opacity ${isInactive ? "opacity-50" : ""}`}>
       {/* Avatar */}
@@ -136,6 +149,11 @@ function UserRow({
               External
             </span>
           )}
+          {isInvitePending && (
+            <span className="rounded-full bg-amber-50 border border-amber-200 text-amber-700 px-2 py-0.5 text-[10px] font-bold">
+              Invite Pending
+            </span>
+          )}
           {isInactive && (
             <span className="rounded-full bg-gray-100 border border-gray-200 text-gray-400 px-2 py-0.5 text-[10px] font-bold">
               Inactive
@@ -155,6 +173,16 @@ function UserRow({
           }`}>
             {roleLabels(user.liftoff_roles)}
           </span>
+
+          {/* Send Invite — shown only for invite-pending users */}
+          {isInvitePending && (
+            <button
+              disabled={sendingInvite}
+              onClick={sendInviteNow}
+              className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-40">
+              {sendingInvite ? "Sending…" : "✉️ Send Invite"}
+            </button>
+          )}
 
           {/* Edit — disabled when inactive */}
           <button
@@ -231,7 +259,7 @@ function InviteModal({ onClose, onInvited }: {
     );
   }
 
-  async function submit() {
+  async function doSubmit(sendNow: boolean) {
     setErr("");
     if (!fullName.trim()) { setErr("Full name is required."); return; }
     if (!email.trim())    { setErr("Email is required."); return; }
@@ -246,25 +274,28 @@ function InviteModal({ onClose, onInvited }: {
         email:         email.trim().toLowerCase(),
         liftoff_roles: selectedRoles,
         title:         title.trim() || undefined,
+        send_invite:   sendNow,
       }),
     });
     const data = await res.json();
     setSaving(false);
-    if (!res.ok) { setErr(data.error ?? "Invite failed."); return; }
+    if (!res.ok) { setErr(data.error ?? "Failed."); return; }
 
     onInvited({
-      id:            `invited-${Date.now()}`,
-      full_name:     fullName.trim(),
-      email:         email.trim().toLowerCase(),
-      liftoff_roles: selectedRoles,
-      liftoff_only:  true,
-      is_active:     true,
-      role:          "loan_officer",
-      title:         title.trim() || null,
-      avatar_url:    null,
-      nmls:          null,
+      id:             data.id ?? `invited-${Date.now()}`,
+      full_name:      fullName.trim(),
+      email:          email.trim().toLowerCase(),
+      liftoff_roles:  selectedRoles,
+      liftoff_only:   true,
+      invite_pending: !sendNow,
+      is_active:      true,
+      role:           "loan_officer",
+      title:          title.trim() || null,
+      avatar_url:     null,
+      nmls:           null,
     });
-    setDone(true);
+    setDone(sendNow); // only show success screen when invite was sent
+    if (!sendNow) onClose(); // close immediately when saving without invite
   }
 
   return (
@@ -353,17 +384,25 @@ function InviteModal({ onClose, onInvited }: {
 
             {err && <p className="text-xs text-red-600 font-semibold">{err}</p>}
 
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-col gap-2 pt-1">
+              <div className="flex gap-2">
+                <button
+                  disabled={saving}
+                  onClick={() => doSubmit(true)}
+                  className="flex-1 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
+                  {saving ? "Saving…" : "✉️ Send Invite"}
+                </button>
+                <button onClick={onClose}
+                  className="rounded-xl border border-line px-4 py-2.5 text-xs font-semibold text-muted hover:bg-sand">
+                  Cancel
+                </button>
+              </div>
               <button
                 disabled={saving}
-                onClick={submit}
-                className="flex-1 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
-                {saving ? "Sending invite…" : "Send Invite"}
-              </button>
-              <button onClick={onClose}
-                className="rounded-xl border border-line px-4 py-2.5 text-xs font-semibold text-muted hover:bg-sand">
-                Cancel
+                onClick={() => doSubmit(false)}
+                className="w-full rounded-xl border border-line py-2.5 text-xs font-semibold text-muted hover:bg-sand disabled:opacity-50">
+                💾 Save — send invite later
               </button>
             </div>
           </div>
@@ -385,6 +424,10 @@ export function LiftOffRolesClient({ initialUsers }: { initialUsers: Profile[] }
 
   function handleActiveToggled(id: string, is_active: boolean) {
     setUsers(prev => prev.map(u => u.id === id ? { ...u, is_active } : u));
+  }
+
+  function handleInviteSent(id: string) {
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, invite_pending: false } : u));
   }
 
   function handleInvited(partial: Partial<Profile>) {
@@ -463,6 +506,7 @@ export function LiftOffRolesClient({ initialUsers }: { initialUsers: Profile[] }
                 user={u}
                 onRolesSaved={handleRolesSaved}
                 onActiveToggled={handleActiveToggled}
+                onInviteSent={handleInviteSent}
               />
             ))
           )}
@@ -482,6 +526,7 @@ export function LiftOffRolesClient({ initialUsers }: { initialUsers: Profile[] }
               user={u}
               onRolesSaved={handleRolesSaved}
               onActiveToggled={handleActiveToggled}
+              onInviteSent={handleInviteSent}
             />
           ))}
         </div>
