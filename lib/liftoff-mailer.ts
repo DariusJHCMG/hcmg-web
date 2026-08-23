@@ -381,10 +381,12 @@ function buildConfirmationEmail(r: LiftOffEmailPayload, viewUrl: string): string
     : "";
 
   const slaNote = r.request_type === "lock_request"
-    ? "Our lock desk will process your request within <strong>1 business hour</strong>."
+    ? "Our lock desk will complete your request within <strong>1 business hour</strong>."
     : r.request_type === "loan_help_desk"
-    ? "Our help desk will respond within <strong>4 business hours</strong>."
-    : "Our ops team will begin processing within <strong>2 business hours</strong>.";
+    ? "Our help desk will complete your request within <strong>4 business hours</strong>."
+    : r.request_type === "submission"
+    ? "Our ops team will complete your request within <strong>48 business hours</strong>."
+    : "Our ops team will complete your request within <strong>1 business hour</strong>.";
 
   const body = `
     <div style="padding:32px 36px 8px;">
@@ -394,7 +396,7 @@ function buildConfirmationEmail(r: LiftOffEmailPayload, viewUrl: string): string
         </p>
       </div>
       <p style="margin:0 0 20px;font-size:13px;color:#57606a;line-height:1.7;">
-        ${slaNote} You'll receive another email as soon as we start working on it.
+        ${slaNote} You'll receive another email once your request has been completed.
       </p>
       ${emailSection("Request Summary", detailRows + lockRows + helpDeskRows)}
       <div style="margin:24px 0 32px;">
