@@ -2,13 +2,15 @@ import type { LiftOffRequestType } from "@/lib/database.types";
 
 export const INCOMPLETE_REASONS: Record<LiftOffRequestType, string[]> = {
   register_disclosure: [
-    "Missing 1003 Application",
-    "Credit report not attached",
-    "Purchase agreement missing or expired",
-    "HOI binder missing or insufficient",
-    "Title order not placed",
-    "Borrower information incomplete or mismatched",
-    "ARIVE loan number not found",
+    "Loan & Property section incomplete in ARIVE",
+    "Borrower Info section incomplete in ARIVE",
+    "Financial Info section incomplete in ARIVE",
+    "Products & Pricing section incomplete in ARIVE",
+    "Review Fees section incomplete in ARIVE",
+    "Dual AUS not run or incomplete in ARIVE",
+    "Borrower name or SSN does not match across documents",
+    "Co-borrower information missing or incomplete",
+    "Special instructions are unclear — please provide more detail",
   ],
   disclosure_only: [
     "Missing 1003 Application",
