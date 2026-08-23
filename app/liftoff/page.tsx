@@ -85,10 +85,57 @@ export default async function LiftOffDashboardPage() {
         </Link>
       </div>
 
-      {/* Info cards — hours + SLA */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      {/* Info cards — hours + SLA + business days key */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <LockDeskHoursCard />
         <LiftOffSLACard />
+
+        {/* Business Days Definition */}
+        <div className="rounded-2xl border border-line bg-white overflow-hidden">
+          <div className="border-b border-line px-6 py-4">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted/70">Key Definitions</p>
+            <h2 className="mt-0.5 text-sm font-extrabold text-ink">What Is a Business Day?</h2>
+          </div>
+          <div className="divide-y divide-line">
+            <div className="px-6 py-4 flex items-start gap-3">
+              <span className="text-base flex-shrink-0 mt-0.5">🔒</span>
+              <div>
+                <p className="text-xs font-bold text-ink">Lock Desk</p>
+                <p className="text-[11px] text-muted leading-relaxed mt-0.5">
+                  Monday – Saturday, <span className="font-semibold text-ink">10:00 AM – 7:00 PM ET</span> only.
+                  Hours outside this window do not count toward the SLA clock.
+                  <span className="font-semibold text-ink"> Sundays are closed.</span>
+                </p>
+              </div>
+            </div>
+            <div className="px-6 py-4 flex items-start gap-3">
+              <span className="text-base flex-shrink-0 mt-0.5">📋</span>
+              <div>
+                <p className="text-xs font-bold text-ink">All Other Requests</p>
+                <p className="text-[11px] text-muted leading-relaxed mt-0.5">
+                  Monday – Saturday, <span className="font-semibold text-ink">any time of day.</span> SLA
+                  is measured in straight elapsed time — the clock runs 24 hours on every business day.
+                  <span className="font-semibold text-ink"> Sundays are excluded.</span>
+                </p>
+              </div>
+            </div>
+            <div className="px-6 py-4 flex items-start gap-3">
+              <span className="text-base flex-shrink-0 mt-0.5">📅</span>
+              <div>
+                <p className="text-xs font-bold text-ink">Business Days</p>
+                <p className="text-[11px] text-muted leading-relaxed mt-0.5">
+                  <span className="font-semibold text-ink">Monday through Saturday.</span> Federal holidays
+                  may affect processing times — the team will notify you of any delays.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-line bg-sand px-6 py-3">
+            <p className="text-[11px] text-muted/60 leading-relaxed">
+              All times displayed in <span className="font-semibold">ET (Eastern Time)</span>.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Stats */}

@@ -99,8 +99,8 @@ export function LiftOffSLACard() {
       {/* Footer note */}
       <div className="border-t border-line bg-sand px-6 py-3">
         <p className="text-[11px] text-muted/60 leading-relaxed">
-          SLAs measured during business hours — Mon–Sun, 10:00 AM to 7:00 AM ET (next day).
-          Submissions received outside business hours begin their SLA clock at next open.
+          Lock Desk SLAs measured Mon–Sat, 10:00 AM–7:00 PM ET only.
+          All other SLAs measured in elapsed business-day time, Mon–Sat, any hour. Sundays excluded.
         </p>
       </div>
     </div>
