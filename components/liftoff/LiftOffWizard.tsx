@@ -218,10 +218,13 @@ function Field({ label, required, children, hint, className }: {
 }
 
 function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
+  // If the caller passes a bg-* override (e.g. bg-sand), strip bg-white from the base so it actually takes effect.
+  const base = className?.includes("bg-")
+    ? "w-full rounded-xl border border-line px-4 py-2.5 text-sm placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400"
+    : "w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400";
   return (
     <input {...props}
-      className={`w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink
-                 placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400${className ? ` ${className}` : ""}`} />
+      className={`${base}${className ? ` ${className}` : ""}`} />
   );
 }
 
