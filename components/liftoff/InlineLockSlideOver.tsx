@@ -186,6 +186,11 @@ export function InlineLockSlideOver({ open, onClose, onSubmitted, prefill }: Inl
           lock_lo_notes:                loNotes    || null,
           lock_pricing_confirmed_by_lo: true,
           lock_pricing_confirmed_at:    new Date().toISOString(),
+          // NOT NULL columns not applicable to lock requests — send empty string
+          income_note:                  "",
+          property_note:                "",
+          assets_note:                  "",
+          credit_note:                  "",
         }),
       });
       const data = await res.json();
