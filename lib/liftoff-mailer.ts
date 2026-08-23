@@ -75,6 +75,43 @@ export interface LiftOffEmailPayload {
   help_desk_description?: string | null;
 }
 
+// ── Lift Off signature (injected into every email footer) ────────────────────
+
+const LIFTOFF_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 36" height="28" style="display:block;">
+  <!-- Orange gradient badge -->
+  <defs>
+    <linearGradient id="og" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9847"/>
+      <stop offset="50%" stop-color="#F37021"/>
+      <stop offset="100%" stop-color="#C45213"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" ry="7" y="2" fill="url(#og)"/>
+  <text x="7" y="25" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="19" fill="#fff">🚀</text>
+  <!-- Wordmark -->
+  <text x="42" y="18" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="14" fill="#142850" letter-spacing="0.5">LIFT OFF</text>
+  <text x="42" y="30" font-family="Arial,sans-serif" font-size="8" fill="#94a3b8" letter-spacing="0.5">BY HARRIS CAPITAL MORTGAGE GROUP</text>
+</svg>`;
+
+const LIFTOFF_SIGNATURE = `
+  <table width="100%" cellpadding="0" cellspacing="0"
+      style="margin:0 0 0;border-top:1px solid #e5e7eb;background:#fff;">
+    <tr><td style="padding:20px 36px 24px;">
+      ${LIFTOFF_LOGO_SVG}
+      <p style="margin:10px 0 2px;font-size:13px;font-weight:700;color:#142850;line-height:1.4;">
+        The Lift Off Team
+      </p>
+      <p style="margin:0 0 6px;font-size:11px;color:#57606a;line-height:1.6;">
+        <a href="https://hcmgloans.com/liftoff" style="color:#F37021;text-decoration:none;font-weight:600;">hcmgloans.com/liftoff</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:liftoff@hcmgloans.com" style="color:#57606a;text-decoration:none;">liftoff@hcmgloans.com</a>
+      </p>
+      <p style="margin:0;font-size:10px;color:#9AABB8;letter-spacing:0.03em;">
+        Powered by HCMG · NMLS# 1918223 · Equal Housing Lender
+      </p>
+    </td></tr>
+  </table>`;
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const TYPE_LABELS: Record<string, string> = {
@@ -166,7 +203,7 @@ function buildLockDeskEmail(r: LiftOffEmailPayload, viewUrl: string): string {
       "Lock Desk · New Request",
       `🔒 Lock Request — ${borrower}${co}`,
       `Submitted ${fmt.ts(r.created_at)} · ARIVE #${r.arive_loan_number ?? "—"}`,
-    ) + body + emailFooter(),
+    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
   );
 }
 
@@ -239,7 +276,7 @@ function buildProcessingEmail(r: LiftOffEmailPayload, viewUrl: string): string {
       `Lift Off · ${typeLabel}`,
       `New Request — ${borrower}${co}`,
       `Submitted ${fmt.ts(r.created_at)} · ARIVE #${r.arive_loan_number ?? "—"}`,
-    ) + body + emailFooter(),
+    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
   );
 }
 
@@ -316,7 +353,7 @@ function buildInFlightEmail(p: LiftOffWorkflowPayload, viewUrl: string): string 
       "Lift Off · In Flight",
       `✈️ Your request is being processed`,
       `${typeLabel} — ${borrower} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + emailFooter(),
+    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
   );
 }
 
@@ -365,7 +402,7 @@ function buildCompletedEmail(p: LiftOffWorkflowPayload, viewUrl: string): string
       "Lift Off · Completed",
       `✅ Request completed`,
       `${typeLabel} — ${borrower} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + emailFooter(),
+    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
   );
 }
 
@@ -472,7 +509,7 @@ function buildIncompleteEmail(p: LiftOffIncompletePayload, viewUrl: string): str
       "⚠️ Action Required",
       `⚠️ Action Required — ${typeLabel}`,
       `${borrower} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + emailFooter(),
+    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
   );
 }
 
@@ -569,7 +606,7 @@ function buildResubmissionEmail(p: LiftOffResubmissionPayload, viewUrl: string):
       `Lift Off · ↩ Resubmission`,
       `↩ Resubmission — ${typeLabel}`,
       `${borrower}${co} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + emailFooter(),
+    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
   );
 }
 
@@ -630,7 +667,7 @@ function buildAssignedEmail(p: LiftOffAssignedPayload, viewUrl: string): string 
       "Lift Off · Assigned to You",
       `📋 Assigned: ${typeLabel} — ${borrower}`,
       `Assigned by ${p.assignedByName} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + emailFooter(),
+    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
   );
 }
 
