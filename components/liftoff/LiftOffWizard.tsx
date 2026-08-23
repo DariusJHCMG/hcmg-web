@@ -217,11 +217,11 @@ function Field({ label, required, children, hint, className }: {
   );
 }
 
-function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input {...props}
-      className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink
-                 placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400" />
+      className={`w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink
+                 placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400${className ? ` ${className}` : ""}`} />
   );
 }
 
