@@ -21,7 +21,7 @@ import {
 const resend       = new Resend(process.env.RESEND_API_KEY);
 const TEST_MODE    = process.env.GOAL_ENGINE_TEST_MODE === "true";
 const TEST_EMAIL   = process.env.GOAL_ENGINE_TEST_EMAIL ?? "darius@hcmgloans.com";
-const FROM         = "Lift Off · HCMG <noreply@hcmgloans.com>";
+const FROM         = "Lift Off · HCMG <liftoff@hcmgloans.com>";
 const BASE_URL     = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com";
 
 const LOCK_DESK_EMAIL  = "lockdesk@hcmgloans.com";
