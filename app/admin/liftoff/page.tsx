@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import type { LiftOffRequest } from "@/lib/database.types";
 import { LiftOffAdminActions } from "@/components/liftoff/LiftOffAdminActions";
+import { LiftOffTestEmailsButton } from "@/components/liftoff/LiftOffTestEmailsButton";
 
 export const dynamic = "force-dynamic";
 
@@ -69,14 +70,17 @@ export default async function AdminLiftOffPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Link href="/admin" className="text-xs font-bold text-muted hover:text-accent">Admin</Link>
-          <span className="text-muted/40 text-xs">/</span>
-          <span className="text-xs font-bold text-ink">Lift Off Queue</span>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Link href="/admin" className="text-xs font-bold text-muted hover:text-accent">Admin</Link>
+            <span className="text-muted/40 text-xs">/</span>
+            <span className="text-xs font-bold text-ink">Lift Off Queue</span>
+          </div>
+          <h1 className="text-2xl font-extrabold text-ink">Lift Off — Ops Queue</h1>
+          <p className="text-sm text-muted mt-0.5">All requests across all loan officers.</p>
         </div>
-        <h1 className="text-2xl font-extrabold text-ink">Lift Off — Ops Queue</h1>
-        <p className="text-sm text-muted mt-0.5">All requests across all loan officers.</p>
+        <LiftOffTestEmailsButton />
       </div>
 
       {/* Stats */}
