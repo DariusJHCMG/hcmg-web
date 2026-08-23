@@ -385,6 +385,8 @@ function WizardInner() {
   const [loanProgram, setLoanProgram]               = useState("");  // conventional | fha | va | non_qm | heloc | etc.
   const [loanAmount, setLoanAmount]                 = useState("");
   const [purchasePrice, setPurchasePrice]           = useState("");
+  const [earnestMoneyDeposit, setEarnestMoneyDeposit] = useState("");
+  const [sellerCredit, setSellerCredit]               = useState("");
   const [lockStatus, setLockStatus]                 = useState<LockStatus | "">("");
   const [floatReason, setFloatReason]               = useState("");
   // Lock preference (replaces old lockStatus for non-lock-request types)
@@ -594,8 +596,10 @@ function WizardInner() {
     if (data.discountPoints != null) setLockPrice(String(data.discountPoints));
     if (data.lenderName)         setLockLender(data.lenderName     as string);
     if (data.productName)        setLockProduct(data.productName   as string);
-    if (data.channelType)        setChannelType(data.channelType   as string);
-    if (data.compensationType)   setCompensationType(data.compensationType as string);
+    if (data.channelType)           setChannelType(data.channelType           as string);
+    if (data.compensationType)      setCompensationType(data.compensationType as string);
+    if (data.earnestMoneyDeposit != null) setEarnestMoneyDeposit(String(data.earnestMoneyDeposit));
+    if (data.sellerCredit        != null) setSellerCredit(String(data.sellerCredit));
     setAriveLookupStatus("found");
     setAriveLookupMessage("Loan found — fields auto-filled from ARIVE. Review and adjust if needed.");
   }
@@ -682,8 +686,10 @@ function WizardInner() {
                                       ? (loanProgram === "conventional" ? "refinance" : `refinance_${loanProgram}`)
                                       : loanProgram)
                                 : null,
-      loan_amount:            loanAmount        ? parseFloat(loanAmount)    : null,
-      purchase_price:         purchasePrice     ? parseFloat(purchasePrice) : null,
+      loan_amount:            loanAmount           ? parseFloat(loanAmount)           : null,
+      purchase_price:         purchasePrice        ? parseFloat(purchasePrice)        : null,
+      earnest_money_deposit:  earnestMoneyDeposit  ? parseFloat(earnestMoneyDeposit)  : null,
+      seller_credit:          sellerCredit         ? parseFloat(sellerCredit)         : null,
       lock_status:            lockPref === "lock" ? "locked" : lockPref === "float" ? "floating" : lockPref === "lock_requested" ? "lock_required" : (lockStatus || null),
       lock_preference:        lockPref          || null,
       float_reason:           floatReason       || null,
@@ -1268,6 +1274,22 @@ function WizardInner() {
                       readOnly
                       placeholder="Auto-filled from ARIVE"
                       className="bg-sand text-muted cursor-not-allowed" />
+                  </Field>
+                )}
+                {(loanPurpose === "purchase" || earnestMoneyDeposit) && (
+                  <Field label="Earnest Money Deposit" hint="Auto-filled from ARIVE">
+                    <Input type="number" min="0" step="100" value={earnestMoneyDeposit}
+                      onChange={e => setEarnestMoneyDeposit(e.target.value)}
+                      placeholder="Auto-filled from ARIVE"
+                      className={ariveFieldsLocked && earnestMoneyDeposit ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  </Field>
+                )}
+                {sellerCredit !== "" && (
+                  <Field label="Seller Credit" hint="Auto-filled from ARIVE">
+                    <Input type="number" min="0" step="100" value={sellerCredit}
+                      onChange={e => setSellerCredit(e.target.value)}
+                      placeholder="Auto-filled from ARIVE"
+                      className={ariveFieldsLocked && sellerCredit ? "bg-sand text-muted cursor-not-allowed" : ""} />
                   </Field>
                 )}
                 <Field label="Rate %">

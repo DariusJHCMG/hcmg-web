@@ -42,6 +42,8 @@ export interface LiftOffRequest {
   loan_program: string | null;    // conventional | fha | va | non_qm | heloc | construction | renovation | other
   loan_amount: number | null;
   purchase_price: number | null;
+  earnest_money_deposit: number | null;
+  seller_credit: number | null;
 
   // Borrower
   borrower_first_name: string;

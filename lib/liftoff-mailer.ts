@@ -133,8 +133,10 @@ export interface LiftOffEmailPayload {
   loan_purpose?:      string | null;
   loan_program?:      string | null;
   loan_type?:         string | null;
-  loan_amount?:       number | null;
-  purchase_price?:    number | null;
+  loan_amount?:             number | null;
+  purchase_price?:          number | null;
+  earnest_money_deposit?:   number | null;
+  seller_credit?:           number | null;
   target_close_date?: string | null;
   lock_status?:       string | null;
 
@@ -261,13 +263,15 @@ function buildProcessingEmail(r: LiftOffEmailPayload, viewUrl: string): string {
   const typeLabel = TYPE_LABELS[r.request_type] ?? r.request_type;
 
   const loanRows =
-    infoRow("ARIVE Loan #",   r.arive_loan_number) +
-    infoRow("Loan Purpose",   r.loan_purpose) +
-    infoRow("Loan Program",   r.loan_program) +
-    infoRow("Loan Amount",    fmt.money(r.loan_amount)) +
-    infoRow("Purchase Price", fmt.money(r.purchase_price)) +
-    infoRow("Target Close",   fmt.date(r.target_close_date)) +
-    infoRow("Lock Status",    r.lock_status);
+    infoRow("ARIVE Loan #",          r.arive_loan_number) +
+    infoRow("Loan Purpose",          r.loan_purpose) +
+    infoRow("Loan Program",          r.loan_program) +
+    infoRow("Loan Amount",           fmt.money(r.loan_amount)) +
+    infoRow("Purchase Price",        fmt.money(r.purchase_price)) +
+    infoRow("Earnest Money Deposit", fmt.money(r.earnest_money_deposit)) +
+    infoRow("Seller Credit",         fmt.money(r.seller_credit)) +
+    infoRow("Target Close",          fmt.date(r.target_close_date)) +
+    infoRow("Lock Status",           r.lock_status);
 
   const loRows =
     infoRow("Submitted By",   r.submitter_name) +
@@ -362,13 +366,15 @@ function buildConfirmationEmail(r: LiftOffEmailPayload, viewUrl: string): string
   const typeLabel = TYPE_LABELS[r.request_type] ?? r.request_type;
 
   const detailRows =
-    infoRow("Request Type",  typeLabel) +
-    infoRow("ARIVE Loan #",  r.arive_loan_number) +
-    infoRow("Borrower",      borrower + co) +
-    infoRow("Loan Purpose",  r.loan_purpose) +
-    infoRow("Loan Program",  r.loan_program) +
-    infoRow("Loan Amount",   fmt.money(r.loan_amount)) +
-    infoRow("Submitted At",  fmt.ts(r.created_at));
+    infoRow("Request Type",          typeLabel) +
+    infoRow("ARIVE Loan #",          r.arive_loan_number) +
+    infoRow("Borrower",              borrower + co) +
+    infoRow("Loan Purpose",          r.loan_purpose) +
+    infoRow("Loan Program",          r.loan_program) +
+    infoRow("Loan Amount",           fmt.money(r.loan_amount)) +
+    infoRow("Earnest Money Deposit", fmt.money(r.earnest_money_deposit)) +
+    infoRow("Seller Credit",         fmt.money(r.seller_credit)) +
+    infoRow("Submitted At",          fmt.ts(r.created_at));
 
   const lockRows = r.request_type === "lock_request"
     ? infoRow("Rate",         r.lock_requested_rate  != null ? `${r.lock_requested_rate}%`  : null) +

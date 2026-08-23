@@ -192,9 +192,11 @@ export default async function LiftOffDetailPage({
           <Row label="ARIVE Loan #"      value={request.arive_loan_number ? <span className="font-mono">{request.arive_loan_number}</span> : null} />
           <Row label="Loan Purpose"      value={request.loan_purpose} />
           <Row label="Loan Program"      value={request.loan_program} />
-          <Row label="Loan Amount"       value={request.loan_amount ? `$${request.loan_amount.toLocaleString()}` : null} />
-          <Row label="Purchase Price"    value={request.purchase_price ? `$${request.purchase_price.toLocaleString()}` : null} />
-          <Row label="Lock Status"       value={request.lock_status} />
+          <Row label="Loan Amount"           value={request.loan_amount ? `$${request.loan_amount.toLocaleString()}` : null} />
+          <Row label="Purchase Price"        value={request.purchase_price ? `$${request.purchase_price.toLocaleString()}` : null} />
+          <Row label="Earnest Money Deposit" value={request.earnest_money_deposit != null ? `$${request.earnest_money_deposit.toLocaleString()}` : null} />
+          <Row label="Seller Credit"         value={request.seller_credit != null ? `$${request.seller_credit.toLocaleString()}` : null} />
+          <Row label="Lock Status"           value={request.lock_status} />
           <Row label="Float Reason"      value={request.float_reason} />
           <Row label="Target Close"      value={fmt(request.target_close_date)} />
         </div>
