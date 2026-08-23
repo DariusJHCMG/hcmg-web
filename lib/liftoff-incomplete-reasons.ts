@@ -40,6 +40,10 @@ export const INCOMPLETE_REASONS: Record<LiftOffRequestType, string[]> = {
     "Supporting documents missing",
   ],
   lock_request: [
+    "Pricing does not match the lender's current rate sheet",
+    "Pricing mismatch — lock request pricing does not match lender pricing reprice in ARIVE",
+    "Loan officer requested an unavailable rate or lock term",
+    "Duplicate lock request already exists",
     "Pricing screenshot is missing — please attach to ARIVE",
     "Pricing screenshot appears stale — rate/price may have changed",
     "Loan is not yet registered in ARIVE",
