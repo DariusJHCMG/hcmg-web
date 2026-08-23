@@ -1174,7 +1174,55 @@ function WizardInner() {
                       className="bg-sand text-muted cursor-not-allowed" />
                   </Field>
                 )}
+                <Field label="Rate %">
+                  <Input type="number" step="0.001" min="0" value={lockRate}
+                    readOnly
+                    placeholder="Auto-filled from ARIVE"
+                    className="bg-sand text-muted cursor-not-allowed" />
+                </Field>
+                <Field label="Discount Points" hint="e.g. -0.123 = rebate, 0.500 = cost">
+                  <Input type="number" step="0.001" value={lockPrice}
+                    readOnly
+                    placeholder="Auto-filled from ARIVE"
+                    className="bg-sand text-muted cursor-not-allowed" />
+                </Field>
+                <Field label="Lender">
+                  <Input value={lockLender}
+                    readOnly
+                    placeholder="Auto-filled from ARIVE"
+                    className="bg-sand text-muted cursor-not-allowed" />
+                </Field>
+                <Field label="Product">
+                  <Input value={lockProduct}
+                    readOnly
+                    placeholder="Auto-filled from ARIVE"
+                    className="bg-sand text-muted cursor-not-allowed" />
+                </Field>
               </div>
+
+              {/* Channel + Compensation badges — shown after ARIVE lookup */}
+              {ariveFieldsLocked && channelType && (
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-sand px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Channel</span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${
+                      channelType.toLowerCase() === "broker"
+                        ? "bg-purple-50 border-purple-200 text-purple-700"
+                        : "bg-blue-50 border-blue-200 text-blue-700"
+                    }`}>
+                      {channelType}
+                    </span>
+                  </div>
+                  {channelType.toLowerCase() === "broker" && compensationType && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Compensation</span>
+                      <span className="rounded-full px-2.5 py-0.5 text-xs font-bold border bg-amber-50 border-amber-200 text-amber-700">
+                        {compensationType}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>}
 
             {/* Help Desk — Sub-type + Description */}
