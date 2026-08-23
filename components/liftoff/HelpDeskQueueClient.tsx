@@ -256,7 +256,7 @@ function HelpDeskRow({
     setShowAssign(true);
     if (!assignListLoaded) {
       try {
-        const res = await fetch("/api/liftoff/team-members");
+        const res = await fetch("/api/liftoff/team-members?role=help_desk_agent");
         const data = await res.json();
         setAssigneeList(data.members ?? []);
         setAssignListLoaded(true);
