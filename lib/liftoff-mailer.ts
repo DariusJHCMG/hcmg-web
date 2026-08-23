@@ -9,14 +9,95 @@
  */
 
 import { Resend } from "resend";
-import {
-  emailHeader,
-  emailFooter,
-  emailSection,
-  infoRow,
-  ctaButton,
-  emailWrap,
-} from "@/lib/email-templates";
+import { infoRow, emailSection, ctaButton } from "@/lib/email-templates";
+
+// ── Liftoff-specific email chrome ─────────────────────────────────────────────
+// These override the shared templates so Liftoff emails have their own
+// clean white design without affecting any other email in the system.
+
+const LO_LOGO = `
+<table cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+  <tr>
+    <td style="vertical-align:middle;">
+      <!-- Orange rocket badge -->
+      <table cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#FF9847 0%,#F37021 50%,#C45213 100%);text-align:center;vertical-align:middle;font-size:22px;line-height:44px;">
+            🚀
+          </td>
+          <td style="padding-left:12px;vertical-align:middle;">
+            <div style="font-family:Arial Black,Arial,sans-serif;font-size:18px;font-weight:900;color:#ffffff;letter-spacing:0.5px;line-height:1;">LIFT OFF</div>
+            <div style="font-family:Arial,sans-serif;font-size:9px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-top:3px;">by HCMG</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>`;
+
+function liftoffEmailHeader(eyebrow: string, headline: string, subline?: string): string {
+  return `
+  <table width="100%" cellpadding="0" cellspacing="0"
+      style="background:linear-gradient(160deg,#0f1f3d 0%,#142850 60%,#1a3260 100%);">
+    <tr><td style="padding:32px 36px 28px;">
+      ${LO_LOGO}
+      <div style="display:inline-block;background:rgba(243,112,33,0.2);border:1px solid rgba(243,112,33,0.5);border-radius:20px;padding:4px 14px;margin-bottom:14px;">
+        <span style="font-family:Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;color:#FF9847;text-transform:uppercase;">${eyebrow}</span>
+      </div>
+      <p style="margin:0;font-family:Arial Black,Arial,sans-serif;font-size:26px;font-weight:900;color:#ffffff;line-height:1.15;letter-spacing:-0.5px;">${headline}</p>
+      ${subline ? `<p style="margin:8px 0 0;font-family:Arial,sans-serif;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5;">${subline}</p>` : ""}
+    </td></tr>
+  </table>`;
+}
+
+function liftoffEmailFooter(): string {
+  return `
+  <table width="100%" cellpadding="0" cellspacing="0"
+      style="background:#f8fafc;border-top:1px solid #e5e7eb;">
+    <tr><td style="padding:24px 36px;">
+      <!-- Liftoff wordmark -->
+      <table cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+        <tr>
+          <td style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#FF9847,#F37021);text-align:center;vertical-align:middle;font-size:16px;line-height:32px;">🚀</td>
+          <td style="padding-left:10px;vertical-align:middle;">
+            <div style="font-family:Arial Black,Arial,sans-serif;font-size:13px;font-weight:900;color:#142850;letter-spacing:0.3px;">The Lift Off Team</div>
+            <div style="font-family:Arial,sans-serif;font-size:11px;color:#F37021;font-weight:600;margin-top:1px;">
+              <a href="https://hcmgloans.com/liftoff" style="color:#F37021;text-decoration:none;">hcmgloans.com/liftoff</a>
+              &nbsp;·&nbsp;
+              <a href="mailto:liftoff@hcmgloans.com" style="color:#57606a;text-decoration:none;">liftoff@hcmgloans.com</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0;font-family:Arial,sans-serif;font-size:10px;line-height:1.8;color:#9AABB8;">
+        Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender<br/>
+        6375 S Pecos Rd, Suite 208 · Las Vegas, NV 89120
+      </p>
+    </td></tr>
+  </table>`;
+}
+
+function liftoffEmailWrap(content: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="color-scheme" content="light"/>
+</head>
+<body style="margin:0;padding:0;background:#eef2f7;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0"
+      style="margin:0;padding:0;background:#eef2f7;font-family:'Helvetica Neue',Arial,sans-serif;">
+    <tr><td align="center" style="padding:40px 16px;">
+      <table width="100%" cellpadding="0" cellspacing="0"
+          style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #dde3ec;box-shadow:0 4px 24px rgba(0,0,0,0.07);">
+        ${content}
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
 
 const resend       = new Resend(process.env.RESEND_API_KEY);
 const TEST_MODE    = process.env.GOAL_ENGINE_TEST_MODE === "true";
@@ -74,43 +155,6 @@ export interface LiftOffEmailPayload {
   help_desk_sub_type?:    string | null;
   help_desk_description?: string | null;
 }
-
-// ── Lift Off signature (injected into every email footer) ────────────────────
-
-const LIFTOFF_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 36" height="28" style="display:block;">
-  <!-- Orange gradient badge -->
-  <defs>
-    <linearGradient id="og" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF9847"/>
-      <stop offset="50%" stop-color="#F37021"/>
-      <stop offset="100%" stop-color="#C45213"/>
-    </linearGradient>
-  </defs>
-  <rect width="32" height="32" rx="7" ry="7" y="2" fill="url(#og)"/>
-  <text x="7" y="25" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="19" fill="#fff">🚀</text>
-  <!-- Wordmark -->
-  <text x="42" y="18" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="14" fill="#142850" letter-spacing="0.5">LIFT OFF</text>
-  <text x="42" y="30" font-family="Arial,sans-serif" font-size="8" fill="#94a3b8" letter-spacing="0.5">BY HARRIS CAPITAL MORTGAGE GROUP</text>
-</svg>`;
-
-const LIFTOFF_SIGNATURE = `
-  <table width="100%" cellpadding="0" cellspacing="0"
-      style="margin:0 0 0;border-top:1px solid #e5e7eb;background:#fff;">
-    <tr><td style="padding:20px 36px 24px;">
-      ${LIFTOFF_LOGO_SVG}
-      <p style="margin:10px 0 2px;font-size:13px;font-weight:700;color:#142850;line-height:1.4;">
-        The Lift Off Team
-      </p>
-      <p style="margin:0 0 6px;font-size:11px;color:#57606a;line-height:1.6;">
-        <a href="https://hcmgloans.com/liftoff" style="color:#F37021;text-decoration:none;font-weight:600;">hcmgloans.com/liftoff</a>
-        &nbsp;·&nbsp;
-        <a href="mailto:liftoff@hcmgloans.com" style="color:#57606a;text-decoration:none;">liftoff@hcmgloans.com</a>
-      </p>
-      <p style="margin:0;font-size:10px;color:#9AABB8;letter-spacing:0.03em;">
-        Powered by HCMG · NMLS# 1918223 · Equal Housing Lender
-      </p>
-    </td></tr>
-  </table>`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -198,12 +242,12 @@ function buildLockDeskEmail(r: LiftOffEmailPayload, viewUrl: string): string {
       </div>
     </div>`;
 
-  return emailWrap(
-    emailHeader(
+  return liftoffEmailWrap(
+    liftoffEmailHeader(
       "Lock Desk · New Request",
       `🔒 Lock Request — ${borrower}${co}`,
       `Submitted ${fmt.ts(r.created_at)} · ARIVE #${r.arive_loan_number ?? "—"}`,
-    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
+    ) + body + liftoffEmailFooter(),
   );
 }
 
@@ -271,12 +315,12 @@ function buildProcessingEmail(r: LiftOffEmailPayload, viewUrl: string): string {
       </div>
     </div>`;
 
-  return emailWrap(
-    emailHeader(
+  return liftoffEmailWrap(
+    liftoffEmailHeader(
       `Lift Off · ${typeLabel}`,
       `New Request — ${borrower}${co}`,
       `Submitted ${fmt.ts(r.created_at)} · ARIVE #${r.arive_loan_number ?? "—"}`,
-    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
+    ) + body + liftoffEmailFooter(),
   );
 }
 
@@ -348,12 +392,12 @@ function buildInFlightEmail(p: LiftOffWorkflowPayload, viewUrl: string): string 
       </div>
     </div>`;
 
-  return emailWrap(
-    emailHeader(
+  return liftoffEmailWrap(
+    liftoffEmailHeader(
       "Lift Off · In Flight",
       `✈️ Your request is being processed`,
       `${typeLabel} — ${borrower} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
+    ) + body + liftoffEmailFooter(),
   );
 }
 
@@ -397,12 +441,12 @@ function buildCompletedEmail(p: LiftOffWorkflowPayload, viewUrl: string): string
       </div>
     </div>`;
 
-  return emailWrap(
-    emailHeader(
+  return liftoffEmailWrap(
+    liftoffEmailHeader(
       "Lift Off · Completed",
       `✅ Request completed`,
       `${typeLabel} — ${borrower} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
+    ) + body + liftoffEmailFooter(),
   );
 }
 
@@ -504,12 +548,12 @@ function buildIncompleteEmail(p: LiftOffIncompletePayload, viewUrl: string): str
       </div>
     </div>`;
 
-  return emailWrap(
-    emailHeader(
+  return liftoffEmailWrap(
+    liftoffEmailHeader(
       "⚠️ Action Required",
       `⚠️ Action Required — ${typeLabel}`,
       `${borrower} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
+    ) + body + liftoffEmailFooter(),
   );
 }
 
@@ -601,12 +645,12 @@ function buildResubmissionEmail(p: LiftOffResubmissionPayload, viewUrl: string):
       </div>
     </div>`;
 
-  return emailWrap(
-    emailHeader(
+  return liftoffEmailWrap(
+    liftoffEmailHeader(
       `Lift Off · ↩ Resubmission`,
       `↩ Resubmission — ${typeLabel}`,
       `${borrower}${co} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
+    ) + body + liftoffEmailFooter(),
   );
 }
 
@@ -662,12 +706,12 @@ function buildAssignedEmail(p: LiftOffAssignedPayload, viewUrl: string): string 
       </div>
     </div>`;
 
-  return emailWrap(
-    emailHeader(
+  return liftoffEmailWrap(
+    liftoffEmailHeader(
       "Lift Off · Assigned to You",
       `📋 Assigned: ${typeLabel} — ${borrower}`,
       `Assigned by ${p.assignedByName} · ARIVE #${requestField(r, "arive_loan_number") ?? "—"}`,
-    ) + body + LIFTOFF_SIGNATURE + emailFooter(),
+    ) + body + liftoffEmailFooter(),
   );
 }
 
