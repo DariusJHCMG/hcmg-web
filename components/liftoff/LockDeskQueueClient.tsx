@@ -104,8 +104,7 @@ function LockDeskRow({
   const [showIncomplete, setShowIncomplete]   = useState(false);
   const [incompleteStep, setIncompleteStep]   = useState<1 | 2>(1);
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
-  const [customChecked, setCustomChecked]     = useState(false);
-  const [customReason, setCustomReason]       = useState("");
+  const [customReasons, setCustomReasons]     = useState<string[]>([""]);
   const [incompleteNotes, setIncompleteNotes] = useState("");
   const [incompleteBusy, setIncompleteBusy]   = useState(false);
   const [incompleteErr, setIncompleteErr]     = useState("");
@@ -159,8 +158,7 @@ function LockDeskRow({
 
   function openIncompleteModal() {
     setSelectedReasons([]);
-    setCustomChecked(false);
-    setCustomReason("");
+    setCustomReasons([""]);
     setIncompleteNotes("");
     setIncompleteStep(1);
     setIncompleteErr("");
@@ -183,7 +181,7 @@ function LockDeskRow({
     setIncompleteBusy(true); setIncompleteErr("");
     const finalReasons = [
       ...selectedReasons,
-      ...(customChecked && customReason.trim() ? [customReason.trim()] : []),
+      ...customReasons.map(r => r.trim()).filter(Boolean),
     ];
     if (finalReasons.length === 0) {
       setIncompleteErr("Please select at least one reason.");
@@ -540,7 +538,7 @@ function LockDeskRow({
               {incompleteStep === 1 ? (
                 <>
                   <p className="text-xs text-muted mb-4">Select all that apply for this lock request.</p>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                     {reasons.map(reason => (
                       <label key={reason} className="flex items-start gap-3 cursor-pointer group">
                         <input type="checkbox"
@@ -551,22 +549,42 @@ function LockDeskRow({
                         <span className="text-sm text-ink group-hover:text-ink/80">{reason}</span>
                       </label>
                     ))}
-                    <label className="flex items-start gap-3 cursor-pointer group">
-                      <input type="checkbox"
-                        checked={customChecked}
-                        onChange={() => setCustomChecked(p => !p)}
-                        className="mt-0.5 rounded border-gray-300 text-orange-500 focus:ring-orange-400"
-                      />
-                      <span className="text-sm text-muted italic">Other / Custom…</span>
-                    </label>
-                    {customChecked && (
-                      <input type="text" value={customReason}
-                        onChange={e => setCustomReason(e.target.value)}
-                        placeholder="Describe the issue…"
-                        className="w-full rounded-xl border border-line px-3 py-2 text-sm text-ink
-                                   placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40"
-                      />
-                    )}
+
+                    {/* ── Custom reason rows ───────────────────────────────── */}
+                    <div className="pt-2 border-t border-line space-y-2">
+                      <p className="text-[11px] font-semibold text-muted uppercase tracking-wide">
+                        Custom reasons
+                      </p>
+                      {customReasons.map((val, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={val}
+                            onChange={e => {
+                              const updated = [...customReasons];
+                              updated[idx] = e.target.value;
+                              setCustomReasons(updated);
+                            }}
+                            placeholder={`Custom reason ${idx + 1}…`}
+                            className="flex-1 rounded-xl border border-line px-3 py-2 text-sm text-ink
+                                       placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40"
+                          />
+                          {customReasons.length > 1 && (
+                            <button
+                              onClick={() => setCustomReasons(prev => prev.filter((_, i) => i !== idx))}
+                              className="flex-shrink-0 text-red-400 hover:text-red-600 text-lg leading-none px-1"
+                              title="Remove"
+                            >×</button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => setCustomReasons(prev => [...prev, ""])}
+                        className="text-xs font-semibold text-accent hover:underline"
+                      >
+                        + Add another custom reason
+                      </button>
+                    </div>
                   </div>
                 </>
               ) : (
@@ -594,7 +612,7 @@ function LockDeskRow({
                     Cancel
                   </button>
                   <button
-                    disabled={selectedReasons.length === 0 && !(customChecked && customReason.trim())}
+                    disabled={selectedReasons.length === 0 && !customReasons.some(r => r.trim())}
                     onClick={() => { setIncompleteErr(""); setIncompleteStep(2); }}
                     className="rounded-lg px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
                     style={{ background: "linear-gradient(135deg,#142850,#1e3a6e)" }}>

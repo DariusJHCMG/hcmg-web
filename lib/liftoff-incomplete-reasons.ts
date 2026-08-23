@@ -40,11 +40,18 @@ export const INCOMPLETE_REASONS: Record<LiftOffRequestType, string[]> = {
     "Supporting documents missing",
   ],
   lock_request: [
-    "Pricing not confirmed in ARIVE",
-    "Loan not yet registered",
-    "Lock period not specified",
-    "Rate / price data missing or stale",
-    "Lender or product not specified",
+    "Pricing screenshot is missing — please attach to ARIVE",
+    "Pricing screenshot appears stale — rate/price may have changed",
+    "Loan is not yet registered in ARIVE",
+    "ARIVE loan number not found or not provided",
+    "Lender not specified",
+    "Loan product not specified (e.g. 30-yr fixed, FHA, VA)",
+    "Lock period not specified (e.g. 30, 45, or 60 days)",
+    "Requested close date is missing or past",
+    "Loan amount does not match ARIVE",
+    "Borrower name or SSN mismatch in ARIVE",
+    "LO has not confirmed pricing — waiting on LO sign-off",
+    "Lock request submitted with float status — please confirm intent to lock",
   ],
 };
 
