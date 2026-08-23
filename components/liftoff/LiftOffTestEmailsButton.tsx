@@ -1,14 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function LiftOffTestEmailsButton() {
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [result, setResult] = useState<string[]>([]);
+  const [testMode, setTestMode] = useState<{ on: boolean; email: string } | null>(null);
+
+  // Check test mode status on mount
+  useEffect(() => {
+    fetch("/api/liftoff/test-mode-status")
+      .then(r => r.json())
+      .then(d => setTestMode({ on: d.test_mode, email: d.test_email }))
+      .catch(() => {});
+  }, []);
 
   async function handleClick() {
     if (!confirm(
-      "Send all 6 Liftoff email templates to darius@hcmgloans.com for proofing?\n\nNo DB changes will be made."
+      "Send all 10 Liftoff email templates to darius@hcmgloans.com for proofing?\n\nNo DB changes will be made."
     )) return;
 
     setState("loading");
@@ -31,7 +40,22 @@ export function LiftOffTestEmailsButton() {
   }
 
   return (
-    <div className="flex flex-col items-end gap-3 flex-shrink-0">
+    <div className="flex flex-col items-end gap-2 flex-shrink-0">
+
+      {/* Test mode status pill */}
+      {testMode && (
+        <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold border ${
+          testMode.on
+            ? "bg-green-50 border-green-200 text-green-700"
+            : "bg-red-50 border-red-200 text-red-600"
+        }`}>
+          <span>{testMode.on ? "✅" : "❌"}</span>
+          {testMode.on
+            ? `TEST MODE ON → ${testMode.email}`
+            : "TEST MODE OFF — emails go to real recipients"}
+        </div>
+      )}
+
       {/* Button */}
       <button
         onClick={handleClick}
