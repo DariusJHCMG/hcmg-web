@@ -1,20 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
+import { createServiceClient } from "@/lib/supabase";
 
 // ── ARIVE Lookup — Zapier async pattern ──────────────────────────────────────
 //
 // Flow:
 //   1. LO types loan number → clicks "Look up"
-//   2. POST /api/liftoff/arive-lookup  generates a requestId, fires Zapier hook
+//   2. POST /api/liftoff/arive-lookup  generates a requestId, inserts a pending
+//      row in arive_lookup_results, then fires Zapier hook
 //   3. Zapier: ARIVE "Get Loan Details" → POST back to /api/liftoff/arive-result
+//      which updates the row with result_json
 //   4. Browser polls /api/liftoff/arive-poll?id={requestId} every 1.5s (max 15s)
 //   5. Result arrives → wizard auto-fills
 //
+// Using Supabase as the broker eliminates in-memory cold-start isolation issues
+// that would cause silent timeouts when Zapier's POST lands on a different
+// Lambda instance than the browser poll.
+//
 // Required env var:
-//   ARIVE_ZAPIER_LOOKUP_HOOK=https://hooks.zapier.com/hooks/catch/28624289/4tg9qr8/
+//   ARIVE_ZAPIER_LOOKUP_HOOK=https://hooks.zapier.com/hooks/catch/...
 //
 // ── REVERT NOTES ────────────────────────────────────────────────────────────
-// To revert: git checkout HEAD~5 -- app/api/liftoff/arive-lookup/route.ts
+// To revert: git checkout HEAD~1 -- app/api/liftoff/arive-lookup/route.ts
 // The wizard will also need reverting — see LiftOffWizard.tsx revert note.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -51,7 +58,6 @@ const DEMO_LOANS: Record<string, object> = {
 };
 
 // ── Loan number normalisation ────────────────────────────────────────────────
-// Wizard may send "HCMG-2025-4471" — extract numeric part for ARIVE display ID.
 function normalizeLoanNumber(raw: string): string {
   const trimmed = raw.trim();
   const match = trimmed.match(/-?(\d+)$/);
@@ -67,7 +73,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Loan number is required" }, { status: 400 });
   }
 
-  // ── Demo loans — instant response, no Zapier ─────────────────────────────
+  // ── Demo loans — instant response, no Zapier, no DB row ──────────────────
   const demoKey = loanNumber.trim().toUpperCase();
   if (DEMO_LOANS[demoKey]) {
     await new Promise(r => setTimeout(r, 800));
@@ -83,8 +89,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── Generate a requestId and fire the Zapier hook ─────────────────────────
+  // ── Generate requestId + insert pending row BEFORE firing Zapier ─────────
+  // Inserting first ensures the row exists when Zapier POSTs back, even if
+  // the POST arrives before this function returns (extremely rare but possible).
   const requestId = `arive-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const sb = createServiceClient();
+
+  const { error: insertError } = await sb
+    .from("arive_lookup_results")
+    .insert({
+      request_id:  requestId,
+      result_json: null,
+      found:       false,
+      expires_at:  new Date(Date.now() + 120_000).toISOString(),
+    });
+
+  if (insertError) {
+    console.error("[arive-lookup] failed to insert pending row", insertError);
+    return NextResponse.json({ error: "Could not start ARIVE lookup. Try again." }, { status: 500 });
+  }
+
   const normalizedLoanNumber = normalizeLoanNumber(loanNumber);
 
   try {
@@ -99,6 +123,8 @@ export async function POST(req: NextRequest) {
       signal: AbortSignal.timeout(5_000),
     });
   } catch {
+    // Clean up the pending row so it doesn't sit orphaned
+    void sb.from("arive_lookup_results").delete().eq("request_id", requestId).then();
     return NextResponse.json(
       { error: "Could not reach ARIVE lookup service. Please fill in manually." },
       { status: 502 },

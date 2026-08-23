@@ -10,6 +10,24 @@ export async function POST(req: NextRequest) {
   const profile = await getCurrentProfile();
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // ── Idempotency guard ──────────────────────────────────────────────────────
+  // The wizard sends a per-attempt UUID in Idempotency-Key.
+  // If we already have a completed row for this key (double-click, network retry)
+  // we return the existing ID without inserting a duplicate.
+  const idempotencyKey = req.headers.get("idempotency-key") ?? null;
+  const sb = createServiceClient();
+
+  if (idempotencyKey) {
+    const { data: existing } = await sb
+      .from("lift_off_requests")
+      .select("id, created_at")
+      .eq("idempotency_key", idempotencyKey)
+      .maybeSingle();
+    if (existing) {
+      return NextResponse.json({ id: existing.id }, { status: 200 });
+    }
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -23,17 +41,17 @@ export async function POST(req: NextRequest) {
   const slaFields = computeSla(body.request_type as LiftOffRequestType, submittedAt);
   const payload = {
     ...body,
-    submitter_id:    profile.id,
-    submitter_name:  profile.full_name,
-    submitter_nmls:  profile.nmls   ?? null,
-    submitter_email: profile.email  ?? null,
-    submitter_phone: profile.phone  ?? null,
-    request_status:  "pending",
-    created_at:      now,
+    submitter_id:     profile.id,
+    submitter_name:   profile.full_name,
+    submitter_nmls:   profile.nmls   ?? null,
+    submitter_email:  profile.email  ?? null,
+    submitter_phone:  profile.phone  ?? null,
+    request_status:   "pending",
+    created_at:       now,
+    idempotency_key:  idempotencyKey,
     ...slaFields,
   };
 
-  const sb = createServiceClient();
   const { data, error } = await sb
     .from("lift_off_requests")
     .insert(payload)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { LiftOffRequestType, LockStatus } from "@/lib/database.types";
 import { LockPreferenceField } from "@/components/liftoff/LockPreferenceField";
@@ -367,6 +367,10 @@ function WizardInner() {
   const [step, setStep]             = useState<1 | 2 | 3>(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState("");
+
+  // Idempotency key — one UUID per mount, replaced after each successful submit.
+  // Sending the same key twice to the API is a no-op (returns the existing row).
+  const submissionKeyRef = useRef(crypto.randomUUID());
 
   // Step 1
   const [requestType, setRequestType] = useState<LiftOffRequestType | "">("");
@@ -740,11 +744,17 @@ function WizardInner() {
     try {
       const res  = await fetch("/api/liftoff/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          // Idempotency key — server rejects duplicate submits with the same key
+          "Idempotency-Key": submissionKeyRef.current,
+        },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Submission failed."); setSubmitting(false); return; }
+      // Rotate key so a future re-use of the same wizard instance gets a fresh key
+      submissionKeyRef.current = crypto.randomUUID();
       router.push(`/liftoff/${data.id}?submitted=1`);
     } catch {
       setError("Network error. Please try again.");

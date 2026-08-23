@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import type { LiftOffRequest, LiftOffRequestType, LiftOffRole } from "@/lib/database.types";
 import { getIncompleteReasons } from "@/lib/liftoff-incomplete-reasons";
@@ -1005,6 +1006,48 @@ export function LiftOffQueueClient({
       })
       .catch(() => {});
   }, []);
+
+  // ── Supabase Realtime — live queue updates ──────────────────────────────────
+  // Subscribes to INSERT and UPDATE events on lift_off_requests rows that belong
+  // to this queue (non-lock, non-helpdesk). Any change from any team member is
+  // immediately reflected without a page refresh.
+  useEffect(() => {
+    if (isDemo) return;
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+    const channel = sb
+      .channel("ops-queue-lift-off-requests")
+      .on(
+        "postgres_changes",
+        {
+          event:  "*",
+          schema: "public",
+          table:  "lift_off_requests",
+          filter: "request_type=neq.lock_request",
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const incoming = payload.new as LiftOffRequest;
+            // Only surface non-helpdesk rows in this queue
+            if (incoming.request_type === "loan_help_desk") return;
+            setRequests(prev => {
+              if (prev.some(r => r.id === incoming.id)) return prev;
+              return [incoming, ...prev];
+            });
+          } else if (payload.eventType === "UPDATE") {
+            setRequests(prev =>
+              prev.map(r => r.id === payload.new.id ? { ...r, ...(payload.new as LiftOffRequest) } : r)
+            );
+          } else if (payload.eventType === "DELETE") {
+            setRequests(prev => prev.filter(r => r.id !== payload.old.id));
+          }
+        },
+      )
+      .subscribe();
+    return () => { void sb.removeChannel(channel); };
+  }, [isDemo]);
 
   // Apply scope + owner + type + date filters (no tab — used for counts and card list base)
   const preTabFiltered = useMemo(() => {

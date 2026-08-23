@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import type { LiftOffRequest, LiftOffRole } from "@/lib/database.types";
 
@@ -783,6 +784,43 @@ export function HelpDeskQueueClient({
       })
       .catch(() => {});
   }, []);
+
+  // ── Supabase Realtime — live help desk queue updates ────────────────────────
+  useEffect(() => {
+    if (isDemo) return;
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+    const channel = sb
+      .channel("helpdesk-queue-lift-off-requests")
+      .on(
+        "postgres_changes",
+        {
+          event:  "*",
+          schema: "public",
+          table:  "lift_off_requests",
+          filter: "request_type=eq.loan_help_desk",
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const incoming = payload.new as LiftOffRequest;
+            setRequests(prev => {
+              if (prev.some(r => r.id === incoming.id)) return prev;
+              return [incoming, ...prev];
+            });
+          } else if (payload.eventType === "UPDATE") {
+            setRequests(prev =>
+              prev.map(r => r.id === payload.new.id ? { ...r, ...(payload.new as LiftOffRequest) } : r)
+            );
+          } else if (payload.eventType === "DELETE") {
+            setRequests(prev => prev.filter(r => r.id !== payload.old.id));
+          }
+        },
+      )
+      .subscribe();
+    return () => { void sb.removeChannel(channel); };
+  }, [isDemo]);
 
   // Filters without tab — used for stat tiles and tab badge counts
   const preTabFiltered = useMemo(() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import type { LiftOffRequest, LiftOffRole } from "@/lib/database.types";
 import { getIncompleteReasons } from "@/lib/liftoff-incomplete-reasons";
@@ -770,6 +771,43 @@ export function LockDeskQueueClient({
       .then((data: { members: { full_name: string }[] }) => setTeamOwners((data.members ?? []).map(m => m.full_name).sort()))
       .catch(() => {});
   }, []);
+
+  // ── Supabase Realtime — live lock desk queue updates ────────────────────────
+  useEffect(() => {
+    if (isDemo) return;
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+    const channel = sb
+      .channel("lockdesk-queue-lift-off-requests")
+      .on(
+        "postgres_changes",
+        {
+          event:  "*",
+          schema: "public",
+          table:  "lift_off_requests",
+          filter: "request_type=eq.lock_request",
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const incoming = payload.new as LiftOffRequest;
+            setRequests(prev => {
+              if (prev.some(r => r.id === incoming.id)) return prev;
+              return [incoming, ...prev];
+            });
+          } else if (payload.eventType === "UPDATE") {
+            setRequests(prev =>
+              prev.map(r => r.id === payload.new.id ? { ...r, ...(payload.new as LiftOffRequest) } : r)
+            );
+          } else if (payload.eventType === "DELETE") {
+            setRequests(prev => prev.filter(r => r.id !== payload.old.id));
+          }
+        },
+      )
+      .subscribe();
+    return () => { void sb.removeChannel(channel); };
+  }, [isDemo]);
 
   const preTabFiltered = useMemo(() => {
     const now   = Date.now();

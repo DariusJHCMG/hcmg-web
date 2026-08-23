@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resultStore } from "@/lib/arive-lookup-store";
+import { createServiceClient } from "@/lib/supabase";
 
 // ── Shared secret — Zapier must send this in the Authorization header ─────────
 // Set ZAPIER_WEBHOOK_SECRET in Vercel env vars and in the Zapier "Custom Headers"
@@ -8,7 +8,8 @@ const WEBHOOK_SECRET = process.env.ZAPIER_WEBHOOK_SECRET;
 
 // ── POST /api/liftoff/arive-result ───────────────────────────────────────────
 // Zapier POSTs loan data here after fetching from ARIVE.
-// Stores result keyed by requestId so the browser poll can pick it up.
+// Upserts the result into arive_lookup_results keyed by requestId so the
+// browser poll can pick it up from any Lambda instance.
 //
 // Expected body from Zapier Step 3 (field names we told Zapier to use):
 // {
@@ -29,16 +30,11 @@ const WEBHOOK_SECRET = process.env.ZAPIER_WEBHOOK_SECRET;
 // ── loanPurpose → our loan_type values ───────────────────────────────────────
 // ARIVE "Loan Purpose" = Purchase / Refinance
 // ARIVE "Mortgage Type" = Conventional / FHA / VA / NonQM / USDA / etc.
-// Our wizard loan_type options: "purchase" | "purchase_fha" | "purchase_va" |
-//   "purchase_usda" | "refinance" | "refinance_fha" | "refinance_va" | "refinance_usda"
 // We combine both ARIVE fields to get the most specific value.
-// Returns a value the wizard's applyAriveData() can parse into loanPurpose + loanProgram.
-// Convention: "purchase_fha", "purchase_va", "purchase_non_qm", "refinance", etc.
 function mapLoanType(loanPurpose: string, mortgageType: string): string {
   const purpose  = loanPurpose.toLowerCase().trim();
   const mortgage = mortgageType.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-  // Resolve program from ARIVE Mortgage Type
   const program =
     mortgage === "fha"                              ? "fha"         :
     mortgage === "va"                               ? "va"          :
@@ -64,7 +60,6 @@ function mapLoanType(loanPurpose: string, mortgageType: string): string {
     if (program === "non_qm") return "refinance_non_qm";
     return "refinance";
   }
-  // Fallback
   return purpose || "purchase";
 }
 
@@ -102,7 +97,7 @@ export async function POST(req: NextRequest) {
   const mortgageType  = String(body.mortgageType ?? "");
   const loanType = mapLoanType(loanPurpose, mortgageType);
 
-  // ── Map property type (ARIVE Housing Type → our values) ─────────────────
+  // ── Map property type ─────────────────────────────────────────────────────
   const propTypeRaw = String(body.propertyType ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const propertyType =
     propTypeRaw.includes("single") || propTypeRaw === "singlefamily" ? "sfr" :
@@ -112,7 +107,7 @@ export async function POST(req: NextRequest) {
     propTypeRaw.includes("manuf") || propTypeRaw.includes("mobile")  ? "manufactured" :
     propTypeRaw ? "other" : null;
 
-  // ── Map occupancy type (ARIVE Property Usage Type → our values) ──────────
+  // ── Map occupancy type ────────────────────────────────────────────────────
   const occRaw = String(body.occupancyType ?? "").toLowerCase();
   const occupancyType =
     occRaw.includes("primary")    ? "primary" :
@@ -148,6 +143,22 @@ export async function POST(req: NextRequest) {
     deepLink,
   };
 
-  resultStore.set(requestId, result);
+  // ── Upsert into Supabase (works across all Lambda instances) ─────────────
+  const sb = createServiceClient();
+  const { error } = await sb
+    .from("arive_lookup_results")
+    .update({
+      result_json: result,
+      found:       true,
+      // Refresh the TTL — Zapier can be slow; give the poll another 120s from now
+      expires_at:  new Date(Date.now() + 120_000).toISOString(),
+    })
+    .eq("request_id", requestId);
+
+  if (error) {
+    console.error("[arive-result] db update failed", error);
+    return NextResponse.json({ error: "Failed to store result" }, { status: 500 });
+  }
+
   return NextResponse.json({ ok: true });
 }
