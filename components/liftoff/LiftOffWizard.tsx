@@ -152,7 +152,7 @@ function StepBar({ step, requestType, onChangeType }: {
   requestType: LiftOffRequestType | "";
   onChangeType: () => void;
 }) {
-  const isTwoStep = requestType === "lock_request" || requestType === "loan_help_desk";
+  const isTwoStep = requestType !== "submission";
   const steps = requestType === "lock_request"
     ? [
         { n: 1, label: "Pick request type", sub: "Choose what kind of lift off" },
@@ -163,10 +163,15 @@ function StepBar({ step, requestType, onChangeType }: {
         { n: 1, label: "Pick request type", sub: "Choose what kind of lift off" },
         { n: 2, label: "Details & Submit",  sub: "Borrower, issue description, certify" },
       ]
-    : [
+    : requestType === "submission"
+    ? [
         { n: 1, label: "Pick request type",      sub: "Choose what kind of lift off" },
         { n: 2, label: "Loan + prior progress",  sub: "ARIVE # + lock status" },
         { n: 3, label: "Borrower / IPAC / docs", sub: "Fill details, checklist, certify" },
+      ]
+    : [
+        { n: 1, label: "Pick request type", sub: "Choose what kind of lift off" },
+        { n: 2, label: "Details & Submit",  sub: "Borrower, loan info, certify" },
       ];
   const cols = isTwoStep ? "grid-cols-2" : "grid-cols-3";
   return (
@@ -451,6 +456,7 @@ function WizardInner() {
   const lockRequired   = selectedType?.lockRequired ?? false;
   const isHelpDesk     = requestType === "loan_help_desk";
   const isLockRequest  = requestType === "lock_request";
+  const isSubmission   = requestType === "submission";
   const docItems       = requestType ? DOC_CHECKLISTS[requestType] ?? [] : [];
   const checkedCount   = isDemo ? docItems.length : docItems.filter(d => docChecked[d.id]).length;
   const pendingDocs    = docItems.length - checkedCount;
@@ -605,10 +611,11 @@ function WizardInner() {
       } else if (isHelpDesk) {
         if (!helpDeskSubType)              { setError("Please select a sub-type for your help desk request."); return; }
         if (helpDeskDescription.trim().length < 100) { setError("Please describe the issue in at least 100 characters."); return; }
-      } else {
+      } else if (isSubmission) {
         if (lockRequired && !lockPref) { setError("Please select Lock or Float for this loan."); return; }
         if (lockPref === "float" && !floatReason.trim()) { setError("Float reason is required when floating."); return; }
       }
+      // register_disclosure and disclosure_only submit on step 2 — no step 3 needed
     }
     setError("");
     setStep(s => (s < 3 ? (s + 1) as 1|2|3 : s));
@@ -629,14 +636,12 @@ function WizardInner() {
       if (!isDemo && !lockChkArive)  { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
       if (!isDemo && !lockChkLos)    { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
     }
-    if (!isDemo) {
-      if (!isLockRequest && !isHelpDesk) {
-        if (!incomeNote.trim())   { setError("IPAC — Income note is required."); return; }
-        if (!propertyNote.trim()) { setError("IPAC — Property note is required."); return; }
-        if (!assetsNote.trim())   { setError("IPAC — Assets note is required."); return; }
-        if (!creditNote.trim())   { setError("IPAC — Credit note is required."); return; }
-        if (pendingDocs > 0)      { setError(`Resolve ${pendingDocs} pending document${pendingDocs > 1 ? "s" : ""} before submitting.`); return; }
-      }
+    if (!isDemo && isSubmission) {
+      if (!incomeNote.trim())   { setError("IPAC — Income note is required."); return; }
+      if (!propertyNote.trim()) { setError("IPAC — Property note is required."); return; }
+      if (!assetsNote.trim())   { setError("IPAC — Assets note is required."); return; }
+      if (!creditNote.trim())   { setError("IPAC — Credit note is required."); return; }
+      if (pendingDocs > 0)      { setError(`Resolve ${pendingDocs} pending document${pendingDocs > 1 ? "s" : ""} before submitting.`); return; }
     }
     if (isDemo) { router.push("/liftoff?demo=1&submitted=1"); return; }
 
@@ -1378,6 +1383,28 @@ function WizardInner() {
                 </div>
               )}
             </div>}
+
+            {/* Certification — inline for register_disclosure and disclosure_only (no Step 3) */}
+            {!isLockRequest && !isHelpDesk && !isSubmission && (
+              <div className="rounded-2xl border-2 border-orange-200 bg-orange-50 p-6 space-y-3">
+                <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Certification</p>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={certified} onChange={e => setCertified(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded accent-orange-500 flex-shrink-0" />
+                  <span className="text-sm text-ink leading-relaxed">
+                    By submitting this form, I certify this file is complete and ready for the Lift Off review process.
+                  </span>
+                </label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="NMLS #" required>
+                    <Input value={certNmls} onChange={e => setCertNmls(e.target.value)} placeholder="e.g. 1234567" />
+                  </Field>
+                  <Field label="LO Name">
+                    <Input value={certLoName} onChange={e => setCertLoName(e.target.value)} placeholder="Your full name" />
+                  </Field>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -1394,54 +1421,19 @@ function WizardInner() {
                   background: "linear-gradient(135deg,#FF9847,#F37021)",
                 }} />
               </div>
-              <p className="text-[11px] text-muted/60">You&apos;ll confirm docs in Step 3</p>
+              <p className="text-[11px] text-muted/60">{isSubmission ? "You'll confirm docs in Step 3" : "Docs confirmed at submission"}</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── STEP 3 — IPAC / Docs ── */}
+      {/* ── STEP 3 — IPAC / Docs (Submission only) ── */}
       {step === 3 && requestType && (
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-6">
 
-            {/* Lock Request — Step 3 summary + borrower confirm */}
-            {isLockRequest && (
-              <div className="rounded-2xl border-2 border-[#142850] bg-[#142850]/5 p-6 space-y-4">
-                <div>
-                  <h3 className="text-sm font-bold text-ink">🔒 Lock Request Summary</h3>
-                  <p className="text-xs text-muted mt-0.5">Review the details below. Once submitted, the lock desk will execute this lock in the lender portal.</p>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2 text-sm">
-                  {[
-                    { label: "Rate",            value: lockRate        ? `${lockRate}%` : "—" },
-                    { label: "Discount Points", value: lockPrice       ? lockPrice      : "—" },
-                    { label: "Lender",          value: lockLender      || "—" },
-                    { label: "Product",         value: lockProduct     || "—" },
-                    { label: "Channel",         value: channelType     || "—" },
-                    ...(channelType.toLowerCase() === "broker" && compensationType
-                      ? [{ label: "Compensation", value: compensationType }]
-                      : []),
-                    { label: "Lock Period",     value: `${lockPeriod} days` },
-                    { label: "Requested Close", value: lockCloseDate ? new Date(lockCloseDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—" },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex gap-3 border-b border-line py-2 last:border-0">
-                      <span className="w-32 flex-shrink-0 text-xs font-bold uppercase tracking-[0.08em] text-muted/70">{label}</span>
-                      <span className="text-ink font-semibold">{value}</span>
-                    </div>
-                  ))}
-                </div>
-                {lockLoNotes && (
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted/70 mb-1">Notes to Lock Desk</p>
-                    <p className="text-sm text-ink whitespace-pre-wrap">{lockLoNotes}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* 1003 Matches Registration */}
-            {!isHelpDesk && !isLockRequest && (
+            {isSubmission && (
               <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
                 <div>
                   <h3 className="text-sm font-bold text-ink">1003 Matches Registration</h3>
@@ -1486,8 +1478,8 @@ function WizardInner() {
               </div>
             )}
 
-            {/* IPAC Notes — hidden for lock and help desk requests */}
-            {!isLockRequest && !isHelpDesk && <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
+            {/* IPAC Notes */}
+            {isSubmission && <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
               <div className="text-center pb-2 border-b border-line">
                 <h3 className="text-lg font-extrabold text-ink">IPAC</h3>
                 <p className="text-xs font-semibold text-muted italic mt-0.5">Summary on Income Property Assets &amp; Credit</p>
@@ -1521,7 +1513,7 @@ function WizardInner() {
             </div>}
 
             {/* Gift Funds */}
-            {!isHelpDesk && !isLockRequest && (
+            {isSubmission && (
               <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Gift Funds</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -1567,8 +1559,8 @@ function WizardInner() {
               </div>
             )}
 
-            {/* Document Checklist — hidden for lock and help desk requests */}
-            {!isLockRequest && !isHelpDesk && <DocChecklist
+            {/* Document Checklist */}
+            {isSubmission && <DocChecklist
               items={docItems}
               checked={docChecked}
               onToggle={id => setDocChecked(prev => ({ ...prev, [id]: !prev[id] }))}
@@ -1699,6 +1691,14 @@ function WizardInner() {
           )}
         </div>
         <div className="flex items-center gap-3">
+          {/* Continue — step 1 for all types; step 2 only for submission (has a step 3) */}
+          {(step === 1 || (isSubmission && step === 2)) && (
+            <button type="button" onClick={next}
+              className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
+              Continue →
+            </button>
+          )}
           {/* Lock request: step 2 is final */}
           {isLockRequest && step === 2 && (
             <button type="submit"
@@ -1717,15 +1717,17 @@ function WizardInner() {
               {submitting ? "Submitting…" : "Submit Help Desk Request 🛎"}
             </button>
           )}
-          {/* Continue button — all types on step 1; non-lock/non-helpdesk on steps 1–2 */}
-          {(step === 1 || (!isLockRequest && !isHelpDesk && step < 3)) && (
-            <button type="button" onClick={next}
-              className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          {/* Register + Disclosure and Disclosure Only: step 2 is final */}
+          {!isLockRequest && !isHelpDesk && !isSubmission && step === 2 && (
+            <button type="submit"
+              disabled={submitting || (!isDemo && (!certified || !certNmls.trim()))}
+              className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
-              Continue →
+              {submitting ? "Submitting…" : "Submit Lift Off Request 🚀"}
             </button>
           )}
-          {!isLockRequest && !isHelpDesk && step === 3 && (
+          {/* Submission: step 3 is final */}
+          {isSubmission && step === 3 && (
             <button type="submit"
               disabled={submitting || (!isDemo && (!certified || (pendingDocs > 0)))}
               className="rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
