@@ -3,7 +3,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import { createClient } from "@supabase/supabase-js";
 
-const VALID_ROLES = ["liftoff_admin", "liftoff_team", "lock_desk_admin", "ops_manager"];
+const VALID_ROLES = ["liftoff_admin", "liftoff_team", "lock_desk_admin", "ops_manager", "help_desk_agent"];
 
 export async function POST(req: NextRequest) {
   const profile = await getCurrentProfile();
