@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { LiftOffRequest } from "@/lib/database.types";
 
 interface LookupSlideOverProps {
@@ -52,6 +53,7 @@ function fmtDate(s: string) {
 }
 
 export function LookupSlideOver({ open, onClose, context }: LookupSlideOverProps) {
+  const router = useRouter();
   const [mode, setMode]         = useState<SearchMode>("arive");
   const [query, setQuery]       = useState("");
   const [userId, setUserId]     = useState("");
@@ -207,12 +209,11 @@ export function LookupSlideOver({ open, onClose, context }: LookupSlideOverProps
             <p className="text-sm text-muted text-center pt-6">No results found.</p>
           )}
           {!loading && !error && results !== null && results.length > 0 && results.map(r => (
-            <a
+            <button
               key={r.id}
-              href={"/liftoff/" + r.id}
-              target="_blank"
-              rel="noreferrer"
-              className="block"
+              type="button"
+              onClick={() => { onClose(); router.push("/liftoff/" + r.id); }}
+              className="block w-full text-left"
             >
               <div className="rounded-xl border border-line bg-white px-4 py-3 space-y-1.5 hover:border-[#142850]/40 hover:shadow-sm transition-all">
                 {/* Row 1: borrower + ARIVE # */}
@@ -244,7 +245,7 @@ export function LookupSlideOver({ open, onClose, context }: LookupSlideOverProps
                   <span className="truncate max-w-[160px] text-right">{r.submitter_name}</span>
                 </div>
               </div>
-            </a>
+            </button>
           ))}
         </div>
 
