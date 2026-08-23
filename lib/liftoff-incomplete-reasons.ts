@@ -41,21 +41,9 @@ export const INCOMPLETE_REASONS: Record<LiftOffRequestType, string[]> = {
   ],
   lock_request: [
     "Pricing does not match the lender's current rate sheet",
-    "Pricing mismatch — lock request pricing does not match lender pricing reprice in ARIVE",
     "Loan officer requested an unavailable rate or lock term",
     "Duplicate lock request already exists",
-    "Pricing screenshot is missing — please attach to ARIVE",
-    "Pricing screenshot appears stale — rate/price may have changed",
-    "Loan is not yet registered in ARIVE",
-    "ARIVE loan number not found or not provided",
-    "Lender not specified",
-    "Loan product not specified (e.g. 30-yr fixed, FHA, VA)",
-    "Lock period not specified (e.g. 30, 45, or 60 days)",
-    "Requested close date is missing or past",
-    "Loan amount does not match ARIVE",
-    "Borrower name or SSN mismatch in ARIVE",
-    "LO has not confirmed pricing — waiting on LO sign-off",
-    "Lock request submitted with float status — please confirm intent to lock",
+    "Pricing mismatch — lock request pricing does not match lender pricing reprice in ARIVE",
   ],
 };
 
