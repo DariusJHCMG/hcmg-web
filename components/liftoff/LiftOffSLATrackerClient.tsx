@@ -58,7 +58,11 @@ function fmtDate(s: string | null): string {
 
 function fmtDateTime(s: string | null): string {
   if (!s) return "—";
-  return new Date(s).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  return new Date(s).toLocaleString("en-US", {
+    month: "short", day: "numeric", year: "numeric",
+    hour: "numeric", minute: "2-digit", timeZoneName: "short",
+    timeZone: "America/New_York",
+  });
 }
 
 function avg(nums: number[]): number | null {

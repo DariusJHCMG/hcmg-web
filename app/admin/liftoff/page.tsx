@@ -157,7 +157,11 @@ export default async function AdminLiftOffPage() {
                         {r.sla_deadline_at ? (
                           <span className={`font-semibold ${slaBreached ? "text-red-600" : "text-muted"}`}>
                             {slaBreached ? "⚠ " : ""}
-                            {new Date(r.sla_deadline_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            {new Date(r.sla_deadline_at).toLocaleString("en-US", {
+                              month: "short", day: "numeric", hour: "numeric",
+                              minute: "2-digit", timeZoneName: "short",
+                              timeZone: "America/New_York",
+                            })}
                           </span>
                         ) : <span className="text-muted/40">—</span>}
                       </td>

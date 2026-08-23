@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 const now  = new Date();
 const mins = (n: number) => new Date(now.getTime() - n * 60_000).toISOString();
 const slaDeadline = (requestType: keyof typeof SLA_WINDOWS, submittedMinsAgo: number) =>
-  addBusinessHours(new Date(now.getTime() - submittedMinsAgo * 60_000), SLA_WINDOWS[requestType]).toISOString();
+  addBusinessHours(new Date(now.getTime() - submittedMinsAgo * 60_000), SLA_WINDOWS[requestType], requestType).toISOString();
 
 const DEMO_VIEWER_ID   = "demo-proc-1";
 const DEMO_VIEWER_NAME = "Alex Chen";
