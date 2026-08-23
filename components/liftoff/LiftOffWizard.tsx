@@ -787,18 +787,10 @@ function WizardInner() {
                     <p className="text-xs text-muted leading-relaxed mb-3">{t.description}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {t.tags.map(tag => (
-                        <span key={tag} className={`rounded-full px-2 py-0.5 text-[10px] font-bold border
-                          ${t.lockRequired && tag === "LOCK"
-                            ? "bg-orange-50 border-orange-300 text-orange-700"
-                            : "bg-sand border-line text-muted"}`}>
+                        <span key={tag} className="rounded-full px-2 py-0.5 text-[10px] font-bold border bg-sand border-line text-muted">
                           {tag}
                         </span>
                       ))}
-                      {t.lockRequired && (
-                        <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-orange-500 text-white">
-                          LOCK REQUIRED
-                        </span>
-                      )}
                     </div>
                     {/* Doc count preview */}
                     <p className="mt-2 text-[10px] text-muted/60">
