@@ -219,8 +219,8 @@ export function LiftOffPipelineClient({
     fetchedRef.current = true;
     fetch("/api/liftoff/team-members")
       .then(r => r.json())
-      .then((data: { full_name: string }[]) => {
-        setTeamOwners(data.map(m => m.full_name).sort());
+      .then((data: { members: { full_name: string }[] }) => {
+        setTeamOwners((data.members ?? []).map(m => m.full_name).sort());
       })
       .catch(() => {});
   }, []);

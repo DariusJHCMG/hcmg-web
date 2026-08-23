@@ -106,6 +106,7 @@ export function getLiftOffRoleLabel(roles: LiftOffRole[]): string {
     lock_desk_admin:  "Lock Desk Admin",
     ops_manager:      "Ops Manager",
     help_desk_agent:  "Help Desk Agent",
+    processor:        "Processor",
   };
   return roles.map(r => labels[r] ?? r).join(", ");
 }

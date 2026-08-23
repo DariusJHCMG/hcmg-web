@@ -14,8 +14,8 @@ export async function PATCH(
 
   const { id } = await params;
 
-  // Optional body — completion notes
-  let body: { notes?: string } = {};
+  // Optional body — completion notes + assigned processor (submission only)
+  let body: { notes?: string; assignedProcessorName?: string; assignedProcessorEmail?: string } = {};
   try { body = await req.json(); } catch { /* no body is fine */ }
 
   const sb = createServiceClient();
@@ -45,12 +45,21 @@ export async function PATCH(
     }
   }
 
+  // Submission requires an assigned processor
+  if (r.request_type === "submission") {
+    if (!body.assignedProcessorName?.trim() || !body.assignedProcessorEmail?.trim()) {
+      return NextResponse.json({ error: "An assigned processor is required to complete a submission." }, { status: 400 });
+    }
+  }
+
   const now = new Date().toISOString();
   const update: Record<string, unknown> = {
     request_status: "completed",
     completed_at:   now,
   };
-  if (body.notes?.trim()) update.team_notes = body.notes.trim();
+  if (body.notes?.trim())                    update.team_notes               = body.notes.trim();
+  if (body.assignedProcessorName?.trim())    update.assigned_processor_name  = body.assignedProcessorName.trim();
+  if (body.assignedProcessorEmail?.trim())   update.assigned_processor_email = body.assignedProcessorEmail.trim();
 
   const { error } = await sb
     .from("lift_off_requests")
@@ -62,11 +71,18 @@ export async function PATCH(
   // Send completion email to LO (non-blocking)
   if (r.submitter_email) {
     void sendLiftOffCompleted({
-      request:       { ...r, team_notes: body.notes?.trim() || r.team_notes },
-      processorName: profile.full_name,
-      completedAt:   now,
+      request:                { ...r, team_notes: body.notes?.trim() || r.team_notes },
+      processorName:          profile.full_name,
+      completedAt:            now,
+      assignedProcessorName:  body.assignedProcessorName?.trim(),
+      assignedProcessorEmail: body.assignedProcessorEmail?.trim(),
     }).catch(err => console.error("[liftoff/complete] email failed", err));
   }
 
-  return NextResponse.json({ ok: true, completed_at: now });
+  return NextResponse.json({
+    ok: true,
+    completed_at:            now,
+    assigned_processor_name:  body.assignedProcessorName?.trim() ?? null,
+    assigned_processor_email: body.assignedProcessorEmail?.trim() ?? null,
+  });
 }

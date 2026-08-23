@@ -132,6 +132,14 @@ function RequestRow({
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes]         = useState("");
 
+  // ── Processor picker modal (submission complete only) ──────────────────────
+  const [showProcessorModal, setShowProcessorModal]   = useState(false);
+  const [processorList, setProcessorList]             = useState<TeamMember[]>([]);
+  const [processorListLoaded, setProcessorListLoaded] = useState(false);
+  const [selectedProcessor, setSelectedProcessor]     = useState("");
+  const [processorBusy, setProcessorBusy]             = useState(false);
+  const [processorErr, setProcessorErr]               = useState("");
+
   // ── Incomplete modal state ─────────────────────────────────────────────────
   const [showIncomplete, setShowIncomplete]   = useState(false);
   const [incompleteStep, setIncompleteStep]   = useState<1 | 2>(1);
@@ -159,6 +167,12 @@ function RequestRow({
   const lockIsPending = linkedLockStatus !== null && linkedLockStatus !== "completed";
 
   async function doAction(action: "claim" | "start" | "complete") {
+    // Submission complete → show processor picker instead
+    if (action === "complete" && r.request_type === "submission") {
+      openProcessorModal();
+      return;
+    }
+
     setBusy(true); setErr("");
     const now = new Date().toISOString();
 
@@ -194,6 +208,73 @@ function RequestRow({
       onUpdated({ id: r.id, request_status: "completed", completed_at: data.completed_at });
       setShowNotes(false);
     }
+  }
+
+  // ── Processor picker helpers (submission complete) ────────────────────────
+
+  async function openProcessorModal() {
+    setSelectedProcessor("");
+    setProcessorErr("");
+    setShowProcessorModal(true);
+    if (!processorListLoaded) {
+      const res  = await fetch("/api/liftoff/team-members?role=processor");
+      const data = await res.json();
+      setProcessorList(data.members ?? []);
+      setProcessorListLoaded(true);
+    }
+  }
+
+  async function doCompleteSubmission() {
+    if (!selectedProcessor) {
+      setProcessorErr("Please select a processor before completing.");
+      return;
+    }
+    const proc = processorList.find(p => p.id === selectedProcessor);
+    if (!proc) { setProcessorErr("Selected processor not found."); return; }
+
+    setProcessorBusy(true); setProcessorErr("");
+    const now = new Date().toISOString();
+
+    if (isDemo) {
+      await new Promise(res => setTimeout(res, 600));
+      onUpdated({
+        id: r.id,
+        request_status:          "completed",
+        completed_at:            now,
+        completed_email_sent_at: now,
+        assigned_processor_name:  proc.full_name,
+        assigned_processor_email: (proc as TeamMember & { email?: string }).email ?? null,
+      });
+      setProcessorBusy(false);
+      setShowProcessorModal(false);
+      setShowNotes(false);
+      return;
+    }
+
+    const procWithEmail = proc as TeamMember & { email?: string };
+    const body: Record<string, string> = {
+      assignedProcessorName:  proc.full_name,
+      assignedProcessorEmail: procWithEmail.email ?? "",
+    };
+    if (notes.trim()) body.notes = notes.trim();
+
+    const res  = await fetch(`/api/liftoff/${r.id}/complete`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(body),
+    });
+    const data = await res.json();
+    setProcessorBusy(false);
+    if (!res.ok) { setProcessorErr(data.error ?? "Failed to complete."); return; }
+    onUpdated({
+      id: r.id,
+      request_status:           "completed",
+      completed_at:             data.completed_at,
+      assigned_processor_name:  data.assigned_processor_name,
+      assigned_processor_email: data.assigned_processor_email,
+    });
+    setShowProcessorModal(false);
+    setShowNotes(false);
   }
 
   // ── Incomplete helpers ────────────────────────────────────────────────────
@@ -281,8 +362,8 @@ function RequestRow({
     if (!assignListLoaded) {
       try {
         const res = await fetch("/api/liftoff/team-members");
-        const data: TeamMember[] = await res.json();
-        setAssigneeList(data);
+        const data = await res.json();
+        setAssigneeList(data.members ?? []);
         setAssignListLoaded(true);
       } catch {
         setAssignErr("Failed to load team members.");
@@ -572,6 +653,88 @@ function RequestRow({
         )}
       </div>
 
+      {/* ── Processor picker modal (submission complete) ────────────────────── */}
+      {showProcessorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="w-full max-w-[480px] rounded-2xl bg-white border-2 border-[#142850] shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-[#142850]/20 bg-[#142850]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
+                Complete Submission · {r.borrower_first_name} {r.borrower_last_name}
+              </p>
+              <p className="text-base font-extrabold text-white mt-0.5">
+                Assign a Processor
+              </p>
+            </div>
+
+            <div className="px-6 py-5 space-y-4">
+              <p className="text-xs text-muted leading-relaxed">
+                Select the processor who will be forwarded this file. Their name and email will be included
+                in the completion email sent to <span className="font-semibold text-ink">{r.submitter_name}</span>.
+              </p>
+
+              {!processorListLoaded ? (
+                <p className="text-xs text-muted/60 py-4 text-center">Loading processors…</p>
+              ) : processorList.length === 0 ? (
+                <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+                  <p className="text-xs font-semibold text-orange-700">No processors found.</p>
+                  <p className="text-[11px] text-orange-600 mt-0.5">
+                    Assign the <strong>Processor</strong> role to team members in the Team &amp; Roles page first.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {processorList.map(p => {
+                    const pWithEmail = p as TeamMember & { email?: string };
+                    const selected   = selectedProcessor === p.id;
+                    return (
+                      <button key={p.id}
+                        onClick={() => setSelectedProcessor(p.id)}
+                        className={`w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
+                          selected
+                            ? "border-[#142850] bg-[#142850]/5 ring-1 ring-[#142850]/30"
+                            : "border-line hover:border-[#142850]/30 hover:bg-sand"
+                        }`}>
+                        <span className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-black text-white`}
+                          style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
+                          {p.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-ink">{p.full_name}</p>
+                          {pWithEmail.email && (
+                            <p className="text-[11px] text-muted truncate">{pWithEmail.email}</p>
+                          )}
+                        </div>
+                        {selected && (
+                          <span className="text-[#142850] text-base flex-shrink-0">✓</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {processorErr && (
+                <p className="text-xs text-red-600 font-medium">{processorErr}</p>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-line flex items-center justify-between gap-3">
+              <button onClick={() => setShowProcessorModal(false)}
+                className="rounded-lg border border-line px-4 py-2 text-xs font-semibold text-muted hover:bg-sand">
+                Cancel
+              </button>
+              <button
+                disabled={processorBusy || !selectedProcessor || processorList.length === 0}
+                onClick={doCompleteSubmission}
+                className="rounded-lg px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}>
+                {processorBusy ? "Completing…" : "✅ Complete + Notify LO"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Incomplete modal ──────────────────────────────────────────────────── */}
       {showIncomplete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
@@ -828,8 +991,8 @@ export function LiftOffQueueClient({
     fetchedRef.current = true;
     fetch("/api/liftoff/team-members")
       .then(r => r.json())
-      .then((data: { full_name: string }[]) => {
-        setTeamOwners(data.map(m => m.full_name).sort());
+      .then((data: { members: { full_name: string }[] }) => {
+        setTeamOwners((data.members ?? []).map(m => m.full_name).sort());
       })
       .catch(() => {});
   }, []);

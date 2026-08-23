@@ -428,10 +428,12 @@ export async function sendLiftOffConfirmation(r: LiftOffEmailPayload): Promise<v
 // ── In-Flight Email (LO notification) ────────────────────────────────────────
 
 export interface LiftOffWorkflowPayload {
-  request:       Record<string, unknown>;
-  processorName: string;
-  startedAt?:    string;
-  completedAt?:  string;
+  request:                Record<string, unknown>;
+  processorName:          string;
+  startedAt?:             string;
+  completedAt?:           string;
+  assignedProcessorName?: string;
+  assignedProcessorEmail?: string;
 }
 
 function requestField(r: Record<string, unknown>, key: string): string | null {
@@ -499,6 +501,20 @@ function buildCompletedEmail(p: LiftOffWorkflowPayload, viewUrl: string): string
       </table>`
     : "";
 
+  const isSubmission = requestField(r, "request_type") === "submission";
+  const processorHandoff = (isSubmission && p.assignedProcessorName)
+    ? `<table width="100%" cellpadding="0" cellspacing="0"
+        style="margin-bottom:20px;border:1px solid #bfdbfe;border-radius:12px;overflow:hidden;background:#eff6ff;">
+        <tr><td style="padding:10px 20px;background:#1d4ed8;">
+          <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:2px;color:#fff;text-transform:uppercase;">Your Assigned Processor</p>
+        </td></tr>
+        <tr><td style="padding:16px 20px;font-size:13px;color:#1A2B42;line-height:1.7;">
+          <p style="margin:0 0 6px;"><strong>${p.assignedProcessorName}</strong> has been assigned as your processor and will be your point of contact moving forward to help you and your client get to the closing table.</p>
+          ${p.assignedProcessorEmail ? `<p style="margin:0;font-size:12px;color:#1d4ed8;">📧 <a href="mailto:${p.assignedProcessorEmail}" style="color:#1d4ed8;">${p.assignedProcessorEmail}</a></p>` : ""}
+        </td></tr>
+      </table>`
+    : "";
+
   const body = `
     <div style="padding:32px 36px 8px;">
       <div style="margin-bottom:20px;padding:16px 20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;">
@@ -507,6 +523,7 @@ function buildCompletedEmail(p: LiftOffWorkflowPayload, viewUrl: string): string
         </p>
       </div>
       ${emailSection("Request Details", detailRows)}
+      ${processorHandoff}
       ${notesSection}
       <div style="margin:24px 0 32px;">
         ${ctaButton("View Completed Request →", viewUrl)}

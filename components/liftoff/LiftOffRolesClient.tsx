@@ -36,6 +36,12 @@ const LIFTOFF_ROLES: { value: LiftOffRole; label: string; description: string; c
     description: "Access to the Help Desk Queue only — handles loan help desk requests.",
     color:       "bg-teal-50 border-teal-200 text-teal-700",
   },
+  {
+    value:       "processor" as LiftOffRole,
+    label:       "Processor",
+    description: "Assigned to submission files on completion — name and email sent to the LO in the completion email.",
+    color:       "bg-indigo-50 border-indigo-200 text-indigo-700",
+  },
 ];
 
 function roleLabels(roles: LiftOffRole[]): string {
@@ -46,6 +52,7 @@ function roleLabels(roles: LiftOffRole[]): string {
     lock_desk_admin: "Lock Desk Admin",
     ops_manager:     "Ops Manager",
     help_desk_agent: "Help Desk Agent",
+    processor:       "Processor",
   };
   return roles.map(r => map[r] ?? r).join(", ");
 }

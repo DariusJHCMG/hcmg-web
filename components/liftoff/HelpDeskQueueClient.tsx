@@ -257,8 +257,8 @@ function HelpDeskRow({
     if (!assignListLoaded) {
       try {
         const res = await fetch("/api/liftoff/team-members");
-        const data: TeamMember[] = await res.json();
-        setAssigneeList(data);
+        const data = await res.json();
+        setAssigneeList(data.members ?? []);
         setAssignListLoaded(true);
       } catch {
         setAssignErr("Failed to load team members.");
@@ -769,8 +769,8 @@ export function HelpDeskQueueClient({
     fetchedRef.current = true;
     fetch("/api/liftoff/team-members")
       .then(r => r.json())
-      .then((data: { full_name: string }[]) => {
-        setTeamOwners(data.map(m => m.full_name).sort());
+      .then((data: { members: { full_name: string }[] }) => {
+        setTeamOwners((data.members ?? []).map(m => m.full_name).sort());
       })
       .catch(() => {});
   }, []);
