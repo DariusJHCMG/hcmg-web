@@ -159,9 +159,9 @@ export default async function AdminLiftOffPage() {
                             {slaBreached ? "⚠ " : ""}
                             {new Date(r.sla_deadline_at).toLocaleString("en-US", {
                               month: "short", day: "numeric", hour: "numeric",
-                              minute: "2-digit", timeZoneName: "short",
+                              minute: "2-digit",
                               timeZone: "America/New_York",
-                            })}
+                            }) + " ET"}
                           </span>
                         ) : <span className="text-muted/40">—</span>}
                       </td>

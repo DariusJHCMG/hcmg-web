@@ -5,10 +5,15 @@
  * Pure TypeScript — no external dependencies.
  * Safe to import from both server routes and client components.
  *
- * Business hours:
- *   Lock requests:  Mon–Sun, 10:00 AM ET → 7:00 PM ET (9h open, Sunday counts)
- *   All others:     Mon–Sat, 10:00 AM ET → 7:00 PM ET (9h open, Sunday CLOSED)
- * Closed window:  7:00 PM ET → 10:00 AM ET (15h dead zone).
+ * Two SLA modes:
+ *
+ *   Lock requests (lock_request):
+ *     Mon–Sat, 10:00 AM ET → 7:00 PM ET only.
+ *     Hours outside that window do not count. Sunday is closed.
+ *
+ *   All other request types:
+ *     Mon–Sat, any time of day. SLA is straight elapsed time — Sunday
+ *     is the only day skipped. No open/close window restriction.
  */
 
 import type { LiftOffRequestType, LiftOffRequest } from "@/lib/database.types";
@@ -24,151 +29,126 @@ export const SLA_WINDOWS: Record<LiftOffRequestType, number> = {
   submission:          48,
 };
 
-/** Request types that count Sunday as a business day. */
-const SUNDAY_OPEN_TYPES = new Set<LiftOffRequestType>(["lock_request"]);
+/** Only lock_request uses the 10AM–7PM window. */
+const WINDOWED_TYPES = new Set<LiftOffRequestType>(["lock_request"]);
 
 // ── ET helpers ────────────────────────────────────────────────────────────────
-
-/** Return the ET hour (24h, 0–23) for a given Date. */
-function etHour(d: Date): number {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    hour: "numeric",
-    hour12: false,
-  }).formatToParts(d);
-  const h = parts.find(p => p.type === "hour");
-  return h ? parseInt(h.value, 10) : 0;
-}
 
 /** Return { year, month (1-based), day, hour, minute } in ET for a given Date. */
 function etParts(d: Date): { year: number; month: number; day: number; hour: number; minute: number } {
   const fmt = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false,
   });
   const p = fmt.formatToParts(d);
   const get = (type: string) => parseInt(p.find(x => x.type === type)?.value ?? "0", 10);
-  return {
-    year:   get("year"),
-    month:  get("month"),
-    day:    get("day"),
-    hour:   get("hour"),
-    minute: get("minute"),
-  };
+  return { year: get("year"), month: get("month"), day: get("day"), hour: get("hour"), minute: get("minute") };
 }
 
-/**
- * Build a Date that represents the given ET wall-clock time.
- * Uses the ISO string trick: construct a "naive" ISO date string in ET,
- * then shift it to UTC by using the browser/Node's Intl offset detection.
- */
+/** Build a UTC Date from ET wall-clock components (iterative offset correction). */
 function etToUtc(year: number, month: number, day: number, hour: number, minute: number): Date {
-  // Build a candidate Date by formatting and parsing.
-  // We construct a local-time string then anchor it to ET by binary-searching
-  // the offset.  Simpler: use the fact that new Date(isoString) is UTC, and
-  // compare what ET hour Intl reports back for that UTC.
-  //
-  // Practical approach: start with a UTC date built from the wall-clock digits,
-  // then correct for the ET offset by iteration (at most 2 passes).
   const pad = (n: number, w = 2) => String(n).padStart(w, "0");
-  const isoGuess = `${pad(year, 4)}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00.000Z`;
-  let candidate = new Date(isoGuess);
-
-  // Adjust: compare ET hour of candidate to what we want
+  let candidate = new Date(`${pad(year, 4)}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00.000Z`);
   for (let i = 0; i < 3; i++) {
     const p = etParts(candidate);
-    const diffH = hour - p.hour;
-    const diffM = minute - p.minute;
-    const diffMs = (diffH * 60 + diffM) * 60 * 1000;
+    const diffMs = ((hour - p.hour) * 60 + (minute - p.minute)) * 60_000;
     if (diffMs === 0) break;
     candidate = new Date(candidate.getTime() - diffMs);
   }
   return candidate;
 }
 
-// ── ET day-of-week helper ─────────────────────────────────────────────────────
-
-/** Return the ET day of week (0 = Sunday, 6 = Saturday) for a given Date. */
+/** Return the ET day of week (0 = Sunday … 6 = Saturday). */
 function etDayOfWeek(d: Date): number {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    weekday: "short",
-  }).format(d);
-  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(parts);
+  const s = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short" }).format(d);
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(s);
+}
+
+/** Advance a Date by exactly one calendar day in ET, returning midnight UTC of that day. */
+function nextEtDay(d: Date): Date {
+  const p = etParts(d);
+  const midnight = etToUtc(p.year, p.month, p.day, 0, 0);
+  return new Date(midnight.getTime() + 24 * 60 * 60 * 1000);
 }
 
 // ── addBusinessHours ──────────────────────────────────────────────────────────
 
 /**
- * Advance `from` by `hours` business hours.
- * Open window: 10:00 AM ET → 7:00 PM ET (9h).
- * Closed window: 7:00 PM ET → 10:00 AM ET (15h dead zone).
- * For non-lock request types, Sunday is fully closed — rolls to Monday 10AM.
+ * Advance `from` by `hours` business hours according to the request type's mode:
+ *
+ *   Lock requests  → windowed: only 10AM–7PM ET counts; skip Sunday.
+ *   All others     → flat: straight elapsed time Mon–Sat; skip Sunday only.
  */
 export function addBusinessHours(from: Date, hours: number, requestType?: LiftOffRequestType): Date {
-  const sundayOpen = requestType ? SUNDAY_OPEN_TYPES.has(requestType) : false;
+  const windowed = requestType ? WINDOWED_TYPES.has(requestType) : false;
   let current = new Date(from.getTime());
-  let remainingMinutes = hours * 60;
+  let remainingMs = hours * 60 * 60 * 1000;
 
-  // Snap forward past the closed window AND skip Sunday for non-lock types.
-  const snapToOpen = (d: Date): Date => {
-    // Loop because skipping Sunday might land inside the closed window
-    for (let guard = 0; guard < 10; guard++) {
-      const h    = etHour(d);
-      const dow  = etDayOfWeek(d);
-      const isSunday = dow === 0;
-
-      // Skip Sunday entirely for non-lock types
-      if (!sundayOpen && isSunday) {
-        const p = etParts(d);
-        // Jump to Monday 10:00 AM ET
-        const monday = new Date(etToUtc(p.year, p.month, p.day, 0, 0).getTime() + 24 * 60 * 60 * 1000);
-        const mp = etParts(monday);
-        d = etToUtc(mp.year, mp.month, mp.day, 10, 0);
-        continue;
-      }
-
-      // Inside the closed window (before 10AM or at/after 7PM)
-      if (h >= 19 || h < 10) {
-        const p = etParts(d);
-        if (h >= 19) {
-          // After 7PM → snap to next day 10AM
-          const tomorrow = new Date(etToUtc(p.year, p.month, p.day, 0, 0).getTime() + 24 * 60 * 60 * 1000);
-          const tp = etParts(tomorrow);
-          d = etToUtc(tp.year, tp.month, tp.day, 10, 0);
-        } else {
-          // Before 10AM → snap to 10AM same day
+  if (windowed) {
+    // ── Lock desk mode: 10AM–7PM ET window, skip Sunday ───────────────────────
+    const snapToOpen = (d: Date): Date => {
+      for (let guard = 0; guard < 10; guard++) {
+        const dow = etDayOfWeek(d);
+        if (dow === 0) {
+          // Sunday → jump to Monday 10AM ET
+          const p = etParts(nextEtDay(d));
           d = etToUtc(p.year, p.month, p.day, 10, 0);
+          continue;
         }
+        const p = etParts(d);
+        if (p.hour >= 19) {
+          // After 7PM → next day 10AM ET
+          const np = etParts(nextEtDay(d));
+          d = etToUtc(np.year, np.month, np.day, 10, 0);
+          continue;
+        }
+        if (p.hour < 10) {
+          // Before 10AM → same day 10AM ET
+          d = etToUtc(p.year, p.month, p.day, 10, 0);
+          continue;
+        }
+        break;
+      }
+      return d;
+    };
+
+    current = snapToOpen(current);
+
+    while (remainingMs > 0) {
+      const p = etParts(current);
+      const msUntilClose = ((19 - p.hour) * 60 - p.minute) * 60_000 - (current.getTime() % 60_000);
+      if (remainingMs <= msUntilClose) {
+        current = new Date(current.getTime() + remainingMs);
+        remainingMs = 0;
+      } else {
+        remainingMs -= msUntilClose;
+        // Jump to next day 10AM ET
+        const np = etParts(nextEtDay(current));
+        current = snapToOpen(etToUtc(np.year, np.month, np.day, 10, 0));
+      }
+    }
+
+  } else {
+    // ── Flat mode: straight elapsed time, skip Sunday only ────────────────────
+    while (remainingMs > 0) {
+      // Skip Sunday entirely
+      if (etDayOfWeek(current) === 0) {
+        current = nextEtDay(current);
         continue;
       }
+      // How many ms until the end of this calendar day in ET?
+      const p = etParts(current);
+      const endOfDay = etToUtc(p.year, p.month, p.day + 1, 0, 0);
+      const msUntilEndOfDay = endOfDay.getTime() - current.getTime();
 
-      break; // open window and not Sunday — done
-    }
-    return d;
-  };
-
-  current = snapToOpen(current);
-
-  while (remainingMinutes > 0) {
-    const p = etParts(current);
-    // Minutes until 7:00 PM ET (19:00)
-    const minutesUntilClose = (19 - p.hour) * 60 - p.minute;
-
-    if (remainingMinutes <= minutesUntilClose) {
-      // Fits before close — just advance
-      current = new Date(current.getTime() + remainingMinutes * 60 * 1000);
-      remainingMinutes = 0;
-    } else {
-      // Consume up to close, skip overnight gap, snap to next open window
-      current = new Date(current.getTime() + minutesUntilClose * 60 * 1000 + 15 * 60 * 60 * 1000);
-      current = snapToOpen(current);
-      remainingMinutes -= minutesUntilClose;
+      if (remainingMs <= msUntilEndOfDay) {
+        current = new Date(current.getTime() + remainingMs);
+        remainingMs = 0;
+      } else {
+        remainingMs -= msUntilEndOfDay;
+        current = endOfDay;
+      }
     }
   }
 

@@ -93,9 +93,9 @@ export default async function LiftOffDetailPage({
   const fmtDateTime = (d: string | null) =>
     d ? new Date(d).toLocaleString("en-US", {
       month: "short", day: "numeric", year: "numeric",
-      hour: "numeric", minute: "2-digit", timeZoneName: "short",
+      hour: "numeric", minute: "2-digit",
       timeZone: "America/New_York",
-    }) : null;
+    }) + " ET" : null;
 
   return (
     <div className="space-y-6">

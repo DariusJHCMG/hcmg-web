@@ -51,8 +51,8 @@ function fmtTs(s: string | null | undefined) {
   if (!s) return "—";
   return new Date(s).toLocaleString("en-US", {
     month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-    timeZone: "America/New_York", timeZoneName: "short",
-  });
+    timeZone: "America/New_York",
+  }) + " ET";
 }
 
 function WorkflowBadge({ r }: { r: LiftOffRequest }) {

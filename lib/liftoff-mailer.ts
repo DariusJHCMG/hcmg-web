@@ -174,9 +174,9 @@ const fmt = {
   ts:     (s: string) =>
     new Date(s).toLocaleString("en-US", {
       month: "short", day: "numeric", year: "numeric",
-      hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+      hour: "2-digit", minute: "2-digit",
       timeZone: "America/New_York",
-    }),
+    }) + " ET",
 };
 
 async function send(to: string, subject: string, html: string) {

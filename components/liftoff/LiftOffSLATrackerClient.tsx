@@ -60,9 +60,9 @@ function fmtDateTime(s: string | null): string {
   if (!s) return "—";
   return new Date(s).toLocaleString("en-US", {
     month: "short", day: "numeric", year: "numeric",
-    hour: "numeric", minute: "2-digit", timeZoneName: "short",
+    hour: "numeric", minute: "2-digit",
     timeZone: "America/New_York",
-  });
+  }) + " ET";
 }
 
 function avg(nums: number[]): number | null {
