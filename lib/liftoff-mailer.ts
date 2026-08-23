@@ -383,7 +383,7 @@ function buildInFlightEmail(p: LiftOffWorkflowPayload, viewUrl: string): string 
     <div style="padding:32px 36px 8px;">
       <div style="margin-bottom:20px;padding:16px 20px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;">
         <p style="margin:0;font-size:14px;font-weight:700;color:#1d4ed8;">
-          ✈️ Your Lift Off request is now in flight — ${p.processorName} is working on it now.
+          ✈️ Your Lift Off request is now in flight and being worked on by our ops team.
         </p>
       </div>
       ${emailSection("Request Details", detailRows)}
@@ -431,7 +431,7 @@ function buildCompletedEmail(p: LiftOffWorkflowPayload, viewUrl: string): string
     <div style="padding:32px 36px 8px;">
       <div style="margin-bottom:20px;padding:16px 20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;">
         <p style="margin:0;font-size:14px;font-weight:700;color:#15803d;">
-          ✅ Your Lift Off request has been completed by ${p.processorName}.
+          ✅ Your Lift Off request has been completed by our ops team.
         </p>
       </div>
       ${emailSection("Request Details", detailRows)}
@@ -533,7 +533,7 @@ function buildIncompleteEmail(p: LiftOffIncompletePayload, viewUrl: string): str
   const alertBanner = `
     <div style="margin-bottom:20px;padding:16px 20px;background:#fff5f5;border:1px solid #fecaca;border-radius:12px;">
       <p style="margin:0;font-size:14px;font-weight:700;color:#dc2626;">
-        Your Lift Off request has been returned by ${p.incompleteByName} and requires attention before it can be processed.
+        Your Lift Off request has been returned by our ops team and requires your attention before it can be processed.
       </p>
     </div>`;
 
