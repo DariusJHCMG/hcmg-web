@@ -452,8 +452,9 @@ function buildInFlightEmail(p: LiftOffWorkflowPayload, viewUrl: string): string 
     infoRow("ARIVE Loan #",  requestField(r, "arive_loan_number")) +
     infoRow("Borrower",      borrower) +
     infoRow("Submitted At",  fmt.ts(requestField(r, "created_at") ?? new Date().toISOString())) +
-    infoRow("Started At",    fmt.ts(p.startedAt ?? new Date().toISOString())) +
-    infoRow("Claimed By",    requestField(r, "claimed_by_name"));
+    infoRow("Started At",    fmt.ts(p.startedAt ?? new Date().toISOString()));
+  // NOTE: Claimed By / processor name intentionally omitted — LOs should not
+  // know which team member is working their request to prevent direct contact.
 
   const body = `
     <div style="padding:32px 36px 8px;">
