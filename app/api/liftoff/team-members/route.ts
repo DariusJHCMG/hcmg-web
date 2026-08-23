@@ -7,21 +7,30 @@ export async function GET(req: NextRequest) {
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canAccessLiftOffQueue(profile)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const role = req.nextUrl.searchParams.get("role");
+  // ?role=x  — single role filter
+  // ?roles=x,y,z  — any-of filter (OR)
+  const roleSingle = req.nextUrl.searchParams.get("role");
+  const rolesParam = req.nextUrl.searchParams.get("roles");
+  const roleFilter = rolesParam
+    ? rolesParam.split(",").map(r => r.trim()).filter(Boolean)
+    : roleSingle
+    ? [roleSingle]
+    : null;
 
   const sb = createServiceClient();
-  let query = sb
+  const { data, error } = await sb
     .from("profiles")
     .select("id, full_name, email, liftoff_roles, avatar_url")
+    .not("liftoff_roles", "eq", "{}")
     .order("full_name");
 
-  if (role) {
-    query = query.contains("liftoff_roles", [role]);
-  } else {
-    query = query.not("liftoff_roles", "eq", "{}");
-  }
-
-  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ members: data ?? [] });
+
+  const members = roleFilter
+    ? (data ?? []).filter(m =>
+        (m.liftoff_roles as string[]).some(r => roleFilter.includes(r))
+      )
+    : (data ?? []);
+
+  return NextResponse.json({ members });
 }

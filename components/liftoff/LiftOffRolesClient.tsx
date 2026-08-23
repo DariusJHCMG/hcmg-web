@@ -21,8 +21,14 @@ const LIFTOFF_ROLES: { value: LiftOffRole; label: string; description: string; c
   {
     value:       "lock_desk_admin",
     label:       "Lock Desk Admin",
-    description: "Queue access for lock requests only — approves and executes rate locks.",
+    description: "Full Lock Desk Queue access — approves and executes rate locks.",
     color:       "bg-green-50 border-green-200 text-green-700",
+  },
+  {
+    value:       "lock_desk_agent" as LiftOffRole,
+    label:       "Lock Desk Agent",
+    description: "Lock Desk Queue access — processes lock requests.",
+    color:       "bg-emerald-50 border-emerald-200 text-emerald-700",
   },
   {
     value:       "ops_manager",
@@ -50,6 +56,7 @@ function roleLabels(roles: LiftOffRole[]): string {
     liftoff_admin:   "Lift Off Admin",
     liftoff_team:    "Lift Off Team",
     lock_desk_admin: "Lock Desk Admin",
+    lock_desk_agent: "Lock Desk Agent",
     ops_manager:     "Ops Manager",
     help_desk_agent: "Help Desk Agent",
     processor:       "Processor",

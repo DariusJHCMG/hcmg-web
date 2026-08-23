@@ -1,5 +1,5 @@
 export type Role = "admin" | "developer" | "loan_officer";
-export type LiftOffRole = "liftoff_admin" | "liftoff_team" | "lock_desk_admin" | "ops_manager" | "help_desk_agent" | "processor";
+export type LiftOffRole = "liftoff_admin" | "liftoff_team" | "lock_desk_admin" | "lock_desk_agent" | "ops_manager" | "help_desk_agent" | "processor";
 export type LockPreference = "lock" | "lock_requested" | "float";
 
 // ── Lift Off Types ────────────────────────────────────────────

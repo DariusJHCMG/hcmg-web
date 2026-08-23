@@ -83,7 +83,8 @@ export function canAccessLockDeskQueue(profile: Profile | null): boolean {
   if (profile.role === "admin" || profile.role === "developer") return true;
   return hasRole(profile, "liftoff_admin") ||
     hasRole(profile, "ops_manager") ||
-    hasRole(profile, "lock_desk_admin");
+    hasRole(profile, "lock_desk_admin") ||
+    hasRole(profile, "lock_desk_agent");
 }
 
 export function canAccessHelpDeskQueue(profile: Profile | null): boolean {
@@ -104,6 +105,7 @@ export function getLiftOffRoleLabel(roles: LiftOffRole[]): string {
     liftoff_admin:    "Lift Off Admin",
     liftoff_team:     "Lift Off Team",
     lock_desk_admin:  "Lock Desk Admin",
+    lock_desk_agent:  "Lock Desk Agent",
     ops_manager:      "Ops Manager",
     help_desk_agent:  "Help Desk Agent",
     processor:        "Processor",

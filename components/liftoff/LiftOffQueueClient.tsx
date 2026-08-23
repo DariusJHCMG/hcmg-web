@@ -361,7 +361,7 @@ function RequestRow({
     setShowAssign(true);
     if (!assignListLoaded) {
       try {
-        const res = await fetch("/api/liftoff/team-members");
+        const res = await fetch("/api/liftoff/team-members?roles=liftoff_team,ops_manager,processor");
         const data = await res.json();
         setAssigneeList(data.members ?? []);
         setAssignListLoaded(true);

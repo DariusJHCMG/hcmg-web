@@ -231,7 +231,7 @@ function LockDeskRow({
     setShowAssign(true);
     if (!assignListLoaded) {
       try {
-        const res = await fetch("/api/liftoff/team-members");
+        const res = await fetch("/api/liftoff/team-members?roles=lock_desk_admin,lock_desk_agent");
         const data = await res.json();
         setAssigneeList(data.members ?? []);
         setAssignListLoaded(true);
