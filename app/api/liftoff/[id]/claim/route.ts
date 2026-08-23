@@ -45,5 +45,5 @@ export async function PATCH(
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true, claimed_at: now });
+  return NextResponse.json({ ok: true, claimed_at: now, claimed_by_name: profile.full_name });
 }

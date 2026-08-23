@@ -41,6 +41,13 @@ export async function GET(req: NextRequest) {
   if (mode === "arive") {
     query = query.ilike("arive_loan_number", `%${q}%`);
   } else if (mode === "user") {
+    // Validate q is a UUID before injecting into the .or() filter string.
+    // PostgREST does not parameterise .or() expressions, so a non-UUID value
+    // could alter query semantics (e.g. append extra filter clauses).
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(q)) {
+      return NextResponse.json({ error: "Invalid user id" }, { status: 400 });
+    }
     query = query.or(`submitter_id.eq.${q},claimed_by_id.eq.${q}`);
   }
 

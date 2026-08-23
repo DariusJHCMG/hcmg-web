@@ -35,15 +35,22 @@ export async function PATCH(
 
   const now = new Date().toISOString();
 
+  // Only flag as breached if the SLA deadline has actually passed.
+  // Always escalate severity to "critical" because the request now needs
+  // the LO's attention regardless of remaining window time.
+  const isSlaBreached = r.sla_deadline_at
+    ? new Date() > new Date(r.sla_deadline_at)
+    : false;
+
   const { error } = await sb
     .from("lift_off_requests")
     .update({
-      request_status:    "action_needed",
+      request_status:     "action_needed",
       incomplete_reasons: body.reasons,
       incomplete_notes:   body.notes ?? null,
       incomplete_at:      now,
       incomplete_by_name: profile.full_name,
-      is_sla_breached:    true,
+      is_sla_breached:    isSlaBreached,
       sla_severity:       "critical",
     })
     .eq("id", id);

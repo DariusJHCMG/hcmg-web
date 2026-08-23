@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resultStore } from "@/lib/arive-lookup-store";
 
+// ── Shared secret — Zapier must send this in the Authorization header ─────────
+// Set ZAPIER_WEBHOOK_SECRET in Vercel env vars and in the Zapier "Custom Headers"
+// field on the POST step: Authorization: Bearer <secret>
+const WEBHOOK_SECRET = process.env.ZAPIER_WEBHOOK_SECRET;
+
 // ── POST /api/liftoff/arive-result ───────────────────────────────────────────
 // Zapier POSTs loan data here after fetching from ARIVE.
 // Stores result keyed by requestId so the browser poll can pick it up.
@@ -64,6 +69,15 @@ function mapLoanType(loanPurpose: string, mortgageType: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // ── Verify shared secret (Zapier sends Authorization: Bearer <secret>) ──────
+  if (WEBHOOK_SECRET) {
+    const authHeader = req.headers.get("authorization") ?? "";
+    const provided   = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    if (provided !== WEBHOOK_SECRET) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
