@@ -1101,28 +1101,24 @@ function WizardInner() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Borrower First Name" required>
-                    <Input value={borrowerFirst} readOnly={ariveFieldsLocked}
-                      onChange={e => !ariveFieldsLocked && setBorrowerFirst(e.target.value)}
-                      placeholder="First"
-                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                    <Input value={borrowerFirst} readOnly
+                      placeholder="Auto-filled from ARIVE"
+                      className="bg-sand text-muted cursor-not-allowed" />
                   </Field>
                   <Field label="Borrower Last Name" required>
-                    <Input value={borrowerLast} readOnly={ariveFieldsLocked}
-                      onChange={e => !ariveFieldsLocked && setBorrowerLast(e.target.value)}
-                      placeholder="Last"
-                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                    <Input value={borrowerLast} readOnly
+                      placeholder="Auto-filled from ARIVE"
+                      className="bg-sand text-muted cursor-not-allowed" />
                   </Field>
                   <Field label="Co-Borrower First">
-                    <Input value={coBorrowerFirst} readOnly={ariveFieldsLocked}
-                      onChange={e => !ariveFieldsLocked && setCoBorrowerFirst(e.target.value)}
-                      placeholder={ariveFieldsLocked ? "—" : "Optional"}
-                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                    <Input value={coBorrowerFirst} readOnly
+                      placeholder="—"
+                      className="bg-sand text-muted cursor-not-allowed" />
                   </Field>
                   <Field label="Co-Borrower Last">
-                    <Input value={coBorrowerLast} readOnly={ariveFieldsLocked}
-                      onChange={e => !ariveFieldsLocked && setCoBorrowerLast(e.target.value)}
-                      placeholder={ariveFieldsLocked ? "—" : "Optional"}
-                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                    <Input value={coBorrowerLast} readOnly
+                      placeholder="—"
+                      className="bg-sand text-muted cursor-not-allowed" />
                   </Field>
                 </div>
               </div>
@@ -1141,8 +1137,8 @@ function WizardInner() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Loan Purpose">
                   <Select value={loanPurpose}
-                    onChange={e => !ariveFieldsLocked && setLoanPurpose(e.target.value)}
-                    disabled={ariveFieldsLocked}
+                    onChange={() => {}}
+                    disabled
                     options={[
                       { value: "purchase",  label: "Purchase" },
                       { value: "refinance", label: "Refinance" },
@@ -1150,8 +1146,8 @@ function WizardInner() {
                 </Field>
                 <Field label="Loan Program">
                   <Select value={loanProgram}
-                    onChange={e => !ariveFieldsLocked && setLoanProgram(e.target.value)}
-                    disabled={ariveFieldsLocked}
+                    onChange={() => {}}
+                    disabled
                     options={[
                       { value: "conventional",  label: "Conventional" },
                       { value: "fha",           label: "FHA" },
@@ -1166,18 +1162,16 @@ function WizardInner() {
                 </Field>
                 <Field label="Loan Amount">
                   <Input type="number" min="0" step="1000" value={loanAmount}
-                    readOnly={ariveFieldsLocked}
-                    onChange={e => !ariveFieldsLocked && setLoanAmount(e.target.value)}
-                    placeholder="e.g. 425,000"
-                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                    readOnly
+                    placeholder="Auto-filled from ARIVE"
+                    className="bg-sand text-muted cursor-not-allowed" />
                 </Field>
                 {(loanPurpose === "purchase" || loanProgram === "heloc" || purchasePrice) && (
                   <Field label="Purchase / Appraised Value">
                     <Input type="number" min="0" step="1000" value={purchasePrice}
-                      readOnly={ariveFieldsLocked}
-                      onChange={e => !ariveFieldsLocked && setPurchasePrice(e.target.value)}
-                      placeholder="e.g. 500,000"
-                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                      readOnly
+                      placeholder="Auto-filled from ARIVE"
+                      className="bg-sand text-muted cursor-not-allowed" />
                   </Field>
                 )}
               </div>
@@ -1288,63 +1282,55 @@ function WizardInner() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Borrower First Name" required>
-                  <Input value={borrowerFirst} readOnly={ariveFieldsLocked}
-                    onChange={e => !ariveFieldsLocked && setBorrowerFirst(e.target.value)}
-                    placeholder="First"
-                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  <Input value={borrowerFirst} readOnly
+                    placeholder="Auto-filled from ARIVE"
+                    className="bg-sand text-muted cursor-not-allowed" />
                 </Field>
                 <Field label="Borrower Last Name" required>
-                  <Input value={borrowerLast} readOnly={ariveFieldsLocked}
-                    onChange={e => !ariveFieldsLocked && setBorrowerLast(e.target.value)}
-                    placeholder="Last"
-                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  <Input value={borrowerLast} readOnly
+                    placeholder="Auto-filled from ARIVE"
+                    className="bg-sand text-muted cursor-not-allowed" />
                 </Field>
                 <Field label="Co-Borrower First">
-                  <Input value={coBorrowerFirst} readOnly={ariveFieldsLocked}
-                    onChange={e => !ariveFieldsLocked && setCoBorrowerFirst(e.target.value)}
-                    placeholder={ariveFieldsLocked ? "—" : "Optional"}
-                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  <Input value={coBorrowerFirst} readOnly
+                    placeholder="—"
+                    className="bg-sand text-muted cursor-not-allowed" />
                 </Field>
                 <Field label="Co-Borrower Last">
-                  <Input value={coBorrowerLast} readOnly={ariveFieldsLocked}
-                    onChange={e => !ariveFieldsLocked && setCoBorrowerLast(e.target.value)}
-                    placeholder={ariveFieldsLocked ? "—" : "Optional"}
-                    className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                  <Input value={coBorrowerLast} readOnly
+                    placeholder="—"
+                    className="bg-sand text-muted cursor-not-allowed" />
                 </Field>
               </div>
 
               {!isHelpDesk && !isLockRequest && (
                 <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-line mt-2">
                   <Field label="Property Address" className="sm:col-span-2">
-                    <Input value={propAddress} readOnly={ariveFieldsLocked}
-                      onChange={e => !ariveFieldsLocked && setPropAddress(e.target.value)}
-                      placeholder="123 Main St"
-                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                    <Input value={propAddress} readOnly
+                      placeholder="Auto-filled from ARIVE"
+                      className="bg-sand text-muted cursor-not-allowed" />
                   </Field>
                   <Field label="City">
-                    <Input value={propCity} readOnly={ariveFieldsLocked}
-                      onChange={e => !ariveFieldsLocked && setPropCity(e.target.value)}
-                      placeholder="City"
-                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                    <Input value={propCity} readOnly
+                      placeholder="Auto-filled from ARIVE"
+                      className="bg-sand text-muted cursor-not-allowed" />
                   </Field>
                   <div className="grid grid-cols-2 gap-2">
                     <Field label="State">
-                      <Input value={propState} readOnly={ariveFieldsLocked}
-                        onChange={e => !ariveFieldsLocked && setPropState(e.target.value)}
-                        placeholder="FL" maxLength={2}
-                        className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                      <Input value={propState} readOnly
+                        placeholder="—"
+                        className="bg-sand text-muted cursor-not-allowed" />
                     </Field>
                     <Field label="ZIP">
-                      <Input value={propZip} readOnly={ariveFieldsLocked}
-                        onChange={e => !ariveFieldsLocked && setPropZip(e.target.value)}
-                        placeholder="32801" maxLength={10}
-                        className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""} />
+                      <Input value={propZip} readOnly
+                        placeholder="—"
+                        className="bg-sand text-muted cursor-not-allowed" />
                     </Field>
                   </div>
                   <Field label="Property Type">
                     <Select value={propertyType}
-                      onChange={e => !ariveFieldsLocked && setPropertyType(e.target.value)}
-                      disabled={ariveFieldsLocked}
+                      onChange={() => {}}
+                      disabled
                       options={[
                         { value: "sfr",          label: "Single Family Residence (SFR)" },
                         { value: "condo",        label: "Condo" },
@@ -1356,8 +1342,8 @@ function WizardInner() {
                   </Field>
                   <Field label="Occupancy Type">
                     <Select value={occupancyType}
-                      onChange={e => !ariveFieldsLocked && setOccupancyType(e.target.value)}
-                      disabled={ariveFieldsLocked}
+                      onChange={() => {}}
+                      disabled
                       options={[
                         { value: "primary",    label: "Primary Residence" },
                         { value: "secondary",  label: "Second Home" },
