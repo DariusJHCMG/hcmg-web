@@ -30,12 +30,12 @@ export function LiftOffNav({
   const pathname = usePathname();
 
   const navItems: NavItem[] = [
-    { href: "/liftoff",          label: "Dashboard",   icon: "🏠", exact: true },
-    { href: "/liftoff/new",      label: "New Request",  icon: "✨" },
-    ...(isQueueUser     ? [{ href: "/liftoff/queue",    label: "Ops Queue",   icon: "📥" }] : []),
-    ...(isHelpDeskUser  ? [{ href: "/liftoff/helpdesk", label: "Help Desk",   icon: "🛎" }] : []),
-    ...(isQueueUser     ? [{ href: "/liftoff/pipeline", label: "Pipeline",    icon: "📊" }] : []),
-    ...(isAdmin         ? [{ href: "/liftoff/users",    label: "Team & Roles", icon: "👥" }] : []),
+    { href: "/liftoff",          label: "Dashboard",        icon: "🏠", exact: true },
+    { href: "/liftoff/new",      label: "New Request",       icon: "✨" },
+    ...(isQueueUser     ? [{ href: "/liftoff/queue",    label: "Ops Queue",        icon: "📥" }] : []),
+    ...(isHelpDeskUser  ? [{ href: "/liftoff/helpdesk", label: "Help Desk Queue",  icon: "🛎" }] : []),
+    ...(isQueueUser     ? [{ href: "/liftoff/pipeline", label: "Pipeline",         icon: "📊" }] : []),
+    ...(isAdmin         ? [{ href: "/liftoff/users",    label: "Team & Roles",     icon: "👥" }] : []),
   ];
 
   function isActive(item: NavItem) {

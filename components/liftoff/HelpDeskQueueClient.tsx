@@ -1,8 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import type { LiftOffRequest, LiftOffRole } from "@/lib/database.types";
+
+// ── Filter types ───────────────────────────────────────────────────────────────
+
+type DatePreset = "all" | "today" | "7d" | "30d" | "custom";
+type ScopeMode  = "mine" | "everyone";
+
+interface HDFilterState {
+  scope:      ScopeMode;
+  drillOwner: string;
+  datePreset: DatePreset;
+  dateFrom:   string;
+  dateTo:     string;
+}
 import { getIncompleteReasons } from "@/lib/liftoff-incomplete-reasons";
 
 const SUB_TYPE_LABELS: Record<string, string> = {
@@ -714,16 +727,32 @@ type Tab = "active" | "completed" | "all";
 export function HelpDeskQueueClient({
   initialRequests,
   processorName,
+  viewerId,
+  viewerName,
+  canSeeAll = false,
+  isSelfOnly = false,
   isDemo = false,
   canAssign = false,
 }: {
   initialRequests: LiftOffRequest[];
   processorName:   string;
+  viewerId:        string;
+  viewerName:      string;
+  canSeeAll?:      boolean;
+  isSelfOnly?:     boolean;
   isDemo?:         boolean;
   canAssign?:      boolean;
 }) {
   const [requests, setRequests] = useState<LiftOffRequest[]>(initialRequests);
   const [tab, setTab]           = useState<Tab>("active");
+
+  const [filters, setFilters] = useState<HDFilterState>({
+    scope:      isSelfOnly ? "mine" : "everyone",
+    drillOwner: "",
+    datePreset: "all",
+    dateFrom:   "",
+    dateTo:     "",
+  });
 
   function handleUpdated(patch: Partial<LiftOffRequest> & { id: string }) {
     setRequests(prev =>
@@ -731,15 +760,51 @@ export function HelpDeskQueueClient({
     );
   }
 
-  const filtered = requests.filter(r => {
-    if (tab === "active")    return r.request_status !== "completed" && r.request_status !== "cancelled";
-    if (tab === "completed") return r.request_status === "completed";
-    return true;
-  });
+  const owners = useMemo(() => {
+    const s = new Set<string>();
+    requests.forEach(r => { if (r.claimed_by_name) s.add(r.claimed_by_name); });
+    return Array.from(s).sort();
+  }, [requests]);
+
+  const filtered = useMemo(() => {
+    const now   = Date.now();
+    const dayMs = 86_400_000;
+    return requests.filter(r => {
+      if (tab === "active"    && (r.request_status === "completed" || r.request_status === "cancelled")) return false;
+      if (tab === "completed" && r.request_status !== "completed") return false;
+      if (filters.scope === "mine" && r.claimed_by_id !== viewerId) return false;
+      if (filters.scope === "everyone" && filters.drillOwner !== "") {
+        if (filters.drillOwner === "__unclaimed__") {
+          if (r.claimed_by_name) return false;
+        } else {
+          if ((r.claimed_by_name ?? "") !== filters.drillOwner) return false;
+        }
+      }
+      const created = new Date(r.created_at).getTime();
+      if (filters.datePreset === "today") {
+        const start = new Date(); start.setHours(0, 0, 0, 0);
+        if (created < start.getTime()) return false;
+      } else if (filters.datePreset === "7d") {
+        if (created < now - 7 * dayMs) return false;
+      } else if (filters.datePreset === "30d") {
+        if (created < now - 30 * dayMs) return false;
+      } else if (filters.datePreset === "custom") {
+        if (filters.dateFrom && created < new Date(filters.dateFrom).getTime()) return false;
+        if (filters.dateTo   && created > new Date(filters.dateTo + "T23:59:59").getTime()) return false;
+      }
+      return true;
+    });
+  }, [requests, tab, filters, viewerId]);
 
   const activeCount    = requests.filter(r => r.request_status !== "completed" && r.request_status !== "cancelled").length;
   const pendingCount   = requests.filter(r => r.request_status === "pending").length;
   const completedCount = requests.filter(r => r.request_status === "completed").length;
+
+  const hasActiveFilters = filters.drillOwner !== "" || filters.datePreset !== "all";
+
+  const resetFilters = () => setFilters(f => ({
+    ...f, drillOwner: "", datePreset: "all", dateFrom: "", dateTo: "",
+  }));
 
   const tabs: { id: Tab; label: string; count: number }[] = [
     { id: "active",    label: "Active",    count: activeCount },
@@ -763,14 +828,100 @@ export function HelpDeskQueueClient({
         ))}
       </div>
 
+      {/* Filter bar */}
+      <div className="rounded-2xl border border-line bg-white px-5 py-4 space-y-4">
+
+        {/* Scope + owner drill */}
+        {!isSelfOnly && canSeeAll && (
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-xs font-semibold text-muted">Scope:</span>
+            <div className="flex rounded-xl border border-line overflow-hidden">
+              {(["mine", "everyone"] as ScopeMode[]).map(s => (
+                <button key={s}
+                  onClick={() => setFilters(f => ({ ...f, scope: s, drillOwner: "" }))}
+                  className={`px-4 py-1.5 text-xs font-bold transition-all ${
+                    filters.scope === s ? "bg-[#142850] text-white" : "bg-white text-muted hover:bg-sand"
+                  }`}>
+                  {s === "mine" ? `🙋 Mine (${viewerName})` : "👥 Everyone"}
+                </button>
+              ))}
+            </div>
+            {filters.scope === "everyone" && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted">Owner:</span>
+                <select
+                  value={filters.drillOwner}
+                  onChange={e => setFilters(f => ({ ...f, drillOwner: e.target.value }))}
+                  className="rounded-lg border border-line bg-sand px-3 py-1.5 text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-[#142850]/30">
+                  <option value="">All owners</option>
+                  <option value="__unclaimed__">Unclaimed</option>
+                  {owners.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+            )}
+          </div>
+        )}
+
+        {isSelfOnly && (
+          <div className="flex items-center gap-2 rounded-xl bg-sand border border-line px-4 py-2.5">
+            <span className="text-sm">🙋</span>
+            <p className="text-xs font-semibold text-ink">
+              Showing your claimed requests only
+              <span className="ml-1 font-normal text-muted">— {viewerName}</span>
+            </p>
+          </div>
+        )}
+
+        {/* Date presets */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-muted mr-1">Date:</span>
+          {(["all", "today", "7d", "30d", "custom"] as DatePreset[]).map(p => (
+            <button key={p}
+              onClick={() => setFilters(f => ({ ...f, datePreset: p }))}
+              className={`rounded-full border px-3 py-1 text-[11px] font-semibold transition-all ${
+                filters.datePreset === p
+                  ? "bg-[#142850] text-white border-[#142850]"
+                  : "bg-sand text-muted border-line hover:border-[#142850]/40"
+              }`}>
+              {p === "all" ? "All time" : p === "today" ? "Today" : p === "7d" ? "7d" : p === "30d" ? "30d" : "Custom"}
+            </button>
+          ))}
+          {filters.datePreset === "custom" && (
+            <div className="flex items-center gap-2 ml-1">
+              <input type="date" value={filters.dateFrom}
+                onChange={e => setFilters(f => ({ ...f, dateFrom: e.target.value }))}
+                className="rounded-lg border border-line bg-sand px-3 py-1.5 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-[#142850]/30" />
+              <span className="text-xs text-muted">→</span>
+              <input type="date" value={filters.dateTo}
+                onChange={e => setFilters(f => ({ ...f, dateTo: e.target.value }))}
+                className="rounded-lg border border-line bg-sand px-3 py-1.5 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-[#142850]/30" />
+            </div>
+          )}
+          {hasActiveFilters && (
+            <button onClick={resetFilters}
+              className="ml-auto text-[11px] font-semibold text-muted hover:text-red-600 transition-colors">
+              ✕ Reset filters
+            </button>
+          )}
+        </div>
+
+        {/* Result count */}
+        <p className="text-[11px] text-muted border-t border-line pt-3">
+          Showing <span className="font-semibold text-ink">{filtered.length}</span> of {requests.length} requests
+          {filters.scope === "mine" && <span className="ml-1">· <span className="font-semibold text-ink">your queue</span></span>}
+          {filters.scope === "everyone" && filters.drillOwner && filters.drillOwner !== "__unclaimed__" && (
+            <span className="ml-1">· drilled to <span className="font-semibold text-ink">{filters.drillOwner}</span></span>
+          )}
+          {isDemo && <span className="ml-2 text-purple-600 font-semibold">(demo)</span>}
+        </p>
+      </div>
+
       {/* Tabs */}
       <div className="flex gap-1 rounded-xl border border-line bg-white p-1 w-fit">
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-colors ${
-              tab === t.id
-                ? "bg-[#142850] text-white"
-                : "text-muted hover:bg-sand hover:text-ink"
+              tab === t.id ? "bg-[#142850] text-white" : "text-muted hover:bg-sand hover:text-ink"
             }`}>
             {t.label}
             <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-black ${

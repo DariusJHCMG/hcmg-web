@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { canAccessHelpDeskQueue, canAssignRequests, getLiftOffRoleLabel } from "@/lib/auth";
+import { canAccessHelpDeskQueue, canAssignRequests, getLiftOffRoleLabel, isOpsManager } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import type { LiftOffRequest } from "@/lib/database.types";
 import { HelpDeskQueueClient } from "@/components/liftoff/HelpDeskQueueClient";
@@ -198,8 +198,12 @@ export default async function HelpDeskQueuePage({
   if (!isDemo && !canAccessHelpDeskQueue(profile)) redirect("/liftoff");
 
   const canAssign  = isDemo || canAssignRequests(profile);
+  const canSeeAll  = isDemo || isOpsManager(profile) || profile.role === "admin" || profile.role === "developer";
+  const isSelfOnly = !isDemo && !canSeeAll;
   const requests   = isDemo ? DEMO_REQUESTS : await getHelpDeskRequests();
   const roleLabel  = isDemo ? "Demo Mode" : getLiftOffRoleLabel(profile.liftoff_roles);
+  const viewerId   = isDemo ? DEMO_VIEWER_ID   : profile.id;
+  const viewerName = isDemo ? DEMO_VIEWER_NAME : profile.full_name;
 
   return (
     <div className="space-y-6">
@@ -233,7 +237,11 @@ export default async function HelpDeskQueuePage({
 
       <HelpDeskQueueClient
         initialRequests={requests}
-        processorName={isDemo ? DEMO_VIEWER_NAME : profile.full_name}
+        processorName={viewerName}
+        viewerId={viewerId}
+        viewerName={viewerName}
+        canSeeAll={canSeeAll}
+        isSelfOnly={isSelfOnly}
         isDemo={isDemo}
         canAssign={canAssign}
       />
