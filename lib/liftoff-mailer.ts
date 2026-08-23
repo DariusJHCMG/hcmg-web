@@ -396,7 +396,7 @@ function buildConfirmationEmail(r: LiftOffEmailPayload, viewUrl: string): string
         </p>
       </div>
       <p style="margin:0 0 20px;font-size:13px;color:#57606a;line-height:1.7;">
-        ${slaNote} You'll receive another email once your request has been completed.
+        ${slaNote} You'll receive another email as soon as we start working on it.
       </p>
       ${emailSection("Request Summary", detailRows + lockRows + helpDeskRows)}
       <div style="margin:24px 0 32px;">
