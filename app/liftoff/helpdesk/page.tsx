@@ -4,6 +4,7 @@ import { canAccessHelpDeskQueue, canAssignRequests, getLiftOffRoleLabel, isOpsMa
 import { createServiceClient } from "@/lib/supabase";
 import type { LiftOffRequest } from "@/lib/database.types";
 import { HelpDeskQueueClient } from "@/components/liftoff/HelpDeskQueueClient";
+import { LookupButton } from "@/components/liftoff/LookupButton";
 
 export const dynamic = "force-dynamic";
 
@@ -230,9 +231,12 @@ export default async function HelpDeskQueuePage({
             Loan help desk requests · {roleLabel}
           </p>
         </div>
-        <span className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted">
-          {requests.length} total
-        </span>
+        <div className="flex items-center gap-2">
+          <LookupButton context="helpdesk" />
+          <span className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted">
+            {requests.length} total
+          </span>
+        </div>
       </div>
 
       <HelpDeskQueueClient

@@ -4,6 +4,7 @@ import { canAccessLiftOffQueue, canSeeLockRequests, canSeeGeneralRequests, getLi
 import { createServiceClient } from "@/lib/supabase";
 import type { LiftOffRequest } from "@/lib/database.types";
 import { LiftOffQueueClient } from "@/components/liftoff/LiftOffQueueClient";
+import { LookupButton } from "@/components/liftoff/LookupButton";
 
 export const dynamic = "force-dynamic";
 
@@ -435,9 +436,12 @@ export default async function LiftOffQueuePage({
             {" "}· {roleLabel}
           </p>
         </div>
-        <span className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted">
-          {requests.length} total
-        </span>
+        <div className="flex items-center gap-2">
+          <LookupButton context="ops" />
+          <span className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted">
+            {requests.length} total
+          </span>
+        </div>
       </div>
 
       <LiftOffQueueClient

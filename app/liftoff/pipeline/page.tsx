@@ -9,6 +9,7 @@ import {
 import { createServiceClient } from "@/lib/supabase";
 import type { LiftOffRequest } from "@/lib/database.types";
 import { LiftOffPipelineClient } from "@/components/liftoff/LiftOffPipelineClient";
+import { LookupButton } from "@/components/liftoff/LookupButton";
 import { addBusinessHours, SLA_WINDOWS } from "@/lib/liftoff-sla";
 
 export const dynamic = "force-dynamic";
@@ -200,9 +201,12 @@ export default async function LiftOffPipelinePage({
             {isSelfOnly && <span className="ml-2 rounded-full bg-sand border border-line px-2 py-0.5 text-[10px] font-semibold text-muted">Your Queue</span>}
           </p>
         </div>
-        <span className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted">
-          {activeCount} active
-        </span>
+        <div className="flex items-center gap-2">
+          <LookupButton context="pipeline" />
+          <span className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-bold text-muted">
+            {activeCount} active
+          </span>
+        </div>
       </div>
 
       <LiftOffPipelineClient
