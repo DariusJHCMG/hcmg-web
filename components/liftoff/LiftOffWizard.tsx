@@ -651,9 +651,14 @@ function WizardInner() {
     setSubmitting(true);
     setError("");
 
-    const checklistPayload = docItems.map(d => ({
+    // Only persist the checklist if at least one item is checked.
+    // Sending all-unchecked rows just shows "0 of N PENDING" on the detail page
+    // which is noise for request types where docs aren't submitted by the LO.
+    const rawChecklist = docItems.map(d => ({
       id: d.id, label: d.label, category: d.category, checked: docChecked[d.id] ?? false,
     }));
+    const anyChecked = rawChecklist.some(d => d.checked);
+    const checklistPayload = anyChecked ? rawChecklist : null;
 
     const payload: Record<string, unknown> = {
       request_type:           requestType,

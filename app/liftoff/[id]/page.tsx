@@ -211,7 +211,7 @@ export default async function LiftOffDetailPage({
       )}
 
       {/* Document Checklist */}
-      {Array.isArray(request.doc_checklist_json) && request.doc_checklist_json.length > 0 && (
+      {Array.isArray(request.doc_checklist_json) && request.doc_checklist_json.some(d => d.checked) && (
         <div className="rounded-2xl border border-line bg-white overflow-hidden">
           <div className="border-b border-line px-6 py-4 bg-sand flex items-center justify-between">
             <h2 className="font-bold text-ink text-sm">Document Checklist</h2>
