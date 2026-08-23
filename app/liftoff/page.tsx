@@ -148,7 +148,7 @@ export default async function LiftOffDashboardPage() {
                     </div>
                     {r.incomplete_at && (
                       <p className="text-[11px] text-muted flex-shrink-0 text-right">
-                        Returned {new Date(r.incomplete_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        Returned {new Date(r.incomplete_at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })}
                         {r.incomplete_by_name && <><br /><span className="font-semibold text-ink">by {r.incomplete_by_name}</span></>}
                       </p>
                     )}
@@ -246,7 +246,7 @@ export default async function LiftOffDashboardPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-xs text-muted">
-                      {new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      {new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" })}
                     </td>
                     <td className="px-5 py-3.5">
                       <Link href={`/liftoff/${r.id}`}

@@ -82,9 +82,14 @@ export default async function LiftOffDetailPage({
   const request = await getRequest(id, profile.id, isAdmin);
   if (!request) notFound();
 
+  // Calendar dates (date-only DB fields — no time needed)
   const fmt = (d: string | null) =>
-    d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null;
+    d ? new Date(d).toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+      timeZone: "America/New_York",
+    }) : null;
 
+  // Timestamps — always show time in ET
   const fmtDateTime = (d: string | null) =>
     d ? new Date(d).toLocaleString("en-US", {
       month: "short", day: "numeric", year: "numeric",
@@ -157,7 +162,7 @@ export default async function LiftOffDetailPage({
         </div>
         <div className="px-6 py-2">
           <Row label="Request ID"       value={<code className="font-mono text-xs">{request.id}</code>} />
-          <Row label="Submitted"         value={fmt(request.created_at)} />
+          <Row label="Submitted"         value={fmtDateTime(request.created_at)} />
           <Row label="Type"              value={TYPE_LABELS[request.request_type]} />
           <Row label="ARIVE Loan #"      value={request.arive_loan_number} />
           <Row label="Loan Purpose"      value={request.loan_purpose} />
@@ -346,8 +351,8 @@ export default async function LiftOffDetailPage({
             <Row label="Stage"           value={request.stage} />
             <Row label="Assigned To"     value={request.assigned_processor_name} />
             <Row label="Processor Email" value={request.assigned_processor_email} />
-            <Row label="Assigned At"     value={fmt(request.assigned_at)} />
-            <Row label="Registered At"   value={fmt(request.registered_at)} />
+            <Row label="Assigned At"     value={fmtDateTime(request.assigned_at)} />
+            <Row label="Registered At"   value={fmtDateTime(request.registered_at)} />
             <Row label="SLA Deadline"    value={fmtDateTime(request.sla_deadline_at)} />
             {request.team_notes && <Row label="Ops Notes" value={<span className="whitespace-pre-wrap">{request.team_notes}</span>} />}
           </div>

@@ -175,6 +175,7 @@ const fmt = {
     new Date(s).toLocaleString("en-US", {
       month: "short", day: "numeric", year: "numeric",
       hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+      timeZone: "America/New_York",
     }),
 };
 
