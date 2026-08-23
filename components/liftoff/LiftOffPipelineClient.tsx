@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { PipelineTabBar } from "@/components/liftoff/PipelineTabBar";
 import type { LiftOffRequest, LiftOffRequestType, LiftOffRequestStatus } from "@/lib/database.types";
@@ -211,12 +211,19 @@ export function LiftOffPipelineClient({
     ? ["lock_request"]
     : ALL_TYPES;
 
-  // Unique owner names (for drill-down when in Everyone scope)
-  const owners = useMemo(() => {
-    const s = new Set<string>();
-    initialRequests.forEach(r => { if (r.claimed_by_name) s.add(r.claimed_by_name); });
-    return Array.from(s).sort();
-  }, [initialRequests]);
+  // Team members from API — for owner drill-down
+  const [teamOwners, setTeamOwners] = useState<string[]>([]);
+  const fetchedRef = useRef(false);
+  useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+    fetch("/api/liftoff/team-members")
+      .then(r => r.json())
+      .then((data: { full_name: string }[]) => {
+        setTeamOwners(data.map(m => m.full_name).sort());
+      })
+      .catch(() => {});
+  }, []);
 
   const [filters, setFilters] = useState<FilterState>({
     scope:      isSelfOnly ? "mine" : "everyone",
@@ -367,7 +374,7 @@ export function LiftOffPipelineClient({
                 >
                   <option value="">All owners</option>
                   <option value="__unclaimed__">Unclaimed</option>
-                  {owners.map(o => <option key={o} value={o}>{o}</option>)}
+                  {teamOwners.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
             )}

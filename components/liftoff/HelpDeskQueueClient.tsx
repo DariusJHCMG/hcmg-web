@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import type { LiftOffRequest, LiftOffRole } from "@/lib/database.types";
 
@@ -760,18 +760,25 @@ export function HelpDeskQueueClient({
     );
   }
 
-  const owners = useMemo(() => {
-    const s = new Set<string>();
-    requests.forEach(r => { if (r.claimed_by_name) s.add(r.claimed_by_name); });
-    return Array.from(s).sort();
-  }, [requests]);
+  // Team members from API — for owner drill-down
+  const [teamOwners, setTeamOwners] = useState<string[]>([]);
+  const fetchedRef = useRef(false);
+  useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+    fetch("/api/liftoff/team-members")
+      .then(r => r.json())
+      .then((data: { full_name: string }[]) => {
+        setTeamOwners(data.map(m => m.full_name).sort());
+      })
+      .catch(() => {});
+  }, []);
 
-  const filtered = useMemo(() => {
+  // Filters without tab — used for stat tiles and tab badge counts
+  const preTabFiltered = useMemo(() => {
     const now   = Date.now();
     const dayMs = 86_400_000;
     return requests.filter(r => {
-      if (tab === "active"    && (r.request_status === "completed" || r.request_status === "cancelled")) return false;
-      if (tab === "completed" && r.request_status !== "completed") return false;
       if (filters.scope === "mine" && r.claimed_by_id !== viewerId) return false;
       if (filters.scope === "everyone" && filters.drillOwner !== "") {
         if (filters.drillOwner === "__unclaimed__") {
@@ -794,11 +801,19 @@ export function HelpDeskQueueClient({
       }
       return true;
     });
-  }, [requests, tab, filters, viewerId]);
+  }, [requests, filters, viewerId]);
 
-  const activeCount    = requests.filter(r => r.request_status !== "completed" && r.request_status !== "cancelled").length;
-  const pendingCount   = requests.filter(r => r.request_status === "pending").length;
-  const completedCount = requests.filter(r => r.request_status === "completed").length;
+  // Card list = preTabFiltered + tab
+  const filtered = useMemo(() => preTabFiltered.filter(r => {
+    if (tab === "active")    return r.request_status !== "completed" && r.request_status !== "cancelled";
+    if (tab === "completed") return r.request_status !== "cancelled" && r.request_status === "completed";
+    return true;
+  }), [preTabFiltered, tab]);
+
+  // Stats + tab counts from preTabFiltered
+  const activeCount    = preTabFiltered.filter(r => r.request_status !== "completed" && r.request_status !== "cancelled").length;
+  const pendingCount   = preTabFiltered.filter(r => r.request_status === "pending").length;
+  const completedCount = preTabFiltered.filter(r => r.request_status === "completed").length;
 
   const hasActiveFilters = filters.drillOwner !== "" || filters.datePreset !== "all";
 
@@ -809,7 +824,7 @@ export function HelpDeskQueueClient({
   const tabs: { id: Tab; label: string; count: number }[] = [
     { id: "active",    label: "Active",    count: activeCount },
     { id: "completed", label: "Completed", count: completedCount },
-    { id: "all",       label: "All",       count: requests.length },
+    { id: "all",       label: "All",       count: preTabFiltered.length },
   ];
 
   return (
@@ -855,7 +870,7 @@ export function HelpDeskQueueClient({
                   className="rounded-lg border border-line bg-sand px-3 py-1.5 text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-[#142850]/30">
                   <option value="">All owners</option>
                   <option value="__unclaimed__">Unclaimed</option>
-                  {owners.map(o => <option key={o} value={o}>{o}</option>)}
+                  {teamOwners.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
             )}
@@ -907,7 +922,7 @@ export function HelpDeskQueueClient({
 
         {/* Result count */}
         <p className="text-[11px] text-muted border-t border-line pt-3">
-          Showing <span className="font-semibold text-ink">{filtered.length}</span> of {requests.length} requests
+          Showing <span className="font-semibold text-ink">{filtered.length}</span> of {preTabFiltered.length} requests
           {filters.scope === "mine" && <span className="ml-1">· <span className="font-semibold text-ink">your queue</span></span>}
           {filters.scope === "everyone" && filters.drillOwner && filters.drillOwner !== "__unclaimed__" && (
             <span className="ml-1">· drilled to <span className="font-semibold text-ink">{filters.drillOwner}</span></span>
