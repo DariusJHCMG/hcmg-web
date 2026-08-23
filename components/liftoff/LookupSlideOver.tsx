@@ -45,7 +45,7 @@ const CONTEXT_LABELS: Record<string, string> = {
   pipeline: "Pipeline",
 };
 
-type SearchMode = "arive" | "borrower" | "user";
+type SearchMode = "arive" | "user";
 
 function fmtDate(s: string) {
   return new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -133,7 +133,7 @@ export function LookupSlideOver({ open, onClose, context }: LookupSlideOverProps
 
         {/* Mode tabs */}
         <div className="mx-5 mt-4 mb-0 flex gap-1 rounded-xl border border-line bg-sand p-1 flex-shrink-0">
-          {(["arive", "borrower", "user"] as SearchMode[]).map(m => (
+          {(["arive", "user"] as SearchMode[]).map(m => (
             <button
               key={m}
               onClick={() => switchMode(m)}
@@ -143,7 +143,7 @@ export function LookupSlideOver({ open, onClose, context }: LookupSlideOverProps
                   : "text-muted hover:bg-white hover:text-ink"
               }`}
             >
-              {m === "arive" ? "ARIVE #" : m === "borrower" ? "Borrower" : "By User"}
+              {m === "arive" ? "ARIVE #" : "By User"}
             </button>
           ))}
         </div>
@@ -179,7 +179,7 @@ export function LookupSlideOver({ open, onClose, context }: LookupSlideOverProps
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={onKeyDown}
-                placeholder={mode === "arive" ? "e.g. HCMG-2025-4471" : "First or last name"}
+                placeholder="e.g. HCMG-2025-4471"
                 className="flex-1 rounded-xl border border-line px-3 py-2 text-sm text-ink placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-[#142850]/20 focus:border-[#142850]/40"
               />
             )}

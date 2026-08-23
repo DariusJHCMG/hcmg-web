@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile, canAccessLiftOffQueue, canAccessHelpDeskQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 
-type LookupMode    = "arive" | "borrower" | "user";
+type LookupMode    = "arive" | "user";
 type LookupContext = "ops" | "helpdesk" | "pipeline";
 
 export async function GET(req: NextRequest) {
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const q       = searchParams.get("q")?.trim() ?? "";
   const context = (searchParams.get("context") ?? "pipeline") as LookupContext;
 
-  if (!mode || !["arive", "borrower", "user"].includes(mode)) {
+  if (!mode || !["arive", "user"].includes(mode)) {
     return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
   }
   if (!q) {
@@ -38,11 +38,6 @@ export async function GET(req: NextRequest) {
   // ── Mode branching ───────────────────────────────────────────────────────────
   if (mode === "arive") {
     query = query.ilike("arive_loan_number", `%${q}%`);
-  } else if (mode === "borrower") {
-    const p = `%${q}%`;
-    query = query.or(
-      `borrower_first_name.ilike.${p},borrower_last_name.ilike.${p},co_borrower_first_name.ilike.${p},co_borrower_last_name.ilike.${p}`
-    );
   } else if (mode === "user") {
     query = query.or(`submitter_id.eq.${q},claimed_by_id.eq.${q}`);
   }
