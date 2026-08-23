@@ -58,8 +58,8 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 async function getRequest(id: string, userId: string, isAdmin: boolean): Promise<LiftOffRequest | null> {
   const sb = createServiceClient();
-  const query = sb.from("lift_off_requests").select("*").eq("id", id);
-  if (!isAdmin) query.eq("submitter_id", userId);
+  let query = sb.from("lift_off_requests").select("*").eq("id", id);
+  if (!isAdmin) query = query.eq("submitter_id", userId);
   const { data } = await query.single();
   return data as LiftOffRequest | null;
 }

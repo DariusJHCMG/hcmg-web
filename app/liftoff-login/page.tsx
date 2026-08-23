@@ -88,7 +88,7 @@ function LoginForm() {
             </span>
           </h2>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,.5)", lineHeight: 1.75, maxWidth: 340 }}>
-            The HCMG loan operations request system. Submit disclosures, submissions, wire requests, and more — all tracked in one place.
+            The HCMG loan operations request system. Submit disclosures, submissions, lock requests, and more — all tracked in one place.
           </p>
         </div>
 
@@ -97,7 +97,7 @@ function LoginForm() {
           {[
             { icon: "📋", text: "Register + Disclosure requests" },
             { icon: "🚀", text: "Full submission packages" },
-            { icon: "💸", text: "Wire requests with dual approval" },
+            { icon: "🔒", text: "Lock requests with live pricing" },
           ].map(f => (
             <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
               <div style={{
