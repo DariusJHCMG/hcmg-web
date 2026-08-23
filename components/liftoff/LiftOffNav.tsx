@@ -14,6 +14,7 @@ export function LiftOffNav({
   isAdmin,
   isQueueUser,
   isHelpDeskUser,
+  isLockDeskUser,
   firstName,
   initials,
   avatarUrl,
@@ -22,6 +23,7 @@ export function LiftOffNav({
   isAdmin:        boolean;
   isQueueUser:    boolean;
   isHelpDeskUser: boolean;
+  isLockDeskUser: boolean;
   firstName:      string;
   initials:       string;
   avatarUrl:      string | null;
@@ -34,6 +36,7 @@ export function LiftOffNav({
     { href: "/liftoff/new",      label: "New Request",       icon: "✨" },
     ...(isQueueUser     ? [{ href: "/liftoff/queue",    label: "Ops Queue",        icon: "📥" }] : []),
     ...(isHelpDeskUser  ? [{ href: "/liftoff/helpdesk", label: "Help Desk Queue",  icon: "🛎" }] : []),
+    ...(isLockDeskUser  ? [{ href: "/liftoff/lockdesk", label: "Lock Desk Queue",  icon: "🔒" }] : []),
     ...(isQueueUser     ? [{ href: "/liftoff/pipeline", label: "Pipeline",         icon: "📊" }] : []),
     ...(isAdmin         ? [{ href: "/liftoff/users",    label: "Team & Roles",     icon: "👥" }] : []),
   ];

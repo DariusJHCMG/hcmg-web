@@ -78,6 +78,14 @@ export function canAssignRequests(profile: Profile | null): boolean {
   return isOpsManager(profile);
 }
 
+export function canAccessLockDeskQueue(profile: Profile | null): boolean {
+  if (!profile) return false;
+  if (profile.role === "admin" || profile.role === "developer") return true;
+  return hasRole(profile, "liftoff_admin") ||
+    hasRole(profile, "ops_manager") ||
+    hasRole(profile, "lock_desk_admin");
+}
+
 export function canAccessHelpDeskQueue(profile: Profile | null): boolean {
   if (!profile) return false;
   if (profile.role === "admin" || profile.role === "developer") return true;

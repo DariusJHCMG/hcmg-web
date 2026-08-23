@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { LookupSlideOver } from "@/components/liftoff/LookupSlideOver";
 
-export function LookupButton({ context }: { context: "ops" | "helpdesk" | "pipeline" }) {
+export function LookupButton({ context }: { context: "ops" | "helpdesk" | "lockdesk" | "pipeline" }) {
   const [open, setOpen] = useState(false);
   return (
     <>

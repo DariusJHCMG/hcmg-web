@@ -7,7 +7,7 @@ import type { LiftOffRequest } from "@/lib/database.types";
 interface LookupSlideOverProps {
   open:    boolean;
   onClose: () => void;
-  context: "ops" | "helpdesk" | "pipeline";
+  context: "ops" | "helpdesk" | "lockdesk" | "pipeline";
 }
 
 interface LookupUser { id: string; full_name: string; type: "lo" | "team"; }
@@ -43,6 +43,7 @@ const STATUS_LABELS: Record<string, string> = {
 const CONTEXT_LABELS: Record<string, string> = {
   ops:      "Ops Queue",
   helpdesk: "Help Desk Queue",
+  lockdesk: "Lock Desk Queue",
   pipeline: "Pipeline",
 };
 

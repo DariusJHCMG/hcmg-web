@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentProfile, canAccessLiftOffQueue, canAccessHelpDeskQueue } from "@/lib/auth";
+import { getCurrentProfile, canAccessLiftOffQueue, canAccessHelpDeskQueue, canAccessLockDeskQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 
 type LookupMode    = "arive" | "user";
-type LookupContext = "ops" | "helpdesk" | "pipeline";
+type LookupContext = "ops" | "helpdesk" | "lockdesk" | "pipeline";
 
 export async function GET(req: NextRequest) {
   const profile = await getCurrentProfile();
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!canAccessLiftOffQueue(profile) && !canAccessHelpDeskQueue(profile)) {
+  if (!canAccessLiftOffQueue(profile) && !canAccessHelpDeskQueue(profile) && !canAccessLockDeskQueue(profile)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -29,9 +29,11 @@ export async function GET(req: NextRequest) {
 
   // ── Context scoping ─────────────────────────────────────────────────────────
   if (context === "ops") {
-    query = query.neq("request_type", "loan_help_desk");
+    query = query.neq("request_type", "loan_help_desk").neq("request_type", "lock_request");
   } else if (context === "helpdesk") {
     query = query.eq("request_type", "loan_help_desk");
+  } else if (context === "lockdesk") {
+    query = query.eq("request_type", "lock_request");
   }
   // pipeline → no type filter
 

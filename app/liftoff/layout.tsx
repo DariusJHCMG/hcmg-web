@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { canAccessLiftOffQueue, canAccessHelpDeskQueue } from "@/lib/auth";
+import { canAccessLiftOffQueue, canAccessHelpDeskQueue, canAccessLockDeskQueue } from "@/lib/auth";
 import { LiftOffNav } from "@/components/liftoff/LiftOffNav";
 import type { Metadata } from "next";
 
@@ -24,6 +24,7 @@ export default async function LiftOffLayout({ children }: { children: React.Reac
   const isAdmin        = profile.role === "admin" || profile.role === "developer";
   const isQueueUser    = canAccessLiftOffQueue(profile);
   const isHelpDeskUser = canAccessHelpDeskQueue(profile);
+  const isLockDeskUser = canAccessLockDeskQueue(profile);
 
   return (
     <div className="min-h-screen bg-sand">
@@ -32,6 +33,7 @@ export default async function LiftOffLayout({ children }: { children: React.Reac
         isAdmin={isAdmin}
         isQueueUser={isQueueUser}
         isHelpDeskUser={isHelpDeskUser}
+        isLockDeskUser={isLockDeskUser}
         firstName={profile.full_name.split(" ")[0]}
         initials={getInitials(profile.full_name)}
         avatarUrl={profile.avatar_url ?? null}
