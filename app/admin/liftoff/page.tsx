@@ -46,7 +46,8 @@ async function getAllRequests(): Promise<LiftOffRequest[]> {
   const { data } = await sb
     .from("lift_off_requests")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(500);
   return (data ?? []) as LiftOffRequest[];
 }
 
