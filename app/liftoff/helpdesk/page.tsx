@@ -60,7 +60,7 @@ function demoBase(overrides: Partial<LiftOffRequest>): LiftOffRequest {
     assigned_processor_email: null, assigned_processor_company: null,
     assigned_at: null, block_reason: null, blocked_at_stage: null,
     return_reason: null, registered_at: null,
-    arive_lookup_raw: null, arive_looked_up_at: null,
+    arive_lookup_raw: null, arive_looked_up_at: null, arive_deep_link: null,
     lock_preference: null, parent_request_id: null, linked_lock_request_id: null,
     certified_at: mins(30), certified_by_name: "Demo LO",
     claimed_by_id: null, claimed_by_name: null, claimed_at: null,

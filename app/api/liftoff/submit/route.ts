@@ -94,6 +94,7 @@ export async function POST(req: NextRequest) {
     co_borrower_first_name: (body.co_borrower_first_name as string) ?? null,
 
     arive_loan_number:  (body.arive_loan_number  as string)  ?? null,
+    arive_deep_link:    (body.arive_deep_link    as string)  ?? null,
     loan_type:          (body.loan_type           as string)  ?? null,
     loan_amount:        (body.loan_amount         as number)  ?? null,
     purchase_price:     (body.purchase_price      as number)  ?? null,

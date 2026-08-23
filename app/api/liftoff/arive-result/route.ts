@@ -106,6 +106,9 @@ export async function POST(req: NextRequest) {
     occRaw.includes("invest")     ? "investment" :
     null;
 
+  // Zapier sends the deep link as "Deep Link URL" which becomes deepLinkUrl
+  const deepLink = (body.deepLinkUrl as string) || (body.deepLink as string) || (body.loanUrl as string) || null;
+
   const result = {
     found:               true as const,
     borrowerFirstName:   (body.borrowerFirstName   as string) || null,
@@ -128,6 +131,7 @@ export async function POST(req: NextRequest) {
     productName:       (body.productName   as string) || null,
     channelType:       (body.channelType   as string) || null,
     compensationType:  (body.compensationType as string) || null,
+    deepLink,
   };
 
   resultStore.set(requestId, result);

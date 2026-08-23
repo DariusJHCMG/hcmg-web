@@ -487,7 +487,16 @@ function RequestRow({
               )}
             </div>
             <p className="text-xs text-muted mt-0.5">{typeLabel}</p>
-            <p className="text-[11px] text-muted/60 mt-0.5 font-mono">{r.arive_loan_number ?? "No ARIVE #"}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-[11px] text-muted/60 font-mono">{r.arive_loan_number ?? "No ARIVE #"}</p>
+              {r.arive_deep_link && (
+                <a href={r.arive_deep_link} target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] font-bold text-accent hover:underline flex-shrink-0"
+                  onClick={e => e.stopPropagation()}>
+                  Open in ARIVE →
+                </a>
+              )}
+            </div>
             {lockIsPending && (
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-700 mt-1">
                 ⏳ Lock Pending

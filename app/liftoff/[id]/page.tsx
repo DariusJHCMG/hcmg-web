@@ -124,6 +124,31 @@ export default async function LiftOffDetailPage({
         </span>
       </div>
 
+      {/* ARIVE quick-access bar — always visible when loan number exists */}
+      {request.arive_loan_number && (
+        <div className="rounded-2xl border-2 border-[#142850]/20 bg-[#142850] px-5 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-lg flex-shrink-0">🏦</span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/50">ARIVE Loan</p>
+              <p className="text-sm font-extrabold text-white font-mono tracking-wide">{request.arive_loan_number}</p>
+            </div>
+          </div>
+          {request.arive_deep_link ? (
+            <a
+              href={request.arive_deep_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 rounded-xl px-4 py-2 text-xs font-bold text-[#142850] bg-white hover:bg-white/90 transition-colors"
+            >
+              Open in ARIVE →
+            </a>
+          ) : (
+            <span className="flex-shrink-0 text-[11px] text-white/40 italic">No deep link available</span>
+          )}
+        </div>
+      )}
+
       {/* Resubmit panel — shown to LO when action_needed and no existing resubmission */}
       {request.request_status === "action_needed" &&
        !request.resubmission_of &&
@@ -164,7 +189,7 @@ export default async function LiftOffDetailPage({
           <Row label="Request ID"       value={<code className="font-mono text-xs">{request.id}</code>} />
           <Row label="Submitted"         value={fmtDateTime(request.created_at)} />
           <Row label="Type"              value={TYPE_LABELS[request.request_type]} />
-          <Row label="ARIVE Loan #"      value={request.arive_loan_number} />
+          <Row label="ARIVE Loan #"      value={request.arive_loan_number ? <span className="font-mono">{request.arive_loan_number}</span> : null} />
           <Row label="Loan Purpose"      value={request.loan_purpose} />
           <Row label="Loan Program"      value={request.loan_program} />
           <Row label="Loan Amount"       value={request.loan_amount ? `$${request.loan_amount.toLocaleString()}` : null} />

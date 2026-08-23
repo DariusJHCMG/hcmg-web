@@ -336,7 +336,16 @@ function LockDeskRow({
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-muted/60 mt-0.5 font-mono">{r.arive_loan_number ?? "No ARIVE #"}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-[11px] text-muted/60 font-mono">{r.arive_loan_number ?? "No ARIVE #"}</p>
+              {r.arive_deep_link && (
+                <a href={r.arive_deep_link} target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] font-bold text-accent hover:underline flex-shrink-0"
+                  onClick={e => e.stopPropagation()}>
+                  Open in ARIVE →
+                </a>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex-shrink-0 text-right space-y-1">

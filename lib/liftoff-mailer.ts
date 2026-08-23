@@ -129,6 +129,7 @@ export interface LiftOffEmailPayload {
 
   // Loan
   arive_loan_number?: string | null;
+  arive_deep_link?:   string | null;
   loan_purpose?:      string | null;
   loan_program?:      string | null;
   loan_type?:         string | null;

@@ -144,6 +144,8 @@ interface AriveLoanData {
   productName?: string | null;
   channelType?: string | null;
   compensationType?: string | null;
+  // Deep link
+  deepLink?: string | null;
 }
 
 // ── Step indicator ────────────────────────────────────────────
@@ -665,6 +667,7 @@ function WizardInner() {
       arive_loan_number:      ariveLoanNumber.trim(),
       arive_lookup_raw:       ariveLookupRaw ?? null,
       arive_looked_up_at:     ariveLookupStatus === "found" ? new Date().toISOString() : null,
+      arive_deep_link:        ariveLookupRaw?.deepLink ?? null,
       carried_forward_ids:    carriedForwardIds || null,
       loan_purpose:           loanPurpose       || null,
       loan_program:           loanProgram       || null,

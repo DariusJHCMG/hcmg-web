@@ -164,6 +164,7 @@ export interface LiftOffRequest {
   // ARIVE lookup
   arive_lookup_raw: Record<string, unknown> | null;
   arive_looked_up_at: string | null;
+  arive_deep_link: string | null;
 
   // Lock preference + linking
   lock_preference: LockPreference | null;
