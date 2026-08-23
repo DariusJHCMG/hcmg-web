@@ -186,7 +186,6 @@ export function InlineLockSlideOver({ open, onClose, onSubmitted, prefill }: Inl
           lock_lo_notes:                loNotes    || null,
           lock_pricing_confirmed_by_lo: true,
           lock_pricing_confirmed_at:    new Date().toISOString(),
-          parent_arive_loan_number:     prefill.ariveLoanNumber || null,
         }),
       });
       const data = await res.json();
