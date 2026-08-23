@@ -36,11 +36,12 @@ export async function GET(req: NextRequest) {
   // pipeline → no type filter
 
   // ── Mode branching ───────────────────────────────────────────────────────────
+  const wq = `%${q}%`; // wrap with wildcards for partial matching
   if (mode === "arive") {
-    query = query.ilike("arive_loan_number", q);
+    query = query.ilike("arive_loan_number", wq);
   } else if (mode === "borrower") {
     query = query.or(
-      `borrower_first_name.ilike.${q},borrower_last_name.ilike.${q},co_borrower_first_name.ilike.${q},co_borrower_last_name.ilike.${q}`
+      `borrower_first_name.ilike.${wq},borrower_last_name.ilike.${wq},co_borrower_first_name.ilike.${wq},co_borrower_last_name.ilike.${wq}`
     );
   } else if (mode === "user") {
     query = query.or(`submitter_id.eq.${q},claimed_by_id.eq.${q}`);
@@ -51,5 +52,5 @@ export async function GET(req: NextRequest) {
     .limit(50);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+  return NextResponse.json({ results: data ?? [] });
 }

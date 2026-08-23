@@ -59,5 +59,5 @@ export async function GET() {
     a.full_name.localeCompare(b.full_name)
   );
 
-  return NextResponse.json(result);
+  return NextResponse.json({ users: result });
 }
