@@ -913,73 +913,158 @@ export async function sendAllPreviewEmails(to: string): Promise<{ sent: string[]
     }
   }
 
-  // 0 — Submission Confirmation (normally → LO submitter_email)
-  await fireOne(
-    "0. Submission Confirmation (→ LO)",
-    `🚀 Request received: Submission — Marcus Thompson`,
-    buildConfirmationEmail(submissionPayload, viewLO),
-  );
-  await delay(150);
+  // ── GROUP A: New Request Notifications (→ ops team inboxes) ─────────────────
 
-  // 1a — New Request: Submission (normally → processing@hcmgloans.com)
   await fireOne(
-    "1a. New Request — Submission (→ processing@)",
+    "A1. New Request — Submission (→ processing@)",
     `New Lift Off: Submission — Marcus Thompson · HCMG-2025-PREVIEW`,
     buildProcessingEmail(submissionPayload, viewAdm),
   );
   await delay(150);
 
-  // 1b — New Request: Register + Disclosure (normally → processing@hcmgloans.com)
   await fireOne(
-    "1b. New Request — Register + Disclosure (→ processing@)",
+    "A2. New Request — Register + Disclosure (→ processing@)",
     `New Lift Off: Register + Disclosure — Marcus Thompson · HCMG-2025-PREVIEW`,
     buildProcessingEmail({ ...submissionPayload, request_type: "register_disclosure" }, viewAdm),
   );
   await delay(150);
 
-  // 1c — New Request: Disclosure Only (normally → processing@hcmgloans.com)
   await fireOne(
-    "1c. New Request — Disclosure Only (→ processing@)",
+    "A3. New Request — Disclosure Only (→ processing@)",
     `New Lift Off: Disclosure Only — Marcus Thompson · HCMG-2025-PREVIEW`,
     buildProcessingEmail({ ...submissionPayload, request_type: "disclosure_only" }, viewAdm),
   );
   await delay(150);
 
-  // 1d — New Request: Lock Desk (normally → lockdesk@hcmgloans.com)
   await fireOne(
-    "1d. New Request — Lock Desk (→ lockdesk@)",
+    "A4. New Request — Lock Desk (→ lockdesk@)",
     `🔒 Lock Request — Marcus Thompson · HCMG-2025-PREVIEW`,
     buildLockDeskEmail(lockPayload, viewAdm),
   );
   await delay(150);
 
-  // 1e — New Request: Help Desk (normally → helpdesk@hcmgloans.com)
   await fireOne(
-    "1e. New Request — Help Desk (→ helpdesk@)",
+    "A5. New Request — Help Desk (→ helpdesk@)",
     `🛎 Help Desk: Loan Help Desk — Marcus Thompson · HCMG-2025-PREVIEW`,
     buildProcessingEmail(helpDeskPayload, viewAdm),
   );
   await delay(150);
 
-  // 2 — In Flight (normally → LO submitter_email)
+  // ── GROUP B: Confirmation to LO (one per request type) ───────────────────────
+
   await fireOne(
-    "2. In Flight (→ LO)",
+    "B1. Confirmation — Submission (→ LO)",
+    `🚀 Request received: Submission — Marcus Thompson`,
+    buildConfirmationEmail(submissionPayload, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "B2. Confirmation — Register + Disclosure (→ LO)",
+    `🚀 Request received: Register + Disclosure — Marcus Thompson`,
+    buildConfirmationEmail({ ...submissionPayload, request_type: "register_disclosure" }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "B3. Confirmation — Disclosure Only (→ LO)",
+    `🚀 Request received: Disclosure Only — Marcus Thompson`,
+    buildConfirmationEmail({ ...submissionPayload, request_type: "disclosure_only" }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "B4. Confirmation — Lock Request (→ LO)",
+    `🚀 Request received: Lock Desk Request — Marcus Thompson`,
+    buildConfirmationEmail(lockPayload, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "B5. Confirmation — Help Desk (→ LO)",
+    `🚀 Request received: Loan Help Desk — Marcus Thompson`,
+    buildConfirmationEmail(helpDeskPayload, viewLO),
+  );
+  await delay(150);
+
+  // ── GROUP C: In-Flight (work started) ────────────────────────────────────────
+
+  await fireOne(
+    "C1. In Flight — Submission (→ LO)",
     `✈️ In Flight: Submission — Marcus Thompson`,
     buildInFlightEmail({ request: baseReq, processorName: "Jordan Patel", startedAt: ago(30) }, viewLO),
   );
   await delay(150);
 
-  // 3 — Completed (normally → LO submitter_email)
   await fireOne(
-    "3. Completed (→ LO)",
+    "C2. In Flight — Register + Disclosure (→ LO)",
+    `✈️ In Flight: Register + Disclosure — Marcus Thompson`,
+    buildInFlightEmail({ request: { ...baseReq, request_type: "register_disclosure" }, processorName: "Jordan Patel", startedAt: ago(30) }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "C3. In Flight — Disclosure Only (→ LO)",
+    `✈️ In Flight: Disclosure Only — Marcus Thompson`,
+    buildInFlightEmail({ request: { ...baseReq, request_type: "disclosure_only" }, processorName: "Jordan Patel", startedAt: ago(30) }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "C4. In Flight — Lock Desk (→ LO)",
+    `✈️ In Flight: Lock Desk Request — Marcus Thompson`,
+    buildInFlightEmail({ request: { ...baseReq, request_type: "lock_request" }, processorName: "Jordan Patel", startedAt: ago(30) }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "C5. In Flight — Help Desk (→ LO)",
+    `✈️ In Flight: Loan Help Desk — Marcus Thompson`,
+    buildInFlightEmail({ request: { ...baseReq, request_type: "loan_help_desk" }, processorName: "Jordan Patel", startedAt: ago(30) }, viewLO),
+  );
+  await delay(150);
+
+  // ── GROUP D: Completed ────────────────────────────────────────────────────────
+
+  await fireOne(
+    "D1. Completed — Submission (→ LO)",
     `✅ Completed: Submission — Marcus Thompson`,
     buildCompletedEmail({ request: baseReq, processorName: "Jordan Patel", completedAt: now }, viewLO),
   );
   await delay(150);
 
-  // 4 — Action Required / Incomplete (normally → LO submitter_email)
   await fireOne(
-    "4. Action Required (→ LO)",
+    "D2. Completed — Register + Disclosure (→ LO)",
+    `✅ Completed: Register + Disclosure — Marcus Thompson`,
+    buildCompletedEmail({ request: { ...baseReq, request_type: "register_disclosure" }, processorName: "Jordan Patel", completedAt: now }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "D3. Completed — Disclosure Only (→ LO)",
+    `✅ Completed: Disclosure Only — Marcus Thompson`,
+    buildCompletedEmail({ request: { ...baseReq, request_type: "disclosure_only" }, processorName: "Jordan Patel", completedAt: now }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "D4. Completed — Lock Desk (→ LO)",
+    `✅ Locked: Lock Desk Request — Marcus Thompson`,
+    buildCompletedEmail({ request: lockReq, processorName: "Jordan Patel", completedAt: now }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "D5. Completed — Help Desk (→ LO)",
+    `✅ Completed: Loan Help Desk — Marcus Thompson`,
+    buildCompletedEmail({ request: { ...baseReq, request_type: "loan_help_desk" }, processorName: "Jordan Patel", completedAt: now }, viewLO),
+  );
+  await delay(150);
+
+  // ── GROUP E: Action Required / Incomplete ────────────────────────────────────
+
+  await fireOne(
+    "E1. Action Required — Submission (→ LO)",
     `⚠️ Action Required: Submission — Marcus Thompson`,
     buildIncompleteEmail({
       request: baseReq,
@@ -991,9 +1076,49 @@ export async function sendAllPreviewEmails(to: string): Promise<{ sent: string[]
   );
   await delay(150);
 
-  // 5 — Resubmission (normally → processing@ or lockdesk@)
   await fireOne(
-    "5. Resubmission (→ processing@)",
+    "E2. Action Required — Register + Disclosure (→ LO)",
+    `⚠️ Action Required: Register + Disclosure — Marcus Thompson`,
+    buildIncompleteEmail({
+      request: { ...baseReq, request_type: "register_disclosure" },
+      reasons: ["Credit report expired", "1003 signatures missing"],
+      notes: "Please obtain a refreshed credit report and have all borrowers re-sign the 1003.",
+      incompleteByName: "Jordan Patel",
+      incompleteAt: ago(15),
+    }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "E3. Action Required — Lock Desk (→ LO)",
+    `⚠️ Action Required: Lock Desk Request — Marcus Thompson`,
+    buildIncompleteEmail({
+      request: { ...baseReq, request_type: "lock_request" },
+      reasons: ["Pricing confirmation expired", "Rate/price mismatch with ARIVE"],
+      notes: "Please re-run pricing in ARIVE and resubmit with updated rate confirmation.",
+      incompleteByName: "Jordan Patel",
+      incompleteAt: ago(15),
+    }, viewLO),
+  );
+  await delay(150);
+
+  await fireOne(
+    "E4. Action Required — Help Desk (→ LO)",
+    `⚠️ Action Required: Loan Help Desk — Marcus Thompson`,
+    buildIncompleteEmail({
+      request: { ...baseReq, request_type: "loan_help_desk" },
+      reasons: ["Insufficient detail provided"],
+      notes: "Please provide more detail about the underwriting question so we can assist.",
+      incompleteByName: "Jordan Patel",
+      incompleteAt: ago(15),
+    }, viewLO),
+  );
+  await delay(150);
+
+  // ── GROUP F: Resubmission ─────────────────────────────────────────────────────
+
+  await fireOne(
+    "F1. Resubmission — Submission (→ processing@)",
     `↩ Resubmission: Submission — Marcus Thompson`,
     buildResubmissionEmail({
       request: { ...baseReq, id: fakeId, resubmission_of: "original-preview-id" },
@@ -1005,15 +1130,42 @@ export async function sendAllPreviewEmails(to: string): Promise<{ sent: string[]
   );
   await delay(150);
 
-  // 6 — Assigned (normally → assignee email)
   await fireOne(
-    "6. Assigned to You (→ ops team member)",
+    "F2. Resubmission — Lock Desk (→ lockdesk@)",
+    `↩ Resubmission: Lock Desk Request — Marcus Thompson`,
+    buildResubmissionEmail({
+      request: { ...baseReq, request_type: "lock_request", id: fakeId, resubmission_of: "original-preview-id" },
+      originalRequest: { ...baseReq, request_type: "lock_request" },
+      resubmissionNotes: "Re-ran pricing in ARIVE. Confirmation current within 20 minutes.",
+      resubmittedAt: now,
+      confirmedReasons: ["Pricing confirmation expired"],
+    }, viewAdm),
+  );
+  await delay(150);
+
+  // ── GROUP G: Assigned ─────────────────────────────────────────────────────────
+
+  await fireOne(
+    "G1. Assigned to You — Submission (→ ops team member)",
     `📋 Assigned to you: Submission — Marcus Thompson`,
     buildAssignedEmail({
       request: baseReq,
       assigneeName: "Jordan Patel",
       assigneeEmail: to,
-      assignedByName: "Darius Harris",
+      assignedByName: "Darius James",
+      assignedAt: now,
+    }, viewAdm),
+  );
+  await delay(150);
+
+  await fireOne(
+    "G2. Assigned to You — Lock Desk (→ lock desk agent)",
+    `📋 Assigned to you: Lock Desk Request — Marcus Thompson`,
+    buildAssignedEmail({
+      request: { ...baseReq, request_type: "lock_request" },
+      assigneeName: "Jordan Patel",
+      assigneeEmail: to,
+      assignedByName: "Darius James",
       assignedAt: now,
     }, viewAdm),
   );
