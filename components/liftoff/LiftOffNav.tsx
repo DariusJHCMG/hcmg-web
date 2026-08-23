@@ -13,26 +13,29 @@ interface NavItem {
 export function LiftOffNav({
   isAdmin,
   isQueueUser,
+  isHelpDeskUser,
   firstName,
   initials,
   avatarUrl,
   portalHref,
 }: {
-  isAdmin:     boolean;
-  isQueueUser: boolean;
-  firstName:   string;
-  initials:    string;
-  avatarUrl:   string | null;
-  portalHref:  string;
+  isAdmin:        boolean;
+  isQueueUser:    boolean;
+  isHelpDeskUser: boolean;
+  firstName:      string;
+  initials:       string;
+  avatarUrl:      string | null;
+  portalHref:     string;
 }) {
   const pathname = usePathname();
 
   const navItems: NavItem[] = [
-    { href: "/liftoff",     label: "Dashboard",   icon: "🏠", exact: true },
-    { href: "/liftoff/new", label: "New Request",  icon: "✨" },
-    ...(isQueueUser ? [{ href: "/liftoff/queue",    label: "Ops Queue",   icon: "📥" }] : []),
-    ...(isQueueUser ? [{ href: "/liftoff/pipeline", label: "Pipeline",    icon: "📊" }] : []),
-    ...(isAdmin     ? [{ href: "/liftoff/users",    label: "Team & Roles", icon: "👥" }] : []),
+    { href: "/liftoff",          label: "Dashboard",   icon: "🏠", exact: true },
+    { href: "/liftoff/new",      label: "New Request",  icon: "✨" },
+    ...(isQueueUser     ? [{ href: "/liftoff/queue",    label: "Ops Queue",   icon: "📥" }] : []),
+    ...(isHelpDeskUser  ? [{ href: "/liftoff/helpdesk", label: "Help Desk",   icon: "🛎" }] : []),
+    ...(isQueueUser     ? [{ href: "/liftoff/pipeline", label: "Pipeline",    icon: "📊" }] : []),
+    ...(isAdmin         ? [{ href: "/liftoff/users",    label: "Team & Roles", icon: "👥" }] : []),
   ];
 
   function isActive(item: NavItem) {

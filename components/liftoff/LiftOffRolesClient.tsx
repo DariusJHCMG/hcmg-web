@@ -30,6 +30,12 @@ const LIFTOFF_ROLES: { value: LiftOffRole; label: string; description: string; c
     description: "Can assign and reassign requests. Sees all general request types.",
     color:       "bg-purple-50 border-purple-200 text-purple-700",
   },
+  {
+    value:       "help_desk_agent",
+    label:       "Help Desk Agent",
+    description: "Access to the Help Desk Queue only — handles loan help desk requests.",
+    color:       "bg-teal-50 border-teal-200 text-teal-700",
+  },
 ];
 
 function roleLabels(roles: LiftOffRole[]): string {
@@ -39,6 +45,7 @@ function roleLabels(roles: LiftOffRole[]): string {
     liftoff_team:    "Lift Off Team",
     lock_desk_admin: "Lock Desk Admin",
     ops_manager:     "Ops Manager",
+    help_desk_agent: "Help Desk Agent",
   };
   return roles.map(r => map[r] ?? r).join(", ");
 }

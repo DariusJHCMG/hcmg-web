@@ -814,8 +814,7 @@ function WizardInner() {
 
       {/* ── STEP 2 — Loan + Lock ── */}
       {step === 2 && requestType && (
-        <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
-          <div className="space-y-6">
+        <div className="space-y-6">
 
             {/* ARIVE lookup */}
             <div className="rounded-2xl border-2 border-[#142850] bg-[#142850]/5 p-6 space-y-4">
@@ -1127,6 +1126,90 @@ function WizardInner() {
               </div>
             )}
 
+            {/* Borrower & Property — hidden for lock + help desk (shown above their own panels instead) */}
+            {!isLockRequest && !isHelpDesk && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Borrower &amp; Property</h3>
+                {ariveLookupStatus === "found" && borrowerFirst && (
+                  <span className="text-[10px] font-bold text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
+                    Auto-filled from ARIVE
+                  </span>
+                )}
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Borrower First Name" required>
+                  <Input value={borrowerFirst} readOnly
+                    placeholder="Auto-filled from ARIVE"
+                    className="bg-sand text-muted cursor-not-allowed" />
+                </Field>
+                <Field label="Borrower Last Name" required>
+                  <Input value={borrowerLast} readOnly
+                    placeholder="Auto-filled from ARIVE"
+                    className="bg-sand text-muted cursor-not-allowed" />
+                </Field>
+                <Field label="Co-Borrower First">
+                  <Input value={coBorrowerFirst} readOnly
+                    placeholder="—"
+                    className="bg-sand text-muted cursor-not-allowed" />
+                </Field>
+                <Field label="Co-Borrower Last">
+                  <Input value={coBorrowerLast} readOnly
+                    placeholder="—"
+                    className="bg-sand text-muted cursor-not-allowed" />
+                </Field>
+              </div>
+
+              {!isHelpDesk && !isLockRequest && (
+                <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-line mt-2">
+                  <Field label="Property Address" className="sm:col-span-2">
+                    <Input value={propAddress} readOnly
+                      placeholder="Auto-filled from ARIVE"
+                      className="bg-sand text-muted cursor-not-allowed" />
+                  </Field>
+                  <Field label="City">
+                    <Input value={propCity} readOnly
+                      placeholder="Auto-filled from ARIVE"
+                      className="bg-sand text-muted cursor-not-allowed" />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label="State">
+                      <Input value={propState} readOnly
+                        placeholder="—"
+                        className="bg-sand text-muted cursor-not-allowed" />
+                    </Field>
+                    <Field label="ZIP">
+                      <Input value={propZip} readOnly
+                        placeholder="—"
+                        className="bg-sand text-muted cursor-not-allowed" />
+                    </Field>
+                  </div>
+                  <Field label="Property Type">
+                    <Select value={propertyType}
+                      onChange={() => {}}
+                      disabled
+                      options={[
+                        { value: "sfr",          label: "Single Family Residence (SFR)" },
+                        { value: "condo",        label: "Condo" },
+                        { value: "townhome",     label: "Townhome" },
+                        { value: "2_4_unit",     label: "2–4 Unit" },
+                        { value: "manufactured", label: "Manufactured / Mobile" },
+                        { value: "other",        label: "Other" },
+                      ]} />
+                  </Field>
+                  <Field label="Occupancy Type">
+                    <Select value={occupancyType}
+                      onChange={() => {}}
+                      disabled
+                      options={[
+                        { value: "primary",    label: "Primary Residence" },
+                        { value: "secondary",  label: "Second Home" },
+                        { value: "investment", label: "Investment Property" },
+                      ]} />
+                  </Field>
+                </div>
+              )}
+            </div>}
+
             {/* Loan details — hidden for lock requests (pricing already captured above) */}
             {!isLockRequest && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
@@ -1321,90 +1404,6 @@ function WizardInner() {
               </div>
             )}
 
-            {/* Borrower & Property — hidden for lock + help desk (shown above their own panels instead) */}
-            {!isLockRequest && !isHelpDesk && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Borrower &amp; Property</h3>
-                {ariveLookupStatus === "found" && borrowerFirst && (
-                  <span className="text-[10px] font-bold text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
-                    Auto-filled from ARIVE
-                  </span>
-                )}
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Borrower First Name" required>
-                  <Input value={borrowerFirst} readOnly
-                    placeholder="Auto-filled from ARIVE"
-                    className="bg-sand text-muted cursor-not-allowed" />
-                </Field>
-                <Field label="Borrower Last Name" required>
-                  <Input value={borrowerLast} readOnly
-                    placeholder="Auto-filled from ARIVE"
-                    className="bg-sand text-muted cursor-not-allowed" />
-                </Field>
-                <Field label="Co-Borrower First">
-                  <Input value={coBorrowerFirst} readOnly
-                    placeholder="—"
-                    className="bg-sand text-muted cursor-not-allowed" />
-                </Field>
-                <Field label="Co-Borrower Last">
-                  <Input value={coBorrowerLast} readOnly
-                    placeholder="—"
-                    className="bg-sand text-muted cursor-not-allowed" />
-                </Field>
-              </div>
-
-              {!isHelpDesk && !isLockRequest && (
-                <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-line mt-2">
-                  <Field label="Property Address" className="sm:col-span-2">
-                    <Input value={propAddress} readOnly
-                      placeholder="Auto-filled from ARIVE"
-                      className="bg-sand text-muted cursor-not-allowed" />
-                  </Field>
-                  <Field label="City">
-                    <Input value={propCity} readOnly
-                      placeholder="Auto-filled from ARIVE"
-                      className="bg-sand text-muted cursor-not-allowed" />
-                  </Field>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Field label="State">
-                      <Input value={propState} readOnly
-                        placeholder="—"
-                        className="bg-sand text-muted cursor-not-allowed" />
-                    </Field>
-                    <Field label="ZIP">
-                      <Input value={propZip} readOnly
-                        placeholder="—"
-                        className="bg-sand text-muted cursor-not-allowed" />
-                    </Field>
-                  </div>
-                  <Field label="Property Type">
-                    <Select value={propertyType}
-                      onChange={() => {}}
-                      disabled
-                      options={[
-                        { value: "sfr",          label: "Single Family Residence (SFR)" },
-                        { value: "condo",        label: "Condo" },
-                        { value: "townhome",     label: "Townhome" },
-                        { value: "2_4_unit",     label: "2–4 Unit" },
-                        { value: "manufactured", label: "Manufactured / Mobile" },
-                        { value: "other",        label: "Other" },
-                      ]} />
-                  </Field>
-                  <Field label="Occupancy Type">
-                    <Select value={occupancyType}
-                      onChange={() => {}}
-                      disabled
-                      options={[
-                        { value: "primary",    label: "Primary Residence" },
-                        { value: "secondary",  label: "Second Home" },
-                        { value: "investment", label: "Investment Property" },
-                      ]} />
-                  </Field>
-                </div>
-              )}
-            </div>}
-
             {/* Certification — inline for register_disclosure and disclosure_only (no Step 3) */}
             {!isLockRequest && !isHelpDesk && !isSubmission && (
               <div className="rounded-2xl border-2 border-orange-200 bg-orange-50 p-6 space-y-3">
@@ -1426,32 +1425,13 @@ function WizardInner() {
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Sidebar */}
-          <div className="space-y-4">
-            <FileStatusPanel requestType={requestType as LiftOffRequestType} />
-            <div className="rounded-2xl border border-line bg-white p-5 space-y-2">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Docs Progress</p>
-              <p className="text-sm font-bold text-ink">
-                {checkedCount} of {docItems.length} complete
-              </p>
-              <div className="h-1.5 rounded-full bg-line overflow-hidden">
-                <div className="h-full rounded-full" style={{
-                  width: `${docItems.length > 0 ? (checkedCount / docItems.length) * 100 : 0}%`,
-                  background: "linear-gradient(135deg,#FF9847,#F37021)",
-                }} />
-              </div>
-              <p className="text-[11px] text-muted/60">{isSubmission ? "You'll confirm docs in Step 3" : "Docs confirmed at submission"}</p>
-            </div>
-          </div>
         </div>
       )}
 
       {/* ── STEP 3 — IPAC / Docs (Submission only) ── */}
       {step === 3 && requestType && (
-        <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
-          <div className="space-y-6">
+        <div className="space-y-6">
 
             {/* 1003 Matches Registration */}
             {isSubmission && (
@@ -1662,35 +1642,7 @@ function WizardInner() {
                 </Field>
               </div>
             </div>
-          </div>
 
-          {/* Sidebar */}
-          <div className="space-y-4">
-            <FileStatusPanel requestType={requestType as LiftOffRequestType} />
-
-            {/* Docs progress live */}
-            <div className="rounded-2xl border border-line bg-white p-5 space-y-3">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Docs Progress</p>
-              <p className="text-2xl font-extrabold ok-gradient-text">
-                {isDemo ? docItems.length : checkedCount}
-                <span className="text-sm font-semibold text-muted"> of {docItems.length}</span>
-              </p>
-              <div className="h-2 rounded-full bg-line overflow-hidden">
-                <div className="h-full rounded-full transition-all duration-300" style={{
-                  width: `${docItems.length > 0 ? ((isDemo ? docItems.length : checkedCount) / docItems.length) * 100 : 0}%`,
-                  background: "linear-gradient(135deg,#FF9847,#F37021)",
-                }} />
-              </div>
-              {pendingDocs > 0 && !isDemo && (
-                <p className="text-[11px] text-orange-600 font-semibold">
-                  {pendingDocs} item{pendingDocs > 1 ? "s" : ""} still pending
-                </p>
-              )}
-              {(pendingDocs === 0 || isDemo) && (
-                <p className="text-[11px] text-green-600 font-semibold">✓ All docs confirmed</p>
-              )}
-            </div>
-          </div>
         </div>
       )}
 

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { canAccessLiftOffQueue, canSeeLockRequests, canSeeGeneralRequests, getLiftOffRoleLabel, canAssignRequests } from "@/lib/auth";
+import { canAccessLiftOffQueue, canSeeLockRequests, canSeeGeneralRequests, getLiftOffRoleLabel, canAssignRequests, canAccessHelpDeskQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import type { LiftOffRequest } from "@/lib/database.types";
 import { LiftOffQueueClient } from "@/components/liftoff/LiftOffQueueClient";
@@ -365,6 +365,7 @@ async function getQueueRequests(
   const { data } = await sb
     .from("lift_off_requests")
     .select("*")
+    .neq("request_type", "loan_help_desk")
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -390,6 +391,8 @@ export default async function LiftOffQueuePage({
 
   // Demo bypasses role check
   if (!isDemo && !canAccessLiftOffQueue(profile)) redirect("/liftoff");
+  // Help-desk-only users have no access here — send them to their queue
+  if (!isDemo && canAccessHelpDeskQueue(profile) && !canSeeGeneralRequests(profile) && !canSeeLockRequests(profile)) redirect("/liftoff/helpdesk");
 
   const showLock    = isDemo || canSeeLockRequests(profile);
   const showGeneral = isDemo || canSeeGeneralRequests(profile);

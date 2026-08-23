@@ -5,13 +5,10 @@ import { useEffect, useState } from "react";
 /**
  * Lock Desk Hours Card
  *
- * Hours: Monday–Sunday, 10:00 AM EST → 6:59:59 AM EST the next calendar day.
- * That is a 20h 59m 59s window that starts at 10:00 and ends just before 07:00
- * the following morning (EST / EDT — America/New_York).
+ * Hours: Monday–Sunday, 10:00 AM ET → 7:00 PM ET (9h open window).
  *
- * "Open"   = current ET time is >= 10:00 and < 07:00 the next day
- *          = current ET hour is 10–23 OR 0–6
- * "Closed" = current ET hour is 7, 8, or 9 (07:00–09:59:59)
+ * "Open"   = current ET hour is 10–18 (10:00 AM–6:59:59 PM)
+ * "Closed" = current ET hour is 19–23 or 0–9 (7:00 PM–9:59:59 AM)
  */
 
 function getEasternHour(): number {
@@ -51,9 +48,9 @@ function getEasternTime(): { hour: number; minute: number; second: number; displ
   return { hour: hour24, minute, second, dayName: get("weekday"), display };
 }
 
-/** True when lock desk is open (ET hour 10–23 or 0–6, i.e. NOT 7/8/9) */
+/** True when lock desk is open (ET hour 10–18, i.e. 10:00 AM–6:59:59 PM) */
 function isLockDeskOpen(hour24: number): boolean {
-  return hour24 >= 10 || hour24 < 7;
+  return hour24 >= 10 && hour24 < 19;
 }
 
 /** Seconds until the next open or close transition */
@@ -81,8 +78,8 @@ export function LockDeskHoursCard() {
 
   const { hour, minute, second, display } = getEasternTime();
   const open        = isLockDeskOpen(hour);
-  const closesAt    = 7;   // 07:00 ET
-  const opensAt     = 10;  // 10:00 ET
+  const closesAt    = 19;  // 7:00 PM ET
+  const opensAt     = 10;  // 10:00 AM ET
   const secsUntil   = open
     ? secondsUntil(closesAt, hour, minute, second)
     : secondsUntil(opensAt,  hour, minute, second);
@@ -115,10 +112,9 @@ export function LockDeskHoursCard() {
       <div className="space-y-1 mb-4">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-muted/60 w-28">Mon – Sun</span>
-          <span className="text-sm font-bold text-ink">10:00 AM – 7:00 AM ET</span>
-          <span className="text-[10px] font-semibold text-muted/50 ml-1">(next day)</span>
+          <span className="text-sm font-bold text-ink">10:00 AM – 7:00 PM ET</span>
         </div>
-        <p className="text-[11px] text-muted/60 pl-[7.5rem]">Open 21 hours · Closed 7:00 – 10:00 AM ET</p>
+        <p className="text-[11px] text-muted/60 pl-[7.5rem]">Open 9 hours · Closed 7:00 PM – 10:00 AM ET</p>
       </div>
 
       {/* Divider */}

@@ -78,13 +78,26 @@ export function canAssignRequests(profile: Profile | null): boolean {
   return isOpsManager(profile);
 }
 
+export function canAccessHelpDeskQueue(profile: Profile | null): boolean {
+  if (!profile) return false;
+  if (profile.role === "admin" || profile.role === "developer") return true;
+  return hasRole(profile, "liftoff_admin") ||
+    hasRole(profile, "ops_manager") ||
+    hasRole(profile, "help_desk_agent");
+}
+
+export function canSeeHelpDeskRequests(profile: Profile | null): boolean {
+  return canAccessHelpDeskQueue(profile);
+}
+
 export function getLiftOffRoleLabel(roles: LiftOffRole[]): string {
   if (!roles || roles.length === 0) return "—";
   const labels: Record<LiftOffRole, string> = {
-    liftoff_admin:   "Lift Off Admin",
-    liftoff_team:    "Lift Off Team",
-    lock_desk_admin: "Lock Desk Admin",
-    ops_manager:     "Ops Manager",
+    liftoff_admin:    "Lift Off Admin",
+    liftoff_team:     "Lift Off Team",
+    lock_desk_admin:  "Lock Desk Admin",
+    ops_manager:      "Ops Manager",
+    help_desk_agent:  "Help Desk Agent",
   };
   return roles.map(r => labels[r] ?? r).join(", ");
 }

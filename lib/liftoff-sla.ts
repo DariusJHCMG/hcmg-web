@@ -5,8 +5,8 @@
  * Pure TypeScript — no external dependencies.
  * Safe to import from both server routes and client components.
  *
- * Business hours: Mon–Sun, 10:00 AM ET → 7:00 AM ET the next day (21h open).
- * Closed window:  7:00 AM ET → 10:00 AM ET (3h dead zone).
+ * Business hours: Mon–Sun, 10:00 AM ET → 7:00 PM ET (9h open).
+ * Closed window:  7:00 PM ET → 10:00 AM ET (15h dead zone).
  */
 
 import type { LiftOffRequestType, LiftOffRequest } from "@/lib/database.types";
@@ -89,18 +89,25 @@ function etToUtc(year: number, month: number, day: number, hour: number, minute:
 // ── addBusinessHours ──────────────────────────────────────────────────────────
 
 /**
- * Advance `from` by `hours` business hours, skipping the 7:00–10:00 AM ET dead zone.
- * Open window: 10:00 AM ET → 7:00 AM ET next day (21h).
+ * Advance `from` by `hours` business hours, skipping the 7:00 PM–10:00 AM ET dead zone.
+ * Open window: 10:00 AM ET → 7:00 PM ET (9h).
  */
 export function addBusinessHours(from: Date, hours: number): Date {
   let current = new Date(from.getTime());
   let remainingMinutes = hours * 60;
 
-  // If we land in the closed window at the start, fast-forward to 10:00 AM ET.
+  // If we start inside the closed window (7 PM–10 AM ET), snap forward to 10:00 AM ET.
   const snapToOpen = (d: Date): Date => {
     const h = etHour(d);
-    if (h >= 7 && h < 10) {
+    if (h >= 19 || h < 10) {
       const p = etParts(d);
+      // If it's after 7 PM, snap to 10 AM the *next* day
+      if (h >= 19) {
+        const tomorrow = new Date(etToUtc(p.year, p.month, p.day, 0, 0).getTime() + 24 * 60 * 60 * 1000);
+        const tp = etParts(tomorrow);
+        return etToUtc(tp.year, tp.month, tp.day, 10, 0);
+      }
+      // Before 10 AM — snap to 10 AM same day
       return etToUtc(p.year, p.month, p.day, 10, 0);
     }
     return d;
@@ -110,26 +117,17 @@ export function addBusinessHours(from: Date, hours: number): Date {
 
   while (remainingMinutes > 0) {
     const p = etParts(current);
-    // Minutes until 7:00 AM ET the *next* calendar day (close of window)
-    // Open window is current-day 10:00 → next-day 07:00 (21h = 1260 min)
-    // If hour >= 10: minutes until midnight = (24 - h) * 60 - m; then add 7*60
-    // If hour < 7:  minutes until 07:00 = (7 - h) * 60 - m
-    let minutesUntilClose: number;
-    if (p.hour >= 10) {
-      minutesUntilClose = (24 - p.hour) * 60 - p.minute + 7 * 60; // to 07:00 next day
-    } else {
-      // hour 0–6
-      minutesUntilClose = (7 - p.hour) * 60 - p.minute;
-    }
+    // Minutes until 7:00 PM ET (19:00) — the close of the open window
+    // Open window is 10:00–19:00 (9h = 540 min)
+    const minutesUntilClose = (19 - p.hour) * 60 - p.minute;
 
     if (remainingMinutes <= minutesUntilClose) {
       // Fits before close — just advance
       current = new Date(current.getTime() + remainingMinutes * 60 * 1000);
       remainingMinutes = 0;
     } else {
-      // Consume up to close (7:00 AM ET), skip the 3h gap, resume at 10:00 AM ET.
-      // Advance current to the 7:00 AM ET close point, then add 3h to reach 10:00 AM ET.
-      current = new Date(current.getTime() + minutesUntilClose * 60 * 1000 + 3 * 60 * 60 * 1000);
+      // Consume up to close (7:00 PM ET), skip the 15h gap, resume at 10:00 AM ET next day.
+      current = new Date(current.getTime() + minutesUntilClose * 60 * 1000 + 15 * 60 * 60 * 1000);
       current = snapToOpen(current); // safety snap in case of DST edge
       remainingMinutes -= minutesUntilClose;
     }
