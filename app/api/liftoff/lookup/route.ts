@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile, canAccessLiftOffQueue, canAccessHelpDeskQueue, canAccessLockDeskQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 type LookupMode    = "arive" | "user";
 type LookupContext = "ops" | "helpdesk" | "lockdesk" | "pipeline";
@@ -10,6 +11,17 @@ export async function GET(req: NextRequest) {
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canAccessLiftOffQueue(profile) && !canAccessHelpDeskQueue(profile) && !canAccessLockDeskQueue(profile)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // ── Rate limit: 60 lookups per authenticated user per minute ──────────────
+  // Prevents a compromised internal account from bulk-scraping all loan data
+  // via repeated ARIVE loan number prefix queries.
+  const rl = await checkRateLimit(`liftoff:lookup:${profile.id}`, 60, 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many lookup requests. Please slow down." },
+      { status: 429 },
+    );
   }
 
   const { searchParams } = req.nextUrl;

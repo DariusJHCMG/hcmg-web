@@ -8,32 +8,24 @@
  *  - Credentials verified server-side only.
  *  - Service-role key never sent to browser.
  *  - Generic error messages (no email-existence oracle).
- *  - Rate limiting enforced via in-process counter (swap for Redis in prod).
+ *  - Rate limiting via Upstash Redis (distributed — survives cold starts).
  *  - Session token is a cryptographically random UUID stored in Supabase.
  *  - Cookie: HttpOnly, SameSite=Strict, Secure in production.
+ *
+ * GLBA Safeguards Rule 16 CFR § 314.4(c): rate limiting on auth endpoints
+ * is a required "technical safeguard" against unauthorized access to NPI.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { randomUUID } from "crypto";
 import type { SliceRole } from "@/lib/database.types";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const HCMG_TENANT_ID  = "cmrss19yi000fysf83wcom9th";
 const SESSION_DAYS    = 7;
 const SESSION_COOKIE  = "slice_session";
 const isProd          = process.env.NODE_ENV === "production";
-
-// ── Simple in-process rate limiter (ip → [timestamps]) ──────────
-const loginAttempts = new Map<string, number[]>();
-function isRateLimited(ip: string): boolean {
-  const now     = Date.now();
-  const window  = 15 * 60 * 1000; // 15 minutes
-  const limit   = 10;
-  const history = (loginAttempts.get(ip) ?? []).filter(t => now - t < window);
-  history.push(now);
-  loginAttempts.set(ip, history);
-  return history.length > limit;
-}
 
 function deriveSliceRole(
   isTenantAdmin: boolean,
@@ -62,10 +54,21 @@ function toLegacyRole(sr: SliceRole): "admin" | "loan_officer" {
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
-  if (isRateLimited(ip)) {
+  // ── Distributed rate limit: 10 attempts per IP per 15 minutes ──────────────
+  // Uses Upstash Redis so the limit is shared across all Vercel Lambda instances.
+  // Falls back to ALLOW if Redis is not configured (safe for local dev).
+  const rateLimit = await checkRateLimit(`login:${ip}`, 10, 15 * 60);
+  if (!rateLimit.allowed) {
+    const resetStr = rateLimit.resetAt.toLocaleTimeString("en-US", {
+      timeZone: "America/New_York",
+      hour: "numeric", minute: "2-digit",
+    });
     return NextResponse.json(
-      { error: "Too many login attempts. Please try again later." },
-      { status: 429 },
+      { error: `Too many login attempts. Try again after ${resetStr} ET.` },
+      {
+        status: 429,
+        headers: { "X-RateLimit-Reset": rateLimit.resetAt.toISOString() },
+      },
     );
   }
 

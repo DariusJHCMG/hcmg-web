@@ -19,6 +19,10 @@
     {
       "path": "/api/goal-engine/loan-sync-cron",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/liftoff/archive-old-requests",
+      "schedule": "0 2 * * 0"
     }
   ]
 }

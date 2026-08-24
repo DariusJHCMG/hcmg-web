@@ -5,10 +5,22 @@ import { sendLiftOffNotification, sendLiftOffConfirmation } from "@/lib/liftoff-
 import type { LiftOffEmailPayload } from "@/lib/liftoff-mailer";
 import { computeSla } from "@/lib/liftoff-sla";
 import type { LiftOffRequestType } from "@/lib/database.types";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   const profile = await getCurrentProfile();
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // ── Rate limit: 20 submissions per authenticated user per hour ─────────────
+  // Prevents a compromised or rogue internal account from bulk-inserting rows.
+  // 20/hr is well above any real LO's usage (typical: 2–5 submissions/day).
+  const rl = await checkRateLimit(`liftoff:submit:${profile.id}`, 20, 3600);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many submissions. Please wait before submitting again." },
+      { status: 429 },
+    );
+  }
 
   // ── Idempotency guard ──────────────────────────────────────────────────────
   // The wizard sends a per-attempt UUID in Idempotency-Key.
