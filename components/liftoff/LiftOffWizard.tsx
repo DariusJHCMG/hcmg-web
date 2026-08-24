@@ -9,6 +9,28 @@ import type { LockPref } from "@/components/liftoff/LockPreferenceField";
 // ── Doc checklist per request type ───────────────────────────
 interface DocItem { id: string; label: string; category: string; }
 
+function buildSubmissionDocs(selfEmployed: boolean): DocItem[] {
+  if (selfEmployed) {
+    return [
+      { id: "drivers_license", label: "Driver's License",                    category: "borrower" },
+      { id: "1003",            label: "1003 — All sections completed in ARIVE", category: "loan" },
+      { id: "credit",          label: "Credit Report",                       category: "credit" },
+      { id: "tax_returns",     label: "Tax Returns (2 years)",               category: "income" },
+      { id: "purchase_agmt",   label: "Purchase Agreement",                  category: "property" },
+      { id: "bank_stmts",      label: "Bank Statements (2 months)",          category: "assets" },
+    ];
+  }
+  return [
+    { id: "drivers_license", label: "Driver's License",                    category: "borrower" },
+    { id: "1003",            label: "1003 — All sections completed in ARIVE", category: "loan" },
+    { id: "credit",          label: "Credit Report",                       category: "credit" },
+    { id: "w2s",             label: "W-2s (2 years)",                      category: "income" },
+    { id: "paystubs",        label: "Paystubs (30-day)",                   category: "income" },
+    { id: "purchase_agmt",   label: "Purchase Agreement",                  category: "property" },
+    { id: "bank_stmts",      label: "Bank Statements (2 months)",          category: "assets" },
+  ];
+}
+
 const DOC_CHECKLISTS: Record<LiftOffRequestType, DocItem[]> = {
   register_disclosure: [
     { id: "1003",          label: "1003 Application",        category: "loan" },
@@ -22,18 +44,7 @@ const DOC_CHECKLISTS: Record<LiftOffRequestType, DocItem[]> = {
     { id: "credit",        label: "Credit Report",           category: "credit" },
     { id: "hoi",           label: "HOI Binder",              category: "property" },
   ],
-  submission: [
-    { id: "1003",          label: "1003 Application",        category: "loan" },
-    { id: "credit",        label: "Credit Report",           category: "credit" },
-    { id: "w2s",           label: "W-2s (2 years)",          category: "income" },
-    { id: "paystubs",      label: "Paystubs (30-day)",       category: "income" },
-    { id: "tax_returns",   label: "Tax Returns (2 years)",   category: "income" },
-    { id: "purchase_agmt", label: "Purchase Agreement",      category: "property" },
-    { id: "hoi",           label: "HOI Binder",              category: "property" },
-    { id: "bank_stmts",    label: "Bank Statements (2 months)", category: "assets" },
-    { id: "title",         label: "Title Order",             category: "property" },
-    { id: "appraisal",     label: "Appraisal",               category: "property" },
-  ],
+  submission: [],
   loan_help_desk: [],
   lock_request: [],
 };
@@ -251,17 +262,73 @@ function Select(props: React.SelectHTMLAttributes<HTMLSelectElement> & { options
   );
 }
 
+// ── DocState type ──────────────────────────────────────────────
+type DocState = { checked: boolean; na: boolean; naNote: string };
+
+// ── N/A Reason Modal ──────────────────────────────────────────
+function NaReasonModal({
+  open, docLabel, onConfirm, onCancel,
+}: {
+  open: boolean;
+  docLabel: string;
+  onConfirm: (note: string) => void;
+  onCancel: () => void;
+}) {
+  const [draft, setDraft] = useState("");
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4 mx-4">
+        <div>
+          <h3 className="text-sm font-bold text-ink">Mark as N/A</h3>
+          <p className="text-xs text-muted mt-1">{docLabel}</p>
+        </div>
+        <textarea
+          rows={4}
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          placeholder="Explain why this document does not apply to this loan..."
+          className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink
+                     placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 resize-none"
+        />
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => { onCancel(); setDraft(""); }}
+            className="rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-sand transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!draft.trim()}
+            onClick={() => { onConfirm(draft.trim()); setDraft(""); }}
+            className="rounded-xl bg-[#142850] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a3566] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Confirm N/A
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Document Checklist component ──────────────────────────────
 function DocChecklist({
-  items, checked, onToggle, isDemo,
+  items, checked, onCheck, onNa, isDemo,
 }: {
   items: DocItem[];
-  checked: Record<string, boolean>;
-  onToggle: (id: string) => void;
+  checked: Record<string, DocState>;
+  onCheck: (id: string) => void;
+  onNa: (id: string) => void;
   isDemo: boolean;
 }) {
-  const checkedCount = items.filter(i => checked[i.id]).length;
-  const pendingCount = items.length - checkedCount;
+  const resolvedCount = isDemo
+    ? items.length
+    : items.filter(i => checked[i.id]?.checked || (checked[i.id]?.na && checked[i.id]?.naNote)).length;
+  const pendingCount = items.length - resolvedCount;
 
   return (
     <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-4">
@@ -277,7 +344,7 @@ function DocChecklist({
             ? "bg-green-50 text-green-700 border-green-200"
             : "bg-orange-50 text-orange-700 border-orange-200"
         }`}>
-          {checkedCount} of {items.length} complete
+          {resolvedCount} of {items.length} resolved
         </span>
       </div>
 
@@ -286,7 +353,7 @@ function DocChecklist({
         <div
           className="h-full rounded-full transition-all duration-300"
           style={{
-            width: `${items.length > 0 ? (checkedCount / items.length) * 100 : 0}%`,
+            width: `${items.length > 0 ? (resolvedCount / items.length) * 100 : 0}%`,
             background: "linear-gradient(135deg,#FF9847,#F37021)",
           }}
         />
@@ -294,31 +361,67 @@ function DocChecklist({
 
       <div className="space-y-2">
         {items.map(item => {
-          const isChecked = isDemo ? true : (checked[item.id] ?? false);
+          const isChecked = isDemo ? true : (checked[item.id]?.checked ?? false);
+          const isNa      = isDemo ? false : (checked[item.id]?.na ?? false);
+          const naNote    = checked[item.id]?.naNote ?? "";
+
           return (
-            <label key={item.id}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all
+            <div key={item.id}
+              className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-all
                 ${isChecked
                   ? "border-green-200 bg-green-50"
-                  : "border-line bg-white hover:border-orange-200 hover:bg-orange-50/30"
+                  : isNa
+                    ? "border-gray-200 bg-gray-50"
+                    : "border-line bg-white"
                 }`}>
               <input
                 type="checkbox"
                 checked={isChecked}
-                onChange={() => !isDemo && onToggle(item.id)}
-                className="h-4 w-4 rounded accent-orange-500 flex-shrink-0"
+                onChange={() => !isDemo && onCheck(item.id)}
+                className="h-4 w-4 rounded accent-orange-500 flex-shrink-0 cursor-pointer"
               />
-              <span className={`flex-1 text-sm font-semibold ${isChecked ? "text-green-800" : "text-ink"}`}>
-                {item.label}
-              </span>
-              {isChecked ? (
-                <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide">✓ In File</span>
-              ) : (
-                <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wide border border-orange-200 bg-orange-50 rounded-full px-2 py-0.5">
-                  PENDING
+              <div className="flex-1 min-w-0">
+                <span className={`text-sm font-semibold ${isChecked ? "text-green-800" : isNa ? "text-gray-500" : "text-ink"}`}>
+                  {item.label}
                 </span>
-              )}
-            </label>
+                {isNa && naNote && (
+                  <p className="text-[11px] text-muted/60 italic mt-0.5 truncate" title={naNote}>
+                    {naNote.length > 60 ? naNote.slice(0, 60) + "…" : naNote}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {isChecked ? (
+                  <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide">✓ In File</span>
+                ) : isNa ? (
+                  <>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide border border-gray-300 bg-gray-100 rounded-full px-2 py-0.5">N/A</span>
+                    <button
+                      type="button"
+                      onClick={() => !isDemo && onCheck(item.id)}
+                      className="text-xs text-muted/60 hover:text-gray-700 underline underline-offset-2 cursor-pointer"
+                    >
+                      Undo
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wide border border-orange-200 bg-orange-50 rounded-full px-2 py-0.5">
+                      PENDING
+                    </span>
+                    {!isDemo && (
+                      <button
+                        type="button"
+                        onClick={() => onNa(item.id)}
+                        className="text-xs text-muted/60 hover:text-gray-700 underline underline-offset-2 cursor-pointer"
+                      >
+                        N/A
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           );
         })}
       </div>
@@ -396,6 +499,7 @@ function WizardInner() {
   // Step 2 — Property type / occupancy
   const [propertyType, setPropertyType] = useState("");
   const [occupancyType, setOccupancyType] = useState("");
+  const [selfEmployed, setSelfEmployed] = useState<boolean | null>(null);
 
   // Step 3 — Borrower
   const [borrowerFirst, setBorrowerFirst]     = useState("");
@@ -443,7 +547,8 @@ function WizardInner() {
   const [submissionRequestedAt, setSubmissionRequestedAt] = useState<string | null>(null);
 
   // Step 3 — Doc checklist (keyed by doc id)
-  const [docChecked, setDocChecked] = useState<Record<string, boolean>>({});
+  const [docChecked, setDocChecked] = useState<Record<string, DocState>>({});
+  const [pendingNaModal, setPendingNaModal] = useState<string | null>(null);
 
   // Certification
   const [certified, setCertified]   = useState(false);
@@ -468,9 +573,9 @@ function WizardInner() {
   const isHelpDesk     = requestType === "loan_help_desk";
   const isLockRequest  = requestType === "lock_request";
   const isSubmission   = requestType === "submission";
-  const docItems       = requestType ? DOC_CHECKLISTS[requestType] ?? [] : [];
-  const checkedCount   = isDemo ? docItems.length : docItems.filter(d => docChecked[d.id]).length;
-  const pendingDocs    = docItems.length - checkedCount;
+  const docItems       = isSubmission && selfEmployed !== null ? buildSubmissionDocs(selfEmployed) : (requestType ? DOC_CHECKLISTS[requestType] ?? [] : []);
+  const resolvedCount  = isDemo ? docItems.length : docItems.filter(d => docChecked[d.id]?.checked || (docChecked[d.id]?.na && docChecked[d.id]?.naNote)).length;
+  const pendingDocs    = docItems.length - resolvedCount;
 
   // ── Demo prefill ─────────────────────────────────────────────
   useEffect(() => {
@@ -625,6 +730,7 @@ function WizardInner() {
         if (!helpDeskSubType)              { setError("Please select a sub-type for your help desk request."); return; }
         if (helpDeskDescription.trim().length < 100) { setError("Please describe the issue in at least 100 characters."); return; }
       } else if (isSubmission) {
+        if (selfEmployed === null) { setError("Please indicate if any borrower is self-employed or 1099."); return; }
         if (lockRequired && !lockPref) { setError("Please select Lock or Float for this loan."); return; }
         if (lockPref === "float" && !floatReason.trim()) { setError("Float reason is required when floating."); return; }
       }
@@ -661,14 +767,17 @@ function WizardInner() {
     setSubmitting(true);
     setError("");
 
-    // Only persist the checklist if at least one item is checked.
-    // Sending all-unchecked rows just shows "0 of N PENDING" on the detail page
+    // Only persist the checklist if at least one item is resolved.
+    // Sending all-pending rows just shows "0 of N PENDING" on the detail page
     // which is noise for request types where docs aren't submitted by the LO.
     const rawChecklist = docItems.map(d => ({
-      id: d.id, label: d.label, category: d.category, checked: docChecked[d.id] ?? false,
+      id: d.id, label: d.label, category: d.category,
+      checked: docChecked[d.id]?.checked ?? false,
+      na: docChecked[d.id]?.na ?? false,
+      naNote: docChecked[d.id]?.naNote ?? "",
     }));
-    const anyChecked = rawChecklist.some(d => d.checked);
-    const checklistPayload = anyChecked ? rawChecklist : null;
+    const anyResolved = rawChecklist.some(d => d.checked || d.na);
+    const checklistPayload = anyResolved ? rawChecklist : null;
 
     const payload: Record<string, unknown> = {
       request_type:           requestType,
@@ -721,6 +830,7 @@ function WizardInner() {
       donor_city:             donorCity           || null,
       donor_state:            donorState          || null,
       donor_zip:              donorZip            || null,
+      self_employed_borrower: selfEmployed ?? null,
       doc_checklist_json:     checklistPayload,
       ready_to_submit:            readyToSubmit,
       submission_requested_at:    submissionRequestedAt || null,
@@ -1407,6 +1517,40 @@ function WizardInner() {
               </div>
             )}
 
+            {/* Self-Employed / 1099 */}
+            {isSubmission && (
+              <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
+                <div>
+                  <h3 className="text-sm font-bold text-ink">Is any borrower self-employed or 1099?</h3>
+                  <p className="text-xs text-muted/70 italic mt-0.5">Required — determines which income documents are needed.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelfEmployed(true)}
+                    className={`rounded-full px-5 py-2 text-sm font-bold border-2 transition-colors ${
+                      selfEmployed === true
+                        ? "bg-[#142850] border-[#142850] text-white"
+                        : "bg-white border-line text-muted hover:border-[#142850]/40"
+                    }`}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelfEmployed(false)}
+                    className={`rounded-full px-5 py-2 text-sm font-bold border-2 transition-colors ${
+                      selfEmployed === false
+                        ? "bg-[#142850] border-[#142850] text-white"
+                        : "bg-white border-line text-muted hover:border-[#142850]/40"
+                    }`}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Lock / Float Preference */}
             {!isHelpDesk && !isLockRequest && (
               <div className="rounded-2xl border border-line bg-white p-6">
@@ -1593,12 +1737,31 @@ function WizardInner() {
             )}
 
             {/* Document Checklist */}
-            {isSubmission && <DocChecklist
-              items={docItems}
-              checked={docChecked}
-              onToggle={id => setDocChecked(prev => ({ ...prev, [id]: !prev[id] }))}
-              isDemo={isDemo}
-            />}
+            {isSubmission && (
+              <>
+                <NaReasonModal
+                  open={pendingNaModal !== null}
+                  docLabel={docItems.find(d => d.id === pendingNaModal)?.label ?? ""}
+                  onConfirm={note => {
+                    if (pendingNaModal) {
+                      setDocChecked(prev => ({ ...prev, [pendingNaModal]: { checked: false, na: true, naNote: note } }));
+                    }
+                    setPendingNaModal(null);
+                  }}
+                  onCancel={() => setPendingNaModal(null)}
+                />
+                <DocChecklist
+                  items={docItems}
+                  checked={docChecked}
+                  onCheck={id => setDocChecked(prev => {
+                    const cur = prev[id] ?? { checked: false, na: false, naNote: "" };
+                    return { ...prev, [id]: { checked: !cur.checked, na: false, naNote: "" } };
+                  })}
+                  onNa={id => setPendingNaModal(id)}
+                  isDemo={isDemo}
+                />
+              </>
+            )}
 
             {/* Special Instructions */}
             <div className="rounded-2xl border border-line bg-white p-6">

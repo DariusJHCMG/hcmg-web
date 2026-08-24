@@ -86,7 +86,8 @@ export interface LiftOffRequest {
   ready_to_submit: boolean;
   submission_requested_at: string | null;
   team_notes: string | null;
-  doc_checklist_json: { label: string; checked: boolean }[] | null;
+  self_employed_borrower: boolean | null;
+  doc_checklist_json: { label: string; checked: boolean; na?: boolean; naNote?: string }[] | null;
 
   // Restructure / Suspense
   suspense_reason: string | null;

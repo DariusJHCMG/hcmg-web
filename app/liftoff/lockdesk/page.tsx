@@ -35,7 +35,7 @@ function demoBase(overrides: Partial<LiftOffRequest>): LiftOffRequest {
     donor_email: null, donor_address_1: null, donor_address_2: null,
     donor_city: null, donor_state: null, donor_zip: null,
     ready_to_submit: false, submission_requested_at: null, team_notes: null,
-    doc_checklist_json: null, suspense_reason: null, suspense_notes: null, reason_fixed: null,
+    self_employed_borrower: null, doc_checklist_json: null, suspense_reason: null, suspense_notes: null, reason_fixed: null,
     wire_lender: null, wire_lender_loan_number: null, wire_branch: null,
     wire_closing_date: null, wire_lock_date: null, wire_lock_exp_date: null,
     wire_disbursement_date: null, wire_settlement_agent_name: null,

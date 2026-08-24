@@ -250,33 +250,44 @@ export default async function LiftOffDetailPage({
       )}
 
       {/* Document Checklist */}
-      {Array.isArray(request.doc_checklist_json) && request.doc_checklist_json.some(d => d.checked) && (
+      {Array.isArray(request.doc_checklist_json) && request.doc_checklist_json.some(d => d.checked || d.na) && (
         <div className="rounded-2xl border border-line bg-white overflow-hidden">
           <div className="border-b border-line px-6 py-4 bg-sand flex items-center justify-between">
             <h2 className="font-bold text-ink text-sm">Document Checklist</h2>
             <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold border ${
-              request.doc_checklist_json.every(d => d.checked)
+              request.doc_checklist_json.every(d => d.checked || (d.na && d.naNote))
                 ? "bg-green-50 text-green-700 border-green-200"
                 : "bg-orange-50 text-orange-700 border-orange-200"
             }`}>
-              {request.doc_checklist_json.filter(d => d.checked).length} of {request.doc_checklist_json.length} in file
+              {request.doc_checklist_json.filter(d => d.checked || (d.na && d.naNote)).length} of {request.doc_checklist_json.length} resolved
             </span>
           </div>
           <div className="px-6 py-4 space-y-2">
             {request.doc_checklist_json.map((doc, i) => (
-              <div key={i} className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 ${
-                doc.checked ? "border-green-200 bg-green-50" : "border-line bg-sand"
+              <div key={i} className={`flex items-start gap-3 rounded-xl border px-4 py-2.5 ${
+                doc.checked
+                  ? "border-green-200 bg-green-50"
+                  : doc.na
+                    ? "border-gray-200 bg-gray-50"
+                    : "border-line bg-sand"
               }`}>
-                <span className={`flex-shrink-0 text-sm ${doc.checked ? "text-green-600" : "text-muted/40"}`}>
-                  {doc.checked ? "✓" : "○"}
+                <span className={`flex-shrink-0 text-sm mt-0.5 ${doc.checked ? "text-green-600" : doc.na ? "text-gray-400" : "text-muted/40"}`}>
+                  {doc.checked ? "✓" : doc.na ? "—" : "○"}
                 </span>
-                <span className={`flex-1 text-sm font-semibold ${doc.checked ? "text-green-800" : "text-muted"}`}>
-                  {doc.label}
-                </span>
+                <div className="flex-1 min-w-0">
+                  <span className={`text-sm font-semibold ${doc.checked ? "text-green-800" : doc.na ? "text-gray-500" : "text-muted"}`}>
+                    {doc.label}
+                  </span>
+                  {doc.na && doc.naNote && (
+                    <p className="text-[11px] text-muted/60 italic mt-0.5">{doc.naNote}</p>
+                  )}
+                </div>
                 {doc.checked ? (
-                  <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide">In File</span>
+                  <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide flex-shrink-0">In File</span>
+                ) : doc.na ? (
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide border border-gray-300 bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0">N/A</span>
                 ) : (
-                  <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wide border border-orange-200 bg-orange-50 rounded-full px-2 py-0.5">
+                  <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wide border border-orange-200 bg-orange-50 rounded-full px-2 py-0.5 flex-shrink-0">
                     PENDING
                   </span>
                 )}
