@@ -30,14 +30,58 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user ?? null;
 
-  const isAdminRoute      = pathname.startsWith("/admin");
-  const isPortalRoute     = pathname.startsWith("/portal");
+  const isAdminRoute        = pathname.startsWith("/admin");
+  const isPortalRoute       = pathname.startsWith("/portal");
   // /liftoff routes but NOT /liftoff-login itself
-  const isLiftOffRoute    = pathname.startsWith("/liftoff") && !pathname.startsWith("/liftoff-login");
+  const isLiftOffRoute      = pathname.startsWith("/liftoff") && !pathname.startsWith("/liftoff-login");
   // Only the actual /goal-engine/* pages — NOT /goal-engine-login
-  const isGoalEngineRoute = pathname.startsWith("/goal-engine/");
-  const isLoginRoute      = pathname === "/login";
+  const isGoalEngineRoute   = pathname.startsWith("/goal-engine/");
+  const isLoginRoute        = pathname === "/login";
   const isLiftOffLoginRoute = pathname === "/liftoff-login";
+  const isGoalEngineLogin   = pathname === "/goal-engine-login";
+
+  // ── MFA enforcement ──────────────────────────────────────────────────────
+  // Protected routes require AAL2 (MFA verified). AAL1 means the user has a
+  // valid password session but has NOT completed MFA — kick them to login.
+  // This catches everyone already logged in without MFA, not just new logins.
+  const isProtectedRoute = isAdminRoute || isPortalRoute || isLiftOffRoute || isGoalEngineRoute;
+
+  if (isProtectedRoute && user) {
+    // Use the official Supabase MFA API to read the current AAL from the JWT.
+    // currentLevel = aal1 → password only (no MFA). aal2 → MFA verified.
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const currentLevel = aalData?.currentLevel ?? "aal1";
+
+    if (currentLevel === "aal1") {
+      // Valid password session but MFA not completed — clear cookies and
+      // redirect to the appropriate login page so they go through MFA flow.
+      const clearCookies = (res: NextResponse) => {
+        request.cookies.getAll().forEach(({ name }) => {
+          if (name.includes("supabase") || name.startsWith("sb-")) {
+            res.cookies.set(name, "", { maxAge: 0, path: "/" });
+          }
+        });
+        return res;
+      };
+
+      if (isLiftOffRoute) {
+        return clearCookies(NextResponse.redirect(
+          new URL(`/liftoff-login?next=${encodeURIComponent(pathname)}`, request.url)
+        ));
+      }
+      if (isGoalEngineRoute) {
+        return clearCookies(NextResponse.redirect(
+          new URL(`/goal-engine-login?next=${encodeURIComponent(pathname)}`, request.url)
+        ));
+      }
+      // admin / portal
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("next", pathname);
+      return clearCookies(NextResponse.redirect(url));
+    }
+  }
+  // ── End MFA enforcement ──────────────────────────────────────────────────
 
   // Not logged in → redirect to dedicated Lift Off login
   if (isLiftOffRoute && !user) {
@@ -59,14 +103,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/goal-engine-login?next=${encodeURIComponent(pathname)}`, request.url));
   }
 
-  // Already logged in + hitting liftoff-login → go to liftoff
+  // Already logged in + hitting a login page → skip login only if MFA is done
   if (isLiftOffLoginRoute && user) {
-    return NextResponse.redirect(new URL("/liftoff", request.url));
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalData?.currentLevel === "aal2") {
+      return NextResponse.redirect(new URL("/liftoff", request.url));
+    }
   }
 
-  // Already logged in + hitting main login → redirect to admin dashboard
   if (isLoginRoute && user) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalData?.currentLevel === "aal2") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+  }
+
+  if (isGoalEngineLogin && user) {
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalData?.currentLevel === "aal2") {
+      return NextResponse.redirect(new URL("/goal-engine/dashboard", request.url));
+    }
   }
 
   return response;
