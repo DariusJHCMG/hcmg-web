@@ -14,7 +14,7 @@ function buildCsp(nonce: string): string {
     // but we keep it only in dev via the condition below.
     `script-src 'self' 'nonce-${nonce}' https://us.i.posthog.com https://challenges.cloudflare.com`,
     "style-src 'self' 'unsafe-inline'",       // Tailwind inline styles — unavoidable
-    "img-src 'self' data: https:",
+    "img-src 'self' data: https://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
     "font-src 'self' data:",
     "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://challenges.cloudflare.com",
     "frame-src https://challenges.cloudflare.com",

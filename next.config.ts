@@ -21,7 +21,8 @@ const SECURITY_HEADERS = [
       "default-src 'self'",
       "script-src 'self' https://us.i.posthog.com https://challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https:",
+      // Tightened: no wildcard https: — explicit domains only
+      "img-src 'self' data: https://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
       "font-src 'self' data:",
       "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://challenges.cloudflare.com",
       "frame-src https://challenges.cloudflare.com",
@@ -70,9 +71,19 @@ const SECURITY_HEADERS = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(self), payment=()",
   },
+  // ── X-Powered-By ─────────────────────────────────────────────────────────
+  // Suppress framework fingerprinting — stops attackers knowing we run Next.js.
+  // Vercel also sends this header; overriding with empty string removes it.
+  {
+    key: "X-Powered-By",
+    value: "",
+  },
 ];
 
 const nextConfig: NextConfig = {
+  // Suppress X-Powered-By: Next.js header — stops framework fingerprinting
+  poweredByHeader: false,
+
   async headers() {
     return [
       {
