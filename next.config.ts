@@ -10,34 +10,25 @@ import type { NextConfig } from "next";
 
 const SECURITY_HEADERS = [
   // ── Content-Security-Policy ──────────────────────────────────────────────
-  // Prevents XSS by whitelisting every source scripts/styles/connections
-  // can load from. An attacker who finds an injection point cannot run
-  // arbitrary code because the browser refuses scripts from unknown origins.
+  // NOTE: CSP is set dynamically in middleware.ts using a per-request nonce.
+  // This removes 'unsafe-inline' from script-src entirely (A+ score).
+  // The static header below is a fallback for routes not covered by the
+  // middleware matcher (e.g. Next.js static file routes). The nonce-based
+  // policy in middleware.ts takes precedence on all app routes.
   {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      // Next.js requires 'unsafe-eval' in dev; kept here for prod compat.
-      // 'unsafe-inline' required because Next.js inlines hydration scripts.
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://us.i.posthog.com https://challenges.cloudflare.com",
-      // Tailwind CSS is injected inline — 'unsafe-inline' required for styles.
+      "script-src 'self' https://us.i.posthog.com https://challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline'",
-      // data: URIs for base64 images; https: for external CDN images
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      // Supabase Realtime WS + REST, PostHog, Cloudflare Turnstile
       "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://challenges.cloudflare.com",
-      // Cloudflare Turnstile iframe (public lead forms)
       "frame-src https://challenges.cloudflare.com",
-      // Block all <object>, <embed>, <applet> — classic malware vectors
       "object-src 'none'",
-      // Prevent base tag hijacking
       "base-uri 'self'",
-      // Only allow form submissions to this origin
       "form-action 'self'",
-      // Prevents this site from being iframed anywhere — clickjacking defence
       "frame-ancestors 'none'",
-      // Upgrade any accidental HTTP requests to HTTPS
       "upgrade-insecure-requests",
     ].join("; "),
   },

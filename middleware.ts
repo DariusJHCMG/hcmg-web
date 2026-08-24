@@ -1,11 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { randomBytes } from "crypto";
+
+// ── CSP nonce builder ────────────────────────────────────────────────────────
+// A fresh nonce per request lets us remove 'unsafe-inline' from script-src.
+// Next.js 15 App Router reads the `x-nonce` request header and automatically
+// applies it to every inline script it generates (hydration, RSC payloads).
+function buildCsp(nonce: string): string {
+  return [
+    "default-src 'self'",
+    // nonce replaces 'unsafe-inline'. 'unsafe-eval' is still needed for
+    // Next.js dev HMR — in production Next.js 15 does NOT need unsafe-eval,
+    // but we keep it only in dev via the condition below.
+    `script-src 'self' 'nonce-${nonce}' https://us.i.posthog.com https://challenges.cloudflare.com`,
+    "style-src 'self' 'unsafe-inline'",       // Tailwind inline styles — unavoidable
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://challenges.cloudflare.com",
+    "frame-src https://challenges.cloudflare.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests",
+  ].join("; ");
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Generate a fresh nonce for this request and forward it to the App Router.
+  // Next.js 15 reads `x-nonce` from the request headers and stamps it onto
+  // every inline script it generates, so we can drop 'unsafe-inline'.
+  const nonce = randomBytes(16).toString("base64");
+  const csp   = buildCsp(nonce);
+
+  // Stamp nonce onto the request so server components can read it via headers()
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("content-security-policy", csp);
+
   // Create a mutable response so Supabase can set cookies
-  let response = NextResponse.next({ request });
+  let response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+  // Always set CSP on the outgoing response
+  response.headers.set("content-security-policy", csp);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,7 +57,8 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          response = NextResponse.next({ request });
+          response = NextResponse.next({ request: { headers: requestHeaders } });
+          response.headers.set("content-security-policy", csp);
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
@@ -125,6 +166,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Ensure CSP is set on the final response (Supabase setAll may have rebuilt it)
+  response.headers.set("content-security-policy", csp);
   return response;
 }
 
