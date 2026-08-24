@@ -201,6 +201,7 @@ async function getQueueRequests(): Promise<LiftOffRequest[]> {
     .select("*")
     .neq("request_type", "loan_help_desk")
     .neq("request_type", "lock_request")
+    .eq("has_resubmission", false)
     .order("created_at", { ascending: false })
     .limit(200);
   return (data ?? []) as LiftOffRequest[];

@@ -241,6 +241,7 @@ async function getLockDeskRequests(): Promise<LiftOffRequest[]> {
     .from("lift_off_requests")
     .select("*")
     .eq("request_type", "lock_request")
+    .eq("has_resubmission", false)
     .order("created_at", { ascending: false })
     .limit(200);
   return (data ?? []) as LiftOffRequest[];
