@@ -19,7 +19,7 @@ const SECURITY_HEADERS = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' https://us.i.posthog.com https://challenges.cloudflare.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://us.i.posthog.com https://challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline'",
       // Tightened: no wildcard https: — explicit domains only
       "img-src 'self' data: https://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
