@@ -365,6 +365,15 @@ function LockDeskRow({
             {r.lock_requested_lender  && <span><span className="text-muted">Lender:</span> <strong>{r.lock_requested_lender}</strong></span>}
             {r.lock_requested_product && <span><span className="text-muted">Product:</span> <strong>{r.lock_requested_product}</strong></span>}
             {r.lock_period_days      != null && <span><span className="text-muted">Period:</span> <strong>{r.lock_period_days}d</strong></span>}
+            {r.lock_fee_in_price     != null && (
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold border ${
+                r.lock_fee_in_price
+                  ? "bg-green-50 border-green-200 text-green-700"
+                  : "bg-red-50 border-red-200 text-red-700"
+              }`}>
+                {r.lock_fee_in_price ? "Fee In Price ✓" : "Fee NOT In Price ✗"}
+              </span>
+            )}
             {r.channel_type          && (
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold border ${
                 r.channel_type.toLowerCase() === "broker"

@@ -326,6 +326,12 @@ export default async function LiftOffDetailPage({
               value={request.lock_period_days != null ? `${request.lock_period_days} days` : null} />
             <Row label="Requested Close" value={fmt(request.lock_requested_close_date)} />
             <Row label="Notes to Lock Desk" value={request.lock_lo_notes} />
+            <Row label="Lender Fee in Price"
+              value={request.lock_fee_in_price === true
+                ? <span className="font-bold text-green-700">Yes — Fee Included</span>
+                : request.lock_fee_in_price === false
+                  ? <span className="font-bold text-red-700">No — Fee Not Included</span>
+                  : null} />
           </div>
         </div>
       )}

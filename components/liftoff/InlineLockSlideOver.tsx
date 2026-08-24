@@ -64,10 +64,11 @@ export function InlineLockSlideOver({ open, onClose, onSubmitted, prefill }: Inl
   const [compensationType, setCompensationType] = useState("");
 
   // LO-editable fields
-  const [period, setPeriod]       = useState<15|30|45|60>(30);
-  const [loNotes, setLoNotes]     = useState("");
-  const [chkArive, setChkArive]   = useState(false);
-  const [chkLos, setChkLos]       = useState(false);
+  const [period, setPeriod]           = useState<15|30|45|60>(30);
+  const [loNotes, setLoNotes]         = useState("");
+  const [feeInPrice, setFeeInPrice]   = useState<boolean | null>(null);
+  const [chkArive, setChkArive]       = useState(false);
+  const [chkLos, setChkLos]           = useState(false);
 
   // UI state
   const [submitting, setSubmitting]   = useState(false);
@@ -146,7 +147,7 @@ export function InlineLockSlideOver({ open, onClose, onSubmitted, prefill }: Inl
     // Reset all fields
     setRate(""); setPrice(""); setLender(""); setProduct("");
     setChannelType(""); setCompensationType("");
-    setPeriod(30); setLoNotes("");
+    setPeriod(30); setLoNotes(""); setFeeInPrice(null);
     setChkArive(false); setChkLos(false);
     setError("");
     // Fire lookup immediately
@@ -154,7 +155,7 @@ export function InlineLockSlideOver({ open, onClose, onSubmitted, prefill }: Inl
     doAriveLookup(prefill.ariveLoanNumber);
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const canSubmit = rate.trim() && price.trim() && chkArive && chkLos && !submitting;
+  const canSubmit = rate.trim() && price.trim() && feeInPrice !== null && chkArive && chkLos && !submitting;
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -183,7 +184,8 @@ export function InlineLockSlideOver({ open, onClose, onSubmitted, prefill }: Inl
           channel_type:                 channelType     || null,
           compensation_type:            compensationType || null,
           lock_period_days:             period,
-          lock_lo_notes:                loNotes    || null,
+          lock_lo_notes:                loNotes        || null,
+          lock_fee_in_price:            feeInPrice,
           lock_pricing_confirmed_by_lo: true,
           lock_pricing_confirmed_at:    new Date().toISOString(),
           // NOT NULL columns not applicable to lock requests — send empty string
@@ -358,6 +360,36 @@ export function InlineLockSlideOver({ open, onClose, onSubmitted, prefill }: Inl
                   <Textarea value={loNotes} onChange={e => setLoNotes(e.target.value)}
                     placeholder="e.g. Rush — client needs lock confirmed by EOD." />
                 </Field>
+              </div>
+
+              {/* Is lender fee included in price? */}
+              <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-4 space-y-3">
+                <p className="text-xs font-bold uppercase tracking-[0.1em] text-amber-700">
+                  Required — Is Lender Fee Included in Price?<span className="text-orange-500 ml-0.5">*</span>
+                </p>
+                <p className="text-[11px] text-amber-800/80">
+                  Does the discount point price shown above already include the lender fee?
+                </p>
+                <div className="flex gap-3">
+                  <button type="button"
+                    onClick={() => setFeeInPrice(true)}
+                    className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-all ${
+                      feeInPrice === true
+                        ? "border-green-400 bg-green-50 text-green-700"
+                        : "border-line bg-white text-muted hover:border-green-300"
+                    }`}>
+                    ✓ Yes — Fee Included
+                  </button>
+                  <button type="button"
+                    onClick={() => setFeeInPrice(false)}
+                    className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-all ${
+                      feeInPrice === false
+                        ? "border-red-400 bg-red-50 text-red-700"
+                        : "border-line bg-white text-muted hover:border-red-300"
+                    }`}>
+                    ✗ No — Fee Not Included
+                  </button>
+                </div>
               </div>
 
               {/* Confirmations */}

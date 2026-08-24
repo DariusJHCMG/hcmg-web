@@ -565,6 +565,7 @@ function WizardInner() {
   const [lockPeriod, setLockPeriod]           = useState<15|30|45|60>(30);
   const [lockCloseDate, setLockCloseDate]     = useState("");
   const [lockLoNotes, setLockLoNotes]         = useState("");
+  const [lockFeeInPrice, setLockFeeInPrice]   = useState<boolean | null>(null);
   const [lockChkArive, setLockChkArive]       = useState(false);
   const [lockChkLos, setLockChkLos]           = useState(false);
 
@@ -722,10 +723,11 @@ function WizardInner() {
         setError("Please look up the ARIVE loan number before continuing."); return;
       }
       if (isLockRequest) {
-        if (!lockRate.trim())  { setError("Rate is required for a lock request."); return; }
-        if (!lockPrice.trim()) { setError("Price / points is required for a lock request."); return; }
-        if (!lockChkArive)     { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
-        if (!lockChkLos)       { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
+        if (!lockRate.trim())       { setError("Rate is required for a lock request."); return; }
+        if (!lockPrice.trim())      { setError("Price / points is required for a lock request."); return; }
+        if (lockFeeInPrice === null) { setError("Please answer: Is the lender fee included in the price?"); return; }
+        if (!lockChkArive)          { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
+        if (!lockChkLos)            { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
       } else if (isHelpDesk) {
         if (!helpDeskSubType)              { setError("Please select a sub-type for your help desk request."); return; }
         if (helpDeskDescription.trim().length < 100) { setError("Please describe the issue in at least 100 characters."); return; }
@@ -749,11 +751,12 @@ function WizardInner() {
     if (!borrowerFirst || !borrowerLast) { setError("Borrower name is required."); return; }
     // Lock request — validate pricing confirmations on submit (step 2 is final)
     if (isLockRequest) {
-      if (!ariveLoanNumber.trim())   { setError("ARIVE loan number is required."); return; }
-      if (!lockRate.trim())          { setError("Rate is required for a lock request."); return; }
-      if (!lockPrice.trim())         { setError("Discount Points is required for a lock request."); return; }
-      if (!isDemo && !lockChkArive)  { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
-      if (!isDemo && !lockChkLos)    { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
+      if (!ariveLoanNumber.trim())        { setError("ARIVE loan number is required."); return; }
+      if (!lockRate.trim())               { setError("Rate is required for a lock request."); return; }
+      if (!lockPrice.trim())              { setError("Discount Points is required for a lock request."); return; }
+      if (lockFeeInPrice === null)        { setError("Please answer: Is the lender fee included in the price?"); return; }
+      if (!isDemo && !lockChkArive)       { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
+      if (!isDemo && !lockChkLos)         { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
     }
     if (!isDemo && isSubmission) {
       if (!incomeNote.trim())   { setError("IPAC — Income note is required."); return; }
@@ -851,7 +854,8 @@ function WizardInner() {
       payload.lock_requested_product     = lockProduct || null;
       payload.lock_period_days           = lockPeriod;
       payload.lock_requested_close_date  = lockCloseDate || null;
-      payload.lock_lo_notes              = lockLoNotes   || null;
+      payload.lock_lo_notes              = lockLoNotes      || null;
+      payload.lock_fee_in_price          = lockFeeInPrice;
       payload.lock_pricing_confirmed_by_lo = lockChkArive && lockChkLos;
       payload.lock_pricing_confirmed_at  = new Date().toISOString();
       payload.channel_type               = channelType      || null;
@@ -1167,6 +1171,36 @@ function WizardInner() {
                     placeholder="e.g. Rush — client needs lock confirmed today. Lender portal credentials on file." rows={3} />
                 </Field>
 
+                {/* Is lender fee included in price? */}
+                <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-amber-700">
+                    Required — Is Lender Fee Included in Price?<span className="text-orange-500 ml-0.5">*</span>
+                  </p>
+                  <p className="text-[11px] text-amber-800/80">
+                    Does the discount point price shown above already include the lender fee?
+                  </p>
+                  <div className="flex gap-3">
+                    <button type="button"
+                      onClick={() => setLockFeeInPrice(true)}
+                      className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-all ${
+                        lockFeeInPrice === true
+                          ? "border-green-400 bg-green-50 text-green-700"
+                          : "border-line bg-white text-muted hover:border-green-300"
+                      }`}>
+                      ✓ Yes — Fee Included
+                    </button>
+                    <button type="button"
+                      onClick={() => setLockFeeInPrice(false)}
+                      className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-all ${
+                        lockFeeInPrice === false
+                          ? "border-red-400 bg-red-50 text-red-700"
+                          : "border-line bg-white text-muted hover:border-red-300"
+                      }`}>
+                      ✗ No — Fee Not Included
+                    </button>
+                  </div>
+                </div>
+
                 {/* Confirmations */}
                 <div className="rounded-xl border border-[#142850]/20 bg-[#142850]/5 p-4 space-y-3">
                   <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Required Confirmations</p>
@@ -1449,6 +1483,38 @@ function WizardInner() {
                       </span>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Is lender fee included in price? — inline lock (step 2 review panel) */}
+              {isLockRequest && (
+                <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-amber-700">
+                    Required — Is Lender Fee Included in Price?<span className="text-orange-500 ml-0.5">*</span>
+                  </p>
+                  <p className="text-[11px] text-amber-800/80">
+                    Does the discount point price shown above already include the lender fee?
+                  </p>
+                  <div className="flex gap-3">
+                    <button type="button"
+                      onClick={() => setLockFeeInPrice(true)}
+                      className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-all ${
+                        lockFeeInPrice === true
+                          ? "border-green-400 bg-green-50 text-green-700"
+                          : "border-line bg-white text-muted hover:border-green-300"
+                      }`}>
+                      ✓ Yes — Fee Included
+                    </button>
+                    <button type="button"
+                      onClick={() => setLockFeeInPrice(false)}
+                      className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-all ${
+                        lockFeeInPrice === false
+                          ? "border-red-400 bg-red-50 text-red-700"
+                          : "border-line bg-white text-muted hover:border-red-300"
+                      }`}>
+                      ✗ No — Fee Not Included
+                    </button>
+                  </div>
                 </div>
               )}
             </div>}

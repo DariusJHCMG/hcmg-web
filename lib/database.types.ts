@@ -136,6 +136,7 @@ export interface LiftOffRequest {
   lock_pricing_confirmed_at: string | null;
   lock_pricing_age_minutes: number | null;
   lock_lo_notes: string | null;
+  lock_fee_in_price: boolean | null;
   lock_confirmed_rate: number | null;
   lock_confirmed_price: number | null;
   lock_confirmed_apr: number | null;

@@ -80,7 +80,7 @@ function demoBase(overrides: Partial<LiftOffRequest>): LiftOffRequest {
     assigned_to_id: null, assigned_to_name: null, assigned_at_ts: null, assigned_by_name: null,
     earnest_money_deposit: null, seller_credit: null,
     help_desk_sub_type: null, help_desk_description: null,
-    channel_type: null, compensation_type: null,
+    channel_type: null, compensation_type: null, lock_fee_in_price: null,
     ...overrides,
   };
 }
