@@ -3,7 +3,6 @@ import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import type { LiftOffRequest } from "@/lib/database.types";
-import { LiftOffAdminActions } from "@/components/liftoff/LiftOffAdminActions";
 import { LiftOffTestEmailsButton } from "@/components/liftoff/LiftOffTestEmailsButton";
 
 export const dynamic = "force-dynamic";
@@ -121,7 +120,6 @@ export default async function AdminLiftOffPage() {
                   <th className="px-5 py-3 text-left">Status</th>
                   <th className="px-5 py-3 text-left">SLA</th>
                   <th className="px-5 py-3 text-left">Submitted</th>
-                  <th className="px-5 py-3 text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -167,9 +165,6 @@ export default async function AdminLiftOffPage() {
                       </td>
                       <td className="px-5 py-3.5 text-xs text-muted">
                         {new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <LiftOffAdminActions requestId={r.id} currentStatus={r.request_status} currentStage={r.stage} />
                       </td>
                     </tr>
                   );
