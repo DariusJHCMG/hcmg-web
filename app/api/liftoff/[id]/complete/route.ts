@@ -29,19 +29,30 @@ export async function PATCH(
   if (!r) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (r.request_status === "completed") return NextResponse.json({ error: "Already completed" }, { status: 409 });
 
-  // Block completion if a linked lock request is still pending
+  // Block completion if a linked lock request is still pending.
+  // A resubmission of the original lock counts as satisfying the requirement.
   if (r.linked_lock_request_id) {
     const { data: lockReq } = await sb
       .from("lift_off_requests")
-      .select("request_status")
+      .select("id, request_status")
       .eq("id", r.linked_lock_request_id)
       .maybeSingle();
 
     if (lockReq && lockReq.request_status !== "completed") {
-      return NextResponse.json(
-        { error: "Cannot complete — linked lock request is still pending. Complete the lock request first." },
-        { status: 409 },
-      );
+      // Check whether a completed resubmission of this lock exists
+      const { data: resubLock } = await sb
+        .from("lift_off_requests")
+        .select("id")
+        .eq("resubmission_of", r.linked_lock_request_id)
+        .eq("request_status", "completed")
+        .maybeSingle();
+
+      if (!resubLock) {
+        return NextResponse.json(
+          { error: "Cannot complete — linked lock request is still pending. Complete the lock request first." },
+          { status: 409 },
+        );
+      }
     }
   }
 
