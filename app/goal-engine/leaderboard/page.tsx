@@ -46,6 +46,13 @@ export default async function GoalEngineLeaderboard() {
   const days    = goal ? daysRemaining(goal.end_date) : 0;
   const medals  = ["🥇","🥈","🥉"];
 
+  // ── Option C split ───────────────────────────────────────────────
+  // Active:    has any production (app or funded volume > 0)
+  // Waiting:   committed but zero production yet
+  // Hidden:    no commitment AND no production — not shown
+  const activeBoard   = board.filter(r => r.app_volume_actual > 0 || r.funded_volume_actual > 0);
+  const waitingBoard  = board.filter(r => r.app_volume_actual === 0 && r.funded_volume_actual === 0 && r.funded_volume_commitment > 0);
+
   return (
     <div style={{ fontFamily:"Montserrat,system-ui,sans-serif", color: C.ink, maxWidth:1200, margin:"0 auto", padding:"28px 24px 56px" }}>
 
@@ -118,12 +125,12 @@ export default async function GoalEngineLeaderboard() {
               </div>
             </div>
 
-            {board.length === 0
+            {activeBoard.length === 0
               ? (
                 <div style={{ padding:"48px 28px", textAlign:"center" }}>
                   <p style={{ margin:"0 0 6px", fontSize:20 }}>🏆</p>
-                  <p style={{ margin:"0 0 4px", fontSize:14, fontWeight:700, color: C.ink }}>No one assigned yet</p>
-                  <p style={{ margin:0, fontSize:13, color: C.muted }}>Assign LOs to this goal first, then they will appear here once they commit.</p>
+                  <p style={{ margin:"0 0 4px", fontSize:14, fontWeight:700, color: C.ink }}>No production yet this month</p>
+                  <p style={{ margin:0, fontSize:13, color: C.muted }}>Rankings will appear once funded volume is recorded.</p>
                 </div>
               )
               : (
@@ -139,7 +146,7 @@ export default async function GoalEngineLeaderboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {board.map((row, i) => {
+                      {activeBoard.map((row, i) => {
                         const committed = row.funded_volume_commitment > 0;
                         const pct  = committed ? (row.funded_volume_actual / row.funded_volume_commitment) * 100 : 0;
                         const isMe = row.profile_id === profile.id;
@@ -148,10 +155,9 @@ export default async function GoalEngineLeaderboard() {
                             background: isMe ? "rgba(243,112,33,0.05)" : C.white,
                             borderBottom: `1px solid ${C.line}`,
                             borderLeft: isMe ? `4px solid ${C.orange}` : "4px solid transparent",
-                            opacity: committed ? 1 : 0.6,
                           }}>
                             <td style={{ padding:"16px 20px", textAlign:"right", fontSize:18, fontWeight:900 }}>
-                              {committed ? (medals[i] ?? <span style={{ fontSize:12, color: C.muted }}>#{i+1}</span>) : <span style={{ fontSize:12, color: C.muted }}>—</span>}
+                              {medals[i] ?? <span style={{ fontSize:12, color: C.muted }}>#{i+1}</span>}
                             </td>
                             <td style={{ padding:"16px 20px" }}>
                               <div style={{ display:"flex", alignItems:"center", gap:12 }}>
@@ -197,10 +203,40 @@ export default async function GoalEngineLeaderboard() {
                 </div>
               )
             }
+
+            {/* Waiting section — committed but no production yet */}
+            {waitingBoard.length > 0 && (
+              <div style={{ borderTop:`1px solid ${C.line}`, padding:"14px 28px", background: C.sand }}>
+                <p style={{ margin:"0 0 10px", fontSize:10, fontWeight:800, letterSpacing:".15em", textTransform:"uppercase", color: C.muted }}>
+                  Committed — No Activity Yet
+                </p>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                  {waitingBoard.map(row => {
+                    const isMe = row.profile_id === profile.id;
+                    return (
+                      <div key={row.profile_id} style={{
+                        display:"flex", alignItems:"center", gap:8,
+                        background: C.white, border:`1px solid ${C.line}`,
+                        borderRadius:10, padding:"8px 12px",
+                        borderLeft: isMe ? `3px solid ${C.orange}` : undefined,
+                      }}>
+                        <div style={{ width:28, height:28, borderRadius:"50%", background:"linear-gradient(135deg,#FF9847,#F37021)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:900, color:"#fff", flexShrink:0 }}>
+                          {row.full_name.split(" ").map((n:string)=>n[0]).slice(0,2).join("")}
+                        </div>
+                        <div>
+                          <p style={{ margin:0, fontSize:12, fontWeight:700, color: isMe ? C.orange : C.ink }}>{row.full_name}</p>
+                          <p style={{ margin:0, fontSize:10, color: C.muted }}>Goal: {fmt$(row.funded_volume_commitment)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Application Leaderboard */}
-          {board.some(r => r.app_volume_actual > 0) && (
+          {activeBoard.some(r => r.app_volume_actual > 0) && (
             <div style={{ background:C.white, borderRadius:24, border:`1px solid ${C.line}`, overflow:"hidden", boxShadow:"0 4px 24px rgba(15,23,42,0.07)" }}>
               <div style={{ padding:"22px 28px", borderBottom:`1px solid ${C.line}` }}>
                 <p style={{ margin:0, fontSize:17, fontWeight:800, color: C.ink }}>Application Leaderboard</p>
@@ -218,7 +254,7 @@ export default async function GoalEngineLeaderboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {[...board].sort((a,b)=>b.app_volume_actual-a.app_volume_actual).filter(r=>r.app_volume_actual>0).map((row,i) => {
+                    {[...activeBoard].sort((a,b)=>b.app_volume_actual-a.app_volume_actual).filter(r=>r.app_volume_actual>0).map((row,i) => {
                       const conv = row.app_units_actual > 0 ? Math.round((row.funded_units_actual/row.app_units_actual)*100) : 0;
                       const isMe = row.profile_id === profile.id;
                       return (
