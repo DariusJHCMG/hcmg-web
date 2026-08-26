@@ -18,8 +18,8 @@ const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 40" h
 
 // ── Base styles ───────────────────────────────────────────────────────────────
 
-export const EMAIL_BODY_STYLE = `margin:0;padding:0;background:#f5f0eb;font-family:'Helvetica Neue',Arial,sans-serif;`;
-export const EMAIL_WRAP_STYLE = `max-width:580px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;`;
+export const EMAIL_BODY_STYLE = `margin:0;padding:0;background:#f0f2f5;font-family:'Helvetica Neue',Arial,sans-serif;`;
+export const EMAIL_WRAP_STYLE = `max-width:580px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #dde1e7;box-shadow:0 2px 8px rgba(0,0,0,0.06);`;
 
 // ── Header ────────────────────────────────────────────────────────────────────
 
@@ -44,18 +44,18 @@ export function emailHeader(eyebrow: string, headline: string, subline?: string)
 
 export function emailFooter(extra?: string): string {
   return `
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0eb;border-top:1px solid #e5e7eb;">
-    <tr><td style="padding:20px 36px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f8fa;border-top:1px solid #dde1e7;">
+    <tr><td style="padding:24px 36px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td style="padding-bottom:12px;">${LOGO_SVG}</td>
         </tr>
       </table>
-      <p style="margin:0 0 4px;font-size:11px;line-height:1.8;color:#9AABB8;">
+      <p style="margin:0 0 4px;font-size:11px;line-height:1.8;color:#8a96a3;">
         Harris Capital Mortgage Group, LLC · NMLS# 1918223 · Equal Housing Lender<br/>
         6375 S Pecos Rd, Suite 208 · Las Vegas, NV 89120
       </p>
-      ${extra ? `<p style="margin:8px 0 0;font-size:11px;color:#9AABB8;">${extra}</p>` : ""}
+      ${extra ? `<p style="margin:8px 0 0;font-size:11px;color:#8a96a3;">${extra}</p>` : ""}
     </td></tr>
   </table>`;
 }
@@ -90,12 +90,12 @@ export function emailSection(title: string, rows: string): string {
 // ── CTA button ────────────────────────────────────────────────────────────────
 
 export function ctaButton(label: string, href: string, secondary = false): string {
-  const bg = secondary ? "#f5f0eb" : "#F37021";
+  const bg = secondary ? "#f7f8fa" : "#F37021";
   const color = secondary ? "#1A2B42" : "#ffffff";
-  const border = secondary ? "border:1px solid #e5e7eb;" : "";
+  const border = secondary ? "border:1px solid #dde1e7;" : "";
   return `<a href="${href}"
-    style="display:inline-block;background:${bg};${border}color:${color};font-size:14px;font-weight:700;
-           padding:14px 28px;border-radius:12px;text-decoration:none;letter-spacing:0.2px;"
+    style="display:block;width:100%;box-sizing:border-box;text-align:center;background:${bg};${border}color:${color};font-size:15px;font-weight:800;
+           padding:16px 28px;border-radius:10px;text-decoration:none;letter-spacing:0.3px;"
     >${label}</a>`;
 }
 
@@ -185,30 +185,85 @@ export function buildCoBrandedShareEmail({
   realtorFirstName: string; realtorCompany: string;
   loName: string; loPhone: string | null; pageUrl: string; loNmls?: string | null;
 }): string {
+  const loFirst = loName.split(" ")[0];
   return emailWrap(`
-    ${emailHeader("Co-Branded Referral Page", `Hi ${realtorFirstName},`, `${loName} set up a co-branded page just for ${realtorCompany}.`)}
+    ${emailHeader("Your Personal Mortgage Partner", `${realtorFirstName}, your clients are ready to close.`, `${loFirst} at Harris Capital Mortgage Group set this up exclusively for you.`)}
     <tr><td style="padding:32px 36px 0;">
-      <p style="margin:0 0 20px;font-size:15px;line-height:1.75;color:#5A6B7E;">
-        <strong style="color:#1A2B42;">${loName}</strong> at Harris Capital Mortgage Group has created a
-        co-branded mortgage page for you and <strong style="color:#1A2B42;">${realtorCompany}</strong>.
+
+      <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#1A2B42;line-height:1.4;">
+        Here&apos;s the deal:
       </p>
-      <p style="margin:0 0 20px;font-size:15px;line-height:1.75;color:#5A6B7E;">
-        Share this link with your clients — when they fill out the quick form they&apos;ll be connected
-        directly to ${loName.split(" ")[0]} for their pre-approval. Zero friction for your buyers.
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.75;color:#4a5568;">
+        Most agents lose buyers at the financing step — not because the deal was bad, but because the
+        pre-approval process was slow, confusing, or felt like a cold-call to a stranger.
       </p>
-      ${emailSection("Your Page",
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.75;color:#4a5568;">
+        <strong style="color:#1A2B42;">${loFirst}</strong> has built a <strong style="color:#1A2B42;">co-branded mortgage page</strong>
+        specifically for you and <strong style="color:#1A2B42;">${realtorCompany}</strong>.
+        Your name. Your brand. Backed by a licensed HCMG loan officer.
+      </p>
+
+      <!-- Value prop callout block -->
+      <table width="100%" cellpadding="0" cellspacing="0"
+        style="margin:0 0 24px;background:#fdf4ee;border-left:4px solid #F37021;border-radius:0 8px 8px 0;">
+        <tr><td style="padding:16px 20px;">
+          <p style="margin:0 0 10px;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#F37021;">What this does for you</p>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding:4px 0;font-size:14px;color:#1A2B42;line-height:1.6;">
+                ✓ &nbsp;Send buyers a pre-approval link in <strong>seconds</strong> — from your own branded page
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;font-size:14px;color:#1A2B42;line-height:1.6;">
+                ✓ &nbsp;${loFirst} handles the financing. <strong>You focus on closing deals.</strong>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;font-size:14px;color:#1A2B42;line-height:1.6;">
+                ✓ &nbsp;Every lead goes <strong>directly to you</strong> — no cold handoffs, no middlemen
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;font-size:14px;color:#1A2B42;line-height:1.6;">
+                ✓ &nbsp;Fast pre-approvals keep your offers <strong>competitive</strong> in any market
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.75;color:#4a5568;">
+        Your page is <strong style="color:#1A2B42;">live right now.</strong>
+        Save the link below, drop it in your buyer emails, texts, or social —
+        and let ${loFirst} do the heavy lifting on financing.
+      </p>
+
+      ${emailSection("Your Co-Branded Page",
           infoRow("Page URL", `<a href="${pageUrl}" style="color:#F37021;word-break:break-all;">${pageUrl}</a>`) +
           infoRow("Your LO", loName + (loNmls ? ` · NMLS# ${loNmls}` : "")) +
-          infoRow("Phone", loPhone, true)
+          infoRow("Direct Line", loPhone, true)
         )}
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-        <tr><td>${ctaButton("View Your Co-Branded Page →", pageUrl)}</td></tr>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+        <tr><td>${ctaButton("Open My Co-Branded Page →", pageUrl)}</td></tr>
       </table>
-      <p style="margin:0 0 28px;font-size:12px;color:#9AABB8;">
-        Questions? Reply to this email or call ${loName.split(" ")[0]}${loPhone ? ` at ${loPhone}` : ""}.
+      <p style="margin:0 0 6px;font-size:12px;color:#9AABB8;text-align:center;">
+        Takes 30 seconds to bookmark. Saves hours every transaction.
       </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 28px;">
+        <tr><td style="padding:16px 20px;background:#f7f8fa;border:1px solid #dde1e7;border-radius:8px;">
+          <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#1A2B42;">Questions? ${loFirst} is one call away.</p>
+          <p style="margin:0;font-size:13px;color:#4a5568;">
+            Reply to this email or call${loPhone ? ` <strong>${loPhone}</strong>` : ""} —
+            ${loFirst} typically responds same day.
+          </p>
+        </td></tr>
+      </table>
+
     </td></tr>
-    ${emailFooter("This page was created for you by a licensed HCMG loan officer.")}
+    ${emailFooter(`This page was created for ${realtorFirstName} by ${loName}, a licensed HCMG loan officer.`)}
   `);
 }
 
