@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
 
@@ -20,6 +20,20 @@ function LoginForm() {
   const [code,     setCode]     = useState("");
   const [error,    setError]    = useState("");
   const [loading,  setLoading]  = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  // On mount: if already signed in at AAL2, skip the login form entirely.
+  useEffect(() => {
+    const sb = createBrowserClient();
+    sb.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => {
+      if (data?.currentLevel === "aal2") {
+        window.location.href = next;
+      } else {
+        setChecking(false);
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const factorIdRef    = useRef<string>("");
   const challengeIdRef = useRef<string>("");
@@ -35,6 +49,14 @@ function LoginForm() {
       const { data, error: authError } = await sb.auth.signInWithPassword({ email, password });
       if (authError) { setError(authError.message); setLoading(false); return; }
       if (!data.user) { setError("Sign in failed."); setLoading(false); return; }
+
+      // If the session is already AAL2 (e.g. came from the portal which also does MFA),
+      // skip the MFA step entirely and go straight to the destination.
+      const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalData?.currentLevel === "aal2") {
+        window.location.href = next;
+        return;
+      }
 
       const { data: factors } = await sb.auth.mfa.listFactors();
       const totp = factors?.totp ?? [];
@@ -104,6 +126,8 @@ function LoginForm() {
     letterSpacing:".35em", textAlign:"center", outline:"none",
     fontFamily:"inherit",
   };
+
+  if (checking) return null;
 
   return (
     <div style={{ minHeight:"100vh", display:"flex", fontFamily:"Montserrat,system-ui,sans-serif" }}>
