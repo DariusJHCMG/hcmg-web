@@ -123,8 +123,8 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
       position: "sticky", top: 0,
       overflowY: "auto",
     }}>
-      {/* Logo */}
-      <div style={{ padding: "20px 16px 16px", borderBottom: `1px solid ${C.line}` }}>
+      {/* Logo + back link */}
+      <div style={{ padding: "20px 16px 14px", borderBottom: `1px solid ${C.line}` }}>
         <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
           <img src="/SLICE.png" alt="SLICE" style={{ height: 44, width: "auto", display: "block" }} />
           <div>
@@ -132,6 +132,13 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
             <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 11, width: "auto", display: "block", marginTop: 3 }} />
           </div>
         </Link>
+        <a href="/portal" style={{
+          display: "inline-flex", alignItems: "center", gap: 4,
+          marginTop: 10, fontSize: 11, fontWeight: 700, color: C.orange,
+          textDecoration: "none", opacity: 0.8,
+        }}>
+          ← Back to Portal
+        </a>
       </div>
 
       {/* Main nav */}
@@ -229,9 +236,18 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
             position: "absolute", top: 0, left: 0, bottom: 0, width: 240,
             background: C.navy, display: "flex", flexDirection: "column",
           }}>
-            <div style={{ padding: "18px 14px", borderBottom: `1px solid ${C.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <img src="/SLICE.png" alt="SLICE" style={{ height: 36, width: "auto" }} />
-              <button onClick={() => setMobileOpen(false)} style={{ background: "none", border: "none", color: "#fff", fontSize: 20, cursor: "pointer" }}>✕</button>
+            <div style={{ padding: "18px 14px", borderBottom: `1px solid ${C.line}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <img src="/SLICE.png" alt="SLICE" style={{ height: 36, width: "auto" }} />
+                <button onClick={() => setMobileOpen(false)} style={{ background: "none", border: "none", color: "#fff", fontSize: 20, cursor: "pointer" }}>✕</button>
+              </div>
+              <a href="/portal" style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                marginTop: 10, fontSize: 11, fontWeight: 700, color: C.orange,
+                textDecoration: "none", opacity: 0.8,
+              }}>
+                ← Back to Portal
+              </a>
             </div>
             <div style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }} onClick={() => setMobileOpen(false)}>
               {navLinks.map(l => <NavItem key={l.href} {...l} active={isActive(l.href)} />)}
