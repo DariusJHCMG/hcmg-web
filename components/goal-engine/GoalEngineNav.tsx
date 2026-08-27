@@ -143,7 +143,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
       width: 220, flexShrink: 0,
       background: C.white,
       borderRight: `1px solid ${C.line}`,
-      display: "flex", flexDirection: "column",
+      flexDirection: "column",
       minHeight: "100vh",
       position: "sticky", top: 0,
       overflowY: "auto",
@@ -242,7 +242,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
         background: C.white,
         borderBottom: `1px solid ${C.line}`,
         padding: "0 16px", height: 56,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
+        alignItems: "center", justifyContent: "space-between",
       }}>
         <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
           <img src="/SLICE.png" alt="SLICE" style={{ height: 30, width: "auto" }} />
@@ -264,7 +264,6 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 40,
         background: C.white,
         borderTop: `1px solid ${C.line}`,
-        display: "flex",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}>
         {primaryTabs.map(tab => {
