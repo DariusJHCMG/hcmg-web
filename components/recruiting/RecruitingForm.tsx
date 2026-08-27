@@ -17,9 +17,9 @@ type FormState = {
 
 const VOLUME_OPTIONS = [
   "Under $1M / month",
-  "$1M – $3M / month",
-  "$3M – $5M / month",
-  "$5M – $10M / month",
+  "$1M, $3M / month",
+  "$3M, $5M / month",
+  "$5M, $10M / month",
   "$10M+ / month",
 ];
 

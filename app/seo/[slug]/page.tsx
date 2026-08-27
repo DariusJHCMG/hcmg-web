@@ -203,7 +203,7 @@ export default async function SeoPage({ params }: { params: Promise<{ slug: stri
         </div>
       </section>
 
-      {/* AEO — high-intent conversational questions */}
+      {/* AEO, high-intent conversational questions */}
       {(() => {
         const aeoFaqs = AEO_FAQS[page.loanType]?.(page.city, page.state) ?? [];
         if (aeoFaqs.length === 0) return null;

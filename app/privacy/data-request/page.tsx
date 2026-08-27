@@ -5,18 +5,18 @@ import { NavBar } from "@/components/ui/NavBar";
 import { Footer } from "@/components/ui/Footer";
 
 /**
- * /privacy/data-request — Data Subject Request (DSR) Form
+ * /privacy/data-request, Data Subject Request (DSR) Form
  *
  * Allows consumers to exercise their privacy rights:
  *   - Right to Know (access data we hold)
  *   - Right to Correct (fix inaccurate data)
- *   - Right to Delete (CCPA/VCDPA — subject to GLBA retention requirements)
+ *   - Right to Delete (CCPA/VCDPA, subject to GLBA retention requirements)
  *
  * LEGAL BASIS:
  *   California CCPA / CPRA (Cal. Civ. Code § 1798.100–.199)
  *   Virginia VCDPA (Va. Code § 59.1-571 et seq.)
  *   Colorado CPA (Colo. Rev. Stat. § 6-1-1301 et seq.)
- *   GLBA Regulation P — 30-day response requirement
+ *   GLBA Regulation P, 30-day response requirement
  *
  * NOTE ON DELETION REQUESTS:
  *   Mortgage loan records cannot be deleted before their legal retention
@@ -32,9 +32,9 @@ import { Footer } from "@/components/ui/Footer";
 type RequestType = "access" | "correct" | "delete";
 
 const REQUEST_LABELS: Record<RequestType, string> = {
-  access:  "Right to Know — Send me a copy of my data",
-  correct: "Right to Correct — Fix inaccurate information",
-  delete:  "Right to Delete — Remove my personal information",
+  access:  "Right to Know, Send me a copy of my data",
+  correct: "Right to Correct, Fix inaccurate information",
+  delete:  "Right to Delete, Remove my personal information",
 };
 
 const REQUEST_NOTES: Record<RequestType, string> = {
@@ -121,7 +121,7 @@ export default function DataRequestPage() {
               <div className="text-3xl mb-3">✅</div>
               <p className="font-bold text-green-800 text-lg mb-2">Request received</p>
               <p className="text-sm text-green-700">
-                We have received your {REQUEST_LABELS[requestType].split(" — ")[0]} request.
+                We have received your {REQUEST_LABELS[requestType].split(", ")[0]} request.
                 You will receive a confirmation email at <strong>{email}</strong> within 24 hours,
                 and a full response within <strong>30 days</strong>.
               </p>
@@ -154,8 +154,8 @@ export default function DataRequestPage() {
                         className="mt-0.5 accent-accent"
                       />
                       <div>
-                        <p className="text-sm font-semibold text-ink">{REQUEST_LABELS[type].split(" — ")[0]}</p>
-                        <p className="text-xs text-muted mt-0.5">{REQUEST_LABELS[type].split(" — ")[1]}</p>
+                        <p className="text-sm font-semibold text-ink">{REQUEST_LABELS[type].split(", ")[0]}</p>
+                        <p className="text-xs text-muted mt-0.5">{REQUEST_LABELS[type].split(", ")[1]}</p>
                       </div>
                     </label>
                   ))}
@@ -213,7 +213,7 @@ export default function DataRequestPage() {
                   />
                 </div>
                 <div className="mt-4">
-                  <label className="mb-1.5 block text-xs font-bold text-ink" htmlFor="phone">Phone number (optional — helps verify identity)</label>
+                  <label className="mb-1.5 block text-xs font-bold text-ink" htmlFor="phone">Phone number (optional, helps verify identity)</label>
                   <input
                     id="phone"
                     type="tel"

@@ -289,8 +289,8 @@ export default async function LearnArticlePage({
             Ready to take the next step?
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-muted">
-            A licensed HCMG loan officer will walk you through your exact scenario — your credit, income, down
-            payment, and goals — and tell you what you qualify for, with no hard credit check.
+            A licensed HCMG loan officer will walk you through your exact scenario, your credit, income, down
+            payment, and goals, and tell you what you qualify for, with no hard credit check.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link href="/get-started" className="primary-button">

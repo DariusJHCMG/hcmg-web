@@ -24,20 +24,20 @@ const STATE_META: Record<string, {
   texas: {
     name: "Texas", abbr: "TX",
     headline: "Mortgage Lender in Texas: Houston, Dallas, Austin, San Antonio & More",
-    intro: "HCMG's Houston branch office at 9801 Westheimer Ave, Suite 300 serves the Texas market. Texas has no state income tax, but property taxes are among the highest in the nation — ranging from 1.6% in Collin County (Plano) to 1.9% in Bexar County (San Antonio). Your loan officer will build a precise payment estimate using the actual county rate.",
+    intro: "HCMG's Houston branch office at 9801 Westheimer Ave, Suite 300 serves the Texas market. Texas has no state income tax, but property taxes are among the highest in the nation, ranging from 1.6% in Collin County (Plano) to 1.9% in Bexar County (San Antonio). Your loan officer will build a precise payment estimate using the actual county rate.",
     programs: "The Texas State Affordable Housing Corporation (TSAHC) and Texas Department of Housing offer down payment assistance programs for qualifying first-time buyers and veterans. My First Texas Home and Homes for Texas Heroes are two programs frequently available in DFW, Houston, and Austin.",
     googleMapUrl: "https://www.google.com/maps/search/harris+capital+mortgage+houston",
   },
   florida: {
     name: "Florida", abbr: "FL",
     headline: "Mortgage Lender in Florida: Miami, Orlando, Tampa, Jacksonville & More",
-    intro: "Florida has no state income tax, which increases monthly buying power for relocating buyers from high-tax states. Markets vary widely — Miami-Dade County carries some of the highest median home prices in the Southeast, while Jacksonville and Tallahassee offer more affordable entry points. FHA loan limits in Miami-Dade County are higher than the national baseline due to area median income thresholds.",
+    intro: "Florida has no state income tax, which increases monthly buying power for relocating buyers from high-tax states. Markets vary widely, Miami-Dade County carries some of the highest median home prices in the Southeast, while Jacksonville and Tallahassee offer more affordable entry points. FHA loan limits in Miami-Dade County are higher than the national baseline due to area median income thresholds.",
     programs: "The Florida Housing Finance Corporation (Florida HLP / Florida Housing) offers down payment assistance through programs like the Florida Assist Second Mortgage and Florida HFA Preferred Grants. Income and purchase price limits apply. HCMG's licensed loan officers in Florida can determine eligibility within minutes.",
   },
   colorado: {
     name: "Colorado", abbr: "CO",
     headline: "Mortgage Lender in Colorado: Denver, Colorado Springs, Aurora & More",
-    intro: "Colorado home prices have risen sharply over the past decade. Denver County and the broader Front Range — including Aurora, Lakewood, and Fort Collins — remain highly competitive. Colorado's effective property tax rate is one of the lowest in the country at around 0.51%, which helps offset the high home prices.",
+    intro: "Colorado home prices have risen sharply over the past decade. Denver County and the broader Front Range, including Aurora, Lakewood, and Fort Collins, remain highly competitive. Colorado's effective property tax rate is one of the lowest in the country at around 0.51%, which helps offset the high home prices.",
     programs: "CHFA (Colorado Housing Finance Authority) offers below-market first mortgage rates and down payment assistance for qualifying first-time buyers across the state. Fort Collins and Boulder have additional local programs. HCMG loan officers are certified CHFA lenders.",
   },
   georgia: {
@@ -50,12 +50,12 @@ const STATE_META: Record<string, {
     name: "Virginia", abbr: "VA",
     headline: "Mortgage Lender in Virginia: Virginia Beach, Richmond, Norfolk & More",
     intro: "Virginia's housing market is shaped by two distinct corridors: Northern Virginia (close to Washington DC) commands some of the highest home prices east of California, while Hampton Roads (Virginia Beach, Norfolk, Chesapeake) and Richmond offer more moderate pricing. Northern Virginia buyers in Fairfax, Arlington, and Loudoun counties often require jumbo financing.",
-    programs: "The Virginia Housing Development Authority (VHDA) offers down payment assistance and competitive first mortgage rates for qualifying buyers statewide. Military buyers purchasing near Virginia Beach, Norfolk, or Quantico frequently benefit from HCMG's VA loan expertise — zero down, no PMI.",
+    programs: "The Virginia Housing Development Authority (VHDA) offers down payment assistance and competitive first mortgage rates for qualifying buyers statewide. Military buyers purchasing near Virginia Beach, Norfolk, or Quantico frequently benefit from HCMG's VA loan expertise, zero down, no PMI.",
   },
   maryland: {
     name: "Maryland", abbr: "MD",
     headline: "Mortgage Lender in Maryland: Baltimore, Silver Spring, Rockville & More",
-    intro: "Maryland's proximity to Washington DC makes Montgomery County (Silver Spring, Rockville, Gaithersburg) and Prince George's County (Bowie) highly sought-after markets. Property taxes in Maryland average 1.09% statewide but vary significantly by county — Baltimore City's effective rate is higher than suburban Montgomery County's.",
+    intro: "Maryland's proximity to Washington DC makes Montgomery County (Silver Spring, Rockville, Gaithersburg) and Prince George's County (Bowie) highly sought-after markets. Property taxes in Maryland average 1.09% statewide but vary significantly by county, Baltimore City's effective rate is higher than suburban Montgomery County's.",
     programs: "The Maryland Mortgage Program (MMP) offers competitive interest rates and down payment assistance for first-time and repeat buyers in select circumstances. The SmartBuy program also helps buyers with student loan debt. HCMG loan officers serving Maryland are MMP-certified.",
   },
   california: {
@@ -67,20 +67,20 @@ const STATE_META: Record<string, {
   dc: {
     name: "Washington DC", abbr: "DC",
     headline: "Mortgage Lender in Washington DC",
-    intro: "Washington DC has some of the highest median home prices on the East Coast — often exceeding $640,000 — yet features a comparatively low property tax rate of 0.55%. The DC market is highly competitive, and buyers without pre-approval letters frequently lose out on offers in popular neighborhoods like Capitol Hill, Shaw, and Anacostia.",
+    intro: "Washington DC has some of the highest median home prices on the East Coast, often exceeding $640,000, yet features a comparatively low property tax rate of 0.55%. The DC market is highly competitive, and buyers without pre-approval letters frequently lose out on offers in popular neighborhoods like Capitol Hill, Shaw, and Anacostia.",
     programs: "The DC Department of Housing and Community Development (DHCD) offers the Home Purchase Assistance Program (HPAP) for low-to-moderate income buyers. The Employer Assisted Housing Program (EAHP) and DC Open Doors are additional options. HCMG's loan officers serving DC can walk you through federal programs as well.",
   },
   mississippi: {
     name: "Mississippi", abbr: "MS",
     headline: "Mortgage Lender in Mississippi: Jackson, Gulfport, Hattiesburg & More",
     intro: "Mississippi consistently ranks among the most affordable housing markets in the country. Median home prices in Jackson and Hattiesburg are well below $200,000, and property tax rates average just 0.65%. For buyers with limited upfront capital, Mississippi is one of the best markets to leverage a low down payment FHA or USDA loan.",
-    programs: "The Mississippi Home Corporation (MHC) offers the Smart6 mortgage program with below-market rates and the MHC Down Payment Assistance program. USDA loan eligibility is widespread across Mississippi's largely rural and suburban areas — many buyers qualify for 100% financing through USDA.",
+    programs: "The Mississippi Home Corporation (MHC) offers the Smart6 mortgage program with below-market rates and the MHC Down Payment Assistance program. USDA loan eligibility is widespread across Mississippi's largely rural and suburban areas, many buyers qualify for 100% financing through USDA.",
   },
   alabama: {
     name: "Alabama", abbr: "AL",
     headline: "Mortgage Lender in Alabama: Birmingham, Huntsville, Mobile & More",
-    intro: "Alabama is one of the most underrated homebuying markets in the Southeast. Property tax rates average under 0.40% — among the lowest in the nation — which can save a buyer hundreds of dollars per month compared to neighboring Georgia or Tennessee. The Huntsville-Madison County corridor has emerged as a top-10 fastest-growing metro in the country, driven by aerospace, defense, and technology employment at Redstone Arsenal and the Cummings Research Park. Birmingham's Jefferson County suburbs (Hoover, Vestavia Hills, Homewood, Mountain Brook) offer strong school districts and appreciating home values. Mobile's Gulf Coast access, and the Auburn-Opelika market anchored by Auburn University and a growing automotive manufacturing sector, round out HCMG's Alabama footprint.",
-    programs: "Down payment assistance is available for qualifying buyers across Alabama — covering a portion of your down payment and in some cases closing costs too. USDA loans are widely available across Alabama's largely rural and suburban counties, offering 100% financing for eligible buyers. HCMG's Alabama-licensed loan officers will review your income, credit, and purchase price and match you to every program you qualify for, including options many buyers don't know exist.",
+    intro: "Alabama is one of the most underrated homebuying markets in the Southeast. Property tax rates average under 0.40%, among the lowest in the nation, which can save a buyer hundreds of dollars per month compared to neighboring Georgia or Tennessee. The Huntsville-Madison County corridor has emerged as a top-10 fastest-growing metro in the country, driven by aerospace, defense, and technology employment at Redstone Arsenal and the Cummings Research Park. Birmingham's Jefferson County suburbs (Hoover, Vestavia Hills, Homewood, Mountain Brook) offer strong school districts and appreciating home values. Mobile's Gulf Coast access, and the Auburn-Opelika market anchored by Auburn University and a growing automotive manufacturing sector, round out HCMG's Alabama footprint.",
+    programs: "Down payment assistance is available for qualifying buyers across Alabama, covering a portion of your down payment and in some cases closing costs too. USDA loans are widely available across Alabama's largely rural and suburban counties, offering 100% financing for eligible buyers. HCMG's Alabama-licensed loan officers will review your income, credit, and purchase price and match you to every program you qualify for, including options many buyers don't know exist.",
     googleMapUrl: "https://www.google.com/maps/search/harris+capital+mortgage+birmingham+alabama",
   },
 };
@@ -191,7 +191,7 @@ export default async function StateAreaPage({ params }: { params: Promise<{ stat
         </div>
       </section>
 
-      {/* City grid — every city links to its own loan pages */}
+      {/* City grid, every city links to its own loan pages */}
       <section className="section-pad bg-white">
         <div className="container-shell max-w-5xl">
           <h2 className="mb-8 text-2xl font-extrabold text-ink">

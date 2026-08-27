@@ -13,13 +13,13 @@ export default async function LoFunnelRedirect({ params, searchParams }: Props) 
   const { lo: loSlug, funnel: funnelSlug } = await params;
   const query = await searchParams;
 
-  // Validate funnel slug exists in our catalog — this is pure in-memory, never fails
+  // Validate funnel slug exists in our catalog, this is pure in-memory, never fails
   const funnelDef = getFunnelBySlug(funnelSlug);
   if (!funnelDef) notFound();
 
   const sb = createServiceClient();
 
-  // Validate LO exists and is active — use profiles as source of truth.
+  // Validate LO exists and is active, use profiles as source of truth.
   // funnel_links may not be populated yet (backfill pending), so never gate on it.
   const { data: profile } = await sb
     .from("profiles")
@@ -30,7 +30,7 @@ export default async function LoFunnelRedirect({ params, searchParams }: Props) 
 
   if (!profile) notFound();
 
-  // Best-effort click counter — try per-funnel row first, fall back to base link
+  // Best-effort click counter, try per-funnel row first, fall back to base link
   sb.from("funnel_links")
     .select("clicks")
     .eq("lo_slug", loSlug)
@@ -44,7 +44,7 @@ export default async function LoFunnelRedirect({ params, searchParams }: Props) 
           .eq("lo_slug", loSlug)
           .eq("funnel_type", funnelSlug);
       } else {
-        // Funnel variant row not found (backfill pending) — increment the base link
+        // Funnel variant row not found (backfill pending), increment the base link
         sb.from("funnel_links")
           .select("clicks")
           .eq("lo_slug", loSlug)

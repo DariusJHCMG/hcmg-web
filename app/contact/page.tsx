@@ -42,7 +42,7 @@ function ContactInfo() {
       </div>
       <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">Hours</p>
-        <p className="text-sm leading-7 text-muted">Mon – Fri, 9am – 6pm ET</p>
+        <p className="text-sm leading-7 text-muted">Mon, Fri, 9am, 6pm ET</p>
       </div>
       <div className="rounded-2xl border border-line bg-sand p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted mb-2">NMLS# 1918223</p>

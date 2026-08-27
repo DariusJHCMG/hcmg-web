@@ -8,7 +8,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Mortgage Calculator: PITI Payment, FHA, Amortization | HCMG",
   description:
-    "Free mortgage calculator with PITI breakdown — Principal, Interest, Taxes & Insurance. Includes FHA loan calculator with MIP, VA, USDA, amortization schedule, and PMI. No credit check. Harris Capital Mortgage Group · NMLS# 1918223.",
+    "Free mortgage calculator with PITI breakdown, Principal, Interest, Taxes & Insurance. Includes FHA loan calculator with MIP, VA, USDA, amortization schedule, and PMI. No credit check. Harris Capital Mortgage Group · NMLS# 1918223.",
   keywords: [
     "mortgage calculator", "fha loan calculator", "mortgage calculator with pmi taxes and insurance",
     "amortization calculator mortgage", "piti mortgage calculator", "mortgage payment calculator",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Mortgage Calculator with PITI, FHA & Amortization | HCMG",
     description:
-      "Calculate your full monthly mortgage payment — PITI breakdown, FHA MIP, amortization schedule, PMI. Free, no credit check. Works for purchase or refinance.",
+      "Calculate your full monthly mortgage payment, PITI breakdown, FHA MIP, amortization schedule, PMI. Free, no credit check. Works for purchase or refinance.",
     url: "https://hcmgloans.com/mortgage-calculator",
     images: ["/hcmg-social.png"],
   },
@@ -57,7 +57,7 @@ const faqSchema = {
       name: "What will my estimated mortgage payment be?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Your estimated mortgage payment depends on four main factors: home price, down payment, interest rate, and loan term. As a rough estimate: on a $400,000 home with 20% down, a 30-year loan at 7% results in a principal and interest payment of about $2,129/month. Add property taxes (~$400/mo), insurance (~$150/mo), and your total estimated mortgage payment (PITI) is around $2,679/month. Use the calculator above to get an estimate based on your exact numbers — it updates instantly as you adjust the sliders.",
+        text: "Your estimated mortgage payment depends on four main factors: home price, down payment, interest rate, and loan term. As a rough estimate: on a $400,000 home with 20% down, a 30-year loan at 7% results in a principal and interest payment of about $2,129/month. Add property taxes (~$400/mo), insurance (~$150/mo), and your total estimated mortgage payment (PITI) is around $2,679/month. Use the calculator above to get an estimate based on your exact numbers, it updates instantly as you adjust the sliders.",
       },
     },
     {
@@ -65,7 +65,7 @@ const faqSchema = {
       name: "How do I estimate a mortgage payment on a house?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "To estimate a mortgage payment on a house: (1) Enter the home price in the calculator above. (2) Set your down payment percentage — 3.5% for FHA, 0% for VA/USDA, or 3–20% for conventional. (3) Enter the current interest rate — use the rate your lender quoted, or a market estimate. (4) Choose your loan term (usually 30 years). The calculator will show your full monthly payment estimate including taxes and insurance. For the most accurate estimate, speak with an HCMG loan officer — they can pull live rates based on your credit profile.",
+        text: "To estimate a mortgage payment on a house: (1) Enter the home price in the calculator above. (2) Set your down payment percentage, 3.5% for FHA, 0% for VA/USDA, or 3–20% for conventional. (3) Enter the current interest rate, use the rate your lender quoted, or a market estimate. (4) Choose your loan term (usually 30 years). The calculator will show your full monthly payment estimate including taxes and insurance. For the most accurate estimate, speak with an HCMG loan officer, they can pull live rates based on your credit profile.",
       },
     },
     {
@@ -147,7 +147,7 @@ export default function MortgageCalculatorPage() {
             Also called: Home Loan Calculator · House Payment Calculator · Loan Calculator · Payment Calculator
           </p>
           <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-muted">
-            Free mortgage calculator and payment estimator — instantly estimate your monthly mortgage payment including principal, interest, property taxes, insurance (PITI), FHA MIP, and PMI. No credit check. No sign-up.
+            Free mortgage calculator and payment estimator, instantly estimate your monthly mortgage payment including principal, interest, property taxes, insurance (PITI), FHA MIP, and PMI. No credit check. No sign-up.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm font-semibold text-muted">
             {["FHA, VA, USDA & Conventional", "Full PITI + MIP/PMI breakdown", "Amortization schedule included"].map((t) => (
@@ -163,17 +163,17 @@ export default function MortgageCalculatorPage() {
       {/* Calculator */}
       <Calculator
         heading="Calculate your monthly payment"
-        subheading="Adjust the sliders — your estimate updates instantly. Unlock your full breakdown free."
+        subheading="Adjust the sliders, your estimate updates instantly. Unlock your full breakdown free."
       />
 
-      {/* Keyword variant section — targets "home loan calculator", "house payment calculator", etc. */}
+      {/* Keyword variant section, targets "home loan calculator", "house payment calculator", etc. */}
       <section className="section-pad bg-sand" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
         <div className="container-shell max-w-4xl">
           <div className="grid gap-6 sm:grid-cols-3 text-center">
             {[
               { heading: "Home Loan Calculator", body: "Use this free home loan calculator to estimate your monthly mortgage payment. Supports FHA, VA, USDA, and conventional loans with full PITI breakdown." },
-              { heading: "House Payment Calculator", body: "Figuring out house payments is easy — enter your home price, down payment, and rate. Your estimated house payment updates instantly including taxes and insurance." },
-              { heading: "Loan Payment Estimator", body: "Not sure what your loan payment will be? This free mortgage loan calculator and payment estimator gives you an instant breakdown — no personal info required." },
+              { heading: "House Payment Calculator", body: "Figuring out house payments is easy, enter your home price, down payment, and rate. Your estimated house payment updates instantly including taxes and insurance." },
+              { heading: "Loan Payment Estimator", body: "Not sure what your loan payment will be? This free mortgage loan calculator and payment estimator gives you an instant breakdown, no personal info required." },
             ].map((item) => (
               <div key={item.heading} className="rounded-2xl border border-line bg-white p-5">
                 <h2 className="text-base font-extrabold text-ink">{item.heading}</h2>
@@ -226,7 +226,7 @@ export default function MortgageCalculatorPage() {
       {/* FAQ */}
       <section className="section-pad bg-white">
         <div className="container-shell max-w-3xl">
-          <h2 className="mb-8 text-2xl font-extrabold text-ink">Mortgage calculator — common questions</h2>
+          <h2 className="mb-8 text-2xl font-extrabold text-ink">Mortgage calculator, common questions</h2>
           <div className="space-y-4">
             {faqSchema.mainEntity.map((faq) => (
               <div key={faq.name} className="rounded-2xl border border-line bg-white p-6">
@@ -244,7 +244,7 @@ export default function MortgageCalculatorPage() {
         <div className="container-shell max-w-3xl text-center">
           <h2 className="text-2xl font-extrabold text-ink lg:text-3xl">Ready for a real number?</h2>
           <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-muted">
-            Your calculator estimate is a starting point. A licensed HCMG loan officer will give you an exact rate and payment based on your actual profile — still no hard credit check.
+            Your calculator estimate is a starting point. A licensed HCMG loan officer will give you an exact rate and payment based on your actual profile, still no hard credit check.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link href="/get-started" className="primary-button">

@@ -9,7 +9,7 @@ import { createServiceClient } from "@/lib/supabase";
 
 export const revalidate = 60;
 
-// Leadership slugs — only these get their portal photo shown on the /team roster page.
+// Leadership slugs, only these get their portal photo shown on the /team roster page.
 // All other roles (LOs, operations) always show the placeholder here; their
 // uploaded photo only appears on their personal /team/[slug] page and funnels.
 function isLeadershipTitle(title: string | null | undefined) {

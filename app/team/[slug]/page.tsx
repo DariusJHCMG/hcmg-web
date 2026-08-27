@@ -15,17 +15,17 @@ import type { Profile } from "@/lib/database.types";
 
 export const revalidate = 3600;
 
-// ── Default copy — used until the user saves their own ────────────
+// ── Default copy, used until the user saves their own ────────────
 const DEFAULT_HERO_BIO = (name: string, role: string) =>
-  `I'm a licensed mortgage professional at Harris Capital Mortgage Group. As ${role} at HCMG I help clients find the right loan program — whether you're buying your first home, moving up, or refinancing. No call centers, no runarounds. Just honest guidance and the best rate I can find you.`;
+  `I'm a licensed mortgage professional at Harris Capital Mortgage Group. As ${role} at HCMG I help clients find the right loan program, whether you're buying your first home, moving up, or refinancing. No call centers, no runarounds. Just honest guidance and the best rate I can find you.`;
 
 const DEFAULT_ABOUT_HEADLINE =
   "A licensed mortgage professional who puts clients first.";
 
 const DEFAULT_LONG_BIO = (name: string, nmls: string | null, offices: string[]) => [
   `${name} is a licensed mortgage professional at Harris Capital Mortgage Group${nmls ? ` (NMLS# ${nmls})` : ""}, serving clients${offices.length > 0 ? ` from HCMG's ${offices.join(" and ")} office${offices.length > 1 ? "s" : ""}` : ""}.`,
-  "At HCMG we have access to dozens of lenders and hundreds of loan programs — which means I shop the market to find the deal that actually fits your situation, not just whatever one bank happens to offer.",
-  "A fuller biography is on the way. In the meantime, start the estimate flow on this page or reach out directly — your file comes straight to me.",
+  "At HCMG we have access to dozens of lenders and hundreds of loan programs, which means I shop the market to find the deal that actually fits your situation, not just whatever one bank happens to offer.",
+  "A fuller biography is on the way. In the meantime, start the estimate flow on this page or reach out directly, your file comes straight to me.",
 ];
 
 const DEFAULT_SPECIALTIES = [
@@ -98,7 +98,7 @@ export default async function TeamMemberPage({
 }) {
   const { slug } = await params;
 
-  // Query DB first — portal-only users (not in data/team.ts) still get a page
+  // Query DB first, portal-only users (not in data/team.ts) still get a page
   const sb = createServiceClient();
   const [{ data: profileData }, { data: reviewData }] = await Promise.all([
     sb.from("profiles").select("*").eq("lo_slug", slug).eq("is_active", true).single(),
@@ -111,7 +111,7 @@ export default async function TeamMemberPage({
   // 404 only if neither DB nor static list knows this slug
   if (!p && !m) notFound();
 
-  // Resolved values — DB takes precedence, data/team.ts as fallback
+  // Resolved values, DB takes precedence, data/team.ts as fallback
   const name          = p?.full_name       ?? m!.name;
   const role          = p?.title           ?? m!.role;
   const phone         = p?.phone           ?? m?.phone ?? "";
@@ -184,14 +184,14 @@ export default async function TeamMemberPage({
       <NavBar />
 
       {/* ══════════════════════════════════════════════════════════ */}
-      {/* HERO — white bg, home-page style                         */}
+      {/* HERO, white bg, home-page style                         */}
       {/* ══════════════════════════════════════════════════════════ */}
       <section className="relative overflow-hidden bg-white" style={{ paddingTop: "clamp(72px, 10vw, 120px)", paddingBottom: "clamp(64px, 8vw, 100px)" }}>
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-hero-glow" />
 
         <div className="container-shell grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
 
-          {/* Left — headline + copy */}
+          {/* Left, headline + copy */}
           <div>
             <SectionEyebrow className="mb-6">
               Harris Capital Mortgage Group · NMLS# 1918223
@@ -209,8 +209,8 @@ export default async function TeamMemberPage({
 
             {/* Trust row */}
             <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
-              <CheckItem>Dozens of lenders — best rate for you</CheckItem>
-              <CheckItem>No call center — your file stays with me</CheckItem>
+              <CheckItem>Dozens of lenders, best rate for you</CheckItem>
+              <CheckItem>No call center, your file stays with me</CheckItem>
               <CheckItem>No hard credit check · No commitment</CheckItem>
             </ul>
 
@@ -226,11 +226,11 @@ export default async function TeamMemberPage({
               )}
             </div>
             <p className="mt-4 text-xs text-muted/60">
-              Your info routes directly to {first} — no rotation, no call center.
+              Your info routes directly to {first}, no rotation, no call center.
             </p>
           </div>
 
-          {/* Right — profile photo */}
+          {/* Right, profile photo */}
           <div className="overflow-hidden rounded-3xl border border-line shadow-soft">
             <TeamPhoto photo={photo} name={name} aspect="3 / 4" />
           </div>
@@ -349,7 +349,7 @@ export default async function TeamMemberPage({
       </section>
 
       {/* ══════════════════════════════════════════════════════════ */}
-      {/* FREE ESTIMATE FUNNEL — full-width own section            */}
+      {/* FREE ESTIMATE FUNNEL, full-width own section            */}
       {/* ══════════════════════════════════════════════════════════ */}
       <section id="funnel" className="bg-sand py-20 scroll-mt-20">
         <div className="container-shell max-w-2xl text-center">
@@ -391,7 +391,7 @@ export default async function TeamMemberPage({
             Let&apos;s talk about your next home.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-white/80">
-            No pressure, no obligation. Start the free estimate above or reach out directly — {first} answers their own phone.
+            No pressure, no obligation. Start the free estimate above or reach out directly, {first} answers their own phone.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#funnel" className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white bg-white px-6 py-4 text-base font-semibold text-accent transition hover:bg-white/90">

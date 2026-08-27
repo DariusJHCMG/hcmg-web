@@ -10,23 +10,23 @@ interface FAQItem {
 const FAQS: FAQItem[] = [
   {
     q: "How is working with HCMG different from going to my bank?",
-    a: "Your bank can only offer you their own products and rates. As an independent mortgage broker, HCMG has access to dozens of lenders and hundreds of loan programs — which means we compare the market for you and find the deal that actually fits your situation, not just what one institution happens to offer this week.",
+    a: "Your bank can only offer you their own products and rates. As an independent mortgage broker, HCMG has access to dozens of lenders and hundreds of loan programs, which means we compare the market for you and find the deal that actually fits your situation, not just what one institution happens to offer this week.",
   },
   {
     q: (name: string) => `Does it cost anything to work with ${name} or HCMG?`,
-    a: "Our consultation is completely free and there's no obligation. Lender-paid compensation means in most cases you pay nothing out of pocket for our origination services. We'll be transparent about all fees upfront — no surprises at closing.",
+    a: "Our consultation is completely free and there's no obligation. Lender-paid compensation means in most cases you pay nothing out of pocket for our origination services. We'll be transparent about all fees upfront, no surprises at closing.",
   },
   {
     q: "Can you help me if I have bad credit or a past bankruptcy?",
-    a: "Yes. We work with lenders who specialize in non-QM, FHA, and credit-flexible programs. Depending on how long ago a bankruptcy or foreclosure occurred, there may be strong options available to you. The only way to know is to have a real conversation — reach out and we'll walk through your file honestly.",
+    a: "Yes. We work with lenders who specialize in non-QM, FHA, and credit-flexible programs. Depending on how long ago a bankruptcy or foreclosure occurred, there may be strong options available to you. The only way to know is to have a real conversation, reach out and we'll walk through your file honestly.",
   },
   {
     q: "How long does the mortgage process take from application to closing?",
-    a: "A typical purchase can close in 21–30 days when the file is clean and both sides are responsive. Some scenarios — VA loans, unique properties, self-employed borrowers — may take a few days longer. We'll give you a realistic timeline up front so you're never left guessing.",
+    a: "A typical purchase can close in 21–30 days when the file is clean and both sides are responsive. Some scenarios, VA loans, unique properties, self-employed borrowers, may take a few days longer. We'll give you a realistic timeline up front so you're never left guessing.",
   },
   {
     q: "I already have a mortgage. Can I still refinance or save money?",
-    a: "Absolutely. Even if your current rate feels locked in, a cash-out refinance, rate-and-term refi, or debt consolidation refi might significantly reduce your monthly outlay. We run the numbers at no cost — if it doesn't pencil out we'll tell you, and if it does we'll show you exactly what you save.",
+    a: "Absolutely. Even if your current rate feels locked in, a cash-out refinance, rate-and-term refi, or debt consolidation refi might significantly reduce your monthly outlay. We run the numbers at no cost, if it doesn't pencil out we'll tell you, and if it does we'll show you exactly what you save.",
   },
   {
     q: "What loan programs does HCMG offer?",
@@ -50,7 +50,7 @@ export function FAQSection({ firstName }: { firstName: string }) {
             Your questions, answered by {firstName}.
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-base text-muted">
-            Straight answers about the mortgage process — no jargon, no sales pitch.
+            Straight answers about the mortgage process, no jargon, no sales pitch.
           </p>
         </div>
 

@@ -92,7 +92,7 @@ export default function AreasWeServePage() {
             </h2>
             <p className="mb-5 text-base text-muted">
               Our licensed loan officers know the local market in every city we serve. Get a free
-              estimate — no hard credit check, no commitment.
+              estimate, no hard credit check, no commitment.
             </p>
             <Link href="/get-started" className="primary-button">
               Get my free estimate →

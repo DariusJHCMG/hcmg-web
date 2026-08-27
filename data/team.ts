@@ -6,7 +6,7 @@
 // Mortgage Group LLC, NMLS# 1918223).
 //
 // ✅ Phone, email, avatar_url, and bio are managed via the portal
-//    (Supabase profiles table) — set them there, they show up on
+//    (Supabase profiles table), set them there, they show up on
 //    the public team pages automatically. No code changes needed.
 // ═══════════════════════════════════════════════════════════════════
 
@@ -272,7 +272,7 @@ export const teamMembers: TeamMember[] = [
 
   // ── Operations ─────────────────────────────────────────────────
   // Placeholder entries removed. Operations team members are managed
-  // via the admin portal — when added there they will appear in this
+  // via the admin portal, when added there they will appear in this
   // section on the public team page automatically.
 ];
 

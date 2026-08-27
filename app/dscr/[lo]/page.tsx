@@ -17,7 +17,7 @@ interface LoProfile {
 }
 
 async function resolveLoProfile(slug: string): Promise<LoProfile | null> {
-  // Enforce allow-list — this page is only for approved LOs
+  // Enforce allow-list, this page is only for approved LOs
   if (!ALLOWED_SLUGS.includes(slug)) return null;
 
   try {
@@ -69,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `DSCR Investment Property Loans | ${profile.name} · HCMG`;
   const description =
-    "Qualify for a DSCR loan based on rental income — not your personal income or tax returns. No W-2s required. Same-day approvals. 100+ lenders. Close in 7-21 days.";
+    "Qualify for a DSCR loan based on rental income, not your personal income or tax returns. No W-2s required. Same-day approvals. 100+ lenders. Close in 7-21 days.";
 
   return {
     title,

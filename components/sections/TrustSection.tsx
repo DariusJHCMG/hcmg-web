@@ -31,7 +31,7 @@ const REVIEWS = [
   },
   {
     initials: "DR",
-    quote: "I've worked with many lenders, but HCMG stands out for their transparency and honesty. No hidden fees — what they quoted is what I got.",
+    quote: "I've worked with many lenders, but HCMG stands out for their transparency and honesty. No hidden fees, what they quoted is what I got.",
     name: "David R.",
     location: "Las Vegas, NV",
   },

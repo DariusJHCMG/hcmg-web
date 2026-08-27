@@ -185,7 +185,7 @@ export default async function GlossaryTermPage({
         </section>
       )}
 
-      {/* Linked local pages — only shown for loan-type glossary terms */}
+      {/* Linked local pages, only shown for loan-type glossary terms */}
       {linkedSeoPages.length > 0 && (
         <section className="bg-white py-16">
           <div className="container-shell max-w-3xl">

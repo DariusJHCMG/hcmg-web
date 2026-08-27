@@ -32,7 +32,7 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
 
 
   const STEPS = [
-    { n: "1", title: "We review your details",       body: "Your property scenario is reviewed — usually within 1 hour." },
+    { n: "1", title: "We review your details",       body: "Your property scenario is reviewed, usually within 1 hour." },
     { n: "2", title: `${firstName} reaches out`,     body: `${firstName} calls or texts to confirm your deal and answer questions.` },
     { n: "3", title: "Pre-approval in 24–48 hrs",    body: "No W-2s. No tax returns. Just the property details you provided." },
     { n: "4", title: "Close in 7–21 days",           body: "Our streamlined process gets you to the closing table fast." },
@@ -41,10 +41,10 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
   return (
     <div className="min-h-screen font-sans" style={{ background: "#f7f8fa" }}>
 
-      {/* ── Nav — no link, not clickable ── */}
+      {/* ── Nav, no link, not clickable ── */}
       <nav className="sticky top-0 z-50 bg-white border-b border-line shadow-sm">
         <div className="container-shell flex items-center justify-between h-14">
-          {/* Plain div — intentionally not a link */}
+          {/* Plain div, intentionally not a link */}
           <div className="flex items-center gap-2 select-none">
             <span className="text-base font-extrabold tracking-tight" style={{ color: "#142850" }}>HCMG</span>
             <span className="hidden sm:block text-xs text-muted border-l border-line pl-2">Harris Capital Mortgage Group</span>
@@ -132,7 +132,7 @@ export function DscrThankYou({ loSlug, loName, loNmls, loPhone }: Props) {
             Schedule a Call
           </p>
           <p className="text-xs text-muted mb-4">
-            Book a free 30-minute strategy call with {firstName} — no pressure, just answers.
+            Book a free 30-minute strategy call with {firstName}, no pressure, just answers.
           </p>
           <a
             href="https://cal.com/darius-james/dscr-strategy-call"

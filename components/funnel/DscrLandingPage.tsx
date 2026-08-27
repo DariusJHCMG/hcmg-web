@@ -64,11 +64,11 @@ const FAQS = [
   },
   {
     q: "Can I qualify for a DSCR loan without showing personal income?",
-    a: "Absolutely! That's the primary advantage of DSCR loans for real estate investors. We qualify you based on the debt service coverage ratio — essentially whether the property's rental income can cover the mortgage payment plus taxes and insurance. With your 680+ credit score and 20-25% down payment, we don't need to see your personal W-2s, tax returns, or employment verification. This is perfect for investors who maximize tax write-offs and show reduced income on paper, self-employed business owners with complex income structures, and investors with multiple properties who exceed conventional loan limits.",
+    a: "Absolutely! That's the primary advantage of DSCR loans for real estate investors. We qualify you based on the debt service coverage ratio, essentially whether the property's rental income can cover the mortgage payment plus taxes and insurance. With your 680+ credit score and 20-25% down payment, we don't need to see your personal W-2s, tax returns, or employment verification. This is perfect for investors who maximize tax write-offs and show reduced income on paper, self-employed business owners with complex income structures, and investors with multiple properties who exceed conventional loan limits.",
   },
 ];
 
-// ── FAQ item — always open, no collapse ──────────────────────────────────────
+// ── FAQ item, always open, no collapse ──────────────────────────────────────
 function FaqItem({ q, a }: { q: string; a: string }) {
   return (
     <div className="rounded-2xl border border-line bg-white px-6 py-5">
@@ -249,7 +249,7 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
 
       {/* ── Hero ── */}
       <section className="relative bg-brand overflow-hidden">
-        {/* Faint house silhouette overlay — mirrors the Barrett reference */}
+        {/* Faint house silhouette overlay, mirrors the Barrett reference */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(255,255,255,0.06),transparent)]" />
         <div className="container-shell relative py-14 lg:py-18">
           <div className="max-w-3xl mx-auto text-center">
@@ -260,7 +260,7 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
             <div className="mt-8 mx-auto max-w-2xl bg-white rounded-2xl shadow-card text-left overflow-hidden">
               <div className="flex flex-col sm:flex-row items-stretch">
 
-                {/* Left — logo + stars */}
+                {/* Left, logo + stars */}
                 <div className="flex flex-col items-center justify-center gap-3 px-6 py-5 sm:border-r border-b sm:border-b-0 border-line bg-white min-w-[140px]">
                   <div className="flex flex-col items-center">
                     <span className="text-3xl font-extrabold text-brand tracking-tight leading-none">HCMG</span>
@@ -275,7 +275,7 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
                   </div>
                 </div>
 
-                {/* Middle — name + checklist */}
+                {/* Middle, name + checklist */}
                 <div className="flex-1 px-5 py-4">
                   <p className="font-bold text-sm text-ink">Harris Capital Mortgage Group | NMLS #{lo.nmls ?? "1918223"}</p>
                   <p className="text-xs text-muted mb-3">Top Rated Private Mortgage Lender</p>
@@ -297,7 +297,7 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
                   </ul>
                 </div>
 
-                {/* Right — CTA + phone */}
+                {/* Right, CTA + phone */}
                 <div className="flex flex-col items-center justify-center gap-3 px-5 py-5 sm:border-l border-t sm:border-t-0 border-line bg-sand min-w-[150px]">
                   <button
                     onClick={startForm}
@@ -363,7 +363,7 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
               </div>
 
               <p className="mt-4 text-sm text-muted leading-relaxed">
-                Darius specializes exclusively in investor financing — DSCR, Non-QM, and portfolio lending.
+                Darius specializes exclusively in investor financing, DSCR, Non-QM, and portfolio lending.
                 When you submit this form, it goes directly to him. No call center. No rep rotation.
               </p>
             </div>
@@ -483,7 +483,7 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
               form={form}
               set={set}
               onNext={(next, selectedValue) => {
-                // Credit score filter — anything below 640 is disqualified.
+                // Credit score filter, anything below 640 is disqualified.
                 // selectedValue is passed directly from the click so we never
                 // read stale state from form.creditRange.
                 if (formStep === 8) {
@@ -513,7 +513,7 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
 
           {formStep === "disqualified" && (
             <div className="text-center py-4">
-              {/* Green checkmark — matches Barrett screenshot exactly */}
+              {/* Green checkmark, matches Barrett screenshot exactly */}
               <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -586,7 +586,7 @@ export function DscrLandingPage({ lo }: { lo: LoContext }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Form Steps Component — Barrett style
+// Form Steps Component, Barrett style
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface StepProps {
@@ -713,7 +713,7 @@ function FormStepView({ step, totalSteps, form, set, onNext, onBack }: StepProps
           </div>
         )}
 
-        {/* Step 5 — price slider */}
+        {/* Step 5, price slider */}
         {step === 5 && (
           <div className="px-2">
             <p className="text-2xl font-extrabold text-ink mb-4">{fmtPrice(priceVal)}</p>
@@ -732,7 +732,7 @@ function FormStepView({ step, totalSteps, form, set, onNext, onBack }: StepProps
           </div>
         )}
 
-        {/* Step 6 — down payment slider (reusing monthlyRentalIncome field for now, label only) */}
+        {/* Step 6, down payment slider (reusing monthlyRentalIncome field for now, label only) */}
         {step === 6 && (
           <div className="px-2">
             <p className="text-2xl font-extrabold text-ink mb-4">
@@ -755,14 +755,14 @@ function FormStepView({ step, totalSteps, form, set, onNext, onBack }: StepProps
 
         {step === 7 && ([
           ["under-1500",  "Under $1,500 / mo"],
-          ["1500-2500",   "$1,500 – $2,500 / mo"],
-          ["2500-4000",   "$2,500 – $4,000 / mo"],
+          ["1500-2500",   "$1,500, $2,500 / mo"],
+          ["2500-4000",   "$2,500, $4,000 / mo"],
           ["4000-plus",   "$4,000+ / mo"],
         ] as [string, string][]).map(([v, label]) => (
           <Option key={v} value={v} selected={form.monthlyRentalIncome === v} onClick={() => { set("monthlyRentalIncome", v); onNext(); }}>{label}</Option>
         ))}
 
-        {/* Step 8 — credit score. Value passed to onNext so parent checks it
+        {/* Step 8, credit score. Value passed to onNext so parent checks it
             before React re-renders (avoids stale closure on form.creditRange). */}
         {step === 8 && ([
           ["760-plus",  "720+"],
@@ -812,7 +812,7 @@ function FormStepView({ step, totalSteps, form, set, onNext, onBack }: StepProps
   );
 }
 
-// ── Step shell wrapper — kept for ContactStepView compatibility ───────────────
+// ── Step shell wrapper, kept for ContactStepView compatibility ───────────────
 function StepShell({
   sub, children,
 }: { label?: string; sub: string; highlight?: boolean; children: React.ReactNode }) {

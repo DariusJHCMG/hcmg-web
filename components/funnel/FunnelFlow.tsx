@@ -78,7 +78,7 @@ function getEstimate(state: FunnelState) {
     annualTaxes: price * 0.012, annualInsurance: price * 0.0045,
   });
 
-  // loanPath is resolved later from estimateContext — return the credit-based fallback
+  // loanPath is resolved later from estimateContext, return the credit-based fallback
   return { powerLow, powerHigh, monthly: Math.round(est.totalMonthlyPayment), loanPathFallback: LOAN_PATH[credit] };
 }
 
@@ -131,7 +131,7 @@ export function FunnelFlow({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cfg.goalPreset]);
 
-  // Calendly booking_complete tracking — fires when user completes a Calendly booking
+  // Calendly booking_complete tracking, fires when user completes a Calendly booking
   useEffect(() => {
     if (!coBrandedPageId || !calendarUrl) return;
     function onMessage(e: MessageEvent) {
@@ -373,13 +373,13 @@ export function FunnelFlow({
               <div className="grid grid-cols-2 gap-3">
                 {(state.goal === "refinance" ? [
                   { v: "under-250" as PriceBand, label: "Under $250,000" },
-                  { v: "250-400"   as PriceBand, label: "$250k – $400k" },
-                  { v: "400-600"   as PriceBand, label: "$400k – $600k" },
+                  { v: "250-400"   as PriceBand, label: "$250k, $400k" },
+                  { v: "400-600"   as PriceBand, label: "$400k, $600k" },
                   { v: "600-plus"  as PriceBand, label: "Over $600,000" },
                 ] : [
                   { v: "under-250" as PriceBand, label: "Under $250,000" },
-                  { v: "250-400"   as PriceBand, label: "$250k – $400k" },
-                  { v: "400-600"   as PriceBand, label: "$400k – $600k" },
+                  { v: "250-400"   as PriceBand, label: "$250k, $400k" },
+                  { v: "400-600"   as PriceBand, label: "$400k, $600k" },
                   { v: "600-plus"  as PriceBand, label: "Over $600,000" },
                 ]).map((o) => (
                   <button key={o.v} onClick={() => set("priceBand", o.v)}
@@ -403,8 +403,8 @@ export function FunnelFlow({
               <div className="grid grid-cols-2 gap-3">
                 {([
                   { v: "760-plus"  as CreditBand, label: "760+",       sub: "Excellent" },
-                  { v: "700-759"   as CreditBand, label: "700 – 759",  sub: "Good" },
-                  { v: "640-699"   as CreditBand, label: "640 – 699",  sub: "Fair" },
+                  { v: "700-759"   as CreditBand, label: "700, 759",  sub: "Good" },
+                  { v: "640-699"   as CreditBand, label: "640, 699",  sub: "Fair" },
                   { v: "below-640" as CreditBand, label: "Below 640",  sub: "Building" },
                 ]).map((o) => (
                   <button key={o.v} onClick={() => set("creditBand", o.v)}
@@ -415,7 +415,7 @@ export function FunnelFlow({
                 ))}
               </div>
               <p className="mt-3 text-xs text-muted/70">
-                Not sure? Pick the range that feels closest — we&apos;ll work from there.
+                Not sure? Pick the range that feels closest, we&apos;ll work from there.
               </p>
             </StepShell>
           )}
@@ -432,8 +432,8 @@ export function FunnelFlow({
               <div className="grid grid-cols-2 gap-3">
                 {([
                   { v: "under-75"  as IncomeBand, label: "Under $75,000" },
-                  { v: "75-125"    as IncomeBand, label: "$75k – $125k" },
-                  { v: "125-200"   as IncomeBand, label: "$125k – $200k" },
+                  { v: "75-125"    as IncomeBand, label: "$75k, $125k" },
+                  { v: "125-200"   as IncomeBand, label: "$125k, $200k" },
                   { v: "200-plus"  as IncomeBand, label: "Over $200,000" },
                 ]).map((o) => (
                   <button key={o.v} onClick={() => set("incomeBand", o.v)}
@@ -464,13 +464,13 @@ export function FunnelFlow({
 
               {/* Gated cards */}
               <div className="relative">
-                {/* Blurred cards — teaser */}
+                {/* Blurred cards, teaser */}
                 <div className="select-none blur-sm pointer-events-none space-y-4" aria-hidden="true">
                   {(() => {
                     const ec = cfg.estimateContext ?? {};
                     const loanPath = ec.loanPath ?? estimate.loanPathFallback;
                     return [
-                      { label: ec.powerLabel   ?? "Estimated buying power",    value: `${formatCurrency(estimate.powerLow)} – ${formatCurrency(estimate.powerHigh)}`, sub: ec.powerSub  ?? "Based on typical debt-to-income guidelines" },
+                      { label: ec.powerLabel   ?? "Estimated buying power",    value: `${formatCurrency(estimate.powerLow)}, ${formatCurrency(estimate.powerHigh)}`, sub: ec.powerSub  ?? "Based on typical debt-to-income guidelines" },
                       { label: ec.paymentLabel ?? "Estimated monthly payment",  value: `${formatCurrency(estimate.monthly)}/mo`,                                        sub: ec.paymentSub ?? "Est. includes taxes and insurance" },
                       { label: "Recommended loan path",                          value: loanPath,                                                                        sub: ec.loanPathSub ?? "Based on your credit range" },
                     ].map((card) => (
@@ -512,13 +512,13 @@ export function FunnelFlow({
           {step === 6 && (
             <div>
               <h2 className="mb-2 text-2xl font-extrabold text-ink">
-                {funnelType ? "One last step — who should we contact?" : "Unlock your exact rate and next step"}
+                {funnelType ? "One last step, who should we contact?" : "Unlock your exact rate and next step"}
               </h2>
               <p className="mb-4 text-sm text-muted">
                 Tell us where to send your estimate and we&apos;ll connect you with a licensed loan officer.
               </p>
 
-              {/* Estimate summary — only shown if step 5 was in the flow */}
+              {/* Estimate summary, only shown if step 5 was in the flow */}
               {activeSteps.includes(5) && (
                 <div className="mb-6 rounded-2xl border border-line bg-sand px-5 py-3 text-sm text-muted">
                   {cfg.estimateContext?.powerLabel ?? "Estimated buying power"}:{" "}
@@ -669,7 +669,7 @@ export function FunnelFlow({
                   </p>
                 </>
               ) : (
-                /* ── Standard (non-co-branded) success screen — unchanged ── */
+                /* ── Standard (non-co-branded) success screen, unchanged ── */
                 <>
                   <p className="mb-8 text-base leading-7 text-muted">
                     {lo
@@ -702,7 +702,7 @@ export function FunnelFlow({
         </motion.div>
       </AnimatePresence>
 
-      {/* Mobile sticky CTA — only on choice steps (not 5, 6, success) */}
+      {/* Mobile sticky CTA, only on choice steps (not 5, 6, success) */}
       {typeof step === "number" && step < 5 && step !== 6 && (
         <div className="mobile-sticky-cta md:hidden">
           <button

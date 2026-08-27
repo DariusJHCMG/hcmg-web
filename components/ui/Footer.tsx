@@ -30,7 +30,7 @@ const SOCIAL_LINKS = [
   { label: "Twitter / X", href: "https://x.com/harriscapitalmtg" },
 ];
 
-/** Primary state hubs + 2–3 flagship city pages per state — crawlable internal links */
+/** Primary state hubs + 2–3 flagship city pages per state, crawlable internal links */
 const AREAS_WE_SERVE = [
   {
     state: "Nevada",
@@ -117,7 +117,7 @@ const AREAS_WE_SERVE = [
 export function Footer() {
   return (
     <footer className="border-t border-line bg-sand">
-      {/* Areas We Serve — full-width crawlable directory */}
+      {/* Areas We Serve, full-width crawlable directory */}
       <div className="border-b border-line">
         <div className="container-shell py-10">
           <div className="mb-5 flex items-baseline justify-between gap-4">

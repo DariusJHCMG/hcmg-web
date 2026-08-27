@@ -60,8 +60,8 @@ const CALC_DEFS: Record<string, CalcDef> = {
       { key: "down",     label: "Down payment %",     placeholder: "10",      suffix: "%", hint: "Typical: 3.5–20%" },
       { key: "rate",     label: "Interest rate",      placeholder: "6.75",    suffix: "%", hint: "Current 30-yr avg ~6.75%" },
       { key: "term",     label: "Loan term",          placeholder: "30",      suffix: "yrs" },
-      { key: "taxes",    label: "Annual property tax",placeholder: "4,200",   prefix: "$", hint: "Optional — leave blank to estimate" },
-      { key: "hoi",      label: "Annual insurance",   placeholder: "1,600",   prefix: "$", hint: "Optional — leave blank to estimate" },
+      { key: "taxes",    label: "Annual property tax",placeholder: "4,200",   prefix: "$", hint: "Optional, leave blank to estimate" },
+      { key: "hoi",      label: "Annual insurance",   placeholder: "1,600",   prefix: "$", hint: "Optional, leave blank to estimate" },
     ],
     results: [
       {
@@ -330,7 +330,7 @@ const CALC_DEFS: Record<string, CalcDef> = {
     fields: [
       { key: "price",   label: "Target home price",      placeholder: "350,000", prefix: "$" },
       { key: "program", label: "Down payment %",         placeholder: "10",      suffix: "%", hint: "FHA: 3.5% · Conv: 3–20% · VA: 0%" },
-      { key: "taxes",   label: "Local transfer tax rate",placeholder: "0.75",    suffix: "%", hint: "Optional — varies by state/county" },
+      { key: "taxes",   label: "Local transfer tax rate",placeholder: "0.75",    suffix: "%", hint: "Optional, varies by state/county" },
     ],
     results: [
       {
@@ -365,7 +365,7 @@ const CALC_DEFS: Record<string, CalcDef> = {
     fields: [
       { key: "price",   label: "Purchase price",         placeholder: "350,000", prefix: "$" },
       { key: "down",    label: "Down payment %",         placeholder: "10",      suffix: "%" },
-      { key: "state",   label: "Approx. state tax rate", placeholder: "0.75",    suffix: "%", hint: "Varies by state — FL ~0.35%, NY ~1.4%" },
+      { key: "state",   label: "Approx. state tax rate", placeholder: "0.75",    suffix: "%", hint: "Varies by state, FL ~0.35%, NY ~1.4%" },
     ],
     results: [
       {
@@ -394,7 +394,7 @@ const CALC_DEFS: Record<string, CalcDef> = {
       },
     ],
     gateLabel: "Get my itemized closing cost estimate →",
-    gateSubhead: "We'll give you a real Loan Estimate — no surprises.",
+    gateSubhead: "We'll give you a real Loan Estimate, no surprises.",
   },
 
   "income-needed-calc": {
@@ -436,7 +436,7 @@ const CALC_DEFS: Record<string, CalcDef> = {
       },
     ],
     gateLabel: "See if I qualify with my income →",
-    gateSubhead: "We'll tell you exactly where you stand — no credit pull.",
+    gateSubhead: "We'll tell you exactly where you stand, no credit pull.",
   },
 
   "dscr-calculator": {
@@ -480,7 +480,7 @@ const CALC_DEFS: Record<string, CalcDef> = {
           const total = pi + taxes + ins;
           if (total <= 0) return "—";
           const ratio = num(f.rent) / total;
-          return ratio.toFixed(2) + (ratio >= 1.25 ? " ✓ Likely qualifies" : " — May need more rent");
+          return ratio.toFixed(2) + (ratio >= 1.25 ? " ✓ Likely qualifies" : ", May need more rent");
         },
       },
     ],
@@ -878,7 +878,7 @@ export function CalcFunnel({
               <div className="flex flex-col gap-4">
                 {/* Blurred result cards + unlock overlay */}
                 <div className="relative rounded-2xl border border-line bg-sand p-5 overflow-hidden">
-                  {/* Blurred cards — rendered but hidden */}
+                  {/* Blurred cards, rendered but hidden */}
                   <div className="select-none blur-sm pointer-events-none" aria-hidden="true">
                     <h2 className="mb-3 text-sm font-extrabold uppercase tracking-[0.13em] text-muted">
                       Your result

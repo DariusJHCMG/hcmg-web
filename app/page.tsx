@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Harris Capital Mortgage Group: Home Mortgage Company | NMLS# 1918223",
   description:
-    "Harris Capital Mortgage Group is a licensed home mortgage company serving FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. FHA, VA, Conventional, Jumbo, USDA, Refinance & down payment assistance. Find out what you can afford in 60 seconds — no hard credit check.",
+    "Harris Capital Mortgage Group is a licensed home mortgage company serving FL, TX, GA, NV, CO, VA, DC, MD, CA & MS. FHA, VA, Conventional, Jumbo, USDA, Refinance & down payment assistance. Find out what you can afford in 60 seconds, no hard credit check.",
   alternates: { canonical: "https://hcmgloans.com" },
 };
 
@@ -79,7 +79,7 @@ const homeFaqSchema = {
     {
       "@type": "Question",
       name: "Does getting an estimate affect my credit score?",
-      acceptedAnswer: { "@type": "Answer", text: "No. The HCMG estimate is based entirely on information you provide — income range, price range, and credit band. We never run a credit inquiry of any kind during the estimate process. A hard credit pull only happens when you formally apply for a loan." },
+      acceptedAnswer: { "@type": "Answer", text: "No. The HCMG estimate is based entirely on information you provide, income range, price range, and credit band. We never run a credit inquiry of any kind during the estimate process. A hard credit pull only happens when you formally apply for a loan." },
     },
     {
       "@type": "Question",
@@ -113,11 +113,11 @@ const howToSchema = {
   "@context": "https://schema.org",
   "@type": "HowTo",
   name: "How to Get a Mortgage Estimate with HCMG",
-  description: "Get an instant mortgage estimate in under 60 seconds — no hard credit check, no commitment.",
+  description: "Get an instant mortgage estimate in under 60 seconds, no hard credit check, no commitment.",
   totalTime: "PT1M",
   step: [
     { "@type": "HowToStep", position: 1, name: "Tell us your goal", text: "Select whether you want to buy, refinance, or compare options." },
-    { "@type": "HowToStep", position: 2, name: "Share a few details", text: "Select your price range, credit range, and income range — no typing required." },
+    { "@type": "HowToStep", position: 2, name: "Share a few details", text: "Select your price range, credit range, and income range, no typing required." },
     { "@type": "HowToStep", position: 3, name: "See your estimate", text: "Instantly see your estimated buying power, monthly payment, and recommended loan type." },
     { "@type": "HowToStep", position: 4, name: "Connect when ready", text: "A licensed Harris Capital loan officer will reach out within one business day." },
   ],

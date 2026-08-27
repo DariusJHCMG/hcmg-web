@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { STATE_PATHS } from "@/lib/statePaths";
 import { STATE_NAMES } from "@/lib/license-states";
 
-// Real centroids — us-atlas Albers USA 975×610
+// Real centroids, us-atlas Albers USA 975×610
 const CENTROIDS: Record<string,[number,number]> = {
   AK:[125,530], AL:[676,436], AR:[568,393], AZ:[203,385], CA:[91,284],
   CO:[330,289], CT:[887,193], DC:[828,268], DE:[854,257], FL:[742,529],

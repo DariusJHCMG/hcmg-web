@@ -20,7 +20,7 @@ interface Props {
   initialState?: string | null;
 }
 
-// Real centroids — us-atlas Albers USA 975×610
+// Real centroids, us-atlas Albers USA 975×610
 const CENTROIDS: Record<string,[number,number]> = {
   AK:[125,530], AL:[676,436], AR:[568,393], AZ:[203,385], CA:[91,284],
   CO:[330,289], CT:[887,193], DC:[828,268], DE:[854,257], FL:[742,529],
@@ -69,7 +69,7 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
         {/* ── Map ── */}
         <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted">
           {selected
-            ? `Showing loan officers in ${stateNames[selected] ?? selected} — click the state again to clear`
+            ? `Showing loan officers in ${stateNames[selected] ?? selected}, click the state again to clear`
             : "Click any state to find loan officers"}
         </p>
 
@@ -168,7 +168,7 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
           </span>
         </div>
 
-        {/* ── Results panel — BELOW the map ── */}
+        {/* ── Results panel, BELOW the map ── */}
         <div className="mt-10">
 
           {/* Empty state */}
@@ -235,7 +235,7 @@ export function FindLOClient({ teamMembers, licensedStates, pendingStates, state
             </div>
           )}
 
-          {/* Licensed state — LO grid */}
+          {/* Licensed state, LO grid */}
           {selected && isLicensed && (
             <div>
               {/* Section header */}

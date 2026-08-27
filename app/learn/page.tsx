@@ -119,7 +119,7 @@ export default function LearnIndexPage() {
             Ready to put this into practice?
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-muted">
-            A licensed HCMG loan officer will walk through your specific numbers — income, credit, down payment —
+            A licensed HCMG loan officer will walk through your specific numbers, income, credit, down payment —
             and tell you exactly what you qualify for, with no hard credit check required.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">

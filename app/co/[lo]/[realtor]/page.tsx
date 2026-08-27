@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .maybeSingle();
 
   if (!page) return {};
-  const title = `${page.realtor_name} & HCMG — Get Pre-Qualified`;
+  const title = `${page.realtor_name} & HCMG, Get Pre-Qualified`;
   return {
     title,
     description: page.headline ?? `${page.realtor_name} at ${page.realtor_company} partners with Harris Capital Mortgage Group to help you get pre-qualified fast.`,
@@ -44,7 +44,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
     sb.from("profiles").select("*").eq("lo_slug", loSlug).eq("is_active", true).maybeSingle(),
   ]);
 
-  // NOTE: never put notFound() inside a try/catch — Next.js throws NEXT_NOT_FOUND internally
+  // NOTE: never put notFound() inside a try/catch, Next.js throws NEXT_NOT_FOUND internally
   if (!pageRes.data || !pageRes.data.is_active) notFound();
   if (!profileRes.data) notFound();
 
@@ -59,7 +59,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
     is_active: boolean; clicks: number;
   };
 
-  // Increment click counter (fire-and-forget — errors ignored)
+  // Increment click counter (fire-and-forget, errors ignored)
   sb.from("co_branded_pages")
     .update({ clicks: (page.clicks ?? 0) + 1 })
     .eq("id", page.id)
@@ -102,7 +102,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
                 )}
               </div>
             </div>
-            {/* Show names on all screen sizes — abbreviated on mobile */}
+            {/* Show names on all screen sizes, abbreviated on mobile */}
             <span className="text-xs font-bold text-ink leading-tight">
               <span className="sm:hidden">{loFirst} &amp; {realtorFirst}</span>
               <span className="hidden sm:inline">{loFirst} · {realtorFirst} &nbsp;·&nbsp; Harris Capital Mortgage Group</span>
@@ -154,7 +154,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
             Get an initial idea of what you may qualify for with no hard credit check or commitment. {loFirst} will then contact you personally to review your options and help you complete your application and pre-approval.
           </p>
 
-          {/* Two-up partner cards — full-width stacked on mobile */}
+          {/* Two-up partner cards, full-width stacked on mobile */}
           <div className="grid gap-3 sm:grid-cols-2 max-w-2xl mx-auto mb-8">
 
             {/* LO card */}
@@ -205,7 +205,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
 
           </div>
 
-          {/* Trust pills — 2-col grid on mobile, single row on larger */}
+          {/* Trust pills, 2-col grid on mobile, single row on larger */}
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-x-6 gap-y-3 max-w-sm sm:max-w-none mx-auto">
             {["No hard credit check", "Results in 60 seconds", "No commitment required", "File goes direct to " + loFirst].map(t => (
               <div key={t} className="flex items-center gap-2 text-sm font-semibold text-muted">
@@ -241,7 +241,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
               steps: [2, 3, 4, 5, 6],
               overrides: {
                 2: { title: "What price range are you targeting?", sub: "Give us a range and we'll build a real payment estimate." },
-                3: { title: "Where does your credit fall today?", sub: "No hard pull — just a ballpark to shape your options." },
+                3: { title: "Where does your credit fall today?", sub: "No hard pull, just a ballpark to shape your options." },
                 4: { title: "What's your approximate household income?", sub: "Used only to size your buying power estimate." },
                 5: { ctaLabel: "Unlock my exact rate →" },
               },
@@ -273,7 +273,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
                 </div>
               </div>
               <p className="text-sm leading-7 text-muted">
-                {p.hero_bio ?? `${loFirst} is a licensed mortgage professional at Harris Capital Mortgage Group. HCMG has access to dozens of lenders and hundreds of loan programs — meaning ${loFirst} shops the market to find the deal that actually fits your situation.`}
+                {p.hero_bio ?? `${loFirst} is a licensed mortgage professional at Harris Capital Mortgage Group. HCMG has access to dozens of lenders and hundreds of loan programs, meaning ${loFirst} shops the market to find the deal that actually fits your situation.`}
               </p>
               <div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-2">
                 {loPhone && (
@@ -427,7 +427,7 @@ export default async function CoBrandedPublicPage({ params }: Props) {
             Your dream home is one conversation away.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-[15px] text-white/80">
-            {realtorFirst} will find the home. {loFirst} will get you the financing. Start your free estimate above — no credit check, no commitment.
+            {realtorFirst} will find the home. {loFirst} will get you the financing. Start your free estimate above, no credit check, no commitment.
           </p>
           <a href="#funnel"
             className="mt-7 flex w-full sm:inline-flex sm:w-auto items-center justify-center gap-2 rounded-2xl border-2 border-white bg-white px-8 py-4 text-base font-bold text-accent transition hover:bg-white/90">

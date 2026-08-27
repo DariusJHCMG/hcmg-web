@@ -16,9 +16,9 @@ import type { Profile } from "@/lib/database.types";
 
 export const dynamic = "force-dynamic";
 
-// ── Default copy — used until the user saves their own ────────────
+// ── Default copy, used until the user saves their own ────────────
 const DEFAULT_HERO_BIO =
-  "I started HCMG because the mortgage industry needed more transparency — fewer call centers, fewer runarounds, and more real conversations about what a loan actually costs and what it can do for your family.";
+  "I started HCMG because the mortgage industry needed more transparency, fewer call centers, fewer runarounds, and more real conversations about what a loan actually costs and what it can do for your family.";
 
 const DEFAULT_HERO_BIO_2 =
   "With 15+ years in the business and access to dozens of lenders and hundreds of loan programs, I shop the market for you. No pressure. Just honest numbers.";
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Lamont Harris Jr., HCMG Founder & CEO",
     description:
-      "Work directly with Lamont Harris Jr. on your home purchase or refinance. No call center, no rotation — your file routed directly to Lamont.",
+      "Work directly with Lamont Harris Jr. on your home purchase or refinance. No call center, no rotation, your file routed directly to Lamont.",
     url: "https://hcmgloans.com/team/lamont-harris-jr",
     images: ["/team/placeholder.svg"],
   },
@@ -83,7 +83,7 @@ export default async function LamontPage() {
   const p = profileData as Profile | null;
   const m = getTeamMemberBySlug("lamont-harris-jr")!;
 
-  // Resolved values — DB takes precedence, data/team.ts or defaults as fallback
+  // Resolved values, DB takes precedence, data/team.ts or defaults as fallback
   const name         = p?.full_name       ?? m.name;
   const role         = p?.title           ?? m.role;
   const phone        = p?.phone           ?? m.phone ?? "";
@@ -151,14 +151,14 @@ export default async function LamontPage() {
       <NavBar />
 
       {/* ══════════════════════════════════════════════════════════ */}
-      {/* HERO — white bg, home-page style                         */}
+      {/* HERO, white bg, home-page style                         */}
       {/* ══════════════════════════════════════════════════════════ */}
       <section className="relative overflow-hidden bg-white" style={{ paddingTop: "clamp(72px, 10vw, 120px)", paddingBottom: "clamp(64px, 8vw, 100px)" }}>
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-hero-glow" />
 
         <div className="container-shell grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
 
-          {/* Left — headline + copy */}
+          {/* Left, headline + copy */}
           <div>
             <SectionEyebrow className="mb-6">
               Harris Capital Mortgage Group · NMLS# 1918223
@@ -179,8 +179,8 @@ export default async function LamontPage() {
 
             {/* Trust row */}
             <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
-              <CheckItem>Dozens of lenders — best rate for you</CheckItem>
-              <CheckItem>No call center — your file stays with me</CheckItem>
+              <CheckItem>Dozens of lenders, best rate for you</CheckItem>
+              <CheckItem>No call center, your file stays with me</CheckItem>
               <CheckItem>No hard credit check · No commitment</CheckItem>
             </ul>
 
@@ -196,11 +196,11 @@ export default async function LamontPage() {
               )}
             </div>
             <p className="mt-4 text-xs text-muted/60">
-              Your info routes directly to {firstName} — no rotation, no call center.
+              Your info routes directly to {firstName}, no rotation, no call center.
             </p>
           </div>
 
-          {/* Right — profile photo */}
+          {/* Right, profile photo */}
           <div className="overflow-hidden rounded-3xl border border-line shadow-soft">
             <TeamPhoto photo={photo} name={name} aspect="3 / 4" />
           </div>
@@ -319,7 +319,7 @@ export default async function LamontPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════ */}
-      {/* FREE ESTIMATE FUNNEL — full-width own section            */}
+      {/* FREE ESTIMATE FUNNEL, full-width own section            */}
       {/* ══════════════════════════════════════════════════════════ */}
       <section id="funnel" className="bg-sand py-20 scroll-mt-20">
         <div className="container-shell max-w-2xl text-center">
@@ -361,7 +361,7 @@ export default async function LamontPage() {
             Let&apos;s talk about your next home.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-white/80">
-            No pressure, no obligation. Start the free estimate above or reach out directly — {firstName} answers their own phone.
+            No pressure, no obligation. Start the free estimate above or reach out directly, {firstName} answers their own phone.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#funnel" className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white bg-white px-6 py-4 text-base font-semibold text-accent transition hover:bg-white/90">

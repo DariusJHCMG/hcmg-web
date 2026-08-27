@@ -10,29 +10,29 @@ import { Disclosure } from "@/components/ui/Disclosure";
 const STATE_DATA: Record<string, {
   name: string;
   abbr: string;
-  taxRate: number;     // annual % of home value — used in page copy
+  taxRate: number;     // annual % of home value, used in page copy
   conformingLimit: number;
   blurb: string;
 }> = {
   florida: {
     name: "Florida", abbr: "FL", taxRate: 0.83,
     conformingLimit: 766550,
-    blurb: "Florida has no state income tax, which increases buying power for most buyers. Property tax rates average 0.83% of home value annually — lower than the national average. Down payment assistance is available through the Florida Housing Finance Corporation (Florida HLP) for eligible first-time buyers.",
+    blurb: "Florida has no state income tax, which increases buying power for most buyers. Property tax rates average 0.83% of home value annually, lower than the national average. Down payment assistance is available through the Florida Housing Finance Corporation (Florida HLP) for eligible first-time buyers.",
   },
   texas: {
     name: "Texas", abbr: "TX", taxRate: 1.74,
     conformingLimit: 766550,
-    blurb: "Texas has no state income tax, but property taxes are among the highest in the nation — averaging 1.74% of home value. Factor this into your payment estimate. County and city tax rates vary significantly; your actual tax escrow will be based on your specific property's assessed value.",
+    blurb: "Texas has no state income tax, but property taxes are among the highest in the nation, averaging 1.74% of home value. Factor this into your payment estimate. County and city tax rates vary significantly; your actual tax escrow will be based on your specific property's assessed value.",
   },
   georgia: {
     name: "Georgia", abbr: "GA", taxRate: 0.92,
     conformingLimit: 766550,
-    blurb: "Georgia's property taxes average 0.92% of home value. The GAHFA (Georgia Housing and Finance Authority) offers first-time homebuyer programs with down payment assistance. Atlanta metro prices have risen significantly — get pre-approved before you start shopping.",
+    blurb: "Georgia's property taxes average 0.92% of home value. The GAHFA (Georgia Housing and Finance Authority) offers first-time homebuyer programs with down payment assistance. Atlanta metro prices have risen significantly, get pre-approved before you start shopping.",
   },
   nevada: {
     name: "Nevada", abbr: "NV", taxRate: 0.55,
     conformingLimit: 766550,
-    blurb: "Nevada has no state income tax and some of the lowest property tax rates in the country at 0.55% average. Las Vegas and Henderson markets move quickly — having a pre-approval before you tour is essential in competitive price ranges.",
+    blurb: "Nevada has no state income tax and some of the lowest property tax rates in the country at 0.55% average. Las Vegas and Henderson markets move quickly, having a pre-approval before you tour is essential in competitive price ranges.",
   },
   colorado: {
     name: "Colorado", abbr: "CO", taxRate: 0.51,
@@ -42,7 +42,7 @@ const STATE_DATA: Record<string, {
   virginia: {
     name: "Virginia", abbr: "VA", taxRate: 0.87,
     conformingLimit: 766550,
-    blurb: "Virginia property taxes average 0.87% of home value. Northern Virginia near Washington DC commands premium pricing — many buyers in Fairfax, Arlington, and Loudoun counties need jumbo loans. Our loan officers specialize in this corridor.",
+    blurb: "Virginia property taxes average 0.87% of home value. Northern Virginia near Washington DC commands premium pricing, many buyers in Fairfax, Arlington, and Loudoun counties need jumbo loans. Our loan officers specialize in this corridor.",
   },
   maryland: {
     name: "Maryland", abbr: "MD", taxRate: 1.09,
@@ -62,7 +62,7 @@ const STATE_DATA: Record<string, {
   dc: {
     name: "Washington DC", abbr: "DC", taxRate: 0.55,
     conformingLimit: 766550,
-    blurb: "Washington DC has some of the highest median home prices on the East Coast. DC's property tax rate is 0.55% — low by East Coast standards, but the high home values make absolute tax amounts significant. DC and Maryland offer first-time buyer programs that can meaningfully reduce upfront costs.",
+    blurb: "Washington DC has some of the highest median home prices on the East Coast. DC's property tax rate is 0.55%, low by East Coast standards, but the high home values make absolute tax amounts significant. DC and Maryland offer first-time buyer programs that can meaningfully reduce upfront costs.",
   },
 };
 
@@ -86,7 +86,7 @@ export async function generateMetadata({
     alternates: { canonical: `https://hcmgloans.com/mortgage-calculator/${state}` },
     openGraph: {
       title: `${data.name} Mortgage Calculator | HCMG`,
-      description: `Calculate your ${data.name} mortgage payment with local tax rates. FHA, VA, USDA, conventional. Free — no credit check.`,
+      description: `Calculate your ${data.name} mortgage payment with local tax rates. FHA, VA, USDA, conventional. Free, no credit check.`,
       url: `https://hcmgloans.com/mortgage-calculator/${state}`,
       images: ["/hcmg-social.png"],
     },
@@ -111,7 +111,7 @@ export default async function StateMortgageCalculatorPage({
         name: `What is the property tax rate in ${data.name}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `${data.name}'s average effective property tax rate is approximately ${data.taxRate}% of home value annually. Tax rates vary by county — your actual property tax will be based on the specific county and municipality where you buy. Your HCMG loan officer will give you an estimate based on the actual property.`,
+          text: `${data.name}'s average effective property tax rate is approximately ${data.taxRate}% of home value annually. Tax rates vary by county, your actual property tax will be based on the specific county and municipality where you buy. Your HCMG loan officer will give you an estimate based on the actual property.`,
         },
       },
       {
@@ -162,7 +162,7 @@ export default async function StateMortgageCalculatorPage({
             {data.name} Mortgage Calculator
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-muted">
-            Estimate your monthly mortgage payment in {data.name} — with local property tax rates
+            Estimate your monthly mortgage payment in {data.name}, with local property tax rates
             pre-filled. Includes FHA, VA, USDA, and conventional loans, full PITI breakdown,
             and amortization schedule. No credit check. No sign-up.
           </p>
@@ -185,7 +185,7 @@ export default async function StateMortgageCalculatorPage({
           <p className="mt-4 text-base leading-8 text-muted">
             Harris Capital Mortgage Group (NMLS# 1918223) is a licensed mortgage lender serving {data.name}.
             Our loan officers know the {data.name} market and can give you a precise payment estimate
-            based on the actual property and your credit profile — not just a calculator estimate.
+            based on the actual property and your credit profile, not just a calculator estimate.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/get-started" className="primary-button">
@@ -202,7 +202,7 @@ export default async function StateMortgageCalculatorPage({
       {/* FAQ */}
       <section className="section-pad bg-white">
         <div className="container-shell max-w-3xl">
-          <h2 className="mb-8 text-2xl font-extrabold text-ink">{data.name} Mortgage — Common Questions</h2>
+          <h2 className="mb-8 text-2xl font-extrabold text-ink">{data.name} Mortgage, Common Questions</h2>
           <div className="space-y-4">
             {faqSchema.mainEntity.map((faq) => (
               <div key={faq.name} className="rounded-2xl border border-line bg-white p-6">

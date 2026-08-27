@@ -6,7 +6,7 @@ import { Footer } from "@/components/ui/Footer";
 export const metadata: Metadata = {
   title: "About HCMG · Harris Capital Mortgage Group",
   description:
-    "Learn about Harris Capital Mortgage Group — a multi-state mortgage lender dedicated to helping families achieve homeownership with transparency and speed. NMLS# 1918223.",
+    "Learn about Harris Capital Mortgage Group, a multi-state mortgage lender dedicated to helping families achieve homeownership with transparency and speed. NMLS# 1918223.",
   alternates: { canonical: "https://hcmgloans.com/about" },
 };
 
@@ -87,7 +87,7 @@ export default function AboutPage() {
               decades of combined experience in mortgage lending, underwriting, and client service.
             </p>
             <p className="font-semibold text-ink">
-              We&rsquo;re not just a lender – we&rsquo;re your partner in one of the most important
+              We&rsquo;re not just a lender, we&rsquo;re your partner in one of the most important
               financial decisions of your life.
             </p>
           </div>

@@ -134,7 +134,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
           </p>
           <ul className="mt-6 space-y-3">
             {[
-              "Full PITI breakdown — Principal, Interest, Taxes & Insurance",
+              "Full PITI breakdown, Principal, Interest, Taxes & Insurance",
               "FHA, VA, USDA & Conventional loan types",
               "Complete amortization schedule included",
             ].map((b) => (
@@ -226,7 +226,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
             )}
           </div>
 
-          {/* ── Output panel — gated ───────────────────────────────── */}
+          {/* ── Output panel, gated ───────────────────────────────── */}
           <div className="relative mt-8">
             {/* Real results */}
             <div
@@ -244,10 +244,10 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
               {/* PITI breakdown */}
               <div className="mt-5 space-y-2.5 border-t border-line/40 pt-5">
                 {[
-                  { l: "P — Principal & Interest", v: est.monthlyPrincipalAndInterest },
-                  { l: "I — Property Taxes (est.)",       v: est.monthlyTaxes },
-                  { l: "I — Homeowner's Insurance (est.)", v: est.monthlyInsurance },
-                  ...(showMip ? [{ l: loanType === "fha" ? "MIP — FHA Mortgage Insurance" : loanType === "usda" ? "USDA Guarantee Fee" : "PMI — Mortgage Insurance", v: est.monthlyMip }] : []),
+                  { l: "P, Principal & Interest", v: est.monthlyPrincipalAndInterest },
+                  { l: "I, Property Taxes (est.)",       v: est.monthlyTaxes },
+                  { l: "I, Homeowner's Insurance (est.)", v: est.monthlyInsurance },
+                  ...(showMip ? [{ l: loanType === "fha" ? "MIP, FHA Mortgage Insurance" : loanType === "usda" ? "USDA Guarantee Fee" : "PMI, Mortgage Insurance", v: est.monthlyMip }] : []),
                   ...(est.monthlyHoa > 0 ? [{ l: "HOA Fee", v: est.monthlyHoa }] : []),
                 ].map((r) => (
                   <div key={r.l} className="flex justify-between text-sm">
@@ -260,7 +260,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
               <div className="my-4 border-t border-line/40" />
               <div className="flex justify-between text-sm">
                 <span className="font-semibold text-muted">Cash to close (est.)</span>
-                <span className="font-bold text-ink">{formatCurrency(cashToClose.low)} – {formatCurrency(cashToClose.high)}</span>
+                <span className="font-bold text-ink">{formatCurrency(cashToClose.low)}, {formatCurrency(cashToClose.high)}</span>
               </div>
 
               {loanType === "va" && (
@@ -272,7 +272,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
               </Link>
               <Disclosure variant="estimate" className="mt-4 text-center" />
 
-              {/* Amortization accordion — inside the unlocked card */}
+              {/* Amortization accordion, inside the unlocked card */}
               <div className="mt-5 rounded-2xl border border-line overflow-hidden">
                 <button
                   type="button"
@@ -345,7 +345,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
                       </table>
                     </div>
                     <p className="px-4 py-2.5 text-[10px] text-muted/60 border-t border-line">
-                      Months 1–24 detailed; annual summaries for years 3+. Estimates only — consult your loan officer for an official schedule.
+                      Months 1–24 detailed; annual summaries for years 3+. Estimates only, consult your loan officer for an official schedule.
                     </p>
                   </div>
                 )}

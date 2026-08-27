@@ -14,7 +14,7 @@ import { getFunnelConfig } from "@/lib/funnel-config";
 export const metadata: Metadata = {
   title: "Apply for a Home Loan Online | HCMG · NMLS# 1918223",
   description:
-    "Apply for a mortgage online with Harris Capital Mortgage Group. FHA, VA, Conventional, Jumbo, USDA & down payment assistance. Instant estimate — no hard credit check, no commitment. Licensed mortgage lender in FL, TX, GA, NV, CO, VA, DC, MD, CA & MS.",
+    "Apply for a mortgage online with Harris Capital Mortgage Group. FHA, VA, Conventional, Jumbo, USDA & down payment assistance. Instant estimate, no hard credit check, no commitment. Licensed mortgage lender in FL, TX, GA, NV, CO, VA, DC, MD, CA & MS.",
   alternates: { canonical: "https://hcmgloans.com/get-started" },
   robots: { index: true, follow: true },
 };

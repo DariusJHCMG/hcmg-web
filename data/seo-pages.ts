@@ -19,44 +19,44 @@ export type CityData = {
 
 export const CITY_DATA: Record<string, CityData> = {
   // Florida
-  "Orlando":        { county: "Orange County",       medianHomePrice: 380000, propertyTaxRate: 0.86, fhaLoanLimit: 498257, dpaProgram: "Florida Housing Finance Corporation (Florida HLP) — up to $10,000 in down payment assistance for qualifying buyers", neighborhoods: ["Dr. Phillips", "Baldwin Park", "Thornton Park", "Lake Nona"] },
+  "Orlando":        { county: "Orange County",       medianHomePrice: 380000, propertyTaxRate: 0.86, fhaLoanLimit: 498257, dpaProgram: "Florida Housing Finance Corporation (Florida HLP), up to $10,000 in down payment assistance for qualifying buyers", neighborhoods: ["Dr. Phillips", "Baldwin Park", "Thornton Park", "Lake Nona"] },
   "Miami":          { county: "Miami-Dade County",    medianHomePrice: 620000, propertyTaxRate: 0.89, fhaLoanLimit: 621000, dpaProgram: "Miami-Dade Infill Housing Initiative and Florida HLP for down payment assistance", neighborhoods: ["Brickell", "Kendall", "Coral Gables", "Wynwood"] },
   "Tampa":          { county: "Hillsborough County",  medianHomePrice: 395000, propertyTaxRate: 1.05, fhaLoanLimit: 498257, dpaProgram: "Hillsborough County's HOME program and Florida HLP for first-time buyers", neighborhoods: ["South Tampa", "Hyde Park", "Ybor City", "Westchase"] },
   "Jacksonville":   { county: "Duval County",         medianHomePrice: 310000, propertyTaxRate: 0.84, fhaLoanLimit: 498257, dpaProgram: "Jacksonville Housing Finance Authority and Florida HLP programs", neighborhoods: ["San Marco", "Riverside", "Ponte Vedra", "Mandarin"] },
   "Fort Lauderdale":{ county: "Broward County",       medianHomePrice: 460000, propertyTaxRate: 1.07, fhaLoanLimit: 621000, dpaProgram: "Broward County Housing Finance Authority and Florida HLP for eligible buyers", neighborhoods: ["Las Olas", "Victoria Park", "Lauderdale-by-the-Sea", "Coral Ridge"] },
-  "St. Petersburg": { county: "Pinellas County",      medianHomePrice: 375000, propertyTaxRate: 0.87, fhaLoanLimit: 498257, dpaProgram: "Pinellas County Housing Finance Authority — first-time buyer assistance programs", neighborhoods: ["Downtown St. Pete", "Kenwood", "Gulfport", "Tierra Verde"] },
+  "St. Petersburg": { county: "Pinellas County",      medianHomePrice: 375000, propertyTaxRate: 0.87, fhaLoanLimit: 498257, dpaProgram: "Pinellas County Housing Finance Authority, first-time buyer assistance programs", neighborhoods: ["Downtown St. Pete", "Kenwood", "Gulfport", "Tierra Verde"] },
   "Hialeah":        { county: "Miami-Dade County",    medianHomePrice: 490000, propertyTaxRate: 0.89, fhaLoanLimit: 621000, dpaProgram: "Miami-Dade Infill Housing Initiative and Florida HLP", neighborhoods: ["Westland", "Palm Springs North", "Hialeah Gardens", "Medley"] },
   "Tallahassee":    { county: "Leon County",          medianHomePrice: 255000, propertyTaxRate: 0.76, fhaLoanLimit: 498257, dpaProgram: "City of Tallahassee and Florida HLP down payment assistance programs", neighborhoods: ["Midtown", "Killearn Estates", "Betton Hills", "SouthWood"] },
   "Cape Coral":     { county: "Lee County",           medianHomePrice: 350000, propertyTaxRate: 0.80, fhaLoanLimit: 498257, dpaProgram: "Lee County Housing Finance Authority and Florida HLP for eligible first-time buyers", neighborhoods: ["Cape Coral Parkway", "Pelican", "NW Cape", "SW Cape"] },
   "Port St. Lucie": { county: "St. Lucie County",     medianHomePrice: 340000, propertyTaxRate: 1.16, fhaLoanLimit: 498257, dpaProgram: "St. Lucie County and Florida HLP down payment assistance programs", neighborhoods: ["Tradition", "PGA Village", "River Park", "Torino"] },
   // Georgia
-  "Atlanta":        { county: "Fulton County",        medianHomePrice: 420000, propertyTaxRate: 1.08, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program — up to $10,000 for qualifying buyers statewide", neighborhoods: ["Buckhead", "Midtown", "Old Fourth Ward", "Grant Park"] },
+  "Atlanta":        { county: "Fulton County",        medianHomePrice: 420000, propertyTaxRate: 1.08, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program, up to $10,000 for qualifying buyers statewide", neighborhoods: ["Buckhead", "Midtown", "Old Fourth Ward", "Grant Park"] },
   "Savannah":       { county: "Chatham County",       medianHomePrice: 315000, propertyTaxRate: 0.93, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program for first-time buyers", neighborhoods: ["Historic District", "Ardsley Park", "Southside", "Pooler"] },
-  "Augusta":        { county: "Richmond County",      medianHomePrice: 195000, propertyTaxRate: 1.01, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program — down payment assistance statewide", neighborhoods: ["Summerville", "The Hill", "Tobacco Road", "Evans"] },
+  "Augusta":        { county: "Richmond County",      medianHomePrice: 195000, propertyTaxRate: 1.01, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program, down payment assistance statewide", neighborhoods: ["Summerville", "The Hill", "Tobacco Road", "Evans"] },
   "Columbus":       { county: "Muscogee County",      medianHomePrice: 175000, propertyTaxRate: 1.02, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program for qualifying Columbus buyers", neighborhoods: ["Midland", "Wynnton", "Flatwoods", "Columbus Square"] },
-  "Macon":          { county: "Bibb County",          medianHomePrice: 155000, propertyTaxRate: 0.98, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program — statewide DPA available", neighborhoods: ["Ingleside", "Vineville", "Bloomfield", "North Macon"] },
+  "Macon":          { county: "Bibb County",          medianHomePrice: 155000, propertyTaxRate: 0.98, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program, statewide DPA available", neighborhoods: ["Ingleside", "Vineville", "Bloomfield", "North Macon"] },
   "Athens":         { county: "Clarke County",        medianHomePrice: 285000, propertyTaxRate: 0.96, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program for first-time buyers in Clarke County", neighborhoods: ["Five Points", "Normaltown", "Boulevard", "East Athens"] },
-  "Sandy Springs":  { county: "Fulton County",        medianHomePrice: 495000, propertyTaxRate: 1.08, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program — statewide eligibility", neighborhoods: ["Perimeter Center", "Dunwoody", "North Springs", "Abernathy"] },
+  "Sandy Springs":  { county: "Fulton County",        medianHomePrice: 495000, propertyTaxRate: 1.08, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program, statewide eligibility", neighborhoods: ["Perimeter Center", "Dunwoody", "North Springs", "Abernathy"] },
   "Roswell":        { county: "Fulton County",        medianHomePrice: 485000, propertyTaxRate: 1.08, fhaLoanLimit: 498257, dpaProgram: "Georgia Dream Homeownership Program for qualifying buyers in Fulton County", neighborhoods: ["Historic Roswell", "Alpharetta", "Canton Street", "Mountain Park"] },
   // Texas
-  "Dallas":         { county: "Dallas County",        medianHomePrice: 360000, propertyTaxRate: 1.83, fhaLoanLimit: 498257, dpaProgram: "TSAHC Home Sweet Texas — up to 5% DPA for qualifying buyers", neighborhoods: ["Uptown", "Deep Ellum", "Oak Cliff", "Lake Highlands"] },
+  "Dallas":         { county: "Dallas County",        medianHomePrice: 360000, propertyTaxRate: 1.83, fhaLoanLimit: 498257, dpaProgram: "TSAHC Home Sweet Texas, up to 5% DPA for qualifying buyers", neighborhoods: ["Uptown", "Deep Ellum", "Oak Cliff", "Lake Highlands"] },
   "Houston":        { county: "Harris County",        medianHomePrice: 320000, propertyTaxRate: 1.76, fhaLoanLimit: 498257, dpaProgram: "TSAHC Homes for Texas Heroes and Home Sweet Texas programs", neighborhoods: ["Montrose", "The Heights", "Katy", "Sugar Land"] },
-  "Austin":         { county: "Travis County",        medianHomePrice: 540000, propertyTaxRate: 1.80, fhaLoanLimit: 498257, dpaProgram: "TSAHC Home Sweet Texas — 5% DPA available; Austin Housing Finance Corporation also active", neighborhoods: ["East Austin", "South Congress", "Round Rock", "Cedar Park"] },
+  "Austin":         { county: "Travis County",        medianHomePrice: 540000, propertyTaxRate: 1.80, fhaLoanLimit: 498257, dpaProgram: "TSAHC Home Sweet Texas, 5% DPA available; Austin Housing Finance Corporation also active", neighborhoods: ["East Austin", "South Congress", "Round Rock", "Cedar Park"] },
   "San Antonio":    { county: "Bexar County",         medianHomePrice: 290000, propertyTaxRate: 1.90, fhaLoanLimit: 498257, dpaProgram: "TSAHC and San Antonio HOME program for first-time buyers", neighborhoods: ["Alamo Heights", "Stone Oak", "Helotes", "New Braunfels"] },
   "Fort Worth":     { county: "Tarrant County",       medianHomePrice: 325000, propertyTaxRate: 1.85, fhaLoanLimit: 498257, dpaProgram: "TSAHC Home Sweet Texas and Homes for Texas Heroes programs", neighborhoods: ["TCU-Westcliff", "Sundance Square", "Southlake", "Keller"] },
   "El Paso":        { county: "El Paso County",       medianHomePrice: 215000, propertyTaxRate: 1.73, fhaLoanLimit: 498257, dpaProgram: "TSAHC DPA programs; El Paso HDC also offers local assistance", neighborhoods: ["Upper Valley", "Westside", "East El Paso", "Central"] },
-  "Arlington":      { county: "Tarrant County",       medianHomePrice: 310000, propertyTaxRate: 1.85, fhaLoanLimit: 498257, dpaProgram: "TSAHC Home Sweet Texas — 5% DPA statewide", neighborhoods: ["Arlington Heights", "Viridian", "Park Row", "Mansfield"] },
+  "Arlington":      { county: "Tarrant County",       medianHomePrice: 310000, propertyTaxRate: 1.85, fhaLoanLimit: 498257, dpaProgram: "TSAHC Home Sweet Texas, 5% DPA statewide", neighborhoods: ["Arlington Heights", "Viridian", "Park Row", "Mansfield"] },
   "Plano":          { county: "Collin County",        medianHomePrice: 470000, propertyTaxRate: 1.63, fhaLoanLimit: 498257, dpaProgram: "TSAHC programs; Collin County low property taxes increase buying power", neighborhoods: ["Legacy West", "Downtown Plano", "Frisco", "McKinney"] },
   // Nevada
   "Las Vegas":      { county: "Clark County",         medianHomePrice: 420000, propertyTaxRate: 0.55, fhaLoanLimit: 498257, dpaProgram: "Nevada Rural Housing Authority Home At Last program; Clark County HAP", neighborhoods: ["Summerlin", "Henderson Border", "North Las Vegas", "Spring Valley"] },
-  "Reno":           { county: "Washoe County",        medianHomePrice: 490000, propertyTaxRate: 0.56, fhaLoanLimit: 498257, dpaProgram: "Nevada Rural Housing Authority Home At Last — down payment and closing cost assistance", neighborhoods: ["Midtown Reno", "South Meadows", "Spanish Springs", "Damonte Ranch"] },
+  "Reno":           { county: "Washoe County",        medianHomePrice: 490000, propertyTaxRate: 0.56, fhaLoanLimit: 498257, dpaProgram: "Nevada Rural Housing Authority Home At Last, down payment and closing cost assistance", neighborhoods: ["Midtown Reno", "South Meadows", "Spanish Springs", "Damonte Ranch"] },
   "Henderson":      { county: "Clark County",         medianHomePrice: 450000, propertyTaxRate: 0.55, fhaLoanLimit: 498257, dpaProgram: "Clark County HAP and Home At Last programs for qualifying buyers", neighborhoods: ["Green Valley", "Seven Hills", "MacDonald Ranch", "Anthem"] },
   "North Las Vegas":{ county: "Clark County",         medianHomePrice: 375000, propertyTaxRate: 0.55, fhaLoanLimit: 498257, dpaProgram: "Clark County HAP and Nevada Home At Last programs available", neighborhoods: ["Aliante", "Eldorado", "Centennial Hills", "Sunrise Manor"] },
   "Sparks":         { county: "Washoe County",        medianHomePrice: 450000, propertyTaxRate: 0.56, fhaLoanLimit: 498257, dpaProgram: "Home At Last DPA program from Nevada Rural Housing Authority", neighborhoods: ["Victorian Square", "Wingfield Springs", "Sun Valley", "Golden Eagle"] },
-  "Carson City":    { county: "Carson City",          medianHomePrice: 420000, propertyTaxRate: 0.57, fhaLoanLimit: 498257, dpaProgram: "Home At Last program — available across Nevada including Carson City", neighborhoods: ["Empire Ranch", "Lompa Ranch", "Hot Springs Road", "Old Town Carson City"] },
+  "Carson City":    { county: "Carson City",          medianHomePrice: 420000, propertyTaxRate: 0.57, fhaLoanLimit: 498257, dpaProgram: "Home At Last program, available across Nevada including Carson City", neighborhoods: ["Empire Ranch", "Lompa Ranch", "Hot Springs Road", "Old Town Carson City"] },
   // Colorado
-  "Denver":         { county: "Denver County",        medianHomePrice: 560000, propertyTaxRate: 0.49, fhaLoanLimit: 787750, dpaProgram: "CHFA SmartStep and CHFA SectionEight — up to 3% DPA for qualifying buyers", neighborhoods: ["LoDo", "Capitol Hill", "Park Hill", "Stapleton/Central Park"] },
-  "Colorado Springs":{ county: "El Paso County",     medianHomePrice: 430000, propertyTaxRate: 0.47, fhaLoanLimit: 787750, dpaProgram: "CHFA SmartStep and El Paso County DPA — statewide CHFA eligibility", neighborhoods: ["Old Colorado City", "Broadmoor", "Briargate", "Fountain"] },
+  "Denver":         { county: "Denver County",        medianHomePrice: 560000, propertyTaxRate: 0.49, fhaLoanLimit: 787750, dpaProgram: "CHFA SmartStep and CHFA SectionEight, up to 3% DPA for qualifying buyers", neighborhoods: ["LoDo", "Capitol Hill", "Park Hill", "Stapleton/Central Park"] },
+  "Colorado Springs":{ county: "El Paso County",     medianHomePrice: 430000, propertyTaxRate: 0.47, fhaLoanLimit: 787750, dpaProgram: "CHFA SmartStep and El Paso County DPA, statewide CHFA eligibility", neighborhoods: ["Old Colorado City", "Broadmoor", "Briargate", "Fountain"] },
   "Aurora":         { county: "Arapahoe County",     medianHomePrice: 435000, propertyTaxRate: 0.53, fhaLoanLimit: 787750, dpaProgram: "CHFA programs and Arapahoe County HOAP for qualifying buyers", neighborhoods: ["Southlands", "Murphy Creek", "Centrepoint", "Tallyn's Reach"] },
   "Fort Collins":   { county: "Larimer County",      medianHomePrice: 490000, propertyTaxRate: 0.50, fhaLoanLimit: 787750, dpaProgram: "CHFA and Fort Collins HFC down payment assistance programs", neighborhoods: ["Old Town", "Fossil Creek", "Midtown", "Timnath"] },
   "Lakewood":       { county: "Jefferson County",    medianHomePrice: 490000, propertyTaxRate: 0.49, fhaLoanLimit: 787750, dpaProgram: "CHFA SmartStep for Lakewood buyers; Jefferson County also participates", neighborhoods: ["Belmar", "Green Mountain", "Applewood", "Wheat Ridge"] },
@@ -68,16 +68,16 @@ export const CITY_DATA: Record<string, CityData> = {
   "Chesapeake":     { county: "Chesapeake (City)",     medianHomePrice: 355000, propertyTaxRate: 0.95, fhaLoanLimit: 498257, dpaProgram: "VHDA Down Payment Assistance Grant for Chesapeake buyers", neighborhoods: ["Great Bridge", "Greenbrier", "Deep Creek", "Western Branch"] },
   "Alexandria":     { county: "Alexandria (City)",     medianHomePrice: 580000, propertyTaxRate: 0.93, fhaLoanLimit: 498257, dpaProgram: "VHDA and Alexandria ARHA programs; jumbo financing common in this market", neighborhoods: ["Old Town", "Del Ray", "Cameron Station", "Eisenhower Ave"] },
   // DC
-  "Washington":     { county: "District of Columbia",  medianHomePrice: 640000, propertyTaxRate: 0.55, fhaLoanLimit: 1149825, dpaProgram: "DC HPAP (Home Purchase Assistance Program) — up to $202,000 for low-income first-time buyers; DC Open Doors", neighborhoods: ["Capitol Hill", "Shaw", "Anacostia", "Georgetown"] },
+  "Washington":     { county: "District of Columbia",  medianHomePrice: 640000, propertyTaxRate: 0.55, fhaLoanLimit: 1149825, dpaProgram: "DC HPAP (Home Purchase Assistance Program), up to $202,000 for low-income first-time buyers; DC Open Doors", neighborhoods: ["Capitol Hill", "Shaw", "Anacostia", "Georgetown"] },
   // Maryland
   "Baltimore":      { county: "Baltimore City",        medianHomePrice: 220000, propertyTaxRate: 1.72, fhaLoanLimit: 632500, dpaProgram: "Maryland Mortgage Program (MMP) and Baltimore City Live Near Your Work incentive", neighborhoods: ["Federal Hill", "Fells Point", "Roland Park", "Canton"] },
-  "Silver Spring":  { county: "Montgomery County",    medianHomePrice: 510000, propertyTaxRate: 1.00, fhaLoanLimit: 1149825, dpaProgram: "Maryland Mortgage Program (MMP) — Montgomery County higher loan limits apply", neighborhoods: ["Downtown Silver Spring", "Woodside", "Four Corners", "Wheaton"] },
+  "Silver Spring":  { county: "Montgomery County",    medianHomePrice: 510000, propertyTaxRate: 1.00, fhaLoanLimit: 1149825, dpaProgram: "Maryland Mortgage Program (MMP), Montgomery County higher loan limits apply", neighborhoods: ["Downtown Silver Spring", "Woodside", "Four Corners", "Wheaton"] },
   "Bowie":          { county: "Prince George's County",medianHomePrice: 415000, propertyTaxRate: 1.16, fhaLoanLimit: 1149825, dpaProgram: "MMP and Prince George's County Pathway to Purchase DPA program", neighborhoods: ["Bowie Town Center", "Belair", "South Bowie", "Glenn Dale"] },
-  "Rockville":      { county: "Montgomery County",    medianHomePrice: 560000, propertyTaxRate: 1.00, fhaLoanLimit: 1149825, dpaProgram: "Maryland Mortgage Program — higher loan limits in Montgomery County", neighborhoods: ["Twinbrook", "King Farm", "White Flint", "Potomac"] },
+  "Rockville":      { county: "Montgomery County",    medianHomePrice: 560000, propertyTaxRate: 1.00, fhaLoanLimit: 1149825, dpaProgram: "Maryland Mortgage Program, higher loan limits in Montgomery County", neighborhoods: ["Twinbrook", "King Farm", "White Flint", "Potomac"] },
   "Gaithersburg":   { county: "Montgomery County",    medianHomePrice: 470000, propertyTaxRate: 1.00, fhaLoanLimit: 1149825, dpaProgram: "Maryland Mortgage Program (MMP) for qualifying Montgomery County buyers", neighborhoods: ["Kentlands", "Rio", "Lakelands", "Shady Grove"] },
-  "Frederick":      { county: "Frederick County",     medianHomePrice: 420000, propertyTaxRate: 1.05, fhaLoanLimit: 498257, dpaProgram: "Maryland Mortgage Program (MMP) — statewide DPA eligibility", neighborhoods: ["Historic Downtown Frederick", "Gambrill Heights", "Ballenger Creek", "New Market"] },
+  "Frederick":      { county: "Frederick County",     medianHomePrice: 420000, propertyTaxRate: 1.05, fhaLoanLimit: 498257, dpaProgram: "Maryland Mortgage Program (MMP), statewide DPA eligibility", neighborhoods: ["Historic Downtown Frederick", "Gambrill Heights", "Ballenger Creek", "New Market"] },
   // California
-  "Los Angeles":    { county: "Los Angeles County",   medianHomePrice: 850000, propertyTaxRate: 0.72, fhaLoanLimit: 1149825, dpaProgram: "CalHFA MyHome Assistance Program — up to 3.5% DPA; LA County LACDA programs", neighborhoods: ["Silver Lake", "Culver City", "Pasadena", "Long Beach"] },
+  "Los Angeles":    { county: "Los Angeles County",   medianHomePrice: 850000, propertyTaxRate: 0.72, fhaLoanLimit: 1149825, dpaProgram: "CalHFA MyHome Assistance Program, up to 3.5% DPA; LA County LACDA programs", neighborhoods: ["Silver Lake", "Culver City", "Pasadena", "Long Beach"] },
   "San Diego":      { county: "San Diego County",     medianHomePrice: 870000, propertyTaxRate: 0.73, fhaLoanLimit: 1149825, dpaProgram: "CalHFA MyHome and San Diego Housing Commission (SDHC) programs", neighborhoods: ["North Park", "Mission Valley", "Chula Vista", "Rancho Bernardo"] },
   "San Jose":       { county: "Santa Clara County",   medianHomePrice: 1200000, propertyTaxRate: 0.65, fhaLoanLimit: 1149825, dpaProgram: "CalHFA and Santa Clara County Empower Homebuyers program", neighborhoods: ["Willow Glen", "Almaden Valley", "Downtown San Jose", "Santana Row"] },
   "San Francisco":  { county: "San Francisco County", medianHomePrice: 1300000, propertyTaxRate: 0.65, fhaLoanLimit: 1149825, dpaProgram: "MOHCD Below Market Rate (BMR) program; CalHFA for qualifying buyers", neighborhoods: ["Mission District", "Cole Valley", "Noe Valley", "Richmond District"] },
@@ -93,14 +93,14 @@ export const CITY_DATA: Record<string, CityData> = {
   "Southaven":      { county: "DeSoto County",        medianHomePrice: 250000, propertyTaxRate: 0.52, fhaLoanLimit: 498257, dpaProgram: "MHC DPA programs; DeSoto County is among the fastest-growing in MS", neighborhoods: ["Horn Lake", "Olive Branch", "Hernando", "Walls"] },
   "Hattiesburg":    { county: "Forrest County",       medianHomePrice: 180000, propertyTaxRate: 0.63, fhaLoanLimit: 498257, dpaProgram: "MHC Smart6 and DPA programs for qualifying Hattiesburg buyers", neighborhoods: ["Oak Grove", "Petal", "Sumrall", "USM Area"] },
   "Biloxi":         { county: "Harrison County",      medianHomePrice: 205000, propertyTaxRate: 0.51, fhaLoanLimit: 498257, dpaProgram: "MHC DPA program for Harrison County first-time buyers", neighborhoods: ["Back Bay", "D'Iberville", "Ocean Springs", "Point Cadet"] },
-  "Meridian":       { county: "Lauderdale County",    medianHomePrice: 130000, propertyTaxRate: 0.74, fhaLoanLimit: 498257, dpaProgram: "MHC Smart6 program — statewide eligibility for qualifying buyers", neighborhoods: ["Northwest Meridian", "Bonita Lakes", "East Meridian", "Collinsville"] },
+  "Meridian":       { county: "Lauderdale County",    medianHomePrice: 130000, propertyTaxRate: 0.74, fhaLoanLimit: 498257, dpaProgram: "MHC Smart6 program, statewide eligibility for qualifying buyers", neighborhoods: ["Northwest Meridian", "Bonita Lakes", "East Meridian", "Collinsville"] },
   // Alabama
-  "Birmingham":     { county: "Jefferson County",     medianHomePrice: 235000, propertyTaxRate: 0.37, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available for qualifying buyers in Jefferson County — ask your HCMG loan officer which options fit your income, credit, and purchase price", neighborhoods: ["Homewood", "Hoover", "Mountain Brook", "Vestavia Hills"] },
-  "Huntsville":     { county: "Madison County",       medianHomePrice: 310000, propertyTaxRate: 0.33, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance is available for qualifying buyers in Madison County; Huntsville is one of the fastest-growing markets in the Southeast — ask your loan officer about current programs", neighborhoods: ["Jones Valley", "Meridianville", "Hampton Cove", "Madison City"] },
-  "Mobile":         { county: "Mobile County",        medianHomePrice: 205000, propertyTaxRate: 0.40, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available in Mobile County for qualifying first-time buyers — your HCMG loan officer will identify every option you qualify for", neighborhoods: ["Midtown", "West Mobile", "Springhill", "Tillmans Corner"] },
-  "Montgomery":     { county: "Montgomery County",    medianHomePrice: 185000, propertyTaxRate: 0.39, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance options are available for first-time and repeat buyers in Montgomery — contact an HCMG loan officer to review current program eligibility", neighborhoods: ["Eastdale", "Prattville", "Millbrook", "Pike Road"] },
+  "Birmingham":     { county: "Jefferson County",     medianHomePrice: 235000, propertyTaxRate: 0.37, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available for qualifying buyers in Jefferson County, ask your HCMG loan officer which options fit your income, credit, and purchase price", neighborhoods: ["Homewood", "Hoover", "Mountain Brook", "Vestavia Hills"] },
+  "Huntsville":     { county: "Madison County",       medianHomePrice: 310000, propertyTaxRate: 0.33, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance is available for qualifying buyers in Madison County; Huntsville is one of the fastest-growing markets in the Southeast, ask your loan officer about current programs", neighborhoods: ["Jones Valley", "Meridianville", "Hampton Cove", "Madison City"] },
+  "Mobile":         { county: "Mobile County",        medianHomePrice: 205000, propertyTaxRate: 0.40, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available in Mobile County for qualifying first-time buyers, your HCMG loan officer will identify every option you qualify for", neighborhoods: ["Midtown", "West Mobile", "Springhill", "Tillmans Corner"] },
+  "Montgomery":     { county: "Montgomery County",    medianHomePrice: 185000, propertyTaxRate: 0.39, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance options are available for first-time and repeat buyers in Montgomery, contact an HCMG loan officer to review current program eligibility", neighborhoods: ["Eastdale", "Prattville", "Millbrook", "Pike Road"] },
   "Tuscaloosa":     { county: "Tuscaloosa County",    medianHomePrice: 240000, propertyTaxRate: 0.32, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available in Tuscaloosa County; the market is bolstered by University of Alabama enrollment and a growing healthcare sector", neighborhoods: ["Northport", "Duncanville", "Lake Nicol", "Alberta City"] },
-  "Auburn":         { county: "Lee County",           medianHomePrice: 285000, propertyTaxRate: 0.31, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available for qualifying buyers in Lee County — one of Alabama's lowest property tax markets, improving long-term affordability", neighborhoods: ["Opelika", "Auburn University area", "Notasulga", "Loachapoka"] },
+  "Auburn":         { county: "Lee County",           medianHomePrice: 285000, propertyTaxRate: 0.31, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available for qualifying buyers in Lee County, one of Alabama's lowest property tax markets, improving long-term affordability", neighborhoods: ["Opelika", "Auburn University area", "Notasulga", "Loachapoka"] },
 };
 
 const cities = [
@@ -172,7 +172,7 @@ export const seoPages: SeoPage[] = cities.flatMap(([city, state]) =>
     state,
     loanType,
     headline: `${loanType} in ${city}, ${state}`,
-    description: `Looking for a ${loanType.toLowerCase()} near ${city}, ${state}? Harris Capital Mortgage Group is a licensed mortgage lender serving ${city} and surrounding areas. Get a free estimate — no hard credit check. NMLS# 1918223.`,
+    description: `Looking for a ${loanType.toLowerCase()} near ${city}, ${state}? Harris Capital Mortgage Group is a licensed mortgage lender serving ${city} and surrounding areas. Get a free estimate, no hard credit check. NMLS# 1918223.`,
   })),
 );
 
@@ -180,16 +180,16 @@ export const featuredCities = seoPages.slice(0, 12);
 
 export const STATE_COPY: Record<string, string> = {
   FL: "Florida's real estate market has seen strong buyer demand. Down payment assistance programs are available for first-time buyers through the Florida Housing Finance Corporation.",
-  TX: "Texas has no state income tax, which can increase your buying power. Property taxes vary significantly by county — your loan officer will factor in local rates when building your estimate.",
+  TX: "Texas has no state income tax, which can increase your buying power. Property taxes vary significantly by county, your loan officer will factor in local rates when building your estimate.",
   GA: "Georgia offers first-time homebuyer programs through GAHFA. The Atlanta metro continues to see competitive offers, and our team knows the local market.",
-  NV: "Nevada's no state income tax is attractive to relocating buyers. Las Vegas and Reno markets move quickly — a fast pre-qualification matters.",
+  NV: "Nevada's no state income tax is attractive to relocating buyers. Las Vegas and Reno markets move quickly, a fast pre-qualification matters.",
   CO: "Colorado's CHFA offers down payment assistance and below-market rate programs for first-time buyers. Mountain and metro markets both remain competitive.",
-  VA: "Virginia has strong employment markets and diverse housing stock. Northern Virginia near DC commands premium pricing — our team specializes in this corridor.",
+  VA: "Virginia has strong employment markets and diverse housing stock. Northern Virginia near DC commands premium pricing, our team specializes in this corridor.",
   DC: "Washington DC has some of the highest median home prices on the East Coast. DC and Maryland first-time buyer programs can significantly reduce upfront costs.",
   MD: "Maryland offers the MMP (Maryland Mortgage Program) for first-time buyers with competitive rates and down payment help. Proximity to DC affects pricing in many counties.",
   CA: "California has some of the most competitive real estate markets in the country. CalHFA offers down payment assistance and first mortgage programs for qualifying buyers. Conforming loan limits are higher in many CA counties, making jumbo loans less common than in other states.",
   MS: "Mississippi consistently offers some of the most affordable home prices in the Southeast. The Mississippi Home Corporation provides down payment assistance and first mortgage programs for eligible buyers across the state.",
-  AL: "Alabama has some of the lowest property tax rates in the country — averaging under 0.40% — which dramatically lowers monthly housing costs compared to neighboring states. Down payment assistance programs are available for qualifying buyers across Alabama. Markets range from the rapidly growing Huntsville tech corridor to the affordable Gulf Coast cities of Mobile and the university-driven Auburn-Opelika market.",
+  AL: "Alabama has some of the lowest property tax rates in the country, averaging under 0.40%, which dramatically lowers monthly housing costs compared to neighboring states. Down payment assistance programs are available for qualifying buyers across Alabama. Markets range from the rapidly growing Huntsville tech corridor to the affordable Gulf Coast cities of Mobile and the university-driven Auburn-Opelika market.",
 };
 
 export const LOAN_TYPE_FAQS: Record<string, { q: string; a: string }[]> = {
@@ -224,17 +224,17 @@ export const LOAN_TYPE_FAQS: Record<string, { q: string; a: string }[]> = {
     { q: "What down payment is required for a jumbo loan?", a: "Down payments typically range from 10–20% for jumbo loans, depending on the loan size and borrower profile. Some high-balance programs allow less with strong compensating factors." },
   ],
   "USDA Loan": [
-    { q: "What is a USDA loan?", a: "A USDA loan is a government-backed mortgage for buyers purchasing in eligible rural and suburban areas. It offers 100% financing — meaning zero down payment — for qualifying borrowers." },
+    { q: "What is a USDA loan?", a: "A USDA loan is a government-backed mortgage for buyers purchasing in eligible rural and suburban areas. It offers 100% financing, meaning zero down payment, for qualifying borrowers." },
     { q: "Do I have to live in a rural area to get a USDA loan?", a: "USDA loan eligibility is based on the USDA's property eligibility map, not a strict definition of 'rural.' Many suburban areas and small towns qualify. Your loan officer can look up any address." },
     { q: "Is there income limit for USDA loans?", a: "Yes. USDA loans have household income limits that vary by county and household size. In most markets, borrowers earning up to 115% of the area median income qualify." },
   ],
   "Down Payment Assistance": [
     { q: "What is down payment assistance?", a: "Down payment assistance (DPA) programs provide grants or low-interest second loans to help buyers cover their down payment and closing costs. Programs are typically offered by state housing agencies, nonprofits, and some lenders." },
-    { q: "Do I have to repay down payment assistance?", a: "It depends on the program. Some DPA is a forgivable grant — if you stay in the home for a set period, you never repay it. Others are deferred second loans with no payments until you sell or refinance." },
+    { q: "Do I have to repay down payment assistance?", a: "It depends on the program. Some DPA is a forgivable grant, if you stay in the home for a set period, you never repay it. Others are deferred second loans with no payments until you sell or refinance." },
     { q: "Who qualifies for down payment assistance?", a: "Requirements vary by program but commonly include income limits, first-time buyer status (or not owning a home in 3 years), minimum credit scores (typically 620+), and completing a homebuyer education course." },
   ],
   HELOC: [
-    { q: "What is a HELOC?", a: "A Home Equity Line of Credit (HELOC) lets you borrow against the equity you've built in your home. It works like a revolving credit line — draw what you need, pay interest only on what you use." },
+    { q: "What is a HELOC?", a: "A Home Equity Line of Credit (HELOC) lets you borrow against the equity you've built in your home. It works like a revolving credit line, draw what you need, pay interest only on what you use." },
     { q: "How much can I borrow with a HELOC?", a: "Most lenders allow you to borrow up to 85–90% of your home's value minus what you owe on your first mortgage. The amount available depends on your equity, credit, and income." },
     { q: "What are typical HELOC interest rates?", a: "HELOC rates are variable and tied to the prime rate. They are generally lower than personal loans or credit cards, making them a cost-effective option for home improvements, debt consolidation, or large expenses." },
   ],
@@ -246,7 +246,7 @@ export const LOAN_TYPE_FAQS: Record<string, { q: string; a: string }[]> = {
   "Investment Property Loan": [
     { q: "What down payment is required for an investment property?", a: "Investment property loans typically require 15–25% down depending on the property type and loan program. Second homes have different requirements than true investment or rental properties." },
     { q: "Are investment property mortgage rates higher?", a: "Yes. Rates for investment properties are generally 0.5–1.0% higher than owner-occupied properties because lenders view them as higher risk. Strong credit and reserves can help offset this." },
-    { q: "Can I use rental income to qualify?", a: "In many cases, yes. Lenders can count a percentage of expected or actual rental income toward your qualifying income. Documentation requirements vary — your loan officer will explain what's needed for your specific property." },
+    { q: "Can I use rental income to qualify?", a: "In many cases, yes. Lenders can count a percentage of expected or actual rental income toward your qualifying income. Documentation requirements vary, your loan officer will explain what's needed for your specific property." },
   ],
   "Condo Loan": [
     { q: "Is it harder to get a mortgage on a condo?", a: "Condo loans can have additional requirements because the lender must review both the borrower and the condo project itself. FHA and VA condo approvals require the building to be on an approved list, while conventional loans have their own project review process." },
@@ -256,7 +256,7 @@ export const LOAN_TYPE_FAQS: Record<string, { q: string; a: string }[]> = {
 };
 
 /**
- * AEO (Answer Engine Optimization) FAQs — high-intent, conversational question format.
+ * AEO (Answer Engine Optimization) FAQs, high-intent, conversational question format.
  * Each function receives (city, state) and returns 3 targeted Q&A pairs for that loan type.
  * These target "People Also Ask" boxes and voice search snippets.
  */
@@ -264,7 +264,7 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
   "FHA Loan": (city, state) => [
     {
       q: `How do I qualify for an FHA loan in ${city}, ${state} with a 620 credit score?`,
-      a: `A 620 credit score qualifies you for a 3.5% down payment FHA loan in ${city}, ${state}. You will also need a debt-to-income ratio at or below 43%, a steady 2-year employment history, and the property must be your primary residence. Harris Capital Mortgage Group's loan officers in ${state} can review your full profile and confirm eligibility in minutes — no hard credit check required for an initial estimate.`,
+      a: `A 620 credit score qualifies you for a 3.5% down payment FHA loan in ${city}, ${state}. You will also need a debt-to-income ratio at or below 43%, a steady 2-year employment history, and the property must be your primary residence. Harris Capital Mortgage Group's loan officers in ${state} can review your full profile and confirm eligibility in minutes, no hard credit check required for an initial estimate.`,
     },
     {
       q: `What is the FHA loan limit in ${city}, ${state} for 2026?`,
@@ -272,13 +272,13 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
     },
     {
       q: `Can I buy a home in ${city} with no money down if I have an FHA loan?`,
-      a: `FHA loans require a minimum 3.5% down payment — they are not zero-down loans. However, the down payment can come from down payment assistance programs in ${state}, a gift from a family member, or local grant programs. Our loan officers know every active DPA program in ${city} and can tell you whether you qualify for a grant or second mortgage that effectively reduces your out-of-pocket to near zero.`,
+      a: `FHA loans require a minimum 3.5% down payment, they are not zero-down loans. However, the down payment can come from down payment assistance programs in ${state}, a gift from a family member, or local grant programs. Our loan officers know every active DPA program in ${city} and can tell you whether you qualify for a grant or second mortgage that effectively reduces your out-of-pocket to near zero.`,
     },
   ],
   "VA Loan": (city, state) => [
     {
       q: `Can I buy a home in ${city}, ${state} with a VA loan and zero down payment?`,
-      a: `Yes. If you are an eligible veteran, active duty service member, or qualifying surviving spouse, a VA loan in ${city}, ${state} allows 100% financing — zero down payment, no private mortgage insurance. Harris Capital Mortgage Group's VA specialists handle your Certificate of Eligibility (COE) and guide you through the VA appraisal process specific to ${state}.`,
+      a: `Yes. If you are an eligible veteran, active duty service member, or qualifying surviving spouse, a VA loan in ${city}, ${state} allows 100% financing, zero down payment, no private mortgage insurance. Harris Capital Mortgage Group's VA specialists handle your Certificate of Eligibility (COE) and guide you through the VA appraisal process specific to ${state}.`,
     },
     {
       q: `What is the VA funding fee for a home purchase in ${state}?`,
@@ -286,17 +286,17 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
     },
     {
       q: `How long does it take to close a VA loan in ${city}?`,
-      a: `Most VA loans in ${city} close in 30–45 days when all documents are submitted promptly. The VA appraisal — which can only be ordered by a VA-approved lender — is often the longest step. Harris Capital's VA team in ${state} knows the local appraiser timeline and will set accurate expectations from day one.`,
+      a: `Most VA loans in ${city} close in 30–45 days when all documents are submitted promptly. The VA appraisal, which can only be ordered by a VA-approved lender, is often the longest step. Harris Capital's VA team in ${state} knows the local appraiser timeline and will set accurate expectations from day one.`,
     },
   ],
   "Conventional Loan": (city, state) => [
     {
       q: `What credit score do I need for a conventional loan in ${city}, ${state}?`,
-      a: `Most conventional loan programs in ${city}, ${state} require a minimum credit score of 620. Higher scores — 740 and above — unlock significantly better interest rates and eliminate mortgage insurance costs at lower down payment levels. HCMG's loan officers will show you side-by-side rate comparisons based on your specific score so you can make an informed decision.`,
+      a: `Most conventional loan programs in ${city}, ${state} require a minimum credit score of 620. Higher scores, 740 and above, unlock significantly better interest rates and eliminate mortgage insurance costs at lower down payment levels. HCMG's loan officers will show you side-by-side rate comparisons based on your specific score so you can make an informed decision.`,
     },
     {
       q: `How much should I put down on a conventional loan in ${city} to avoid PMI?`,
-      a: `A 20% down payment eliminates private mortgage insurance (PMI) on a conventional loan. In ${city} where the median home price is higher, that can be a significant hurdle. Programs like Fannie Mae HomeReady and Freddie Mac Home Possible allow as little as 3% down for qualifying buyers — though PMI will apply until you reach 20% equity. Your Harris Capital loan officer will calculate the exact PMI cost and break-even point for your price range.`,
+      a: `A 20% down payment eliminates private mortgage insurance (PMI) on a conventional loan. In ${city} where the median home price is higher, that can be a significant hurdle. Programs like Fannie Mae HomeReady and Freddie Mac Home Possible allow as little as 3% down for qualifying buyers, though PMI will apply until you reach 20% equity. Your Harris Capital loan officer will calculate the exact PMI cost and break-even point for your price range.`,
     },
     {
       q: `What is the conforming loan limit for a conventional loan in ${state} in 2026?`,
@@ -306,11 +306,11 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
   "Refinance": (city, state) => [
     {
       q: `When does it make sense to refinance my mortgage in ${city}, ${state}?`,
-      a: `Refinancing in ${city} typically makes sense when you can reduce your interest rate by at least 0.5–1.0%, convert an ARM to a fixed rate before a reset, or tap equity for a home improvement or debt consolidation. Your break-even timeline matters — if you plan to sell within 3 years, the closing costs may outweigh the savings. HCMG's ${state} loan officers will run the numbers for your specific situation at no cost.`,
+      a: `Refinancing in ${city} typically makes sense when you can reduce your interest rate by at least 0.5–1.0%, convert an ARM to a fixed rate before a reset, or tap equity for a home improvement or debt consolidation. Your break-even timeline matters, if you plan to sell within 3 years, the closing costs may outweigh the savings. HCMG's ${state} loan officers will run the numbers for your specific situation at no cost.`,
     },
     {
       q: `How much equity do I need to do a cash-out refinance in ${state}?`,
-      a: `Most lenders allow a cash-out refinance up to 80% loan-to-value (LTV) on a primary residence — meaning you need at least 20% equity remaining after the refinance. FHA cash-out allows up to 80% LTV as well. VA cash-out can go up to 90% for eligible veterans. Harris Capital will assess your current equity position in ${city} and determine which program gives you the most cash while keeping your payment manageable.`,
+      a: `Most lenders allow a cash-out refinance up to 80% loan-to-value (LTV) on a primary residence, meaning you need at least 20% equity remaining after the refinance. FHA cash-out allows up to 80% LTV as well. VA cash-out can go up to 90% for eligible veterans. Harris Capital will assess your current equity position in ${city} and determine which program gives you the most cash while keeping your payment manageable.`,
     },
     {
       q: `How long does a refinance take to close in ${city}?`,
@@ -320,15 +320,15 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
   "First-Time Buyer": (city, state) => [
     {
       q: `What down payment assistance programs are available for first-time buyers in ${city}, ${state}?`,
-      a: `${state} offers several down payment assistance programs for first-time buyers in ${city}. Options typically include state housing agency grants, forgivable second mortgages, and deferred loans with no monthly payment. Income and purchase price limits apply. Harris Capital's ${state} loan officers are certified with the primary state programs and will identify every program you qualify for — including local city and county programs that many lenders overlook.`,
+      a: `${state} offers several down payment assistance programs for first-time buyers in ${city}. Options typically include state housing agency grants, forgivable second mortgages, and deferred loans with no monthly payment. Income and purchase price limits apply. Harris Capital's ${state} loan officers are certified with the primary state programs and will identify every program you qualify for, including local city and county programs that many lenders overlook.`,
     },
     {
       q: `How much money do I need to buy my first home in ${city}, ${state}?`,
-      a: `For a first home in ${city}, plan for 3–5% down payment (or less with assistance programs), 2–3% in closing costs, and a small cash reserve for move-in expenses. With down payment assistance, your out-of-pocket can be significantly lower. HCMG will give you a precise cash-to-close estimate — including taxes, insurance, and prepaid items — before you tour a single home, so there are no surprises at the closing table.`,
+      a: `For a first home in ${city}, plan for 3–5% down payment (or less with assistance programs), 2–3% in closing costs, and a small cash reserve for move-in expenses. With down payment assistance, your out-of-pocket can be significantly lower. HCMG will give you a precise cash-to-close estimate, including taxes, insurance, and prepaid items, before you tour a single home, so there are no surprises at the closing table.`,
     },
     {
       q: `Do I need a real estate agent to buy my first home in ${city}?`,
-      a: `You are not legally required to use a buyer's agent in ${state}, but most first-time buyers benefit from one — especially in competitive markets like ${city}. Starting with a mortgage pre-qualification from Harris Capital before you engage an agent gives you a clear budget and makes your offers stronger. Our loan officers work with buyer's agents across ${city} every day and can refer you to experienced professionals if needed.`,
+      a: `You are not legally required to use a buyer's agent in ${state}, but most first-time buyers benefit from one, especially in competitive markets like ${city}. Starting with a mortgage pre-qualification from Harris Capital before you engage an agent gives you a clear budget and makes your offers stronger. Our loan officers work with buyer's agents across ${city} every day and can refer you to experienced professionals if needed.`,
     },
   ],
   "Down Payment Assistance": (city, state) => [
@@ -338,7 +338,7 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
     },
     {
       q: `Do I have to repay down payment assistance in ${state}?`,
-      a: `It depends on the program. Some ${state} DPA programs are forgivable grants — if you stay in the home for a set period (usually 3–10 years), you never repay the assistance. Others are deferred second mortgages with no monthly payment, due only when you sell, refinance, or pay off the home. A small number require monthly payments. Your HCMG loan officer will explain the exact terms of every program you are matched with in ${city}.`,
+      a: `It depends on the program. Some ${state} DPA programs are forgivable grants, if you stay in the home for a set period (usually 3–10 years), you never repay the assistance. Others are deferred second mortgages with no monthly payment, due only when you sell, refinance, or pay off the home. A small number require monthly payments. Your HCMG loan officer will explain the exact terms of every program you are matched with in ${city}.`,
     },
     {
       q: `Can I combine down payment assistance with an FHA loan in ${city}?`,
@@ -352,7 +352,7 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
     },
     {
       q: `What credit score and down payment do I need for a jumbo loan in ${city}?`,
-      a: `Most jumbo loan programs in ${city} require a minimum credit score of 700–720 and a down payment of 10–20% depending on loan size. Lenders also scrutinize cash reserves after closing — typically 6–12 months of mortgage payments held in verifiable assets. The stronger your financial profile, the more competitive your jumbo rate. HCMG's loan officers will match you to the jumbo program with the best rate for your specific profile.`,
+      a: `Most jumbo loan programs in ${city} require a minimum credit score of 700–720 and a down payment of 10–20% depending on loan size. Lenders also scrutinize cash reserves after closing, typically 6–12 months of mortgage payments held in verifiable assets. The stronger your financial profile, the more competitive your jumbo rate. HCMG's loan officers will match you to the jumbo program with the best rate for your specific profile.`,
     },
     {
       q: `Are jumbo loan rates higher than conventional rates in ${state}?`,
@@ -362,11 +362,11 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
   "USDA Loan": (city, state) => [
     {
       q: `Do areas near ${city}, ${state} qualify for a USDA loan?`,
-      a: `USDA loan eligibility is based on the USDA's property eligibility map — not a strict definition of "rural." Many suburban areas and small towns near ${city} qualify. Your HCMG loan officer can look up any specific address instantly. USDA loans offer 100% financing (zero down payment) and are often the best-value loan for buyers purchasing outside dense urban cores in ${state}.`,
+      a: `USDA loan eligibility is based on the USDA's property eligibility map, not a strict definition of "rural." Many suburban areas and small towns near ${city} qualify. Your HCMG loan officer can look up any specific address instantly. USDA loans offer 100% financing (zero down payment) and are often the best-value loan for buyers purchasing outside dense urban cores in ${state}.`,
     },
     {
       q: `What is the income limit for a USDA loan in ${state}?`,
-      a: `USDA income limits vary by county and household size, but typically allow buyers earning up to 115% of the area median income (AMI). In ${state}, that translates to different thresholds depending on the county — rural counties have lower AMI benchmarks. HCMG's ${state} loan officers run the USDA income eligibility check as part of the initial consultation at no cost.`,
+      a: `USDA income limits vary by county and household size, but typically allow buyers earning up to 115% of the area median income (AMI). In ${state}, that translates to different thresholds depending on the county, rural counties have lower AMI benchmarks. HCMG's ${state} loan officers run the USDA income eligibility check as part of the initial consultation at no cost.`,
     },
     {
       q: `How does a USDA loan compare to an FHA loan for a home near ${city}?`,
@@ -376,7 +376,7 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
   "HELOC": (city, state) => [
     {
       q: `How much can I borrow with a HELOC on my home in ${city}, ${state}?`,
-      a: `Most HELOC lenders allow you to borrow up to 85–90% of your home's value minus your existing mortgage balance. In ${city} where home values have appreciated significantly, many homeowners have substantial equity available. Harris Capital can give you a quick equity estimate based on current ${city} market data and your original loan balance — no formal appraisal needed for an initial assessment.`,
+      a: `Most HELOC lenders allow you to borrow up to 85–90% of your home's value minus your existing mortgage balance. In ${city} where home values have appreciated significantly, many homeowners have substantial equity available. Harris Capital can give you a quick equity estimate based on current ${city} market data and your original loan balance, no formal appraisal needed for an initial assessment.`,
     },
     {
       q: `What are typical HELOC interest rates in ${state} right now?`,
@@ -384,7 +384,7 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
     },
     {
       q: `Is a HELOC or a cash-out refinance better for my ${city} home?`,
-      a: `It depends on your first mortgage rate. If your current mortgage rate is below today's market rates, a HELOC lets you access equity without refinancing your first mortgage — preserving your low rate. If your first mortgage rate is at or above current market rates, a cash-out refinance might lower your overall payment while pulling cash out. HCMG's ${state} loan officers will model both options with real numbers for your ${city} property.`,
+      a: `It depends on your first mortgage rate. If your current mortgage rate is below today's market rates, a HELOC lets you access equity without refinancing your first mortgage, preserving your low rate. If your first mortgage rate is at or above current market rates, a cash-out refinance might lower your overall payment while pulling cash out. HCMG's ${state} loan officers will model both options with real numbers for your ${city} property.`,
     },
   ],
   "ARM Loan": (city, state) => [
@@ -398,7 +398,7 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
     },
     {
       q: `What ARM loan terms are available in ${city}, ${state}?`,
-      a: `Common ARM structures in ${city} are 5/1, 7/1, and 10/1 ARMs — the first number is the fixed-rate period in years, the second is how often the rate adjusts afterward. A 7/1 ARM in ${state} gives you a lower rate than a 30-year fixed for 7 full years, then adjusts annually. For buyers who plan to sell within the fixed period, the savings can be substantial on higher-priced ${city} properties.`,
+      a: `Common ARM structures in ${city} are 5/1, 7/1, and 10/1 ARMs, the first number is the fixed-rate period in years, the second is how often the rate adjusts afterward. A 7/1 ARM in ${state} gives you a lower rate than a 30-year fixed for 7 full years, then adjusts annually. For buyers who plan to sell within the fixed period, the savings can be substantial on higher-priced ${city} properties.`,
     },
   ],
   "Investment Property Loan": (city, state) => [
@@ -422,11 +422,11 @@ export const AEO_FAQS: Record<string, (city: string, state: string) => { q: stri
     },
     {
       q: `What is a condo questionnaire and why does it matter for my ${city} purchase?`,
-      a: `A condo questionnaire is completed by the condo HOA and provides lenders with data on the building's financial health, insurance coverage, owner-occupancy rate, and active litigation. If the ${city} building you are purchasing in fails the review — due to high investor concentration or inadequate reserves, for example — your loan may not be approved for that project. HCMG reviews condo questionnaires early in the process to identify issues before you are under contract.`,
+      a: `A condo questionnaire is completed by the condo HOA and provides lenders with data on the building's financial health, insurance coverage, owner-occupancy rate, and active litigation. If the ${city} building you are purchasing in fails the review, due to high investor concentration or inadequate reserves, for example, your loan may not be approved for that project. HCMG reviews condo questionnaires early in the process to identify issues before you are under contract.`,
     },
     {
       q: `What is a non-warrantable condo and can I get a mortgage on one in ${state}?`,
-      a: `A non-warrantable condo in ${state} is one that does not meet Fannie Mae or Freddie Mac guidelines — often due to high investor concentration, active litigation, or a hotel/resort designation. These properties cannot be financed with conventional agency loans. However, portfolio lenders and some jumbo programs can finance non-warrantable condos in ${city} at slightly higher rates. HCMG's ${state} loan officers know which ${city} buildings have warrantability issues and will steer you to the right program before you make an offer.`,
+      a: `A non-warrantable condo in ${state} is one that does not meet Fannie Mae or Freddie Mac guidelines, often due to high investor concentration, active litigation, or a hotel/resort designation. These properties cannot be financed with conventional agency loans. However, portfolio lenders and some jumbo programs can finance non-warrantable condos in ${city} at slightly higher rates. HCMG's ${state} loan officers know which ${city} buildings have warrantability issues and will steer you to the right program before you make an offer.`,
     },
   ],
 };

@@ -35,7 +35,7 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-09-01",
     headline: "FHA Loan Requirements: Everything You Need to Qualify",
     intro:
-      "FHA loans are insured by the Federal Housing Administration and designed to make homeownership accessible for buyers with lower credit scores or limited savings. They're one of the most popular loan programs in the country — and one of the most misunderstood. This guide covers every requirement so you know exactly where you stand before you apply.",
+      "FHA loans are insured by the Federal Housing Administration and designed to make homeownership accessible for buyers with lower credit scores or limited savings. They're one of the most popular loan programs in the country, and one of the most misunderstood. This guide covers every requirement so you know exactly where you stand before you apply.",
     sections: [
       {
         heading: "Credit Score Requirements",
@@ -44,14 +44,14 @@ export const learnArticles: LearnArticle[] = [
           "580 or higher: You qualify for the minimum 3.5% down payment. This is the most common FHA scenario.",
           "500–579: You can still apply, but the required down payment rises to 10%. Lenders may also have stricter conditions.",
           "Below 500: Not eligible for FHA financing. Focus on credit repair before applying.",
-          "Important: these are the FHA program minimums. Individual lenders (including HCMG) may have their own overlays — meaning their internal minimum may be slightly higher. Your loan officer will tell you the exact threshold for your file.",
+          "Important: these are the FHA program minimums. Individual lenders (including HCMG) may have their own overlays, meaning their internal minimum may be slightly higher. Your loan officer will tell you the exact threshold for your file.",
         ],
       },
       {
         heading: "Down Payment Requirements",
         body: [
-          "The FHA's 3.5% minimum down payment is one of its biggest attractions. On a $300,000 home, that's $10,500 — significantly less than the $15,000–$60,000 required by most conventional programs.",
-          "The down payment can come from your own savings, a gift from a family member, a down payment assistance grant, or a combination. Unlike some conventional loans, FHA allows 100% of the down payment to be gifted — as long as the gift is properly documented.",
+          "The FHA's 3.5% minimum down payment is one of its biggest attractions. On a $300,000 home, that's $10,500, significantly less than the $15,000–$60,000 required by most conventional programs.",
+          "The down payment can come from your own savings, a gift from a family member, a down payment assistance grant, or a combination. Unlike some conventional loans, FHA allows 100% of the down payment to be gifted, as long as the gift is properly documented.",
           "If your credit score is between 500 and 579, the minimum rises to 10%. In this case, down payment gift funds are still allowed.",
         ],
       },
@@ -61,21 +61,21 @@ export const learnArticles: LearnArticle[] = [
           "Your debt-to-income ratio compares your monthly debt payments to your gross monthly income. FHA guidelines allow:",
           "Front-end DTI (housing expenses only): up to 31% of gross income",
           "Back-end DTI (all monthly debts): up to 43% of gross income",
-          "With compensating factors — strong reserves, a large down payment, or excellent credit — FHA can approve DTIs up to 50% or slightly higher through automated underwriting. Your loan officer will run your specific scenario.",
+          "With compensating factors, strong reserves, a large down payment, or excellent credit, FHA can approve DTIs up to 50% or slightly higher through automated underwriting. Your loan officer will run your specific scenario.",
         ],
       },
       {
         heading: "Employment & Income Requirements",
         body: [
           "FHA does not set a minimum income. What matters is that your income is sufficient to support the payment and is likely to continue.",
-          "You'll need two years of employment history. This doesn't have to be the same job — a history of stable employment in the same field qualifies. Self-employed borrowers need two years of tax returns showing consistent income.",
+          "You'll need two years of employment history. This doesn't have to be the same job, a history of stable employment in the same field qualifies. Self-employed borrowers need two years of tax returns showing consistent income.",
           "Part-time income, overtime, bonus income, and rental income can all count, but lenders generally require a 2-year history of receiving it before it can be included in your qualifying income.",
         ],
       },
       {
         heading: "FHA Mortgage Insurance (MIP)",
         body: [
-          "All FHA loans require mortgage insurance — this is how the FHA program funds itself. There are two components:",
+          "All FHA loans require mortgage insurance, this is how the FHA program funds itself. There are two components:",
           "Upfront MIP (UFMIP): 1.75% of the loan amount, due at closing. It can be rolled into the loan balance instead of paid out of pocket.",
           "Annual MIP: Ranges from 0.45% to 1.05% of the loan balance per year, divided into 12 monthly payments added to your mortgage payment.",
           "For most FHA loans originated today with less than 10% down, the annual MIP lasts for the life of the loan. If you put 10% or more down, MIP cancels after 11 years.",
@@ -86,8 +86,8 @@ export const learnArticles: LearnArticle[] = [
         heading: "Property Requirements",
         body: [
           "The property you're buying must meet FHA standards. The most important rules:",
-          "It must be your primary residence — FHA is not available for investment properties or vacation homes.",
-          "The home must pass an FHA appraisal. The appraiser checks not only value but also safety and livability — things like peeling paint, broken windows, and structural issues can require repairs before the loan closes.",
+          "It must be your primary residence, FHA is not available for investment properties or vacation homes.",
+          "The home must pass an FHA appraisal. The appraiser checks not only value but also safety and livability, things like peeling paint, broken windows, and structural issues can require repairs before the loan closes.",
           "Condominiums must be on the FHA-approved condo list. Your loan officer can check this instantly.",
           "Manufactured homes have additional requirements around permanent foundation and age.",
         ],
@@ -103,7 +103,7 @@ export const learnArticles: LearnArticle[] = [
     faqs: [
       {
         q: "Can I use an FHA loan to buy a duplex or small investment property?",
-        a: "Yes — FHA allows 2-4 unit properties as long as you live in one of the units as your primary residence. You can collect rent on the other units, and that rental income may help you qualify.",
+        a: "Yes, FHA allows 2-4 unit properties as long as you live in one of the units as your primary residence. You can collect rent on the other units, and that rental income may help you qualify.",
       },
       {
         q: "How long do I have to wait after bankruptcy to get an FHA loan?",
@@ -111,7 +111,7 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "Can I roll closing costs into an FHA loan?",
-        a: "Not directly — FHA doesn't allow financing closing costs. However, you can ask the seller to cover up to 6% of the purchase price in concessions, which can offset closing costs. You can also negotiate with the lender for a higher rate in exchange for a lender credit.",
+        a: "Not directly, FHA doesn't allow financing closing costs. However, you can ask the seller to cover up to 6% of the purchase price in concessions, which can offset closing costs. You can also negotiate with the lender for a higher rate in exchange for a lender credit.",
       },
       {
         q: "What's the difference between FHA and conventional?",
@@ -133,20 +133,20 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-09-01",
     headline: "How Much Mortgage Can I Afford? The Rules Lenders Actually Use",
     intro:
-      "The most common homebuying mistake is shopping for homes before knowing the real number. Not the number a mortgage calculator gives you — the number a lender will actually approve. Here's exactly how lenders calculate affordability, and how to use that math to find the right purchase price for your situation.",
+      "The most common homebuying mistake is shopping for homes before knowing the real number. Not the number a mortgage calculator gives you, the number a lender will actually approve. Here's exactly how lenders calculate affordability, and how to use that math to find the right purchase price for your situation.",
     sections: [
       {
-        heading: "The 28/36 Rule — The Classic Guideline",
+        heading: "The 28/36 Rule, The Classic Guideline",
         body: [
           "The traditional affordability rule says your housing costs should not exceed 28% of your gross monthly income, and your total debt payments should not exceed 36%.",
           "Example: If you earn $7,500/month gross: 28% = $2,100 max housing payment. 36% = $2,700 max total debt.",
-          "This is a conservative rule of thumb. Modern lending programs — especially FHA — allow higher ratios. But it's a useful starting point for planning.",
+          "This is a conservative rule of thumb. Modern lending programs, especially FHA, allow higher ratios. But it's a useful starting point for planning.",
         ],
       },
       {
         heading: "How Lenders Actually Calculate It: DTI",
         body: [
-          "Lenders don't use the 28/36 rule — they use Debt-to-Income ratio (DTI). Your back-end DTI is the number that matters most:",
+          "Lenders don't use the 28/36 rule, they use Debt-to-Income ratio (DTI). Your back-end DTI is the number that matters most:",
           "Back-end DTI = (All monthly debt payments + proposed housing payment) ÷ Gross monthly income",
           "Conventional loans: generally allow up to 45–50% DTI",
           "FHA loans: up to 43–50% DTI with compensating factors",
@@ -158,20 +158,20 @@ export const learnArticles: LearnArticle[] = [
         heading: "How Down Payment Changes What You Can Afford",
         body: [
           "A larger down payment reduces your loan balance, which lowers your monthly payment and can bring you within DTI limits on a more expensive home.",
-          "It also eliminates or reduces mortgage insurance. On a conventional loan, 20% down means no PMI — saving $100–$200/month on a $300,000 loan.",
-          "Example: Home price $400,000. With 5% down ($20,000), your loan is $380,000. With 20% down ($80,000), your loan is $320,000 — reducing your monthly payment by roughly $360 at a 7% rate.",
+          "It also eliminates or reduces mortgage insurance. On a conventional loan, 20% down means no PMI, saving $100–$200/month on a $300,000 loan.",
+          "Example: Home price $400,000. With 5% down ($20,000), your loan is $380,000. With 20% down ($80,000), your loan is $320,000, reducing your monthly payment by roughly $360 at a 7% rate.",
         ],
       },
       {
         heading: "Credit Score's Effect on Your Payment",
         body: [
           "Your credit score directly affects your interest rate, which affects your payment more than almost anything else.",
-          "On a $350,000 30-year loan: a 760+ score might get 6.75%, a 680 score might get 7.50%. That difference is ~$165/month — or roughly $59,000 over 30 years.",
+          "On a $350,000 30-year loan: a 760+ score might get 6.75%, a 680 score might get 7.50%. That difference is ~$165/month, or roughly $59,000 over 30 years.",
           "Improving your score before you apply can meaningfully change what you can afford. Even 30–60 days of credit optimization can shift your score enough to hit a better rate tier.",
         ],
       },
       {
-        heading: "Property Taxes, Insurance & HOA — The Hidden Payment",
+        heading: "Property Taxes, Insurance & HOA, The Hidden Payment",
         body: [
           "Your mortgage payment (PITI) includes more than principal and interest. For budgeting purposes, add:",
           "Property taxes: vary wildly by state and county. Texas and New Jersey are among the highest (1.5–2.5%+). Alabama and Nevada are among the lowest (0.3–0.6%).",
@@ -193,11 +193,11 @@ export const learnArticles: LearnArticle[] = [
     faqs: [
       {
         q: "Does the lender's maximum mean I should borrow that much?",
-        a: "No. Lenders tell you the maximum they'll approve — not the number that's right for your life. Many financial advisors suggest keeping your housing payment at 25–28% of take-home pay (not gross income) to leave room for savings, emergencies, and other goals.",
+        a: "No. Lenders tell you the maximum they'll approve, not the number that's right for your life. Many financial advisors suggest keeping your housing payment at 25–28% of take-home pay (not gross income) to leave room for savings, emergencies, and other goals.",
       },
       {
         q: "Does my spouse's income count if they're on the loan?",
-        a: "Yes. If both of you are on the loan, both incomes are included. Both credit scores are also reviewed — the lender typically uses the lower of the two middle scores for qualification purposes.",
+        a: "Yes. If both of you are on the loan, both incomes are included. Both credit scores are also reviewed, the lender typically uses the lower of the two middle scores for qualification purposes.",
       },
       {
         q: "Can rental income help me qualify?",
@@ -219,35 +219,35 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-09-01",
     headline: "First-Time Homebuyer Programs: Down Payment Help in Every State We Serve",
     intro:
-      "Down payment assistance, below-market rates, and tax credits for first-time buyers aren't marketing gimmicks — they're real programs funded by state housing finance agencies and the federal government. Billions of dollars go unclaimed every year because buyers don't know they qualify. Here's what's available in every state HCMG serves.",
+      "Down payment assistance, below-market rates, and tax credits for first-time buyers aren't marketing gimmicks, they're real programs funded by state housing finance agencies and the federal government. Billions of dollars go unclaimed every year because buyers don't know they qualify. Here's what's available in every state HCMG serves.",
     sections: [
       {
         heading: "Who Counts as a First-Time Buyer?",
         body: [
           "The definition is more forgiving than it sounds. You're considered a first-time buyer if you haven't owned a primary residence in the past three years. That means previous homeowners who rented for a few years may qualify again.",
-          "Divorced individuals who owned jointly with a spouse and haven't owned since may also qualify. Some programs have no first-time buyer requirement at all — they're based purely on income and purchase price.",
+          "Divorced individuals who owned jointly with a spouse and haven't owned since may also qualify. Some programs have no first-time buyer requirement at all, they're based purely on income and purchase price.",
         ],
       },
       {
-        heading: "Florida — Florida Housing Finance Corporation",
+        heading: "Florida, Florida Housing Finance Corporation",
         body: [
           "The Florida Housing Finance Corporation (FHFC) offers the Florida First and HFA Preferred programs with below-market 30-year fixed rates for eligible buyers.",
-          "Florida Assist (FL Assist): A deferred second mortgage of up to $10,000 for down payment and closing costs. No monthly payments, no interest — repayment only when you sell, refinance, or move.",
+          "Florida Assist (FL Assist): A deferred second mortgage of up to $10,000 for down payment and closing costs. No monthly payments, no interest, repayment only when you sell, refinance, or move.",
           "Florida Homeownership Loan Program (HLP): A $10,000 second mortgage at 3% simple interest with monthly payments of ~$43.",
           "Income limits and purchase price limits apply and vary by county. HCMG loan officers can check your eligibility in minutes.",
         ],
       },
       {
-        heading: "Texas — TSAHC and TDHCA Programs",
+        heading: "Texas, TSAHC and TDHCA Programs",
         body: [
           "Texas offers two main agencies for first-time buyers:",
-          "TSAHC (Texas State Affordable Housing Corporation): Offers down payment assistance grants of up to 5% of the loan amount — no repayment required. Also offers a My Choice Texas Home program with no first-time buyer requirement.",
+          "TSAHC (Texas State Affordable Housing Corporation): Offers down payment assistance grants of up to 5% of the loan amount, no repayment required. Also offers a My Choice Texas Home program with no first-time buyer requirement.",
           "TDHCA (Texas Department of Housing and Community Affairs): The My First Texas Home program provides 30-year fixed-rate loans with a 5% down payment assistance loan at 0% interest, deferred until sale or refinance.",
           "Both programs work with FHA, VA, USDA, and conventional loans.",
         ],
       },
       {
-        heading: "Georgia — Georgia Dream",
+        heading: "Georgia, Georgia Dream",
         body: [
           "Georgia Dream is administered by GAHFA (Georgia Housing and Finance Authority) and provides:",
           "Standard DPA: Up to $10,000 in down payment assistance as a 0%, deferred loan.",
@@ -257,15 +257,15 @@ export const learnArticles: LearnArticle[] = [
         ],
       },
       {
-        heading: "Nevada — Home Is Possible",
+        heading: "Nevada, Home Is Possible",
         body: [
-          "Nevada Housing Division runs the Home Is Possible (HIP) program, which offers a 4% grant toward down payment and closing costs — money that does not have to be repaid.",
+          "Nevada Housing Division runs the Home Is Possible (HIP) program, which offers a 4% grant toward down payment and closing costs, money that does not have to be repaid.",
           "For first-time buyers, the HIP For First-Time Homebuyers program pairs the grant with a below-market rate first mortgage.",
           "Income limits: Generally up to $105,000 for a household of 1–2, higher for larger households.",
         ],
       },
       {
-        heading: "Colorado — CHFA",
+        heading: "Colorado, CHFA",
         body: [
           "The Colorado Housing and Finance Authority (CHFA) offers first mortgage loans at below-market rates plus down payment assistance:",
           "CHFA SmartStep: A deferred second loan for down payment assistance. No monthly payments until you sell or refinance.",
@@ -274,26 +274,26 @@ export const learnArticles: LearnArticle[] = [
         ],
       },
       {
-        heading: "Virginia & Maryland — VHDA and MMP",
+        heading: "Virginia & Maryland, VHDA and MMP",
         body: [
-          "Virginia: The Virginia Housing Development Authority (VHDA) offers the Granting Freedom and Down Payment Assistance Grant programs. The DPA Grant provides up to 2.5% of the purchase price — no repayment required.",
+          "Virginia: The Virginia Housing Development Authority (VHDA) offers the Granting Freedom and Down Payment Assistance Grant programs. The DPA Grant provides up to 2.5% of the purchase price, no repayment required.",
           "Maryland: The Maryland Mortgage Program (MMP) offers competitive rates plus Partner Match grants, where the state matches local government or employer contributions to down payment assistance dollar for dollar.",
-          "Both states also offer mortgage credit certificates (MCCs) — federal tax credits worth 20–25% of annual mortgage interest paid.",
+          "Both states also offer mortgage credit certificates (MCCs), federal tax credits worth 20–25% of annual mortgage interest paid.",
         ],
       },
       {
-        heading: "California — CalHFA",
+        heading: "California, CalHFA",
         body: [
           "The California Housing Finance Agency (CalHFA) offers several programs for first-time buyers:",
           "MyHome Assistance Program: A deferred-payment junior loan up to 3.5% of the purchase price or appraised value for down payment and closing costs.",
-          "Dream For All: Shared appreciation loan for down payment — CalHFA provides up to 20% of the purchase price and shares in the appreciation when you sell. This program is highly competitive and opens in limited rounds.",
+          "Dream For All: Shared appreciation loan for down payment, CalHFA provides up to 20% of the purchase price and shares in the appreciation when you sell. This program is highly competitive and opens in limited rounds.",
           "CalHFA Zero Interest Program (ZIP): For closing cost assistance with zero interest and no monthly payments.",
         ],
       },
       {
-        heading: "Mississippi — MHC Programs",
+        heading: "Mississippi, MHC Programs",
         body: [
-          "The Mississippi Home Corporation (MHC) offers the Smart Solution program — a 30-year fixed rate first mortgage with down payment assistance of 3–4% of the loan amount.",
+          "The Mississippi Home Corporation (MHC) offers the Smart Solution program, a 30-year fixed rate first mortgage with down payment assistance of 3–4% of the loan amount.",
           "Mississippi consistently has some of the most affordable home prices in the Southeast, meaning down payment requirements are often the most accessible in the country.",
         ],
       },
@@ -305,7 +305,7 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "Do I have to repay down payment assistance?",
-        a: "It depends on the program. Grants are free money — no repayment. Deferred loans must be repaid when you sell or refinance, but require no monthly payments. Some programs forgive the loan entirely after you've lived in the home for a set period (usually 5–10 years).",
+        a: "It depends on the program. Grants are free money, no repayment. Deferred loans must be repaid when you sell or refinance, but require no monthly payments. Some programs forgive the loan entirely after you've lived in the home for a set period (usually 5–10 years).",
       },
       {
         q: "Is there an income limit for these programs?",
@@ -321,13 +321,13 @@ export const learnArticles: LearnArticle[] = [
     title: "VA Loan Eligibility Requirements",
     metaTitle: "VA Loan Eligibility Requirements: Service, Certificate & Benefits | HCMG",
     metaDescription:
-      "Complete guide to VA loan eligibility: service requirements, Certificate of Eligibility, 0% down benefit, VA funding fee, and how to apply. Harris Capital Mortgage Group — licensed in FL, TX, GA, NV, CO, VA, MD, CA & MS.",
+      "Complete guide to VA loan eligibility: service requirements, Certificate of Eligibility, 0% down benefit, VA funding fee, and how to apply. Harris Capital Mortgage Group, licensed in FL, TX, GA, NV, CO, VA, MD, CA & MS.",
     category: "VA Loans",
     readTime: 6,
     publishedAt: "2024-09-01",
     headline: "VA Loan Eligibility: Who Qualifies and How to Use Your Benefit",
     intro:
-      "The VA home loan benefit is one of the most powerful financial tools available to those who've served — zero down payment, no private mortgage insurance, and competitive interest rates. Yet fewer than 1 in 3 eligible veterans use it. This guide covers exactly who qualifies, what the benefit includes, and how to get started.",
+      "The VA home loan benefit is one of the most powerful financial tools available to those who've served, zero down payment, no private mortgage insurance, and competitive interest rates. Yet fewer than 1 in 3 eligible veterans use it. This guide covers exactly who qualifies, what the benefit includes, and how to get started.",
     sections: [
       {
         heading: "Who Is Eligible?",
@@ -344,8 +344,8 @@ export const learnArticles: LearnArticle[] = [
         heading: "Certificate of Eligibility (COE)",
         body: [
           "The Certificate of Eligibility (COE) is the VA's official document confirming your entitlement. You'll need it to get a VA loan.",
-          "How to get it: Your HCMG loan officer can pull your COE through the VA's automated system in most cases — no action required from you. Alternatively, you can apply through the VA's eBenefits portal or by mail using VA Form 26-1880.",
-          "Remaining entitlement: If you've used your VA benefit before and still have an outstanding VA loan, you may have remaining (or 'bonus') entitlement that allows you to take out another VA loan — even on a second property in some cases.",
+          "How to get it: Your HCMG loan officer can pull your COE through the VA's automated system in most cases, no action required from you. Alternatively, you can apply through the VA's eBenefits portal or by mail using VA Form 26-1880.",
+          "Remaining entitlement: If you've used your VA benefit before and still have an outstanding VA loan, you may have remaining (or 'bonus') entitlement that allows you to take out another VA loan, even on a second property in some cases.",
         ],
       },
       {
@@ -355,14 +355,14 @@ export const learnArticles: LearnArticle[] = [
           "No private mortgage insurance (PMI): Conventional loans require PMI when down payment is under 20%. VA loans never require PMI, saving $100–$300/month on a typical loan.",
           "Competitive rates: VA-backed loans typically carry rates 0.25–0.5% below conventional rates for comparable borrowers.",
           "Limits on closing costs: The VA restricts which fees lenders can charge veterans, capping certain costs.",
-          "Assumable: VA loans are assumable by qualified buyers — a significant selling advantage when your rate is below market.",
+          "Assumable: VA loans are assumable by qualified buyers, a significant selling advantage when your rate is below market.",
           "No prepayment penalty: You can pay off your VA loan at any time with no fees.",
         ],
       },
       {
         heading: "VA Funding Fee",
         body: [
-          "Most VA loans include a funding fee — a one-time charge that helps fund the VA loan program and reduces its cost to taxpayers.",
+          "Most VA loans include a funding fee, a one-time charge that helps fund the VA loan program and reduces its cost to taxpayers.",
           "For first-time use with 0% down: 2.3% of the loan amount. For subsequent use: 3.6%. With 5–10% down: 1.65%. With 10%+ down: 1.4%.",
           "The funding fee can be rolled into the loan amount. You don't need to bring it to closing.",
           "Who is exempt: Veterans receiving VA disability compensation, surviving spouses of veterans who died in service or from a service-connected disability, and active-duty Purple Heart recipients are all exempt from the funding fee.",
@@ -382,15 +382,15 @@ export const learnArticles: LearnArticle[] = [
     faqs: [
       {
         q: "Can I use my VA benefit more than once?",
-        a: "Yes. Your VA entitlement can be used multiple times. If you've paid off a previous VA loan (or sold the home and paid it off), your full entitlement is restored. You can also have two VA loans simultaneously if you have sufficient remaining entitlement — common for active duty members who buy at one duty station and then receive PCS orders.",
+        a: "Yes. Your VA entitlement can be used multiple times. If you've paid off a previous VA loan (or sold the home and paid it off), your full entitlement is restored. You can also have two VA loans simultaneously if you have sufficient remaining entitlement, common for active duty members who buy at one duty station and then receive PCS orders.",
       },
       {
         q: "Can I use a VA loan to buy a rental property or investment property?",
-        a: "Not directly — VA loans require owner-occupancy as the primary residence. However, you can buy a 2-4 unit property with a VA loan and rent out the other units as long as you live in one of them.",
+        a: "Not directly, VA loans require owner-occupancy as the primary residence. However, you can buy a 2-4 unit property with a VA loan and rent out the other units as long as you live in one of them.",
       },
       {
         q: "How long does a VA loan take to close?",
-        a: "A VA loan with a prepared borrower typically closes in 30–45 days — comparable to conventional. The VA appraisal (called a VA appraisal, performed by a VA-approved appraiser) is sometimes cited as the bottleneck in competitive markets, but most close on the same timeline.",
+        a: "A VA loan with a prepared borrower typically closes in 30–45 days, comparable to conventional. The VA appraisal (called a VA appraisal, performed by a VA-approved appraiser) is sometimes cited as the bottleneck in competitive markets, but most close on the same timeline.",
       },
     ],
     relatedSlugs: ["fha-loan-requirements", "how-much-mortgage-can-i-afford", "when-to-refinance-your-mortgage"],
@@ -408,12 +408,12 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-09-01",
     headline: "When to Refinance Your Mortgage: The Break-Even Analysis You Need",
     intro:
-      "Refinancing can save tens of thousands of dollars — or cost you money, depending on the timing. The difference between a smart refinance and a bad one often comes down to one calculation: the break-even point. Here's exactly how to decide if refinancing is right for your situation.",
+      "Refinancing can save tens of thousands of dollars, or cost you money, depending on the timing. The difference between a smart refinance and a bad one often comes down to one calculation: the break-even point. Here's exactly how to decide if refinancing is right for your situation.",
     sections: [
       {
         heading: "The Break-Even Rule",
         body: [
-          "Refinancing costs money upfront — typically $3,000–$6,000 in closing costs. Whether it makes sense depends on how long it takes your monthly savings to recover those costs.",
+          "Refinancing costs money upfront, typically $3,000–$6,000 in closing costs. Whether it makes sense depends on how long it takes your monthly savings to recover those costs.",
           "Break-even formula: Closing costs ÷ Monthly savings = Break-even months",
           "Example: $4,500 closing costs ÷ $180/month savings = 25 months to break even.",
           "If you plan to stay in the home longer than your break-even point, the refinance saves you money. If you might move or refinance again before that point, you're likely better off waiting.",
@@ -422,8 +422,8 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "How Much Should Rates Drop?",
         body: [
-          "The old rule of thumb was 'refinance when rates drop 1%.' That's outdated — the right threshold depends on your loan balance and how long you'll stay.",
-          "On a $500,000 loan: Even a 0.5% rate drop can save $140–$160/month — worth refinancing for anyone staying 3+ years.",
+          "The old rule of thumb was 'refinance when rates drop 1%.' That's outdated, the right threshold depends on your loan balance and how long you'll stay.",
+          "On a $500,000 loan: Even a 0.5% rate drop can save $140–$160/month, worth refinancing for anyone staying 3+ years.",
           "On a $150,000 loan: A 1% rate drop saves ~$80/month. With $4,000 in closing costs, break-even is 50 months.",
           "Run the numbers on your actual balance. Don't let the '1% rule' stop you from refinancing a large loan when rates drop 0.5–0.75%.",
         ],
@@ -431,7 +431,7 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "Rate/Term Refinance vs. Cash-Out Refinance",
         body: [
-          "Rate/term refinance: You're refinancing to change the rate, the term (30→15 year), or both. No cash comes out. This is a 'pure' refinance — the goal is lowering your payment or paying off faster.",
+          "Rate/term refinance: You're refinancing to change the rate, the term (30→15 year), or both. No cash comes out. This is a 'pure' refinance, the goal is lowering your payment or paying off faster.",
           "Cash-out refinance: You borrow more than you currently owe and take the difference as cash. Rates are typically 0.125–0.5% higher than a rate/term refi. Common uses: home renovations, debt consolidation, college tuition, large purchases.",
           "Cash-out considerations: You're resetting your amortization. If you're 10 years into a 30-year loan and cash-out into a new 30-year, you've extended your repayment by a decade. Run the long-term cost carefully.",
         ],
@@ -442,13 +442,13 @@ export const learnArticles: LearnArticle[] = [
           "You're close to payoff: If you're 20+ years into a 30-year mortgage, most of your payment is now principal. Refinancing into a new 30-year resets the amortization and dramatically increases total interest paid.",
           "You're moving soon: If you'll sell within 2–3 years, you'll rarely break even on closing costs.",
           "Your credit has deteriorated: Refinancing with a lower credit score than your original loan can result in a higher rate, not a lower one.",
-          "You're close to 20% equity on a conventional loan: If you're about to eliminate PMI naturally, refinancing now might not be worth the closing costs — you'll lose PMI soon regardless.",
+          "You're close to 20% equity on a conventional loan: If you're about to eliminate PMI naturally, refinancing now might not be worth the closing costs, you'll lose PMI soon regardless.",
         ],
       },
       {
         heading: "The 15-Year Refinance",
         body: [
-          "Refinancing a 30-year loan into a 15-year loan is a powerful wealth-building move — but only if the payment is comfortable.",
+          "Refinancing a 30-year loan into a 15-year loan is a powerful wealth-building move, but only if the payment is comfortable.",
           "15-year rates are typically 0.5–0.75% lower than 30-year rates. On a $350,000 balance at 7% (30-year) vs. 6.25% (15-year): the 15-year payment is about $700 higher per month but you save roughly $235,000 in total interest.",
           "Don't stretch into a 15-year if it puts your DTI uncomfortably high. A cash reserve is more valuable than maximum equity accumulation.",
         ],
@@ -457,7 +457,7 @@ export const learnArticles: LearnArticle[] = [
     faqs: [
       {
         q: "Can I refinance if I just bought the home?",
-        a: "Yes — there's no mandatory waiting period for a conventional refinance. FHA streamline refinances require 6 months of payments. VA IRRRL requires 6 months of payments. Practically speaking, most lenders want to see that you've made at least a few on-time payments, and you'll need to pay closing costs again.",
+        a: "Yes, there's no mandatory waiting period for a conventional refinance. FHA streamline refinances require 6 months of payments. VA IRRRL requires 6 months of payments. Practically speaking, most lenders want to see that you've made at least a few on-time payments, and you'll need to pay closing costs again.",
       },
       {
         q: "What documents do I need to refinance?",
@@ -465,7 +465,7 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "Does refinancing hurt my credit score?",
-        a: "A hard inquiry from a refinance application will temporarily lower your score by a few points. Multiple mortgage inquiries within a 14–45 day window (depending on the scoring model) count as a single inquiry — so rate shopping multiple lenders in a short period doesn't compound the impact.",
+        a: "A hard inquiry from a refinance application will temporarily lower your score by a few points. Multiple mortgage inquiries within a 14–45 day window (depending on the scoring model) count as a single inquiry, so rate shopping multiple lenders in a short period doesn't compound the impact.",
       },
     ],
     relatedSlugs: ["how-much-mortgage-can-i-afford", "what-is-pmi", "va-loan-eligibility-requirements"],
@@ -483,14 +483,14 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-09-01",
     headline: "What Is PMI? Private Mortgage Insurance, Explained",
     intro:
-      "PMI — private mortgage insurance — is one of the most misunderstood costs of buying a home. Some buyers are blindsided by it; others avoid it unnecessarily by making a larger down payment than they need to. This guide explains what it is, what it costs, when it's actually required, and how to eliminate it.",
+      "PMI, private mortgage insurance, is one of the most misunderstood costs of buying a home. Some buyers are blindsided by it; others avoid it unnecessarily by making a larger down payment than they need to. This guide explains what it is, what it costs, when it's actually required, and how to eliminate it.",
     sections: [
       {
         heading: "What Is PMI?",
         body: [
-          "PMI is insurance that protects the lender — not the borrower — if the borrower defaults on the loan. Despite paying for it, the buyer has no direct benefit from the policy.",
+          "PMI is insurance that protects the lender, not the borrower, if the borrower defaults on the loan. Despite paying for it, the buyer has no direct benefit from the policy.",
           "Lenders require PMI when the borrower puts down less than 20% on a conventional loan. The rationale: loans with less equity have a statistically higher default rate, so the lender offsets the risk by requiring insurance coverage.",
-          "PMI is specific to conventional loans. FHA loans have their own version — called Mortgage Insurance Premium (MIP) — which works differently and costs more in most scenarios.",
+          "PMI is specific to conventional loans. FHA loans have their own version, called Mortgage Insurance Premium (MIP), which works differently and costs more in most scenarios.",
         ],
       },
       {
@@ -503,18 +503,18 @@ export const learnArticles: LearnArticle[] = [
         ],
       },
       {
-        heading: "PMI vs. FHA MIP — Key Differences",
+        heading: "PMI vs. FHA MIP, Key Differences",
         body: [
           "This comparison matters because the right loan choice for borderline borrowers often hinges on it:",
           "PMI (conventional): Cancellable once you reach 20% equity. Rate improves with better credit. Not required at all with 20%+ down.",
-          "FHA MIP: Required regardless of down payment. For loans originated since 2013 with less than 10% down, MIP lasts for the life of the loan — the only exit is refinancing into a conventional loan.",
+          "FHA MIP: Required regardless of down payment. For loans originated since 2013 with less than 10% down, MIP lasts for the life of the loan, the only exit is refinancing into a conventional loan.",
           "For a borrower with a 680 credit score and 5% down: FHA MIP will likely be more expensive long-term because it doesn't cancel. A conventional loan with PMI may be cheaper within 5–7 years even if the initial rate is slightly higher.",
         ],
       },
       {
         heading: "4 Ways to Get Rid of PMI",
         body: [
-          "1. Wait for automatic cancellation: Federal law (the Homeowners Protection Act) requires lenders to automatically cancel PMI when your loan balance reaches 78% of the original purchase price — based on the original amortization schedule. You don't have to do anything.",
+          "1. Wait for automatic cancellation: Federal law (the Homeowners Protection Act) requires lenders to automatically cancel PMI when your loan balance reaches 78% of the original purchase price, based on the original amortization schedule. You don't have to do anything.",
           "2. Request cancellation at 80% LTV: Once your balance reaches 80% of the original purchase price (not current market value), you can request cancellation in writing. The lender must comply if you're current on payments and meet lender requirements.",
           "3. Reappraisal based on appreciation: If your home has appreciated significantly, you may be able to request a new appraisal and cancel PMI based on the current LTV. Most lenders require being at least 2 years into the loan and may charge an appraisal fee.",
           "4. Refinance into a conventional loan with 20%+ equity: Refinancing eliminates the old loan entirely. If your current value supports a new loan at 80% LTV or below, the new loan will have no PMI.",
@@ -528,7 +528,7 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "Can I pay PMI upfront instead of monthly?",
-        a: "Yes — some lenders offer single-premium PMI, where you pay the full PMI cost at closing in exchange for no monthly PMI payment. It can make sense if you have closing cost assistance from the seller but expect to keep the loan long-term. Ask your loan officer to compare both options.",
+        a: "Yes, some lenders offer single-premium PMI, where you pay the full PMI cost at closing in exchange for no monthly PMI payment. It can make sense if you have closing cost assistance from the seller but expect to keep the loan long-term. Ask your loan officer to compare both options.",
       },
       {
         q: "Does PMI protect me if I lose my job?",
@@ -550,22 +550,22 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-09-01",
     headline: "Pre-Approval vs. Pre-Qualification: Why the Difference Matters in a Competitive Market",
     intro:
-      "In a competitive housing market, the gap between a pre-qualification and a pre-approval isn't just semantic — it can mean the difference between having your offer accepted and watching the home go to someone else. Here's exactly what each means, what documentation is required, and which one you need before making an offer.",
+      "In a competitive housing market, the gap between a pre-qualification and a pre-approval isn't just semantic, it can mean the difference between having your offer accepted and watching the home go to someone else. Here's exactly what each means, what documentation is required, and which one you need before making an offer.",
     sections: [
       {
         heading: "What Is Pre-Qualification?",
         body: [
-          "A pre-qualification is an informal estimate of how much you might be able to borrow, based on information you self-report — income, assets, debts — with no verification.",
+          "A pre-qualification is an informal estimate of how much you might be able to borrow, based on information you self-report, income, assets, debts, with no verification.",
           "It typically involves no hard credit pull, no document review, and no underwriting. A lender (or a calculator) takes your numbers at face value and estimates a range.",
           "What it's good for: Early planning. Getting a ballpark before you start seriously shopping. Understanding where you might stand.",
-          "What it is not: A commitment from the lender. Sellers and listing agents see pre-qualification letters as weak — they know nothing has been verified.",
+          "What it is not: A commitment from the lender. Sellers and listing agents see pre-qualification letters as weak, they know nothing has been verified.",
         ],
       },
       {
         heading: "What Is Pre-Approval?",
         body: [
           "A pre-approval is a formal credit decision based on verified documentation. The lender has reviewed your credit report (hard pull), income documents, bank statements, and employment history.",
-          "After that review, the lender issues a pre-approval letter stating they are willing to lend up to a specific amount — subject to property appraisal and final underwriting.",
+          "After that review, the lender issues a pre-approval letter stating they are willing to lend up to a specific amount, subject to property appraisal and final underwriting.",
           "What makes it credible: The heavy lifting has been done. Sellers and agents know that a buyer with a lender-verified pre-approval is far less likely to fall through than one with just a pre-qual.",
           "Time to get it: Usually 1–3 business days if you have your documents ready.",
         ],
@@ -577,14 +577,14 @@ export const learnArticles: LearnArticle[] = [
           "Income: Last 2 years of W-2s or 1099s, last 2 years of tax returns (especially for self-employed), last 30 days of pay stubs",
           "Assets: Last 2–3 months of bank statements (all accounts), investment and retirement account statements",
           "Identity: Government-issued ID, Social Security number",
-          "Debts: Your lender will pull a credit report showing your debts — you don't need to gather these separately",
+          "Debts: Your lender will pull a credit report showing your debts, you don't need to gather these separately",
           "Having these ready before you start the process cuts turnaround time significantly.",
         ],
       },
       {
         heading: "Fully Underwritten Pre-Approval",
         body: [
-          "Some lenders offer a step beyond standard pre-approval: a fully underwritten pre-approval (sometimes called a credit approval or TBD approval). In this scenario, an actual underwriter reviews your file — the only remaining condition is the specific property.",
+          "Some lenders offer a step beyond standard pre-approval: a fully underwritten pre-approval (sometimes called a credit approval or TBD approval). In this scenario, an actual underwriter reviews your file, the only remaining condition is the specific property.",
           "This is the strongest possible pre-approval. In a multiple-offer situation, a fully underwritten pre-approval can carry as much weight as a cash offer.",
           "Ask your HCMG loan officer about this option if you're shopping in a competitive market.",
         ],
@@ -592,7 +592,7 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "Does Pre-Approval Affect My Credit Score?",
         body: [
-          "A single mortgage pre-approval generates one hard inquiry — typically a 5–10 point temporary dip in your credit score.",
+          "A single mortgage pre-approval generates one hard inquiry, typically a 5–10 point temporary dip in your credit score.",
           "If you shop multiple lenders, credit scoring models (FICO and VantageScore) treat multiple mortgage inquiries within a 14–45 day window as a single inquiry. You won't be penalized for getting quotes from 3–4 lenders if you do it within that window.",
           "This is important: comparing rates across lenders is the single best way to reduce your borrowing cost. Don't let fear of a credit impact stop you from shopping.",
         ],
@@ -601,15 +601,15 @@ export const learnArticles: LearnArticle[] = [
     faqs: [
       {
         q: "How long is a pre-approval valid?",
-        a: "Most lenders issue pre-approvals valid for 60–90 days. After that, your income and credit may need to be re-verified. If you haven't found a home within that window, contact your loan officer to refresh the letter — it's usually quick since your file is already on record.",
+        a: "Most lenders issue pre-approvals valid for 60–90 days. After that, your income and credit may need to be re-verified. If you haven't found a home within that window, contact your loan officer to refresh the letter, it's usually quick since your file is already on record.",
       },
       {
         q: "Will I definitely get the loan after pre-approval?",
-        a: "Pre-approval is conditional — the final loan is subject to the property appraisal, title search, and a final review of your financial situation at closing. Don't make any major financial changes after pre-approval (new debt, job change, large withdrawals) without checking with your loan officer first.",
+        a: "Pre-approval is conditional, the final loan is subject to the property appraisal, title search, and a final review of your financial situation at closing. Don't make any major financial changes after pre-approval (new debt, job change, large withdrawals) without checking with your loan officer first.",
       },
       {
         q: "Can I make an offer without pre-approval?",
-        a: "You can, but sellers in most markets won't take you seriously without it — particularly if they have competing offers. In hot markets, some sellers won't even allow showings without proof of pre-approval. Getting pre-approved before you start touring homes is almost always the right move.",
+        a: "You can, but sellers in most markets won't take you seriously without it, particularly if they have competing offers. In hot markets, some sellers won't even allow showings without proof of pre-approval. Getting pre-approved before you start touring homes is almost always the right move.",
       },
     ],
     relatedSlugs: ["how-much-mortgage-can-i-afford", "fha-loan-requirements", "first-time-homebuyer-programs"],
@@ -622,7 +622,7 @@ export const learnArticles: LearnArticle[] = [
     title: "How to Calculate a Mortgage Payment",
     metaTitle: "How to Calculate a Mortgage Payment: Formula, Examples & Calculator | HCMG",
     metaDescription:
-      "Learn exactly how to calculate a mortgage payment — the formula, step-by-step examples for different loan types, and a free calculator. Includes PITI, FHA MIP, and PMI. Harris Capital Mortgage Group.",
+      "Learn exactly how to calculate a mortgage payment, the formula, step-by-step examples for different loan types, and a free calculator. Includes PITI, FHA MIP, and PMI. Harris Capital Mortgage Group.",
     category: "Buying a Home",
     readTime: 6,
     publishedAt: "2024-10-01",
@@ -637,17 +637,17 @@ export const learnArticles: LearnArticle[] = [
           "M = P × [r(1+r)^n] ÷ [(1+r)^n − 1]",
           "Where: M = monthly payment, P = loan amount (principal), r = monthly interest rate (annual rate ÷ 12), n = total number of payments (loan term in years × 12)",
           "Example: $340,000 loan, 6.5% rate, 30-year term. r = 6.5% ÷ 12 = 0.5417%. n = 360 payments. M = $2,149/month for principal and interest.",
-          "This formula gives you the P&I only — your actual monthly payment will be higher once you add taxes, insurance, and mortgage insurance.",
+          "This formula gives you the P&I only, your actual monthly payment will be higher once you add taxes, insurance, and mortgage insurance.",
         ],
       },
       {
-        heading: "Full PITI Payment — What Gets Added",
+        heading: "Full PITI Payment, What Gets Added",
         body: [
           "Your real monthly payment includes four components, which is why lenders use the acronym PITI:",
-          "P — Principal: The portion that reduces your loan balance. In early years, this is the smallest slice.",
-          "I — Interest: The cost of borrowing. In early years, this is the largest slice — over time the ratio flips as you build equity.",
-          "T — Taxes: Property taxes, typically divided by 12 and collected monthly into an escrow account. Varies by county — commonly 0.5% to 2% of home value per year.",
-          "I — Insurance: Homeowner's insurance, also escrowed monthly. Roughly 0.25% to 0.5% of home value per year.",
+          "P, Principal: The portion that reduces your loan balance. In early years, this is the smallest slice.",
+          "I, Interest: The cost of borrowing. In early years, this is the largest slice, over time the ratio flips as you build equity.",
+          "T, Taxes: Property taxes, typically divided by 12 and collected monthly into an escrow account. Varies by county, commonly 0.5% to 2% of home value per year.",
+          "I, Insurance: Homeowner's insurance, also escrowed monthly. Roughly 0.25% to 0.5% of home value per year.",
           "Example: $340,000 loan at 6.5% for 30 years. P&I = $2,149. Taxes = $354/mo. Insurance = $142/mo. Total PITI = $2,645/month.",
         ],
       },
@@ -657,7 +657,7 @@ export const learnArticles: LearnArticle[] = [
           "FHA loans add a monthly Mortgage Insurance Premium (MIP) to the PITI calculation.",
           "FHA MIP = (Loan amount × 0.55%) ÷ 12 for most 30-year loans with less than 10% down.",
           "Example: $325,000 FHA loan (3.5% down on $337,000 home) at 6.75% for 30 years. P&I = $2,108. Taxes = $337/mo. Insurance = $126/mo. MIP = $149/mo. Total = $2,720/month.",
-          "Unlike PMI on conventional loans, FHA MIP cannot be cancelled if your down payment was less than 10% — it lasts for the life of the loan. This is why many buyers with improving credit scores refinance out of FHA once they reach 20% equity.",
+          "Unlike PMI on conventional loans, FHA MIP cannot be cancelled if your down payment was less than 10%, it lasts for the life of the loan. This is why many buyers with improving credit scores refinance out of FHA once they reach 20% equity.",
         ],
       },
       {
@@ -675,7 +675,7 @@ export const learnArticles: LearnArticle[] = [
           "The loan term has a dramatic effect on your monthly payment and total interest paid:",
           "30-year loan: Lower monthly payment, more total interest. Best for: buyers maximizing monthly cash flow.",
           "15-year loan: Higher monthly payment (roughly 40–50% more), but dramatically less total interest. Best for: buyers who want to build equity faster and pay less overall.",
-          "Example on $300,000 at 6.5%: 30-year = $1,896/mo, total interest = $382,600. 15-year = $2,613/mo, total interest = $170,250. The 15-year saves $212,350 in interest — but costs $717 more per month.",
+          "Example on $300,000 at 6.5%: 30-year = $1,896/mo, total interest = $382,600. 15-year = $2,613/mo, total interest = $170,250. The 15-year saves $212,350 in interest, but costs $717 more per month.",
         ],
       },
     ],
@@ -690,7 +690,7 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "How do I lower my monthly mortgage payment?",
-        a: "The four ways to lower your payment: (1) Make a larger down payment to reduce the loan amount. (2) Buy at a lower price point. (3) Secure a lower interest rate through better credit or by shopping lenders. (4) Extend the loan term — though this increases total interest paid. Refinancing can also lower your payment if rates have dropped since you originated.",
+        a: "The four ways to lower your payment: (1) Make a larger down payment to reduce the loan amount. (2) Buy at a lower price point. (3) Secure a lower interest rate through better credit or by shopping lenders. (4) Extend the loan term, though this increases total interest paid. Refinancing can also lower your payment if rates have dropped since you originated.",
       },
     ],
     relatedSlugs: ["how-much-mortgage-can-i-afford", "what-is-pmi", "mortgage-pre-approval-vs-pre-qualification"],
@@ -709,7 +709,7 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-10-01",
     headline: "How Much Down Payment Do I Need to Buy a House?",
     intro:
-      "The down payment is one of the biggest decisions in a home purchase — and one of the most misunderstood. You don't always need 20%. In many cases, waiting to save 20% costs you more in rent than you'd save on PMI. Here's the real breakdown by loan type, what your down payment actually affects, and how to choose the right amount for your situation.",
+      "The down payment is one of the biggest decisions in a home purchase, and one of the most misunderstood. You don't always need 20%. In many cases, waiting to save 20% costs you more in rent than you'd save on PMI. Here's the real breakdown by loan type, what your down payment actually affects, and how to choose the right amount for your situation.",
     sections: [
       {
         heading: "Down Payment Requirements by Loan Type",
@@ -733,7 +733,7 @@ export const learnArticles: LearnArticle[] = [
         ],
       },
       {
-        heading: "The '20% Myth' — Should You Wait?",
+        heading: "The '20% Myth', Should You Wait?",
         body: [
           "The idea that you must put 20% down to buy a home is a myth. It originated when 20% was the standard to avoid mortgage insurance. Today, multiple loan programs allow 0–5% down.",
           "The math on waiting: If you're paying $2,000/month in rent and it would take 3 years to save an additional 10% down on a $400,000 home ($40,000), that's $72,000 in rent paid to avoid perhaps $150/month in PMI. The break-even is never.",
@@ -744,7 +744,7 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "Down Payment Assistance Programs",
         body: [
-          "Every licensed state HCMG serves — FL, TX, GA, NV, CO, VA, DC, MD, CA, MS — has state-administered DPA programs for eligible buyers.",
+          "Every licensed state HCMG serves, FL, TX, GA, NV, CO, VA, DC, MD, CA, MS, has state-administered DPA programs for eligible buyers.",
           "Common structures: Forgivable second mortgage (after 3–5 years it's forgiven), deferred payment second mortgage (no payment until sale/refinance), grant (free money, no repayment).",
           "Typical benefit: $7,500–$25,000 toward down payment or closing costs.",
           "Income limits: Usually 80–120% of Area Median Income (AMI). Many programs also require completion of a homebuyer education course.",
@@ -755,7 +755,7 @@ export const learnArticles: LearnArticle[] = [
     faqs: [
       {
         q: "Can I use gift money for a down payment?",
-        a: "Yes — all major loan programs allow gift funds for the down payment with proper documentation. FHA allows 100% gift funds. Conventional loans allow gift funds from family members. The gift must be documented with a gift letter stating it is not a loan. There must be no expectation of repayment.",
+        a: "Yes, all major loan programs allow gift funds for the down payment with proper documentation. FHA allows 100% gift funds. Conventional loans allow gift funds from family members. The gift must be documented with a gift letter stating it is not a loan. There must be no expectation of repayment.",
       },
       {
         q: "What is the minimum down payment for a first-time buyer?",
@@ -782,14 +782,14 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-10-01",
     headline: "Mortgage Amortization Explained: How Your Payment Splits Over Time",
     intro:
-      "Every mortgage payment you make is split between paying down your loan balance (principal) and paying the lender for the use of their money (interest). But the ratio is not constant — it changes every single month over the life of the loan. Understanding amortization helps you make smarter decisions about prepayments, refinancing, and when to sell.",
+      "Every mortgage payment you make is split between paying down your loan balance (principal) and paying the lender for the use of their money (interest). But the ratio is not constant, it changes every single month over the life of the loan. Understanding amortization helps you make smarter decisions about prepayments, refinancing, and when to sell.",
     sections: [
       {
         heading: "What Is Amortization?",
         body: [
-          "Amortization is the process of paying off a loan through regular, fixed payments over time. With a fully amortizing mortgage, every payment is identical — but the internal split between principal and interest shifts gradually.",
-          "In the early months of a 30-year mortgage, roughly 80–85% of each payment goes to interest. By the final years, 95%+ goes to principal. The midpoint — where you're paying equal principal and interest — typically doesn't arrive until year 20 of a 30-year loan.",
-          "This front-loading of interest is not a lender trick — it's the mathematical consequence of how compound interest works on a large balance.",
+          "Amortization is the process of paying off a loan through regular, fixed payments over time. With a fully amortizing mortgage, every payment is identical, but the internal split between principal and interest shifts gradually.",
+          "In the early months of a 30-year mortgage, roughly 80–85% of each payment goes to interest. By the final years, 95%+ goes to principal. The midpoint, where you're paying equal principal and interest, typically doesn't arrive until year 20 of a 30-year loan.",
+          "This front-loading of interest is not a lender trick, it's the mathematical consequence of how compound interest works on a large balance.",
         ],
       },
       {
@@ -801,12 +801,12 @@ export const learnArticles: LearnArticle[] = [
         ],
       },
       {
-        heading: "Total Interest Cost — What You Actually Pay",
+        heading: "Total Interest Cost, What You Actually Pay",
         body: [
           "The amortization schedule reveals a number that surprises most buyers: the total cost of a 30-year loan.",
-          "Example: $300,000 at 6.5% for 30 years. Total payments = $682,560. Total interest paid = $382,560 — more than the original loan amount.",
-          "At 7%: Total interest = $418,527. At 5%: Total interest = $279,767. This is why the interest rate matters so much — a 1% difference on a $300,000 loan costs or saves ~$60,000 over 30 years.",
-          "The 15-year loan cuts total interest dramatically: Same $300,000 at 6.5% for 15 years pays ~$169,000 in interest — saving $213,000 vs. the 30-year.",
+          "Example: $300,000 at 6.5% for 30 years. Total payments = $682,560. Total interest paid = $382,560, more than the original loan amount.",
+          "At 7%: Total interest = $418,527. At 5%: Total interest = $279,767. This is why the interest rate matters so much, a 1% difference on a $300,000 loan costs or saves ~$60,000 over 30 years.",
+          "The 15-year loan cuts total interest dramatically: Same $300,000 at 6.5% for 15 years pays ~$169,000 in interest, saving $213,000 vs. the 30-year.",
         ],
       },
       {
@@ -814,8 +814,8 @@ export const learnArticles: LearnArticle[] = [
         body: [
           "Extra principal payments are applied directly to your balance and permanently reduce total interest. Even small prepayments have outsized long-term impact due to compounding.",
           "One extra payment per year: On a 30-year loan, this typically reduces the term by 4–5 years and saves tens of thousands in interest.",
-          "Bi-weekly payments: Instead of 12 monthly payments, you make 26 half-payments — equivalent to 13 full payments per year. This alone typically cuts 4–6 years off a 30-year loan.",
-          "Round up your payment: If your payment is $1,847, rounding up to $2,000 adds $153/month to principal — saving years of payments with no formal change to your loan terms.",
+          "Bi-weekly payments: Instead of 12 monthly payments, you make 26 half-payments, equivalent to 13 full payments per year. This alone typically cuts 4–6 years off a 30-year loan.",
+          "Round up your payment: If your payment is $1,847, rounding up to $2,000 adds $153/month to principal, saving years of payments with no formal change to your loan terms.",
           "Important: Confirm with your lender that extra payments are applied to principal and not just credited as advance payments.",
         ],
       },
@@ -827,11 +827,11 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "Does refinancing reset amortization?",
-        a: "Yes. When you refinance, you take out a new loan — typically for the remaining balance at a new rate and term. Your amortization starts over. If you refinance a 30-year loan after 10 years into another 30-year loan, you're extending your payoff date by 10 years. Many homeowners refinance into a 15 or 20-year term specifically to avoid this.",
+        a: "Yes. When you refinance, you take out a new loan, typically for the remaining balance at a new rate and term. Your amortization starts over. If you refinance a 30-year loan after 10 years into another 30-year loan, you're extending your payoff date by 10 years. Many homeowners refinance into a 15 or 20-year term specifically to avoid this.",
       },
       {
         q: "How does extra principal payment affect amortization?",
-        a: "Any extra principal payment reduces your outstanding balance, which reduces the interest charged in every subsequent month, which increases the principal portion of every future payment. The effect compounds — a $200 extra payment in month 1 saves more than $200 in total interest because the benefit compounds across the remaining term.",
+        a: "Any extra principal payment reduces your outstanding balance, which reduces the interest charged in every subsequent month, which increases the principal portion of every future payment. The effect compounds, a $200 extra payment in month 1 saves more than $200 in total interest because the benefit compounds across the remaining term.",
       },
     ],
     relatedSlugs: ["how-to-calculate-mortgage-payment", "when-to-refinance-your-mortgage", "how-much-mortgage-can-i-afford"],
@@ -849,18 +849,18 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-10-01",
     headline: "How to Apply for a Mortgage Online: Step-by-Step",
     intro:
-      "Applying for a mortgage online has become the norm — most buyers can go from application to pre-approval in under 48 hours without ever visiting a branch. Here's exactly what the online mortgage application process looks like, what documents you'll need to have ready, and what happens after you submit.",
+      "Applying for a mortgage online has become the norm, most buyers can go from application to pre-approval in under 48 hours without ever visiting a branch. Here's exactly what the online mortgage application process looks like, what documents you'll need to have ready, and what happens after you submit.",
     sections: [
       {
-        heading: "Step 1 — Get Pre-Approved Before You Shop",
+        heading: "Step 1, Get Pre-Approved Before You Shop",
         body: [
           "Before applying for a mortgage on a specific property, get pre-approved. A pre-approval tells you how much you can borrow, shows sellers you're a serious buyer, and identifies any issues before you're under contract.",
           "The pre-approval application asks for: income (employment type, employer, salary), assets (bank accounts, retirement accounts), debts (car loans, student loans, credit cards), and permission to pull your credit.",
-          "A hard credit inquiry is required for pre-approval. It will cause a small, temporary dip in your score — typically 5–10 points. Multiple mortgage inquiries within a 45-day window count as a single inquiry for scoring purposes, so shopping multiple lenders doesn't hurt you.",
+          "A hard credit inquiry is required for pre-approval. It will cause a small, temporary dip in your score, typically 5–10 points. Multiple mortgage inquiries within a 45-day window count as a single inquiry for scoring purposes, so shopping multiple lenders doesn't hurt you.",
         ],
       },
       {
-        heading: "Step 2 — Gather Your Documents First",
+        heading: "Step 2, Gather Your Documents First",
         body: [
           "Having documents ready before you start dramatically speeds up the process. Standard requirements:",
           "Income documents: Last 2 years of W-2s or 1099s, 2 years of federal tax returns (required for self-employed, rental income, or commission income over 25% of total income), last 30 days of pay stubs, 2 years of business tax returns if self-employed.",
@@ -870,7 +870,7 @@ export const learnArticles: LearnArticle[] = [
         ],
       },
       {
-        heading: "Step 3 — Complete the Online Application",
+        heading: "Step 3, Complete the Online Application",
         body: [
           "The standard mortgage application is the Uniform Residential Loan Application (URLA), also called the 1003 form. Most online lenders present this as a guided digital form taking 15–30 minutes to complete.",
           "You'll provide: personal information, employment history (2 years), income details, asset information, property information (if you have a specific home in mind), and loan preferences (loan type, down payment, term).",
@@ -880,25 +880,25 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "What Happens After You Apply",
         body: [
-          "Within 3 business days of receiving your application, your lender must provide a Loan Estimate — a standardized three-page document showing your estimated rate, monthly payment, closing costs, and loan terms.",
+          "Within 3 business days of receiving your application, your lender must provide a Loan Estimate, a standardized three-page document showing your estimated rate, monthly payment, closing costs, and loan terms.",
           "Processing (1–2 weeks): Your loan officer assembles your file. Underwriting (1–3 weeks): An underwriter reviews your complete file and issues an approval, conditional approval, or denial.",
-          "Conditional approval is the most common outcome — it means you're approved subject to satisfying specific conditions (additional documentation, letters of explanation, appraisal, etc.).",
-          "Clear to close: Once all conditions are met, your loan is cleared to close. Closing is scheduled — typically 30–45 days from application for a purchase, 15–30 days for a refinance.",
+          "Conditional approval is the most common outcome, it means you're approved subject to satisfying specific conditions (additional documentation, letters of explanation, appraisal, etc.).",
+          "Clear to close: Once all conditions are met, your loan is cleared to close. Closing is scheduled, typically 30–45 days from application for a purchase, 15–30 days for a refinance.",
         ],
       },
     ],
     faqs: [
       {
         q: "Can I apply for a mortgage online and get same-day approval?",
-        a: "Some lenders advertise instant or same-day approvals using automated underwriting systems. What you'll typically get same-day is an automated pre-approval — not a full underwriting approval. A complete verified approval still requires document review, which takes 1–3 business days at minimum. Be skeptical of any lender claiming full approval without document verification.",
+        a: "Some lenders advertise instant or same-day approvals using automated underwriting systems. What you'll typically get same-day is an automated pre-approval, not a full underwriting approval. A complete verified approval still requires document review, which takes 1–3 business days at minimum. Be skeptical of any lender claiming full approval without document verification.",
       },
       {
         q: "Does applying for a mortgage hurt your credit score?",
-        a: "Yes, but minimally. A hard credit inquiry for a mortgage typically reduces your score by 5–10 points temporarily. More importantly, multiple mortgage inquiries within a 45-day window are treated as a single inquiry under FICO scoring — so you can shop multiple lenders without stacking hard pulls.",
+        a: "Yes, but minimally. A hard credit inquiry for a mortgage typically reduces your score by 5–10 points temporarily. More importantly, multiple mortgage inquiries within a 45-day window are treated as a single inquiry under FICO scoring, so you can shop multiple lenders without stacking hard pulls.",
       },
       {
         q: "What credit score do I need to apply for a mortgage?",
-        a: "Minimum credit scores by loan type: FHA loans — 580 for 3.5% down, 500 for 10% down. Conventional loans — typically 620 minimum, best rates at 740+. VA loans — no official minimum, but most lenders require 580–620. USDA loans — typically 640. A higher credit score means better rates, lower PMI, and more options.",
+        a: "Minimum credit scores by loan type: FHA loans, 580 for 3.5% down, 500 for 10% down. Conventional loans, typically 620 minimum, best rates at 740+. VA loans, no official minimum, but most lenders require 580–620. USDA loans, typically 640. A higher credit score means better rates, lower PMI, and more options.",
       },
     ],
     relatedSlugs: ["mortgage-pre-approval-vs-pre-qualification", "fha-loan-requirements", "how-much-down-payment-do-i-need"],
@@ -917,13 +917,13 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-10-01",
     headline: "Conventional Loan Requirements: Credit, Down Payment, DTI & More",
     intro:
-      "Conventional loans are the most common mortgage in America — and for good reason. They offer flexibility in property types, no upfront mortgage insurance, and cancellable PMI. But they do have stricter qualification standards than government-backed loans. This guide covers everything you need to qualify.",
+      "Conventional loans are the most common mortgage in America, and for good reason. They offer flexibility in property types, no upfront mortgage insurance, and cancellable PMI. But they do have stricter qualification standards than government-backed loans. This guide covers everything you need to qualify.",
     sections: [
       {
         heading: "Credit Score Requirements",
         body: [
           "Minimum credit score: 620 for most conventional lenders. Best rates typically require 740+.",
-          "Score ranges and what they mean: 620–639: Marginal — you may qualify but expect higher rates and stricter scrutiny. 640–679: Fair — qualified but rates will be above average. 680–739: Good — competitive rates, normal documentation. 740+: Excellent — best available rates, smoothest process.",
+          "Score ranges and what they mean: 620–639: Marginal, you may qualify but expect higher rates and stricter scrutiny. 640–679: Fair, qualified but rates will be above average. 680–739: Good, competitive rates, normal documentation. 740+: Excellent, best available rates, smoothest process.",
           "Conventional loans are credit-score-sensitive in a way FHA loans are not. A 760 score versus a 680 score can result in a rate difference of 0.5–0.75%, which on a $400,000 loan is roughly $120–$180/month.",
           "Multiple borrowers: If applying with a co-borrower, the lender typically uses the lower middle score of both borrowers for qualification purposes.",
         ],
@@ -932,7 +932,7 @@ export const learnArticles: LearnArticle[] = [
         heading: "Down Payment Requirements",
         body: [
           "Minimum down payment: 3% for first-time buyers through Fannie Mae HomeReady and Freddie Mac Home Possible programs. 5% for standard conventional with no income limits. 20% to avoid PMI entirely.",
-          "Below 20% down triggers PMI: Typically 0.2%–1.5% of the loan amount per year, added to your monthly payment. PMI cancels when your balance reaches 80% of the original purchase price — automatically at 78%.",
+          "Below 20% down triggers PMI: Typically 0.2%–1.5% of the loan amount per year, added to your monthly payment. PMI cancels when your balance reaches 80% of the original purchase price, automatically at 78%.",
           "Investment properties: 15–25% down required. No HomeReady/Home Possible eligibility.",
           "Second homes: 10% minimum down payment.",
         ],
@@ -950,17 +950,17 @@ export const learnArticles: LearnArticle[] = [
         heading: "Income and Employment Requirements",
         body: [
           "Employment history: 2 years of continuous employment in the same field preferred. Job changes within the same industry are generally acceptable. Gaps of more than 30 days require explanation.",
-          "Self-employed borrowers: Must provide 2 years of business and personal tax returns. Income is calculated based on net income after deductions — not gross revenue.",
+          "Self-employed borrowers: Must provide 2 years of business and personal tax returns. Income is calculated based on net income after deductions, not gross revenue.",
           "Other income sources accepted: Rental income (with 2-year history and current lease), investment income (dividends, interest), Social Security/disability, retirement/pension, alimony/child support (if ongoing).",
           "Income documentation: Most recent 30 days of pay stubs, 2 years of W-2s, 2 years of federal tax returns for self-employed or complex income situations.",
         ],
       },
       {
-        heading: "Conventional vs. FHA — How to Choose",
+        heading: "Conventional vs. FHA, How to Choose",
         body: [
-          "Choose conventional if: You have a 680+ credit score and can put at least 5–10% down. PMI will be lower than FHA MIP for good-credit borrowers. And PMI cancels — FHA MIP doesn't (for most loans).",
+          "Choose conventional if: You have a 680+ credit score and can put at least 5–10% down. PMI will be lower than FHA MIP for good-credit borrowers. And PMI cancels, FHA MIP doesn't (for most loans).",
           "Choose FHA if: Credit score is below 660, you're putting down less than 5%, or you have higher debt levels. FHA is more forgiving on these fronts.",
-          "Break-even analysis: For a borrower with 5% down and a 680 score, FHA MIP vs. conventional PMI: FHA MIP is often higher per month but FHA rates may be lower. Run both scenarios with your loan officer — the 5-year total cost is what matters.",
+          "Break-even analysis: For a borrower with 5% down and a 680 score, FHA MIP vs. conventional PMI: FHA MIP is often higher per month but FHA rates may be lower. Run both scenarios with your loan officer, the 5-year total cost is what matters.",
         ],
       },
     ],
@@ -971,11 +971,11 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "Can I get a conventional loan with a 580 credit score?",
-        a: "Generally no. Conventional loans require a minimum 620 credit score. Below 620, FHA is the primary option for buyers who want to buy now. If you're at 580–619, working with a credit counselor to improve your score by 40 points before applying for a conventional loan is often worth the wait — you'll get a significantly better rate.",
+        a: "Generally no. Conventional loans require a minimum 620 credit score. Below 620, FHA is the primary option for buyers who want to buy now. If you're at 580–619, working with a credit counselor to improve your score by 40 points before applying for a conventional loan is often worth the wait, you'll get a significantly better rate.",
       },
       {
         q: "Is a conventional loan better than FHA?",
-        a: "It depends on your profile. For buyers with 680+ credit and 5%+ down payment, conventional is usually better long-term because PMI cancels. For buyers with lower credit or smaller down payments, FHA may be the only or best option. There is no universally 'better' option — it's always borrower-specific.",
+        a: "It depends on your profile. For buyers with 680+ credit and 5%+ down payment, conventional is usually better long-term because PMI cancels. For buyers with lower credit or smaller down payments, FHA may be the only or best option. There is no universally 'better' option, it's always borrower-specific.",
       },
     ],
     relatedSlugs: ["fha-loan-requirements", "what-is-pmi", "how-much-down-payment-do-i-need"],
@@ -988,16 +988,16 @@ export const learnArticles: LearnArticle[] = [
     title: "How Long Does Mortgage Approval Take?",
     metaTitle: "How Long Does Mortgage Approval Take? Timeline & What Speeds It Up | HCMG",
     metaDescription:
-      "From application to closing, how long does mortgage approval take? Typical timelines for pre-approval (1–3 days), full approval (2–4 weeks), and closing (30–45 days). What slows it down — and how to speed it up.",
+      "From application to closing, how long does mortgage approval take? Typical timelines for pre-approval (1–3 days), full approval (2–4 weeks), and closing (30–45 days). What slows it down, and how to speed it up.",
     category: "Buying a Home",
     readTime: 5,
     publishedAt: "2024-10-01",
     headline: "How Long Does Mortgage Approval Take? Timelines, Stages & Tips to Speed It Up",
     intro:
-      "One of the most common questions from first-time buyers: how long does the mortgage process actually take? The short answer is 30–45 days from application to closing for a purchase, but there are several stages — and your actions at each stage can either accelerate or delay the process significantly.",
+      "One of the most common questions from first-time buyers: how long does the mortgage process actually take? The short answer is 30–45 days from application to closing for a purchase, but there are several stages, and your actions at each stage can either accelerate or delay the process significantly.",
     sections: [
       {
-        heading: "Stage 1 — Pre-Approval (1–3 Business Days)",
+        heading: "Stage 1, Pre-Approval (1–3 Business Days)",
         body: [
           "Pre-approval is the fastest stage if you have your documents ready. You submit your application, provide income and asset documents, and the lender pulls your credit. An automated underwriting system runs your file within minutes.",
           "Typical turnaround: 24–72 hours. Faster if you use an online lender with automated document processing, slower if you're self-employed or have complex income.",
@@ -1006,22 +1006,22 @@ export const learnArticles: LearnArticle[] = [
         ],
       },
       {
-        heading: "Stage 2 — Under Contract to Clear to Close (21–30 Days)",
+        heading: "Stage 2, Under Contract to Clear to Close (21–30 Days)",
         body: [
           "Once you're under contract on a specific property, the full approval process begins. This has several sub-stages:",
-          "Loan processing (3–7 days): Your loan officer compiles a complete file — all documents, the purchase contract, and orders an appraisal.",
+          "Loan processing (3–7 days): Your loan officer compiles a complete file, all documents, the purchase contract, and orders an appraisal.",
           "Appraisal (7–14 days): An independent appraiser visits the property and prepares a report. This is usually the longest single step. In busy markets, appraisers are backed up.",
           "Underwriting (3–7 days): The underwriter reviews everything. They either approve, conditionally approve (most common), or deny the loan.",
-          "Satisfying conditions (3–7 days): You respond to the underwriter's requests — letters of explanation, additional documents, etc. Back-and-forth rounds add time.",
+          "Satisfying conditions (3–7 days): You respond to the underwriter's requests, letters of explanation, additional documents, etc. Back-and-forth rounds add time.",
           "Clear to close: The final approval. Closing can be scheduled.",
         ],
       },
       {
-        heading: "Stage 3 — Closing (1–3 Days After CTC)",
+        heading: "Stage 3, Closing (1–3 Days After CTC)",
         body: [
-          "After Clear to Close, the closing attorney or title company prepares the Closing Disclosure — a final itemized list of all closing costs and loan terms. You must receive this at least 3 business days before closing.",
+          "After Clear to Close, the closing attorney or title company prepares the Closing Disclosure, a final itemized list of all closing costs and loan terms. You must receive this at least 3 business days before closing.",
           "Closing itself takes 1–2 hours. You sign a stack of documents, pay closing costs and any remaining down payment, and receive the keys.",
-          "Total typical timeline: 30–45 days from application to closing. Some lenders advertise 21-day closings — possible but requires perfect documentation and no surprises.",
+          "Total typical timeline: 30–45 days from application to closing. Some lenders advertise 21-day closings, possible but requires perfect documentation and no surprises.",
         ],
       },
       {
@@ -1031,7 +1031,7 @@ export const learnArticles: LearnArticle[] = [
           "Appraisal issues: Low appraisal requires renegotiation with the seller. Appraisal backlogs in busy markets add 1–2 weeks.",
           "Credit issues discovered during processing: Recent collections, late payments, or a score drop (from a new inquiry or account) can trigger underwriting delays.",
           "Large unverified deposits: Any significant deposit in your bank statements will require a paper trail. Avoid moving money around in the 60–90 days before and during your application.",
-          "Title issues: Cloud on title, liens, unpermitted additions — these are seller issues but can add 1–4 weeks to resolve.",
+          "Title issues: Cloud on title, liens, unpermitted additions, these are seller issues but can add 1–4 weeks to resolve.",
         ],
       },
     ],
@@ -1046,7 +1046,7 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "Can my mortgage be denied after approval?",
-        a: "Yes, though it's uncommon. A lender can reverse an approval if something material changes between approval and closing: you take on new debt (like financing a car), your employment changes, a credit issue surfaces, the property appraises below purchase price, or title issues are found. Avoid major financial changes — new credit, job changes, large purchases — between approval and closing.",
+        a: "Yes, though it's uncommon. A lender can reverse an approval if something material changes between approval and closing: you take on new debt (like financing a car), your employment changes, a credit issue surfaces, the property appraises below purchase price, or title issues are found. Avoid major financial changes, new credit, job changes, large purchases, between approval and closing.",
       },
     ],
     relatedSlugs: ["mortgage-pre-approval-vs-pre-qualification", "how-to-apply-for-a-mortgage-online", "conventional-loan-requirements"],
@@ -1064,7 +1064,7 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-10-01",
     headline: "Closing Costs Explained: Every Fee, Who Pays, and How to Reduce Them",
     intro:
-      "Closing costs are the fees and expenses you pay to finalize a mortgage, on top of your down payment. Most buyers are surprised by the total — typically 2–5% of the loan amount. On a $400,000 purchase, that's $8,000–$20,000. This guide breaks down every line item, explains who is required to pay what, and shows you which costs can be negotiated or eliminated.",
+      "Closing costs are the fees and expenses you pay to finalize a mortgage, on top of your down payment. Most buyers are surprised by the total, typically 2–5% of the loan amount. On a $400,000 purchase, that's $8,000–$20,000. This guide breaks down every line item, explains who is required to pay what, and shows you which costs can be negotiated or eliminated.",
     sections: [
       {
         heading: "How Much Are Closing Costs?",
@@ -1097,7 +1097,7 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "Prepaid Items and Escrow Setup",
         body: [
-          "Prepaid items are not fees — they're costs you pay in advance at closing. They're often confused with closing costs.",
+          "Prepaid items are not fees, they're costs you pay in advance at closing. They're often confused with closing costs.",
           "Prepaid homeowner's insurance: Typically 12 months paid upfront at closing.",
           "Prepaid mortgage interest: Interest from your closing date to the end of the month. If you close on the 15th, you prepay about 15 days of interest.",
           "Escrow impounds: 2–3 months of property taxes and insurance deposited into your escrow account at closing to fund the account.",
@@ -1121,12 +1121,12 @@ export const learnArticles: LearnArticle[] = [
         a: "Yes, in some cases. For refinances, closing costs can typically be rolled into the new loan balance. For purchases, you can't directly roll costs in, but you can finance them indirectly via a lender credit (higher rate in exchange for the lender paying costs) or by negotiating seller concessions. Note that rolling costs in means you pay interest on them over the life of the loan.",
       },
       {
-        q: "Who pays closing costs — buyer or seller?",
+        q: "Who pays closing costs, buyer or seller?",
         a: "Both typically pay closing costs, but different ones. Buyers pay lender fees, their own title insurance, appraisal, and prepaid items. Sellers typically pay real estate agent commissions (the largest expense at 5–6% of sale price), transfer taxes, and the seller's title insurance policy. Sellers can also agree to pay some of the buyer's closing costs as a concession in the purchase contract.",
       },
       {
         q: "What is a Closing Disclosure?",
-        a: "A Closing Disclosure (CD) is a federally required five-page document your lender must provide at least 3 business days before closing. It shows all final loan terms, monthly payment, and a complete itemized list of closing costs. Compare it carefully to your Loan Estimate — any significant changes should be questioned.",
+        a: "A Closing Disclosure (CD) is a federally required five-page document your lender must provide at least 3 business days before closing. It shows all final loan terms, monthly payment, and a complete itemized list of closing costs. Compare it carefully to your Loan Estimate, any significant changes should be questioned.",
       },
     ],
     relatedSlugs: ["how-much-down-payment-do-i-need", "how-to-apply-for-a-mortgage-online", "mortgage-pre-approval-vs-pre-qualification"],
@@ -1145,7 +1145,7 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-10-01",
     headline: "Debt-to-Income Ratio (DTI) for a Mortgage: How It Works and How to Improve Yours",
     intro:
-      "Your debt-to-income ratio (DTI) is one of the most important numbers in your mortgage application — arguably more important than your credit score for determining how much you can borrow. Lenders use it to verify that you have enough income to comfortably handle a new mortgage payment. Here's how it works, what the limits are, and how to improve yours before you apply.",
+      "Your debt-to-income ratio (DTI) is one of the most important numbers in your mortgage application, arguably more important than your credit score for determining how much you can borrow. Lenders use it to verify that you have enough income to comfortably handle a new mortgage payment. Here's how it works, what the limits are, and how to improve yours before you apply.",
     sections: [
       {
         heading: "What Is Debt-to-Income Ratio?",
@@ -1153,7 +1153,7 @@ export const learnArticles: LearnArticle[] = [
           "DTI is a simple ratio: your total monthly debt payments divided by your gross monthly income, expressed as a percentage.",
           "DTI = Total Monthly Debt Payments ÷ Gross Monthly Income × 100",
           "Example: $6,000/month gross income. Monthly debts: proposed mortgage PITI $1,800 + car loan $450 + student loan $200 + credit card minimums $150 = $2,600 total. DTI = $2,600 ÷ $6,000 = 43.3%.",
-          "There are two types lenders evaluate: Front-end DTI (housing ratio) — just your proposed housing payment ÷ income. Back-end DTI (total ratio) — all monthly debts including housing ÷ income. Back-end DTI is the more important number for qualification.",
+          "There are two types lenders evaluate: Front-end DTI (housing ratio), just your proposed housing payment ÷ income. Back-end DTI (total ratio), all monthly debts including housing ÷ income. Back-end DTI is the more important number for qualification.",
         ],
       },
       {
@@ -1169,9 +1169,9 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "What Counts as Debt in DTI Calculation",
         body: [
-          "Lenders use the minimum monthly payment on each debt — not the balance.",
-          "Included: Mortgage payments (including taxes and insurance), car loans, student loans (even deferred — typically 0.5–1% of balance per month), credit card minimum payments, personal loans, alimony and child support, co-signed loans (if you're the co-signer).",
-          "Not included: Utilities, cell phone, insurance premiums, subscriptions, groceries — only contractual debt obligations appearing on your credit report.",
+          "Lenders use the minimum monthly payment on each debt, not the balance.",
+          "Included: Mortgage payments (including taxes and insurance), car loans, student loans (even deferred, typically 0.5–1% of balance per month), credit card minimum payments, personal loans, alimony and child support, co-signed loans (if you're the co-signer).",
+          "Not included: Utilities, cell phone, insurance premiums, subscriptions, groceries, only contractual debt obligations appearing on your credit report.",
           "Student loans in deferment: Lenders are required to count a payment for deferred student loans, typically 0.5–1% of the outstanding balance per month, even if no payments are currently due.",
         ],
       },
@@ -1180,7 +1180,7 @@ export const learnArticles: LearnArticle[] = [
         body: [
           "Pay off or pay down small debts: Eliminating a $200/month car payment drops your DTI by $200 ÷ gross income. If your income is $7,000/month, that's a 2.9% DTI improvement.",
           "Avoid taking on new debt: No new car loans, no new credit cards, no co-signing anything in the 12 months before your mortgage application.",
-          "Increase income: Document all income sources — overtime, part-time work, rental income (with a 2-year history), investment income. Ask for a raise or document a recent raise with an offer letter.",
+          "Increase income: Document all income sources, overtime, part-time work, rental income (with a 2-year history), investment income. Ask for a raise or document a recent raise with an offer letter.",
           "Choose a less expensive property: A lower purchase price means a lower proposed monthly payment and a lower front-end DTI.",
           "Add a co-borrower: Adding a co-borrower with income and manageable debt can dramatically improve the combined DTI.",
         ],
@@ -1189,7 +1189,7 @@ export const learnArticles: LearnArticle[] = [
     faqs: [
       {
         q: "What is a good debt-to-income ratio for a mortgage?",
-        a: "Below 36% is considered excellent — you'll qualify for virtually any loan at the best terms. 36–43% is good — qualifying for most loan programs. 43–50% is the upper range — possible with FHA or with strong compensating factors. Above 50% DTI is very difficult to get approved and requires exceptional circumstances.",
+        a: "Below 36% is considered excellent, you'll qualify for virtually any loan at the best terms. 36–43% is good, qualifying for most loan programs. 43–50% is the upper range, possible with FHA or with strong compensating factors. Above 50% DTI is very difficult to get approved and requires exceptional circumstances.",
       },
       {
         q: "Does student loan debt affect buying a home?",
@@ -1209,39 +1209,39 @@ export const learnArticles: LearnArticle[] = [
     title: "What Credit Score Do You Need to Buy a House?",
     metaTitle: "What Credit Score Do You Need to Buy a House? | HCMG",
     metaDescription:
-      "Minimum credit scores by loan type — FHA, VA, USDA, and conventional — plus how to improve your score before applying. Harris Capital Mortgage Group · NMLS# 1918223.",
+      "Minimum credit scores by loan type, FHA, VA, USDA, and conventional, plus how to improve your score before applying. Harris Capital Mortgage Group · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 5,
     publishedAt: "2024-10-15",
     headline: "What Credit Score Do You Need to Buy a House?",
     intro:
-      "Your credit score is one of the biggest levers in the mortgage process — it determines which loan programs you qualify for, what interest rate you'll receive, and how much you'll pay over the life of the loan. Here is exactly what you need to know before you apply.",
+      "Your credit score is one of the biggest levers in the mortgage process, it determines which loan programs you qualify for, what interest rate you'll receive, and how much you'll pay over the life of the loan. Here is exactly what you need to know before you apply.",
     sections: [
       {
         heading: "Minimum Credit Scores by Loan Type",
         body: [
           "Different loan programs have different minimum score requirements. FHA loans: 580 for 3.5% down, 500 for 10% down. Conventional loans: 620 minimum; best rates start at 740+. VA loans: No official minimum set by the VA, but most lenders require 580–620. USDA loans: Typically 640, though some lenders go lower with manual underwriting. Jumbo loans: Usually 700–720 minimum.",
-          "These are the minimums to qualify — not the targets that get you the best outcome. Every 20-point improvement in your score can mean a noticeably lower rate and lower PMI cost on a conventional loan.",
+          "These are the minimums to qualify, not the targets that get you the best outcome. Every 20-point improvement in your score can mean a noticeably lower rate and lower PMI cost on a conventional loan.",
         ],
       },
       {
         heading: "How Your Credit Score Affects Your Rate",
         body: [
-          "On a conventional loan, credit score tiers directly set your Loan-Level Price Adjustment (LLPA) — a fee built into your rate. The difference between a 680 and a 740 score can be 0.5%+ in rate, translating to hundreds of dollars per month on a $400,000 loan.",
-          "FHA loans are less sensitive to credit score than conventional at the qualify/not-qualify line, but scores still affect your mortgage insurance premium tier with some lenders. VA loans offer the least credit-score sensitivity for eligible borrowers — the rate variation is narrower.",
+          "On a conventional loan, credit score tiers directly set your Loan-Level Price Adjustment (LLPA), a fee built into your rate. The difference between a 680 and a 740 score can be 0.5%+ in rate, translating to hundreds of dollars per month on a $400,000 loan.",
+          "FHA loans are less sensitive to credit score than conventional at the qualify/not-qualify line, but scores still affect your mortgage insurance premium tier with some lenders. VA loans offer the least credit-score sensitivity for eligible borrowers, the rate variation is narrower.",
         ],
       },
       {
         heading: "What Makes Up Your Credit Score",
         body: [
-          "FICO scores (used by mortgage lenders) are calculated from five factors: Payment history (35%) — on-time vs. late payments. Amounts owed (30%) — credit utilization, total balances. Length of credit history (15%) — average age of accounts. Credit mix (10%) — types of credit (cards, installment, auto). New credit (10%) — recent hard inquiries and new accounts.",
+          "FICO scores (used by mortgage lenders) are calculated from five factors: Payment history (35%), on-time vs. late payments. Amounts owed (30%), credit utilization, total balances. Length of credit history (15%), average age of accounts. Credit mix (10%), types of credit (cards, installment, auto). New credit (10%), recent hard inquiries and new accounts.",
           "Mortgage lenders pull all three bureaus (Equifax, Experian, TransUnion) and use the middle score. If you're applying jointly, they use the lower middle score of the two borrowers.",
         ],
       },
       {
         heading: "How to Improve Your Score Before Applying",
         body: [
-          "Pay down revolving credit balances to below 30% utilization — ideally below 10%. This single change can move scores 20–50 points within 30–60 days. Do not close old credit card accounts — account age matters. Do not open new credit accounts for 6–12 months before applying. Dispute any errors on your credit report at annualcreditreport.com. Ask a family member with strong credit to add you as an authorized user on an old, well-managed card.",
+          "Pay down revolving credit balances to below 30% utilization, ideally below 10%. This single change can move scores 20–50 points within 30–60 days. Do not close old credit card accounts, account age matters. Do not open new credit accounts for 6–12 months before applying. Dispute any errors on your credit report at annualcreditreport.com. Ask a family member with strong credit to add you as an authorized user on an old, well-managed card.",
           "Rapid rescore is an option through your lender: after you pay down balances or correct errors, a rapid rescore updates your file within 3–5 business days rather than waiting for the normal 30-day cycle. This is useful when you're close to a qualifying threshold.",
         ],
       },
@@ -1264,7 +1264,7 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "How fast can I improve my credit score to buy a house?",
-        a: "Quick wins (1–3 months): pay down credit card balances below 30%, correct errors via rapid rescore. Medium-term (6–12 months): establish a pattern of on-time payments, reduce total debt. Sustained improvement above 720+ typically takes 12–24 months of consistent behavior. Ask your loan officer to run a simulator on your specific file — they can show you the exact actions and timelines for your situation.",
+        a: "Quick wins (1–3 months): pay down credit card balances below 30%, correct errors via rapid rescore. Medium-term (6–12 months): establish a pattern of on-time payments, reduce total debt. Sustained improvement above 720+ typically takes 12–24 months of consistent behavior. Ask your loan officer to run a simulator on your specific file, they can show you the exact actions and timelines for your situation.",
       },
     ],
     relatedSlugs: ["fha-loan-requirements", "conventional-loan-requirements", "mortgage-pre-approval-vs-pre-qualification"],
@@ -1274,10 +1274,10 @@ export const learnArticles: LearnArticle[] = [
   // ── Article 17 ─────────────────────────────────────────────────────────────
   {
     slug: "how-to-buy-a-house-step-by-step",
-    title: "How to Buy a House — Step by Step",
+    title: "How to Buy a House, Step by Step",
     metaTitle: "How to Buy a House Step by Step: Complete Guide | HCMG",
     metaDescription:
-      "A plain-English step-by-step guide to buying a house — from checking your credit to getting your keys. Harris Capital Mortgage Group · NMLS# 1918223.",
+      "A plain-English step-by-step guide to buying a house, from checking your credit to getting your keys. Harris Capital Mortgage Group · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 7,
     publishedAt: "2024-10-15",
@@ -1286,44 +1286,44 @@ export const learnArticles: LearnArticle[] = [
       "Buying a house is a multi-step process that takes 30–90 days once you're under contract. This guide walks through every stage in order so you know what to expect, what to prepare, and where delays typically happen.",
     sections: [
       {
-        heading: "Step 1 — Check Your Credit and Finances",
+        heading: "Step 1, Check Your Credit and Finances",
         body: [
           "Before you look at a single listing, pull your free credit reports at annualcreditreport.com and review them for errors. Identify your credit scores (all three bureaus), your total monthly debt payments, and your gross monthly income. These three numbers determine your loan options before anything else.",
           "Calculate your debt-to-income ratio: add up all monthly minimum debt payments (student loans, car payment, credit cards), divide by gross monthly income. Below 43% is the typical qualifying threshold; below 36% opens the most programs at the best rates.",
         ],
       },
       {
-        heading: "Step 2 — Get Pre-Approved",
+        heading: "Step 2, Get Pre-Approved",
         body: [
           "Pre-approval is a written commitment from a lender stating the loan amount, rate range, and loan type you qualify for based on a full application with documentation. In most markets, sellers will not accept an offer without it.",
           "To get pre-approved, you'll submit: W-2s and tax returns (last 2 years), recent pay stubs (last 30 days), bank statements (last 2–3 months), photo ID. The process takes 1–3 business days at most lenders. Your pre-approval letter is typically valid 60–90 days.",
         ],
       },
       {
-        heading: "Step 3 — Find a Real Estate Agent and Start Shopping",
+        heading: "Step 3, Find a Real Estate Agent and Start Shopping",
         body: [
           "A buyer's agent represents your interests, schedules showings, analyzes comparable sales, and writes your offer. Their commission is typically paid from the seller's proceeds (though this is evolving). Interview 2–3 agents and choose someone who does at least 10–15 deals per year in your target market.",
-          "Know your must-haves vs. nice-to-haves before you start. In competitive markets, be ready to move quickly — pre-approved buyers who can make a clean offer within 24–48 hours of a listing have a major advantage.",
+          "Know your must-haves vs. nice-to-haves before you start. In competitive markets, be ready to move quickly, pre-approved buyers who can make a clean offer within 24–48 hours of a listing have a major advantage.",
         ],
       },
       {
-        heading: "Step 4 — Make an Offer and Negotiate",
+        heading: "Step 4, Make an Offer and Negotiate",
         body: [
           "Your offer includes the price, earnest money deposit (typically 1–3% of purchase price), contingencies (financing, inspection, appraisal), and proposed closing date. Your agent will advise on price based on comparable sales and current market conditions.",
           "Contingencies protect you: the inspection contingency lets you renegotiate or exit if the inspection reveals problems; the financing contingency lets you exit if your loan falls through; the appraisal contingency protects you if the home appraises below purchase price.",
         ],
       },
       {
-        heading: "Step 5 — Under Contract: Inspections, Appraisal, and Underwriting",
+        heading: "Step 5, Under Contract: Inspections, Appraisal, and Underwriting",
         body: [
           "Once your offer is accepted you're 'under contract.' You now have three parallel tracks running simultaneously. Inspection (Days 1–10): hire a licensed inspector to examine the home. Appraisal (Days 5–15): ordered by your lender to confirm the home is worth the purchase price. Underwriting (Days 1–30): your lender verifies all your documents and issues a decision.",
           "The most common delays come from the appraisal timeline and responding slowly to underwriter requests. Be available to provide any additional documents your loan officer requests within 24 hours.",
         ],
       },
       {
-        heading: "Step 6 — Clear to Close and Closing Day",
+        heading: "Step 6, Clear to Close and Closing Day",
         body: [
-          "Clear to Close (CTC) means the underwriter has approved your loan and all conditions are satisfied. At least 3 business days before closing, you'll receive your Closing Disclosure — a five-page document showing your exact final loan terms and all closing costs. Review it carefully and compare it to your Loan Estimate.",
+          "Clear to Close (CTC) means the underwriter has approved your loan and all conditions are satisfied. At least 3 business days before closing, you'll receive your Closing Disclosure, a five-page document showing your exact final loan terms and all closing costs. Review it carefully and compare it to your Loan Estimate.",
           "At closing, you'll sign the loan documents, bring a cashier's check or wire your cash-to-close amount, and receive the keys. The whole signing appointment typically takes 60–90 minutes. After recording (same day or next day), the home is yours.",
         ],
       },
@@ -1352,7 +1352,7 @@ export const learnArticles: LearnArticle[] = [
     title: "What Is an Escrow Account?",
     metaTitle: "What Is an Escrow Account? Mortgage Escrow Explained | HCMG",
     metaDescription:
-      "Learn how mortgage escrow accounts work — what they collect, why lenders require them, how your monthly payment is calculated, and how to avoid escrow shortages. HCMG · NMLS# 1918223.",
+      "Learn how mortgage escrow accounts work, what they collect, why lenders require them, how your monthly payment is calculated, and how to avoid escrow shortages. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 4,
     publishedAt: "2024-10-15",
@@ -1363,21 +1363,21 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "What an Escrow Account Collects",
         body: [
-          "Each month, your mortgage payment includes a portion for principal and interest (P&I) plus an escrow contribution. The escrow portion covers: annual property taxes (divided by 12 and collected monthly), homeowner's insurance premium (annual premium ÷ 12), and — if required — flood insurance or mortgage insurance premiums.",
+          "Each month, your mortgage payment includes a portion for principal and interest (P&I) plus an escrow contribution. The escrow portion covers: annual property taxes (divided by 12 and collected monthly), homeowner's insurance premium (annual premium ÷ 12), and, if required, flood insurance or mortgage insurance premiums.",
           "When your tax bill or insurance renewal comes due, your servicer pays it directly from the escrow account. You never write a separate check for these items.",
         ],
       },
       {
         heading: "Why Lenders Require Escrow",
         body: [
-          "Lenders require escrow to protect their collateral. If property taxes go unpaid, the county can place a tax lien that takes priority over the mortgage — potentially allowing the government to seize the property. Unpaid homeowner's insurance would leave the lender's collateral unprotected in the event of fire or disaster.",
-          "Conventional loans with 20%+ down payment sometimes allow borrowers to opt out of escrow — this is called 'waiving escrow.' Most FHA and VA loans require escrow regardless of down payment.",
+          "Lenders require escrow to protect their collateral. If property taxes go unpaid, the county can place a tax lien that takes priority over the mortgage, potentially allowing the government to seize the property. Unpaid homeowner's insurance would leave the lender's collateral unprotected in the event of fire or disaster.",
+          "Conventional loans with 20%+ down payment sometimes allow borrowers to opt out of escrow, this is called 'waiving escrow.' Most FHA and VA loans require escrow regardless of down payment.",
         ],
       },
       {
         heading: "Escrow Shortages and Surpluses",
         body: [
-          "Your servicer performs an annual escrow analysis each year. If property taxes or insurance increased, your account may have a shortage — meaning there isn't enough to cover the coming year. You'll receive a notice offering two options: pay the shortage in a lump sum, or have it spread across 12 months by increasing your monthly payment.",
+          "Your servicer performs an annual escrow analysis each year. If property taxes or insurance increased, your account may have a shortage, meaning there isn't enough to cover the coming year. You'll receive a notice offering two options: pay the shortage in a lump sum, or have it spread across 12 months by increasing your monthly payment.",
           "If taxes or insurance decreased, you may have a surplus. Surpluses above a threshold are typically refunded to you, and your monthly payment may decrease.",
         ],
       },
@@ -1400,7 +1400,7 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "What happens to my escrow account if I sell my house?",
-        a: "When you sell, your mortgage is paid off at closing. Any remaining balance in your escrow account is refunded to you — typically within 30 days of payoff. The refund appears as a check from your servicer.",
+        a: "When you sell, your mortgage is paid off at closing. Any remaining balance in your escrow account is refunded to you, typically within 30 days of payoff. The refund appears as a check from your servicer.",
       },
     ],
     relatedSlugs: ["closing-costs-explained", "how-to-calculate-mortgage-payment", "how-to-buy-a-house-step-by-step"],
@@ -1413,33 +1413,33 @@ export const learnArticles: LearnArticle[] = [
     title: "USDA Loan Requirements",
     metaTitle: "USDA Loan Requirements: Eligibility, Income Limits & Property | HCMG",
     metaDescription:
-      "Complete guide to USDA loan requirements — eligible areas, income limits, credit score minimums, and how to apply. 0% down payment for eligible rural and suburban buyers. HCMG · NMLS# 1918223.",
+      "Complete guide to USDA loan requirements, eligible areas, income limits, credit score minimums, and how to apply. 0% down payment for eligible rural and suburban buyers. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 5,
     publishedAt: "2024-10-15",
     headline: "USDA Loan Requirements: Eligibility, Income Limits & 0% Down",
     intro:
-      "USDA loans offer 100% financing — zero down payment — for buyers purchasing in eligible areas. The program is broader than most people realize: many suburban neighborhoods qualify, not just rural farms. Here's what you need to know.",
+      "USDA loans offer 100% financing, zero down payment, for buyers purchasing in eligible areas. The program is broader than most people realize: many suburban neighborhoods qualify, not just rural farms. Here's what you need to know.",
     sections: [
       {
         heading: "What Is a USDA Loan?",
         body: [
           "A USDA loan (officially the USDA Single Family Housing Guaranteed Loan Program) is a government-backed mortgage offered by approved lenders and guaranteed by the U.S. Department of Agriculture. It was created to encourage homeownership in non-urban areas by eliminating the down payment barrier.",
-          "The program guarantees up to 90% of the loan — meaning if you default, USDA repays the lender. This guarantee is what allows lenders to offer 0% down without requiring PMI (though there is a guarantee fee in its place).",
+          "The program guarantees up to 90% of the loan, meaning if you default, USDA repays the lender. This guarantee is what allows lenders to offer 0% down without requiring PMI (though there is a guarantee fee in its place).",
         ],
       },
       {
-        heading: "Property Eligibility — What Areas Qualify?",
+        heading: "Property Eligibility, What Areas Qualify?",
         body: [
-          "USDA eligibility is based on the USDA's property eligibility map, not a subjective definition of 'rural.' Most towns under 20,000–35,000 population qualify. Many suburban areas within commuting distance of major cities also qualify — check any address at the USDA's eligibility tool at eligibility.sc.egov.usda.gov.",
+          "USDA eligibility is based on the USDA's property eligibility map, not a subjective definition of 'rural.' Most towns under 20,000–35,000 population qualify. Many suburban areas within commuting distance of major cities also qualify, check any address at the USDA's eligibility tool at eligibility.sc.egov.usda.gov.",
           "The property must be a primary residence (not investment or vacation home), must be a single-family dwelling, and must meet USDA's minimum property condition standards. Condos and manufactured homes may qualify under certain conditions.",
         ],
       },
       {
         heading: "Income Limits",
         body: [
-          "USDA loans have household income limits set at 115% of the area median income (AMI). Income limits vary by county and household size — a family of 4 in a rural county may have a different limit than a family of 4 in a suburban area. Standard limits for a 1–4 person household typically range from $90,000–$130,000 in most markets.",
-          "All household income counts — not just the borrowers on the loan. If an adult family member lives in the home and earns income, it's counted even if they're not on the mortgage. Your loan officer can calculate your exact qualifying income.",
+          "USDA loans have household income limits set at 115% of the area median income (AMI). Income limits vary by county and household size, a family of 4 in a rural county may have a different limit than a family of 4 in a suburban area. Standard limits for a 1–4 person household typically range from $90,000–$130,000 in most markets.",
+          "All household income counts, not just the borrowers on the loan. If an adult family member lives in the home and earns income, it's counted even if they're not on the mortgage. Your loan officer can calculate your exact qualifying income.",
         ],
       },
       {
@@ -1460,7 +1460,7 @@ export const learnArticles: LearnArticle[] = [
     faqs: [
       {
         q: "Can I use a USDA loan to buy a house in a suburb?",
-        a: "Yes. Many suburban areas qualify for USDA financing. The USDA eligibility map is based on census data — areas with populations under approximately 35,000 often qualify, even near larger cities. Check the specific address at eligibility.sc.egov.usda.gov or ask your loan officer.",
+        a: "Yes. Many suburban areas qualify for USDA financing. The USDA eligibility map is based on census data, areas with populations under approximately 35,000 often qualify, even near larger cities. Check the specific address at eligibility.sc.egov.usda.gov or ask your loan officer.",
       },
       {
         q: "What is the income limit for a USDA loan?",
@@ -1481,7 +1481,7 @@ export const learnArticles: LearnArticle[] = [
     title: "Jumbo Loan Requirements",
     metaTitle: "Jumbo Loan Requirements 2026: Credit Score, Down Payment & Limits | HCMG",
     metaDescription:
-      "What you need to qualify for a jumbo loan — conforming loan limits, credit score requirements, down payment, and reserves. Harris Capital Mortgage Group · NMLS# 1918223.",
+      "What you need to qualify for a jumbo loan, conforming loan limits, credit score requirements, down payment, and reserves. Harris Capital Mortgage Group · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 4,
     publishedAt: "2024-10-15",
@@ -1492,15 +1492,15 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "What Is the Jumbo Loan Limit?",
         body: [
-          "For 2026, the baseline conforming loan limit for a one-unit property is $832,750. In designated high-cost areas, the limit can be higher — up to $1,249,125. A loan above the applicable county and unit-count limit is a jumbo loan.",
+          "For 2026, the baseline conforming loan limit for a one-unit property is $832,750. In designated high-cost areas, the limit can be higher, up to $1,249,125. A loan above the applicable county and unit-count limit is a jumbo loan.",
           "Note: the loan amount—not the home price—determines jumbo status. Verify the current limit for the property's county and unit count before selecting a program.",
         ],
       },
       {
         heading: "Credit Score Requirements",
         body: [
-          "Most jumbo programs require a minimum 700–720 credit score. Some lenders will go to 680 with additional compensating factors (large down payment, significant reserves). Scores below 680 make jumbo approval very difficult — FHA or conventional with a larger down payment would typically be a better path.",
-          "Lenders pull all three bureau scores and use the middle score. Unlike conforming loans where the score affects your rate in tiers, jumbo pricing is often binary — you either qualify at the lender's minimum or you don't.",
+          "Most jumbo programs require a minimum 700–720 credit score. Some lenders will go to 680 with additional compensating factors (large down payment, significant reserves). Scores below 680 make jumbo approval very difficult, FHA or conventional with a larger down payment would typically be a better path.",
+          "Lenders pull all three bureau scores and use the middle score. Unlike conforming loans where the score affects your rate in tiers, jumbo pricing is often binary, you either qualify at the lender's minimum or you don't.",
         ],
       },
       {
@@ -1521,7 +1521,7 @@ export const learnArticles: LearnArticle[] = [
     faqs: [
       {
         q: "Do jumbo loans have higher interest rates?",
-        a: "Historically yes, but the spread has narrowed. In recent years, jumbo rates have sometimes been at or below conforming rates for strong borrowers — because jumbo loans attract well-qualified buyers and lenders want their business. The rate you get depends heavily on your credit profile, down payment, and reserves.",
+        a: "Historically yes, but the spread has narrowed. In recent years, jumbo rates have sometimes been at or below conforming rates for strong borrowers, because jumbo loans attract well-qualified buyers and lenders want their business. The rate you get depends heavily on your credit profile, down payment, and reserves.",
       },
       {
         q: "Can I get a jumbo loan with 10% down?",
@@ -1548,13 +1548,13 @@ export const learnArticles: LearnArticle[] = [
     publishedAt: "2024-10-15",
     headline: "What Is a HELOC? Home Equity Line of Credit Explained",
     intro:
-      "A HELOC (Home Equity Line of Credit) lets you borrow against the equity in your home — similar to a credit card secured by your house. You draw what you need, when you need it, and pay interest only on the outstanding balance. Here's how it works.",
+      "A HELOC (Home Equity Line of Credit) lets you borrow against the equity in your home, similar to a credit card secured by your house. You draw what you need, when you need it, and pay interest only on the outstanding balance. Here's how it works.",
     sections: [
       {
         heading: "How a HELOC Works",
         body: [
           "A HELOC has two phases: the draw period (typically 10 years) during which you can borrow, repay, and borrow again up to your credit limit; and the repayment period (typically 20 years) during which the line closes to new draws and you repay the outstanding balance.",
-          "During the draw period, most HELOCs require interest-only payments on the balance you've drawn. During the repayment period, payments include both principal and interest. Monthly payments can jump significantly at the transition — this is called payment shock, and it's important to plan for it.",
+          "During the draw period, most HELOCs require interest-only payments on the balance you've drawn. During the repayment period, payments include both principal and interest. Monthly payments can jump significantly at the transition, this is called payment shock, and it's important to plan for it.",
         ],
       },
       {
@@ -1567,14 +1567,14 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "HELOC Interest Rates",
         body: [
-          "HELOC rates are variable — they float with the prime rate (which moves with the federal funds rate). When the Fed raises rates, your HELOC rate goes up. When rates fall, it goes down. Most HELOCs are expressed as prime + a margin (e.g., prime + 0.5%).",
+          "HELOC rates are variable, they float with the prime rate (which moves with the federal funds rate). When the Fed raises rates, your HELOC rate goes up. When rates fall, it goes down. Most HELOCs are expressed as prime + a margin (e.g., prime + 0.5%).",
           "This variability is the primary risk of a HELOC. In a rising rate environment, your interest payments can increase significantly. Some lenders offer rate caps or a fixed-rate conversion option for outstanding balances.",
         ],
       },
       {
         heading: "HELOC vs. Cash-Out Refinance",
         body: [
-          "A cash-out refinance replaces your first mortgage with a larger one and gives you the difference as cash — at a fixed rate, with a reset amortization clock. A HELOC is a second lien that doesn't touch your first mortgage — the rate is variable, and you only borrow what you need.",
+          "A cash-out refinance replaces your first mortgage with a larger one and gives you the difference as cash, at a fixed rate, with a reset amortization clock. A HELOC is a second lien that doesn't touch your first mortgage, the rate is variable, and you only borrow what you need.",
           "Cash-out refinance is better when: rates are lower than your existing mortgage, you want a fixed rate, or you want a large lump sum. HELOC is better when: your existing mortgage rate is lower than current refinance rates (you don't want to touch it), you need flexibility to draw over time, or you need a smaller or uncertain amount.",
         ],
       },
@@ -1600,7 +1600,7 @@ export const learnArticles: LearnArticle[] = [
   // ── Article 22 ─────────────────────────────────────────────────────────────
   {
     slug: "mortgage-points-explained",
-    title: "Mortgage Points Explained — Should You Buy Down Your Rate?",
+    title: "Mortgage Points Explained, Should You Buy Down Your Rate?",
     metaTitle: "Mortgage Points Explained: Should You Buy Down Your Rate? | HCMG",
     metaDescription:
       "What are mortgage discount points? How much do they cost, how much do they save, and when does buying points make financial sense? HCMG · NMLS# 1918223.",
@@ -1615,7 +1615,7 @@ export const learnArticles: LearnArticle[] = [
         heading: "What Are Mortgage Points?",
         body: [
           "One mortgage discount point equals 1% of your loan amount and typically reduces your interest rate by 0.125%–0.25% depending on the lender and market conditions. Points are paid at closing and appear on your Loan Estimate as 'Discount Points.'",
-          "Points are separate from origination fees. Origination fees are lender compensation — you're paying for the service. Discount points are optional and purely about trading upfront cash for a lower rate.",
+          "Points are separate from origination fees. Origination fees are lender compensation, you're paying for the service. Discount points are optional and purely about trading upfront cash for a lower rate.",
         ],
       },
       {
@@ -1635,8 +1635,8 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "Negative Points (Lender Credits)",
         body: [
-          "The inverse of buying points is taking lender credits — you accept a slightly higher rate in exchange for the lender covering some or all of your closing costs. This is the 'no-closing-cost loan' structure. It works in reverse: higher rate, lower upfront cost, shorter break-even for moving.",
-          "Lender credits make sense for the same reasons buying points does not: short expected hold period, limited cash reserves, or uncertainty about your timeline. Your loan officer can show you the full pricing grid — rate vs. points vs. lender credits — so you can choose the right tradeoff for your situation.",
+          "The inverse of buying points is taking lender credits, you accept a slightly higher rate in exchange for the lender covering some or all of your closing costs. This is the 'no-closing-cost loan' structure. It works in reverse: higher rate, lower upfront cost, shorter break-even for moving.",
+          "Lender credits make sense for the same reasons buying points does not: short expected hold period, limited cash reserves, or uncertainty about your timeline. Your loan officer can show you the full pricing grid, rate vs. points vs. lender credits, so you can choose the right tradeoff for your situation.",
         ],
       },
     ],
@@ -1647,11 +1647,11 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "How many points can you buy on a mortgage?",
-        a: "Typically 0–4 points, though lenders vary. There are limits on how much a borrower can pay in points under qualified mortgage rules. Each additional point has diminishing returns — the first point usually saves the most per dollar spent.",
+        a: "Typically 0–4 points, though lenders vary. There are limits on how much a borrower can pay in points under qualified mortgage rules. Each additional point has diminishing returns, the first point usually saves the most per dollar spent.",
       },
       {
         q: "What is the difference between points and APR?",
-        a: "Points are an upfront cash payment. APR (Annual Percentage Rate) is a calculated number that incorporates the interest rate plus most upfront costs (including points) to express the true annual cost of the loan. Two loans with the same rate but different points will have different APRs — the one with more points will have the higher APR.",
+        a: "Points are an upfront cash payment. APR (Annual Percentage Rate) is a calculated number that incorporates the interest rate plus most upfront costs (including points) to express the true annual cost of the loan. Two loans with the same rate but different points will have different APRs, the one with more points will have the higher APR.",
       },
     ],
     relatedSlugs: ["when-to-refinance-your-mortgage", "closing-costs-explained", "how-to-apply-for-a-mortgage-online"],
@@ -1661,10 +1661,10 @@ export const learnArticles: LearnArticle[] = [
   // ── Article 23 ─────────────────────────────────────────────────────────────
   {
     slug: "arm-vs-fixed-rate-mortgage",
-    title: "ARM vs. Fixed Rate Mortgage — Which Is Right for You?",
+    title: "ARM vs. Fixed Rate Mortgage, Which Is Right for You?",
     metaTitle: "ARM vs. Fixed Rate Mortgage: Which Should You Choose? | HCMG",
     metaDescription:
-      "Adjustable-rate vs. fixed-rate mortgage comparison — how each works, the real cost difference, and when an ARM makes financial sense. HCMG · NMLS# 1918223.",
+      "Adjustable-rate vs. fixed-rate mortgage comparison, how each works, the real cost difference, and when an ARM makes financial sense. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 5,
     publishedAt: "2024-10-15",
@@ -1675,8 +1675,8 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "How a Fixed-Rate Mortgage Works",
         body: [
-          "A fixed-rate mortgage locks your interest rate for the entire loan term — typically 15 or 30 years. Your principal and interest payment never changes, giving you complete predictability. If rates rise after you close, you're protected. If rates fall significantly, you'd need to refinance to capture the lower rate.",
-          "The 30-year fixed is the most popular mortgage in the U.S. because it offers the lowest monthly payment for a given loan amount and the most stability. The 15-year fixed has a higher monthly payment but significantly lower total interest — typically saving six figures on a $400,000 loan.",
+          "A fixed-rate mortgage locks your interest rate for the entire loan term, typically 15 or 30 years. Your principal and interest payment never changes, giving you complete predictability. If rates rise after you close, you're protected. If rates fall significantly, you'd need to refinance to capture the lower rate.",
+          "The 30-year fixed is the most popular mortgage in the U.S. because it offers the lowest monthly payment for a given loan amount and the most stability. The 15-year fixed has a higher monthly payment but significantly lower total interest, typically saving six figures on a $400,000 loan.",
         ],
       },
       {
@@ -1689,22 +1689,22 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "Rate and Payment Comparison",
         body: [
-          "ARMs typically start 0.5%–1.5% below a comparable 30-year fixed rate. On a $400,000 loan, a 1% rate difference saves roughly $250–$280/month during the fixed ARM period. Over a 7-year fixed ARM period, that's $21,000+ in savings — if you sell or refinance before the rate adjusts.",
-          "The risk: if you keep an ARM past the initial fixed period and rates have risen, your payment can increase significantly at the first adjustment. With a 5% lifetime cap on a $400,000 loan, your rate could theoretically increase from 5.5% to 10.5% — though hitting the lifetime cap would require an extreme rate environment.",
+          "ARMs typically start 0.5%–1.5% below a comparable 30-year fixed rate. On a $400,000 loan, a 1% rate difference saves roughly $250–$280/month during the fixed ARM period. Over a 7-year fixed ARM period, that's $21,000+ in savings, if you sell or refinance before the rate adjusts.",
+          "The risk: if you keep an ARM past the initial fixed period and rates have risen, your payment can increase significantly at the first adjustment. With a 5% lifetime cap on a $400,000 loan, your rate could theoretically increase from 5.5% to 10.5%, though hitting the lifetime cap would require an extreme rate environment.",
         ],
       },
       {
         heading: "When to Choose an ARM",
         body: [
           "ARMs make financial sense when you have a defined horizon shorter than the fixed period. Common scenarios: you're buying a starter home and plan to upsize in 5–7 years; you're relocating for work and expect to move within the fixed window; you're confident you'll refinance when the fixed period ends; or the initial ARM rate is dramatically lower and you have high payment sensitivity.",
-          "Fixed rates make sense when you're buying your long-term or forever home, when you value predictability over optimization, or when ARM rates are not meaningfully lower than fixed (the spread matters — if a 30-year fixed is 7% and a 5/1 ARM is 6.875%, the ARM's upside doesn't justify the risk).",
+          "Fixed rates make sense when you're buying your long-term or forever home, when you value predictability over optimization, or when ARM rates are not meaningfully lower than fixed (the spread matters, if a 30-year fixed is 7% and a 5/1 ARM is 6.875%, the ARM's upside doesn't justify the risk).",
         ],
       },
     ],
     faqs: [
       {
         q: "Are ARM loans risky?",
-        a: "ARMs carry rate risk if held past the initial fixed period. They are not inherently risky for buyers who understand the product and have a plan — sell before the adjustment, refinance before the adjustment, or afford the worst-case payment if rates rise. The risk comes from buyers who take an ARM without understanding the adjustment mechanics and get surprised.",
+        a: "ARMs carry rate risk if held past the initial fixed period. They are not inherently risky for buyers who understand the product and have a plan, sell before the adjustment, refinance before the adjustment, or afford the worst-case payment if rates rise. The risk comes from buyers who take an ARM without understanding the adjustment mechanics and get surprised.",
       },
       {
         q: "Can I refinance out of an ARM before it adjusts?",
@@ -1712,7 +1712,7 @@ export const learnArticles: LearnArticle[] = [
       },
       {
         q: "What index do ARM loans use?",
-        a: "Most modern ARMs use SOFR (Secured Overnight Financing Rate), which replaced LIBOR. Some older ARMs may still use LIBOR-based indexes or the Treasury Constant Maturity Index. Your loan documents specify the index. The rate you pay equals the index value plus your lender's margin — e.g., SOFR + 2.5%.",
+        a: "Most modern ARMs use SOFR (Secured Overnight Financing Rate), which replaced LIBOR. Some older ARMs may still use LIBOR-based indexes or the Treasury Constant Maturity Index. Your loan documents specify the index. The rate you pay equals the index value plus your lender's margin, e.g., SOFR + 2.5%.",
       },
     ],
     relatedSlugs: ["when-to-refinance-your-mortgage", "how-to-calculate-mortgage-payment", "conventional-loan-requirements"],
@@ -1722,35 +1722,35 @@ export const learnArticles: LearnArticle[] = [
   // ── Article 24 ─────────────────────────────────────────────────────────────
   {
     slug: "mortgage-pre-approval-checklist",
-    title: "Mortgage Pre-Approval Checklist — Documents You Need",
+    title: "Mortgage Pre-Approval Checklist, Documents You Need",
     metaTitle: "Mortgage Pre-Approval Checklist: Documents You Need | HCMG",
     metaDescription:
-      "The complete mortgage pre-approval document checklist — W-2s, tax returns, bank statements, and more. Get pre-approved faster by having these ready. HCMG · NMLS# 1918223.",
+      "The complete mortgage pre-approval document checklist, W-2s, tax returns, bank statements, and more. Get pre-approved faster by having these ready. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 4,
     publishedAt: "2024-10-15",
     headline: "Mortgage Pre-Approval Checklist: Documents You Need",
     intro:
-      "The fastest way to get pre-approved is to have your documents ready before you apply. This checklist covers everything a lender needs — organized by borrower type so you know exactly what applies to your situation.",
+      "The fastest way to get pre-approved is to have your documents ready before you apply. This checklist covers everything a lender needs, organized by borrower type so you know exactly what applies to your situation.",
     sections: [
       {
         heading: "Income Documents (All Borrowers)",
         body: [
-          "W-2 employees: Last 2 years of W-2 forms from all employers. Most recent 30 days of pay stubs. Federal tax returns — last 2 years (all pages, all schedules). If you had a gap in employment or job change in the last 2 years, be prepared to explain in writing.",
-          "The lender is verifying consistency of income. Job changes in the same field are fine. Industry changes or gaps require explanation. If you started a new job recently, an offer letter and first pay stub may suffice — ask your loan officer.",
+          "W-2 employees: Last 2 years of W-2 forms from all employers. Most recent 30 days of pay stubs. Federal tax returns, last 2 years (all pages, all schedules). If you had a gap in employment or job change in the last 2 years, be prepared to explain in writing.",
+          "The lender is verifying consistency of income. Job changes in the same field are fine. Industry changes or gaps require explanation. If you started a new job recently, an offer letter and first pay stub may suffice, ask your loan officer.",
         ],
       },
       {
         heading: "Self-Employed / Business Owner Documents",
         body: [
-          "If you own 25%+ of a business: Last 2 years of personal tax returns (all pages, all schedules including Schedule C, E, K-1). Last 2 years of business tax returns (S-Corp, Partnership, or Corporation — as applicable). Year-to-date profit and loss statement (P&L). Business bank statements (last 2–3 months).",
-          "Self-employed borrowers often have lower taxable income than W-2 employees due to deductions — which lenders use to calculate qualifying income. The more deductions you take, the less qualifying income you may show. Your loan officer can run the analysis before you apply.",
+          "If you own 25%+ of a business: Last 2 years of personal tax returns (all pages, all schedules including Schedule C, E, K-1). Last 2 years of business tax returns (S-Corp, Partnership, or Corporation, as applicable). Year-to-date profit and loss statement (P&L). Business bank statements (last 2–3 months).",
+          "Self-employed borrowers often have lower taxable income than W-2 employees due to deductions, which lenders use to calculate qualifying income. The more deductions you take, the less qualifying income you may show. Your loan officer can run the analysis before you apply.",
         ],
       },
       {
         heading: "Asset Documents",
         body: [
-          "Bank statements: last 2–3 months, all pages including blank pages. Investment accounts (brokerage, 401k, IRA): last 2 months of statements. Any source of down payment funds must be documented — a large deposit not from regular payroll will require explanation and source documentation.",
+          "Bank statements: last 2–3 months, all pages including blank pages. Investment accounts (brokerage, 401k, IRA): last 2 months of statements. Any source of down payment funds must be documented, a large deposit not from regular payroll will require explanation and source documentation.",
           "Gift funds: if receiving gift funds for down payment, your donor will need to sign a gift letter stating the funds are a gift with no expectation of repayment, along with bank statements showing the funds leaving their account.",
         ],
       },
@@ -1758,14 +1758,14 @@ export const learnArticles: LearnArticle[] = [
         heading: "Identity and Other Documents",
         body: [
           "Government-issued photo ID (driver's license or passport). Social Security number (for credit pull authorization). If applicable: divorce decree and separation agreement, bankruptcy discharge paperwork, child support or alimony documentation, rental income documentation (lease agreements + tax returns).",
-          "VA borrowers add: Certificate of Eligibility (COE) — your loan officer can often pull this directly, DD-214 (Certificate of Release/Discharge from Active Duty), or current military orders if on active duty.",
+          "VA borrowers add: Certificate of Eligibility (COE), your loan officer can often pull this directly, DD-214 (Certificate of Release/Discharge from Active Duty), or current military orders if on active duty.",
         ],
       },
     ],
     faqs: [
       {
         q: "How long does pre-approval take?",
-        a: "With a complete document package, most lenders issue a pre-approval decision within 1–3 business days. Incomplete files take longer — the biggest delay is always waiting for documents. Having everything on this checklist ready before you apply is the single biggest factor in speed.",
+        a: "With a complete document package, most lenders issue a pre-approval decision within 1–3 business days. Incomplete files take longer, the biggest delay is always waiting for documents. Having everything on this checklist ready before you apply is the single biggest factor in speed.",
       },
       {
         q: "Does pre-approval guarantee a loan?",
@@ -1786,7 +1786,7 @@ export const learnArticles: LearnArticle[] = [
     title: "How to Improve Your Credit Score Before Getting a Mortgage",
     metaTitle: "How to Improve Your Credit Score for a Mortgage: Fast & Proven Methods | HCMG",
     metaDescription:
-      "Proven ways to improve your credit score before applying for a mortgage — including rapid rescore, utilization strategies, and what not to do. HCMG · NMLS# 1918223.",
+      "Proven ways to improve your credit score before applying for a mortgage, including rapid rescore, utilization strategies, and what not to do. HCMG · NMLS# 1918223.",
     category: "Buying a Home",
     readTime: 5,
     publishedAt: "2024-10-15",
@@ -1797,40 +1797,40 @@ export const learnArticles: LearnArticle[] = [
       {
         heading: "The Fastest Fix: Pay Down Revolving Balances",
         body: [
-          "Credit utilization — how much of your available revolving credit you're using — makes up 30% of your FICO score. Getting your utilization below 30% (ideally below 10%) on each card is typically the fastest way to improve your score.",
+          "Credit utilization, how much of your available revolving credit you're using, makes up 30% of your FICO score. Getting your utilization below 30% (ideally below 10%) on each card is typically the fastest way to improve your score.",
           "If you have a $5,000 credit card with a $4,500 balance, paying it down to $500 can move your score 30–60 points in the next billing cycle. This is the highest-ROI credit action available to most borrowers because it's both fast (next reporting cycle, 30–45 days) and significant.",
         ],
       },
       {
-        heading: "Rapid Rescore — The Lender's Shortcut",
+        heading: "Rapid Rescore, The Lender's Shortcut",
         body: [
           "Once you've paid down balances or resolved a dispute, you normally wait 30 days for the credit bureau to reflect the update. Through your lender, rapid rescore updates your file in 3–5 business days after your creditor confirms the change.",
-          "Rapid rescore is only available through lenders and mortgage brokers — you can't order it yourself. If you're close to a credit score threshold (e.g., 618 trying to hit 620), ask your loan officer about rapid rescore after any balance paydown.",
+          "Rapid rescore is only available through lenders and mortgage brokers, you can't order it yourself. If you're close to a credit score threshold (e.g., 618 trying to hit 620), ask your loan officer about rapid rescore after any balance paydown.",
         ],
       },
       {
-        heading: "Dispute Errors — Check Your Reports First",
+        heading: "Dispute Errors, Check Your Reports First",
         body: [
           "One in five Americans has a material error on their credit report. Pull your free reports at annualcreditreport.com (all three bureaus) and review for: incorrect late payments, accounts that aren't yours, incorrect balances or credit limits, duplicate accounts, and debts that should have fallen off (most negative items drop off after 7 years).",
-          "Dispute errors directly with each bureau online — Equifax, Experian, and TransUnion each have dispute portals. Document your disputes. Bureaus have 30 days to investigate. If the error is causing a meaningful score depression, rapid rescore after resolution can accelerate the correction.",
+          "Dispute errors directly with each bureau online, Equifax, Experian, and TransUnion each have dispute portals. Document your disputes. Bureaus have 30 days to investigate. If the error is causing a meaningful score depression, rapid rescore after resolution can accelerate the correction.",
         ],
       },
       {
         heading: "What NOT to Do Before Applying",
         body: [
-          "Do not open new credit cards or loans — new accounts lower your average account age and generate hard inquiries. Do not close old accounts — closing a card reduces your available credit and raises your utilization ratio. Do not finance a car, furniture, or appliances — new installment debt and hard inquiries can drop your score and affect your DTI.",
-          "Do not make large deposits without documentation — unexplained large deposits require sourcing by your lender and can delay or complicate your file. Do not change jobs if avoidable — job stability is a key underwriting factor, especially in the 90 days before closing.",
+          "Do not open new credit cards or loans, new accounts lower your average account age and generate hard inquiries. Do not close old accounts, closing a card reduces your available credit and raises your utilization ratio. Do not finance a car, furniture, or appliances, new installment debt and hard inquiries can drop your score and affect your DTI.",
+          "Do not make large deposits without documentation, unexplained large deposits require sourcing by your lender and can delay or complicate your file. Do not change jobs if avoidable, job stability is a key underwriting factor, especially in the 90 days before closing.",
         ],
       },
     ],
     faqs: [
       {
         q: "How many points can I realistically improve my credit score?",
-        a: "For someone starting at 600–650 with high credit card utilization and a few errors, a 50–80 point improvement is realistic in 3–6 months with targeted effort. The biggest individual action is typically paying down credit card balances. Improvement above 740 tends to be slower — the gains come from time and consistent payment history.",
+        a: "For someone starting at 600–650 with high credit card utilization and a few errors, a 50–80 point improvement is realistic in 3–6 months with targeted effort. The biggest individual action is typically paying down credit card balances. Improvement above 740 tends to be slower, the gains come from time and consistent payment history.",
       },
       {
         q: "Does paying off collections improve my credit score?",
-        a: "It depends. Under older FICO scoring (FICO 8), paying a collection may not improve the score because the collection still shows as a negative mark (even if paid). Under newer scoring models (FICO 9, VantageScore 4.0), paid collections are ignored entirely. Mortgage lenders typically use FICO 2, 4, and 5 — older models. Ask your loan officer which model their lender uses before paying a collection solely for score purposes.",
+        a: "It depends. Under older FICO scoring (FICO 8), paying a collection may not improve the score because the collection still shows as a negative mark (even if paid). Under newer scoring models (FICO 9, VantageScore 4.0), paid collections are ignored entirely. Mortgage lenders typically use FICO 2, 4, and 5, older models. Ask your loan officer which model their lender uses before paying a collection solely for score purposes.",
       },
       {
         q: "How long before applying should I start working on my credit?",

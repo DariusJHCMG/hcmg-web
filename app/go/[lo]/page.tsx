@@ -14,7 +14,7 @@ export default async function FunnelRedirect({ params, searchParams }: Props) {
 
   const sb = createServiceClient();
 
-  // Validate LO exists and is active — use profiles as source of truth.
+  // Validate LO exists and is active, use profiles as source of truth.
   // funnel_links may not be populated yet (backfill pending), so never gate on it.
   const { data: profile } = await sb
     .from("profiles")
@@ -25,7 +25,7 @@ export default async function FunnelRedirect({ params, searchParams }: Props) {
 
   if (!profile) notFound();
 
-  // Best-effort click counter increment — ignore if funnel_links row doesn't exist yet
+  // Best-effort click counter increment, ignore if funnel_links row doesn't exist yet
   sb.from("funnel_links")
     .select("clicks")
     .eq("lo_slug", slug)

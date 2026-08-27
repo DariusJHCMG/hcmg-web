@@ -116,25 +116,25 @@ export default function PrivacyPage() {
                 <tr>
                   <td className="px-4 py-3 font-semibold text-ink">Resend, Inc.</td>
                   <td className="px-4 py-3">Transactional email delivery</td>
-                  <td className="px-4 py-3">Borrower first name, ARIVE loan number, loan type, submitter email — included in operational email notifications</td>
+                  <td className="px-4 py-3">Borrower first name, ARIVE loan number, loan type, submitter email, included in operational email notifications</td>
                   <td className="px-4 py-3">SOC 2 Type II</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-semibold text-ink">Zapier, Inc.</td>
-                  <td className="px-4 py-3">Workflow automation — ARIVE loan data lookup</td>
-                  <td className="px-4 py-3">ARIVE loan number, borrower name, loan type, property address, loan amount — transmitted transiently to retrieve loan details from ARIVE and return them to our system. Data is not stored by Zapier beyond task execution logs.</td>
+                  <td className="px-4 py-3">Workflow automation, ARIVE loan data lookup</td>
+                  <td className="px-4 py-3">ARIVE loan number, borrower name, loan type, property address, loan amount, transmitted transiently to retrieve loan details from ARIVE and return them to our system. Data is not stored by Zapier beyond task execution logs.</td>
                   <td className="px-4 py-3">SOC 2 Type II</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-semibold text-ink">Vercel, Inc.</td>
                   <td className="px-4 py-3">Web hosting &amp; serverless functions</td>
-                  <td className="px-4 py-3">HTTP request metadata (IP address, headers) for all web traffic — not stored long-term</td>
+                  <td className="px-4 py-3">HTTP request metadata (IP address, headers) for all web traffic, not stored long-term</td>
                   <td className="px-4 py-3">SOC 2 Type II, ISO 27001</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-semibold text-ink">PostHog, Inc.</td>
                   <td className="px-4 py-3">Analytics &amp; session replay</td>
-                  <td className="px-4 py-3">Anonymized page view events, funnel interactions — no NPI. Session replay is masked for form fields.</td>
+                  <td className="px-4 py-3">Anonymized page view events, funnel interactions, no NPI. Session replay is masked for form fields.</td>
                   <td className="px-4 py-3">SOC 2 Type II</td>
                 </tr>
                 <tr>
@@ -159,7 +159,7 @@ export default function PrivacyPage() {
             <li><strong>FHA and VA loan files:</strong> 2 years post-closing per HUD Handbook 4000.1 and VA Lender Handbook</li>
             <li><strong>Conventional and other loan files:</strong> 7 years post-closing per GLBA and state mortgage regulations</li>
             <li><strong>Marketing and lead inquiry data:</strong> Until you opt out or request deletion, or 7 years from last contact, whichever is earlier</li>
-            <li><strong>ARIVE lookup results:</strong> 120 seconds (automatically deleted after use — these are transient lookups only)</li>
+            <li><strong>ARIVE lookup results:</strong> 120 seconds (automatically deleted after use, these are transient lookups only)</li>
             <li><strong>Session tokens:</strong> 7 days, then automatically expired</li>
           </ul>
           <P>
@@ -175,7 +175,7 @@ export default function PrivacyPage() {
           <ul className="mb-4 list-disc pl-6 text-sm leading-7 text-muted">
             <li><strong>Right to know:</strong> Request a copy of the personal information we hold about you</li>
             <li><strong>Right to correct:</strong> Request correction of inaccurate personal information</li>
-            <li><strong>Right to delete:</strong> Request deletion of your personal information (subject to legal retention requirements — mortgage records must be retained per GLBA and HUD regulations)</li>
+            <li><strong>Right to delete:</strong> Request deletion of your personal information (subject to legal retention requirements, mortgage records must be retained per GLBA and HUD regulations)</li>
             <li><strong>Right to opt out of sale:</strong> We do not sell your personal information</li>
           </ul>
           <P>
@@ -195,11 +195,11 @@ export default function PrivacyPage() {
           <ul className="mb-4 list-disc pl-6 text-sm leading-7 text-muted">
             <li>TLS 1.3 encryption for all data in transit</li>
             <li>AES-256 encryption for all data at rest (managed by Supabase)</li>
-            <li>Row-Level Security (RLS) in our database — each user can only access data they are authorized to see</li>
+            <li>Row-Level Security (RLS) in our database, each user can only access data they are authorized to see</li>
             <li>HTTP security headers (Content-Security-Policy, HSTS, X-Frame-Options) to prevent web-layer attacks</li>
             <li>Distributed rate limiting on all authentication and data-submission endpoints</li>
             <li>Session tokens stored as cryptographically random UUIDs in HttpOnly, SameSite=Strict cookies</li>
-            <li>Role-based access control — ops staff, lock desk agents, and help desk agents each have scoped access to only the loan queues relevant to their role</li>
+            <li>Role-based access control, ops staff, lock desk agents, and help desk agents each have scoped access to only the loan queues relevant to their role</li>
           </ul>
 
           {/* ── 9. GLBA Annual Privacy Notice ─────────────────────── */}
@@ -220,7 +220,7 @@ export default function PrivacyPage() {
           <P>
             We use session cookies for authentication (HttpOnly, not accessible to JavaScript) and analytics cookies
             from PostHog to understand how visitors use our website. We do not use cross-site tracking cookies.
-            You can disable analytics cookies through your browser settings — this will not affect your ability to
+            You can disable analytics cookies through your browser settings, this will not affect your ability to
             use our mortgage services.
           </P>
 
