@@ -12,8 +12,9 @@
  *
  * Zapier field mapping (snake_case preferred):
  * {
- *   lo_nmls:         "123456"         ← preferred LO identifier
- *   lo_email:        "john@..."       ← fallback
+ *   lo_arive_id:     "abc123"         ← step 0 — ARIVE internal loanOriginatorId (if available)
+ *   lo_nmls:         "123456"         ← step 1 — preferred LO identifier
+ *   lo_email:        "john@..."       ← step 2 — fallback (also checks arive_email alias)
  *   loan_id:         "17365494"       ← REQUIRED
  *
  *   // Application fields (always send — ARIVE "Total Loan Amount" for apps):
@@ -91,6 +92,7 @@ export async function POST(req: NextRequest) {
   // NOTE: funded_volume and app_volume must be mapped to SEPARATE Zapier fields.
   // Only fall back to a generic loan_amount when the specific field is absent,
   // and only do so if the presence of funded_date makes the context unambiguous.
+  const loAriveId  = String(body.lo_arive_id ?? body.loAriveId ?? "").trim();
   const loNmls     = String(body.lo_nmls   ?? body.loNmls   ?? "").trim().replace(/[^0-9]/g, "");
   const loEmail    = String(body.lo_email  ?? body.loEmail  ?? "").trim().toLowerCase();
   const loanId     = String(body.loan_id   ?? body.loanId   ?? "").trim();
@@ -111,25 +113,45 @@ export async function POST(req: NextRequest) {
     await writeLog({ action: "error", error_message: "loan_id missing" });
     return NextResponse.json({ error: "loan_id is required." }, { status: 400 });
   }
-  if (!loNmls && !loEmail) {
+  if (!loAriveId && !loNmls && !loEmail) {
     await writeLog({ action: "error", error_message: "no LO identifier", loan_id: loanId });
-    return NextResponse.json({ error: "lo_nmls or lo_email required." }, { status: 400 });
+    return NextResponse.json({ error: "lo_arive_id, lo_nmls, or lo_email required." }, { status: 400 });
   }
 
   // ── 4. Resolve LO ────────────────────────────────────────────
-  type LO = { id: string; full_name: string };
+  // Resolution order:
+  //   0. arive_lo_id — ARIVE internal ID, fastest + most stable
+  //   1. NMLS
+  //   2. Exact SLICE email match
+  //   3. arive_email alias (e.g. Lamont: harriscapitalmortgage.com vs hcmgloans.com)
+  type LO = { id: string; full_name: string; arive_lo_id: string | null };
   let lo: LO | null = null;
-  if (loNmls) {
-    const { data } = await sb.from("profiles").select("id,full_name").eq("nmls", loNmls).maybeSingle();
+  if (loAriveId) {
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id").eq("arive_lo_id", loAriveId).maybeSingle();
+    lo = data;
+  }
+  if (!lo && loNmls) {
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id").eq("nmls", loNmls).maybeSingle();
     lo = data;
   }
   if (!lo && loEmail) {
-    const { data } = await sb.from("profiles").select("id,full_name").eq("email", loEmail).maybeSingle();
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id").eq("email", loEmail).maybeSingle();
+    lo = data;
+  }
+  if (!lo && loEmail) {
+    // arive_email alias — for LOs whose ARIVE-stored email differs from SLICE
+    // (currently only Lamont: lamont.harris@harriscapitalmortgage.com vs lamont@hcmgloans.com)
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id").eq("arive_email", loEmail).maybeSingle();
     lo = data;
   }
   if (!lo) {
     await writeLog({ action: "error", error_message: "LO not found", loan_id: loanId, lo_nmls: loNmls || null, lo_email_raw: loEmail || null });
-    return NextResponse.json({ error: "Loan Officer not found.", attempted: { loNmls, loEmail } }, { status: 404 });
+    return NextResponse.json({ error: "Loan Officer not found.", attempted: { loAriveId: loAriveId || null, loNmls, loEmail } }, { status: 404 });
+  }
+
+  // ── 4a. Write-back arive_lo_id if we matched via a different field ──
+  if (loAriveId && !lo.arive_lo_id) {
+    sb.from("profiles").update({ arive_lo_id: loAriveId }).eq("id", lo.id).then(() => {});
   }
 
   // ── 5. Find goal month by date ────────────────────────────────

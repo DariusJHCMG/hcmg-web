@@ -1,82 +1,47 @@
 /**
  * POST /api/goal-engine/arive-pull-cron
- * 15-minute cron — pulls today's applications AND fundings from ARIVE via
- * a Zapier Make hook, then upserts any new or changed loans into SLICE.
+ * 15-minute cron — gap-fill safety net for Zaps 1 & 2.
  *
- * ── Flow ──────────────────────────────────────────────────────────────────
+ * ── Why this exists ────────────────────────────────────────────────────────
+ *
+ * ARIVE's Zapier integration has no date-based loan search, so we cannot
+ * directly query "all loans applied today". Instead this cron takes a
+ * different approach: for every loan already in goal_production that was
+ * created or updated today, it fires a re-sync call to /zapier-sync
+ * (same as loan-sync-cron). This catches two scenarios:
+ *
+ *  1. Zap 1/2 fired correctly but the amount in ARIVE changed since — the
+ *     re-sync overwrites the stale amount.
+ *
+ *  2. Zap 1/2 fired but SLICE only got partial data (e.g. no app_date) —
+ *     the re-sync fills in the gap via Zap 5's "Get Loan Details" path.
+ *
+ * For loans that Zap 1/2 missed entirely (never fired), Zap 5 (loan-sync-cron)
+ * will catch them once they exist in SLICE. The only true gap is a loan that
+ * never enters SLICE at all — those require the manual backfill tool.
+ *
+ * ── Flow ───────────────────────────────────────────────────────────────────
  *
  *   [Vercel Cron every 15 min]
  *       │
- *       └─► POST /api/goal-engine/arive-pull-cron   (this route)
+ *       └─► POST /api/goal-engine/arive-pull-cron
  *               │
- *               ├─► POST ZAPIER_ARIVE_APPS_HOOK   { date, secret }
- *               │       Zapier: Search ARIVE "Applications Today"
- *               │       Zapier: for each loan → POST /zapier-sync with app fields
- *               │
- *               └─► POST ZAPIER_ARIVE_FUNDED_HOOK { date, secret }
- *                       Zapier: Search ARIVE "Fundings Today"
- *                       Zapier: for each loan → POST /zapier-sync with funded fields
+ *               └─► For each loan in goal_production updated in last 30 min
+ *                   → POST ZAPIER_LOAN_SYNC_HOOK { loan_id, lo_email }
+ *                   → Zap 5 fetches fresh details from ARIVE → /zapier-sync
  *
- * ── Zapier zap setup (Make integration) ──────────────────────────────────
- *
- *  ZAP 1 — "SLICE: Pull Applications Today"
- *  ┌─ Trigger: Catch Hook (URL → ZAPIER_ARIVE_APPS_HOOK)
- *  │    Fields received from SLICE: { date: "YYYY-MM-DD", secret: "..." }
- *  │
- *  ├─ Action 1: ARIVE — "Find Loans"
- *  │    Filter: Application Date = {{date}}
- *  │    (or use ARIVE "List Loans" with applicationDate filter)
- *  │
- *  ├─ Action 2: Looping by Zapier (iterate over each loan returned)
- *  │
- *  └─ Action 3: Webhooks by Zapier — POST to:
- *       https://slice.hcmgloans.com/api/goal-engine/zapier-sync
- *       Headers: x-zapier-secret: {{ZAPIER_WEBHOOK_SECRET}}
- *       Body:
- *         loan_id:    {{loan.id}}
- *         lo_nmls:    {{loan.loanOfficerNmls}}
- *         lo_email:   {{loan.loanOfficerEmail}}
- *         app_date:   {{loan.applicationDate}}
- *         app_volume: {{loan.loanAmount}}
- *
- *  ZAP 2 — "SLICE: Pull Fundings Today"
- *  ┌─ Trigger: Catch Hook (URL → ZAPIER_ARIVE_FUNDED_HOOK)
- *  │    Fields received from SLICE: { date: "YYYY-MM-DD", secret: "..." }
- *  │
- *  ├─ Action 1: ARIVE — "Find Loans"
- *  │    Filter: Funded Date = {{date}}
- *  │
- *  ├─ Action 2: Looping by Zapier
- *  │
- *  └─ Action 3: Webhooks by Zapier — POST to:
- *       https://slice.hcmgloans.com/api/goal-engine/zapier-sync
- *       Headers: x-zapier-secret: {{ZAPIER_WEBHOOK_SECRET}}
- *       Body:
- *         loan_id:        {{loan.id}}
- *         lo_nmls:        {{loan.loanOfficerNmls}}
- *         lo_email:       {{loan.loanOfficerEmail}}
- *         app_date:       {{loan.applicationDate}}
- *         app_volume:     {{loan.loanAmount}}
- *         funded_date:    {{loan.fundedDate}}
- *         funded_volume:  {{loan.loanAmount}}
- *
- * ── Env vars required ────────────────────────────────────────────────────
- *   ZAPIER_ARIVE_APPS_HOOK    Zapier Catch Hook URL for Zap 1
- *   ZAPIER_ARIVE_FUNDED_HOOK  Zapier Catch Hook URL for Zap 2
- *   ZAPIER_WEBHOOK_SECRET     Shared secret passed so Zapier can auth /zapier-sync
- *   CRON_SECRET               Vercel cron auth header
+ * ── Env vars required ──────────────────────────────────────────────────────
+ *   ZAPIER_LOAN_SYNC_HOOK   Zap 5 catch hook URL (shared with loan-sync-cron)
+ *   CRON_SECRET             Vercel cron auth header
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "@/lib/supabase";
 
-const CRON_SECRET         = process.env.CRON_SECRET                ?? "";
-const ZAPIER_APPS_HOOK    = process.env.ZAPIER_ARIVE_APPS_HOOK     ?? "";
-const ZAPIER_FUNDED_HOOK  = process.env.ZAPIER_ARIVE_FUNDED_HOOK   ?? "";
-const ZAPIER_SYNC_SECRET  = process.env.ZAPIER_WEBHOOK_SECRET      ?? "";
+const CRON_SECRET      = process.env.CRON_SECRET          ?? "";
+const ZAPIER_SYNC_HOOK = process.env.ZAPIER_LOAN_SYNC_HOOK ?? "";
 
 export const dynamic = "force-dynamic";
-// Give Zapier hooks up to 25 s to accept — they respond instantly with 200
-// then process async, so this is more than enough.
 export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
@@ -86,70 +51,82 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!ZAPIER_APPS_HOOK && !ZAPIER_FUNDED_HOOK) {
+  if (!ZAPIER_SYNC_HOOK) {
     return NextResponse.json(
-      { error: "Neither ZAPIER_ARIVE_APPS_HOOK nor ZAPIER_ARIVE_FUNDED_HOOK is set." },
+      { error: "ZAPIER_LOAN_SYNC_HOOK is not set — Zap 5 catch hook URL required." },
       { status: 500 },
     );
   }
 
-  // ── 2. Determine date range to pull ───────────────────────────
-  // We pull today AND yesterday to catch loans that funded/applied late
-  // in the previous day but hadn't been synced yet when that day's crons ran.
-  const now       = new Date();
-  const today     = now.toISOString().slice(0, 10);
-  // Yesterday in UTC
-  const yday      = new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10);
-  const dates     = [yday, today];
+  const sb = createServiceClient();
 
-  const results: Record<string, { apps?: string; funded?: string }> = {};
+  // ── 2. Find active goal month ─────────────────────────────────
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: goal } = await sb
+    .from("goal_months")
+    .select("id, month_label")
+    .lte("start_date", today)
+    .gte("end_date", today)
+    .maybeSingle();
 
-  // ── 3. Fire both hooks for each date ─────────────────────────
-  await Promise.all(dates.map(async (date) => {
-    results[date] = {};
+  if (!goal) {
+    return NextResponse.json({ message: "No active goal month." });
+  }
 
-    // ── 3a. Applications hook ──────────────────────────────────
-    if (ZAPIER_APPS_HOOK) {
+  // ── 3. Pull loans updated in the last 30 minutes ─────────────
+  // These are the loans most likely to need a re-sync — either just
+  // created by Zap 1/2, or recently changed in ARIVE.
+  const windowStart = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+  const { data: loans, error } = await sb
+    .from("goal_production")
+    .select("loan_id, profile_id, profiles(email)")
+    .eq("goal_month_id", goal.id)
+    .eq("is_excluded", false)
+    .not("loan_id", "is", null)
+    .gte("updated_at", windowStart);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!loans || loans.length === 0) {
+    return NextResponse.json({ message: "No recently updated loans to re-sync.", goal: goal.month_label });
+  }
+
+  // ── 4. Fire sync hook for each recently-updated loan ─────────
+  let pushed = 0;
+  let failed = 0;
+  const errors: string[] = [];
+  const CONCURRENCY = 10;
+
+  for (let i = 0; i < loans.length; i += CONCURRENCY) {
+    const batch = loans.slice(i, i + CONCURRENCY);
+    await Promise.all(batch.map(async (row) => {
+      const email = (row.profiles as unknown as { email?: string } | null)?.email ?? null;
       try {
-        const r = await fetch(ZAPIER_APPS_HOOK, {
+        const res = await fetch(ZAPIER_SYNC_HOOK, {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({
-            date,
-            event_type: "applications",
-            secret:     ZAPIER_SYNC_SECRET,
-          }),
-          signal: AbortSignal.timeout(10_000),
+          body:    JSON.stringify({ loan_id: row.loan_id, lo_email: email }),
+          signal:  AbortSignal.timeout(8_000),
         });
-        results[date].apps = r.ok ? "dispatched" : `HTTP ${r.status}`;
+        if (res.ok) { pushed++; }
+        else { failed++; errors.push(`${row.loan_id}: HTTP ${res.status}`); }
       } catch (e) {
-        results[date].apps = e instanceof Error ? e.message : "fetch error";
+        failed++;
+        errors.push(`${row.loan_id}: ${e instanceof Error ? e.message : "fetch failed"}`);
       }
-    }
-
-    // ── 3b. Fundings hook ──────────────────────────────────────
-    if (ZAPIER_FUNDED_HOOK) {
-      try {
-        const r = await fetch(ZAPIER_FUNDED_HOOK, {
-          method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({
-            date,
-            event_type: "fundings",
-            secret:     ZAPIER_SYNC_SECRET,
-          }),
-          signal: AbortSignal.timeout(10_000),
-        });
-        results[date].funded = r.ok ? "dispatched" : `HTTP ${r.status}`;
-      } catch (e) {
-        results[date].funded = e instanceof Error ? e.message : "fetch error";
-      }
-    }
-  }));
+    }));
+  }
 
   return NextResponse.json({
-    message: "ARIVE pull dispatched.",
-    dates,
-    results,
+    message:  `Recent-loan re-sync dispatched for ${goal.month_label}.`,
+    goal_id:  goal.id,
+    month:    goal.month_label,
+    window:   "last 30 min",
+    total:    loans.length,
+    pushed,
+    failed,
+    errors:   errors.length > 0 ? errors : undefined,
   });
 }

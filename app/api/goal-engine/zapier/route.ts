@@ -8,8 +8,9 @@
  *
  * Zapier field mapping (snake_case preferred, camelCase also accepted):
  * {
- *   lo_nmls:        "123456"          ← REQUIRED (preferred) — NMLS is most reliable
- *   lo_email:       "john@..."        ← fallback if no NMLS
+ *   lo_arive_id:    "abc123"          ← step 0 — ARIVE internal loanOriginatorId (if available)
+ *   lo_nmls:        "123456"          ← step 1 — NMLS (ARIVE currently doesn't send this)
+ *   lo_email:       "john@..."        ← step 2 — exact SLICE email match
  *   loan_id:        "ARIVE-LN-00012"  ← REQUIRED for deduplication
  *
  *   // For "Loan Funded" zap:
@@ -95,6 +96,7 @@ export async function POST(req: NextRequest) {
   const ip  = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
 
   // ── 3. Extract fields — accept snake_case and camelCase ───────
+  const loAriveId  = String(body.lo_arive_id ?? body.loAriveId ?? "").trim();
   const loNmls     = String(body.lo_nmls    ?? body.loNmls    ?? "").trim().replace(/[^0-9]/g, "");
   const loEmail    = String(body.lo_email   ?? body.loEmail   ?? "").trim().toLowerCase();
   const loName     = String(body.lo_name    ?? body.loName    ?? body.lo_full_name ?? body.loanOfficerName ?? "").trim();
@@ -116,10 +118,10 @@ export async function POST(req: NextRequest) {
     }, { status: 400 });
   }
 
-  if (!loNmls && !loEmail && !loName) {
+  if (!loAriveId && !loNmls && !loEmail && !loName) {
     await writeLog(sb, body, startMs, ip, { action: "error", error_message: "no LO identifier provided" });
     return NextResponse.json({
-      error: "lo_nmls, lo_email, or lo_name required to identify the Loan Officer.",
+      error: "lo_arive_id, lo_nmls, lo_email, or lo_name required to identify the Loan Officer.",
       tip: "Map ARIVE 'Loan Officer NMLS' to lo_nmls or 'Loan Officer Email' to lo_email in Zapier.",
     }, { status: 400 });
   }
@@ -134,48 +136,54 @@ export async function POST(req: NextRequest) {
 
   // ── 4. Resolve LO profile ────────────────────────────────────────
   // Resolution order:
+  //   0. arive_lo_id — ARIVE's internal loanOriginatorId, fastest + most stable
   //   1. NMLS (if provided — ARIVE currently doesn't send this)
   //   2. Exact email match against profiles.email
   //   3. arive_email alias (for LOs whose ARIVE email ≠ SLICE email, e.g. Lamont)
   //   4. Exact full_name match
   //   5. arive_name alias (for LOs whose ARIVE name ≠ SLICE full_name)
   //   6. Prefix full_name match (e.g. "Lamont Harris" → "Lamont Harris Jr.")
-  type LO = { id: string; full_name: string };
+  type LO = { id: string; full_name: string; arive_lo_id: string | null };
   let lo: LO | null = null;
 
-  if (loNmls) {
-    const { data } = await sb.from("profiles").select("id,full_name")
+  if (loAriveId) {
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id")
+      .eq("arive_lo_id", loAriveId).maybeSingle();
+    lo = data;
+  }
+  if (!lo && loNmls) {
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id")
       .eq("nmls", loNmls).maybeSingle();
     lo = data;
   }
   if (!lo && loEmail) {
     // Exact SLICE email match (works for every LO except Lamont)
-    const { data } = await sb.from("profiles").select("id,full_name")
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id")
       .eq("email", loEmail).maybeSingle();
     lo = data;
   }
   if (!lo && loEmail) {
     // arive_email alias — for LOs whose ARIVE-stored email differs from SLICE
-    // (currently only Lamont: lamont.harris@htalmortgage.com vs lamont@hcmgloans.com)
-    const { data } = await sb.from("profiles").select("id,full_name")
+    // (currently only Lamont: lamont.harris@harriscapitalmortgage.com vs lamont@hcmgloans.com)
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id")
       .eq("arive_email", loEmail).maybeSingle();
     lo = data;
   }
   if (!lo && loName) {
     // Exact full_name match
-    const { data: d1 } = await sb.from("profiles").select("id,full_name")
+    const { data: d1 } = await sb.from("profiles").select("id,full_name,arive_lo_id")
       .ilike("full_name", loName.trim()).maybeSingle();
     lo = d1;
   }
   if (!lo && loName) {
     // arive_name alias (e.g. "Lamont Harris" → "Lamont Harris Jr.")
-    const { data } = await sb.from("profiles").select("id,full_name")
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id")
       .ilike("arive_name", loName.trim()).maybeSingle();
     lo = data;
   }
   if (!lo && loName) {
     // Prefix match — last resort (e.g. "Lamont Harris" prefix-matches "Lamont Harris Jr.")
-    const { data } = await sb.from("profiles").select("id,full_name")
+    const { data } = await sb.from("profiles").select("id,full_name,arive_lo_id")
       .ilike("full_name", `${loName.trim()}%`).maybeSingle();
     lo = data;
   }
@@ -189,9 +197,17 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({
       error: "Loan Officer not found in SLICE.",
-      attempted: { loNmls: loNmls || null, loEmail: loEmail || null, loName: loName || null },
+      attempted: { loAriveId: loAriveId || null, loNmls: loNmls || null, loEmail: loEmail || null, loName: loName || null },
       tip: "Verify NMLS, email, or full name matches a SLICE profile.",
     }, { status: 404 });
+  }
+
+  // ── 4a. Write-back arive_lo_id if we matched via a different field ──
+  // Once we know the ARIVE ID for this LO, persist it so future requests
+  // skip the email/name fallback chain and resolve in one query.
+  if (loAriveId && !lo.arive_lo_id) {
+    // Fire-and-forget — never block the response
+    sb.from("profiles").update({ arive_lo_id: loAriveId }).eq("id", lo.id).then(() => {});
   }
 
   // ── 5. Find the correct goal month by date (draft or published) ──
