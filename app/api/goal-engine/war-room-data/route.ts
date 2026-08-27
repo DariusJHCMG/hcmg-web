@@ -21,27 +21,36 @@ export async function GET() {
     });
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  // Use Eastern time for "today" — the server runs UTC which is ahead of US East.
+  // At 11 PM Eastern it's already the next UTC day, so UTC date would show the wrong day.
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" }); // "YYYY-MM-DD"
 
-  const [summary, board, todayProd] = await Promise.all([
+  const [summary, board, todayFunded, todayApps] = await Promise.all([
     computeGoalSummary(goal),
     sb.from("goal_leaderboard")
       .select("profile_id, full_name, avatar_url, funded_volume_commitment, funded_volume_actual, funded_units_actual, app_volume_actual, app_units_actual")
       .eq("goal_month_id", goal.id)
       .order("funded_volume_commitment", { ascending: false })
       .order("funded_volume_actual",     { ascending: false }),
+    // Loans that FUNDED today
     sb.from("goal_production")
-      .select("funded_volume, funded_unit, app_volume, app_unit")
+      .select("funded_volume, funded_unit")
       .eq("goal_month_id", goal.id)
-      .eq("funded_date", today),
+      .eq("funded_date", today)
+      .eq("is_excluded", false),
+    // Loans that were APPLIED today
+    sb.from("goal_production")
+      .select("app_volume, app_unit")
+      .eq("goal_month_id", goal.id)
+      .eq("app_date", today)
+      .eq("is_excluded", false),
   ]);
 
-  const todayData = todayProd.data ?? [];
   const todayActivity = {
-    funded:      todayData.reduce((s, r) => s + (r.funded_volume ?? 0), 0),
-    fundedUnits: todayData.reduce((s, r) => s + (r.funded_unit  ?? 0), 0),
-    apps:        todayData.reduce((s, r) => s + (r.app_volume   ?? 0), 0),
-    appUnits:    todayData.reduce((s, r) => s + (r.app_unit     ?? 0), 0),
+    funded:      (todayFunded.data ?? []).reduce((s, r) => s + (r.funded_volume ?? 0), 0),
+    fundedUnits: (todayFunded.data ?? []).reduce((s, r) => s + (r.funded_unit  ?? 0), 0),
+    apps:        (todayApps.data   ?? []).reduce((s, r) => s + (r.app_volume   ?? 0), 0),
+    appUnits:    (todayApps.data   ?? []).reduce((s, r) => s + (r.app_unit     ?? 0), 0),
   };
 
   return NextResponse.json({
