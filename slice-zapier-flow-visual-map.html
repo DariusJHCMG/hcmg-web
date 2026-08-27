@@ -1,0 +1,617 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SLICE Zapier Flow</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #1f2328;
+  background: #f7f8fa;
+  padding: 28px 16px 60px;
+}
+.page { max-width: 820px; margin: 0 auto; }
+h1 { font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+.meta { color: #57606a; font-size: 12px; margin-bottom: 28px; }
+
+/* ── section headings ── */
+h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #57606a; margin: 28px 0 12px; }
+
+/* ── legend ── */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.leg { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.leg-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── overview grid ── */
+.overview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 32px; }
+.ov-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 10px;
+  text-align: center;
+  position: relative;
+}
+.ov-card .znum {
+  width: 26px; height: 26px; border-radius: 50%;
+  font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px;
+  color: #fff;
+}
+.ov-card .ztitle { font-weight: 600; font-size: 12px; line-height: 1.3; margin-bottom: 6px; }
+.ov-card .zdir { font-size: 11px; color: #57606a; }
+.ov-card .changed-badge {
+  position: absolute; top: -7px; right: -7px;
+  background: #e5534b; color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 8px;
+}
+
+/* ── flow diagram ── */
+.flow-section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.flow-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f7f8fa;
+}
+.flow-header .znum {
+  width: 24px; height: 24px; border-radius: 50%;
+  font-weight: 700; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0;
+}
+.flow-header .ztitle { font-weight: 700; font-size: 13px; flex: 1; }
+.flow-header .zbadge {
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 10px;
+}
+.flow-body { padding: 16px; }
+
+/* ── nodes ── */
+.nodes { display: flex; flex-direction: column; gap: 0; }
+.node-row { display: flex; align-items: stretch; gap: 0; }
+.node-connector {
+  display: flex; flex-direction: column; align-items: center;
+  width: 40px; flex-shrink: 0; padding: 0 0 0 19px;
+}
+.nc-line { width: 2px; background: #e5e7eb; flex: 1; min-height: 12px; }
+.nc-arrow {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #e5e7eb;
+  margin-left: -4px;
+}
+.node {
+  flex: 1;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 7px;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  position: relative;
+}
+.node-trigger  { border-color: #7c5cd8; background: #faf5ff; }
+.node-lookup   { border-color: #3baf64; background: #f0fdf4; }
+.node-loop     { border-color: #d1a339; background: #fffbee; }
+.node-post     { border-color: #3b82d4; background: #eff6ff; }
+.node-slice    { border-color: #e5534b; background: #fff5f5; }
+.node-db       { border-color: #57606a; background: #f7f8fa; }
+
+.node-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 3px;
+}
+.nl-trigger { color: #7c5cd8; }
+.nl-lookup  { color: #3baf64; }
+.nl-loop    { color: #d1a339; }
+.nl-post    { color: #3b82d4; }
+.nl-slice   { color: #e5534b; }
+.nl-db      { color: #57606a; }
+
+.node-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.node-desc  { font-size: 12px; color: #57606a; line-height: 1.4; }
+.node-fields {
+  margin-top: 8px;
+  background: rgba(0,0,0,.04);
+  border-radius: 5px;
+  padding: 7px 9px;
+  font-size: 11px;
+  font-family: "Menlo","Consolas",monospace;
+  line-height: 1.8;
+}
+.f-new  { color: #3baf64; font-weight: 700; }
+.f-req  { color: #e5534b; }
+.f-opt  { color: #57606a; }
+.f-rm   { color: #e5534b; text-decoration: line-through; }
+.changed-tag {
+  display: inline-block;
+  background: #3baf64; color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 8px;
+  margin-left: 6px; vertical-align: middle;
+}
+
+/* ── match chain ── */
+.match-section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.chain-title { font-weight: 700; font-size: 13px; margin-bottom: 12px; }
+.chain { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0; }
+.chain-item {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 0;
+  padding: 8px 12px;
+  display: flex; flex-direction: column; justify-content: center;
+  min-width: 100px;
+  position: relative;
+}
+.chain-item:first-child { border-radius: 6px 0 0 6px; }
+.chain-item:last-child  { border-radius: 0 6px 6px 0; }
+.chain-sep {
+  display: flex; align-items: center;
+  padding: 0 2px;
+  color: #bbb; font-size: 14px;
+  border-top: 1.5px solid #e5e7eb;
+  border-bottom: 1.5px solid #e5e7eb;
+  background: #f7f8fa;
+}
+.chain-num {
+  font-size: 10px; font-weight: 700; color: #57606a;
+  margin-bottom: 2px;
+}
+.chain-key { font-size: 12px; font-weight: 600; }
+.chain-sub { font-size: 11px; color: #57606a; }
+.c-new  { border-color: #3baf64 !important; background: #f0fdf4 !important; }
+.c-good { border-color: #3b82d4 !important; background: #eff6ff !important; }
+.c-ok   { background: #fffbee !important; }
+.c-bad  { background: #fafafa !important; opacity: .55; }
+
+/* ── auto-backfill ── */
+.backfill-box {
+  background: #fff;
+  border: 1.5px solid #3baf64;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.backfill-box h3 { font-size: 13px; font-weight: 700; color: #3baf64; margin-bottom: 8px; }
+.steps { display: flex; gap: 0; }
+.bf-step {
+  flex: 1;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 10px;
+  font-size: 12px;
+  text-align: center;
+}
+.bf-step:first-child { border-radius: 6px 0 0 6px; }
+.bf-step:last-child  { border-radius: 0 6px 6px 0; }
+.bf-step strong { display: block; margin-bottom: 3px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: #3baf64; }
+.bf-arrow { display: flex; align-items: center; padding: 0 4px; color: #bbb; font-size: 16px; background: #f0fdf4; border-top: 1px solid #bbf7d0; border-bottom: 1px solid #bbf7d0; }
+
+/* ── env vars ── */
+.envvars {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.envvars table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.envvars th { background: #f7f8fa; padding: 8px 12px; font-weight: 600; border-bottom: 1px solid #e5e7eb; text-align: left; }
+.envvars td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+.envvars tr:last-child td { border-bottom: none; }
+.envvars td:first-child { font-family: "Menlo","Consolas",monospace; font-size: 11px; font-weight: 600; color: #1f2328; }
+
+.footer { margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 12px; text-align: center; font-size: 11px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>SLICE ↔ ARIVE — Zapier Flow Map</h1>
+<p class="meta">All 5 Zaps · What changes in the new setup · How the arive_lo_id lookup works</p>
+
+
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:#7c5cd8"></div> Trigger</div>
+  <div class="leg"><div class="leg-dot" style="background:#3baf64"></div> ARIVE Lookup <span style="font-size:11px;margin-left:2px;color:#3baf64;font-weight:700">NEW</span></div>
+  <div class="leg"><div class="leg-dot" style="background:#d1a339"></div> Loop</div>
+  <div class="leg"><div class="leg-dot" style="background:#3b82d4"></div> POST to SLICE</div>
+  <div class="leg"><div class="leg-dot" style="background:#e5534b"></div> SLICE endpoint</div>
+  <div class="leg"><div class="leg-dot" style="background:#57606a"></div> Database</div>
+</div>
+
+
+<h2>Overview — All 5 Zaps</h2>
+<div class="overview">
+  <div class="ov-card">
+    <div class="changed-badge">UPDATED</div>
+    <div class="znum" style="background:#7c5cd8">1</div>
+    <div class="ztitle">Application Submitted</div>
+    <div class="zdir">ARIVE → SLICE</div>
+  </div>
+  <div class="ov-card">
+    <div class="changed-badge">NEW</div>
+    <div class="znum" style="background:#e5534b">2</div>
+    <div class="ztitle">Loan Funded</div>
+    <div class="zdir">ARIVE → SLICE</div>
+  </div>
+  <div class="ov-card">
+    <div class="changed-badge">UPDATED</div>
+    <div class="znum" style="background:#3b82d4">3</div>
+    <div class="ztitle">Pull Apps Today</div>
+    <div class="zdir">SLICE → Zapier → SLICE</div>
+  </div>
+  <div class="ov-card">
+    <div class="changed-badge">UPDATED</div>
+    <div class="znum" style="background:#3b82d4">4</div>
+    <div class="ztitle">Pull Fundings Today</div>
+    <div class="zdir">SLICE → Zapier → SLICE</div>
+  </div>
+  <div class="ov-card">
+    <div class="changed-badge">UPDATED</div>
+    <div class="znum" style="background:#57606a">5</div>
+    <div class="ztitle">Hourly Amount Sync</div>
+    <div class="zdir">SLICE → Zapier → SLICE</div>
+  </div>
+</div>
+
+
+<h2>Zap 1 — Application Submitted</h2>
+<div class="flow-section">
+  <div class="flow-header">
+    <div class="znum" style="background:#7c5cd8">1</div>
+    <div class="ztitle">SLICE: Application Submitted</div>
+    <div class="zbadge" style="background:#ede9fe;color:#7c5cd8">ARIVE fires this automatically</div>
+  </div>
+  <div class="flow-body">
+    <div class="nodes">
+
+      <div class="node-row">
+        <div class="node node-trigger">
+          <div class="node-label nl-trigger">Trigger</div>
+          <div class="node-title">ARIVE — Loan Application Submitted in POS</div>
+          <div class="node-desc">ARIVE fires this the moment an application is submitted.</div>
+          <div class="node-fields">
+            <span class="f-req">loan_id</span> · <span class="f-opt">lo_email</span> · <span class="f-opt">lo_name</span> · <span class="f-opt">app_date</span> · <span class="f-opt">app_volume</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-lookup">
+          <div class="node-label nl-lookup">ARIVE Action <span class="changed-tag">NEW STEP</span></div>
+          <div class="node-title">Get Loan Details — using <code>loan_id</code> from trigger</div>
+          <div class="node-desc">Fetches full loan record from ARIVE. This is the only way to get the LO's internal ARIVE ID, which is the stable match key SLICE uses.</div>
+          <div class="node-fields">
+            Returns: <span class="f-new">loanOriginatorId</span> · <span class="f-opt">loanOriginatorEmail</span> · full loan detail
+          </div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-post">
+          <div class="node-label nl-post">POST to SLICE</div>
+          <div class="node-title">Webhooks by Zapier → POST <code>https://hcmgloans.com/api/goal-engine/zapier</code></div>
+          <div class="node-desc">Header: <code>x-zapier-secret: [ZAPIER_WEBHOOK_SECRET]</code></div>
+          <div class="node-fields">
+<span class="f-req">loan_id</span>           ← trigger
+<span class="f-new">lo_arive_id</span>       ← Get Loan Details → loanOriginatorId  <span style="background:#d1fae5;color:#065f46;padding:0 4px;border-radius:3px;font-size:10px">NEW</span>
+<span class="f-opt">lo_email</span>          ← trigger (fallback only)
+<span class="f-opt">lo_name</span>           ← trigger (last resort)
+<span class="f-opt">app_date</span>          ← trigger
+<span class="f-opt">app_volume</span>        ← trigger
+<span class="f-opt">app_unit</span>          ← hard-code: 1
+          </div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-slice">
+          <div class="node-label nl-slice">SLICE</div>
+          <div class="node-title">/api/goal-engine/zapier — creates or updates application row</div>
+          <div class="node-desc">Matches LO by <code>arive_lo_id</code> first → falls back to email → name. Inserts new <code>goal_production</code> row with <code>event_type: application</code>.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<h2>Zap 2 — Loan Funded</h2>
+<div class="flow-section">
+  <div class="flow-header">
+    <div class="znum" style="background:#e5534b">2</div>
+    <div class="ztitle">SLICE: Loan Funded</div>
+    <div class="zbadge" style="background:#fff5f5;color:#e5534b">NEVER EXISTED — build from scratch</div>
+  </div>
+  <div class="flow-body">
+    <div class="nodes">
+
+      <div class="node-row">
+        <div class="node node-trigger">
+          <div class="node-label nl-trigger">Trigger</div>
+          <div class="node-title">ARIVE — Loan Funded</div>
+          <div class="node-desc">Fires when a loan closes/funds in ARIVE. If no dedicated "Loan Funded" trigger exists, use "Loan Date Updated" + Filter step: only continue when Funded Date is not blank.</div>
+          <div class="node-fields">
+            <span class="f-req">loan_id</span> · <span class="f-opt">lo_email</span> · <span class="f-opt">funded_date</span> · <span class="f-opt">loan_amount</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-lookup">
+          <div class="node-label nl-lookup">ARIVE Action <span class="changed-tag">NEW STEP</span></div>
+          <div class="node-title">Get Loan Details — using <code>loan_id</code></div>
+          <div class="node-fields">Returns: <span class="f-new">loanOriginatorId</span> · funded amounts · app date</div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-post">
+          <div class="node-label nl-post">POST to SLICE</div>
+          <div class="node-title">Webhooks by Zapier → POST <code>https://hcmgloans.com/api/goal-engine/zapier</code></div>
+          <div class="node-fields">
+<span class="f-req">loan_id</span>           ← trigger
+<span class="f-new">lo_arive_id</span>       ← Get Loan Details → loanOriginatorId
+<span class="f-opt">lo_email</span>          ← trigger (fallback)
+<span class="f-req">funded_date</span>       ← trigger → Funded/Close Date  <span style="background:#ffd7d5;color:#b91c1c;padding:0 4px;border-radius:3px;font-size:10px">REQUIRED — flags row as funded</span>
+<span class="f-req">funded_volume</span>     ← trigger → Loan Amount  <span style="background:#ffd7d5;color:#b91c1c;padding:0 4px;border-radius:3px;font-size:10px">TYPE MANUALLY — no paste</span>
+<span class="f-opt">funded_unit</span>       ← hard-code: 1
+<span class="f-opt">app_date</span>          ← trigger (merges onto existing app row)
+<span class="f-opt">app_volume</span>        ← trigger
+          </div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-slice">
+          <div class="node-label nl-slice">SLICE</div>
+          <div class="node-title">/api/goal-engine/zapier — merges funded fields onto existing application row</div>
+          <div class="node-desc">If app row already exists → updates it with funded data. If funded arrives first → inserts full row. Either order works.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<h2>Zaps 3 &amp; 4 — Daily Pull (Catch Hooks)</h2>
+<div class="flow-section">
+  <div class="flow-header">
+    <div class="znum" style="background:#3b82d4">3</div>
+    <div class="ztitle">Pull Applications Today  /  Pull Fundings Today</div>
+    <div class="zbadge" style="background:#dbeafe;color:#1e3a8a">SLICE cron fires these every 15 min</div>
+  </div>
+  <div class="flow-body">
+    <div class="nodes">
+
+      <div class="node-row">
+        <div class="node node-slice" style="border-color:#3b82d4;background:#eff6ff">
+          <div class="node-label" style="color:#3b82d4">SLICE Cron — every 15 min</div>
+          <div class="node-title">POST to Zapier Catch Hook</div>
+          <div class="node-desc">Vercel runs <code>/api/goal-engine/arive-pull-cron</code> every 15 minutes. It POSTs today's date to both hooks simultaneously.</div>
+          <div class="node-fields">
+Zap 3 hook (<code>ZAPIER_ARIVE_APPS_HOOK</code>):    { "date": "2026-08-19", "event_type": "applications" }
+Zap 4 hook (<code>ZAPIER_ARIVE_FUNDED_HOOK</code>):  { "date": "2026-08-19", "event_type": "fundings"     }
+          </div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-trigger">
+          <div class="node-label nl-trigger">Trigger</div>
+          <div class="node-title">Webhooks by Zapier — Catch Hook</div>
+          <div class="node-desc">Receives the date from SLICE. Copy this hook URL → paste into Vercel as <code>ZAPIER_ARIVE_APPS_HOOK</code> (Zap 3) or <code>ZAPIER_ARIVE_FUNDED_HOOK</code> (Zap 4).</div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-lookup">
+          <div class="node-label nl-lookup">ARIVE Action</div>
+          <div class="node-title">Find Loans — filtered by date from trigger</div>
+          <div class="node-desc">Zap 3: filter by <strong>Application Date</strong> = <code>{{date}}</code>   Zap 4: filter by <strong>Funded Date</strong> = <code>{{date}}</code></div>
+          <div class="node-fields">Returns: list of all loans matching that date</div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-loop">
+          <div class="node-label nl-loop">Loop</div>
+          <div class="node-title">Looping by Zapier — iterates once per loan returned</div>
+          <div class="node-desc">Runs the next step for every loan in the ARIVE results list.</div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-lookup" style="border-style:dashed">
+          <div class="node-label nl-lookup">ARIVE Action (inside loop) <span class="changed-tag">NEW STEP</span></div>
+          <div class="node-title">Get Loan Details — <code>loan_id</code> from loop item</div>
+          <div class="node-desc">Needed to get <code>loanOriginatorId</code> for each loan, since the "Find Loans" list response doesn't include it.</div>
+          <div class="node-fields">Returns: <span class="f-new">loanOriginatorId</span> per loan</div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-post">
+          <div class="node-label nl-post">POST to SLICE (inside loop)</div>
+          <div class="node-title">Webhooks by Zapier → POST <code>https://hcmgloans.com/api/goal-engine/zapier</code></div>
+          <div class="node-fields">
+Zap 3 body:  <span class="f-req">loan_id</span>, <span class="f-new">lo_arive_id</span>, <span class="f-opt">lo_email</span>, <span class="f-opt">app_date</span>, <span class="f-opt">app_volume</span>, <span class="f-opt">app_unit=1</span>
+Zap 4 body:  <span class="f-req">loan_id</span>, <span class="f-new">lo_arive_id</span>, <span class="f-opt">lo_email</span>, <span class="f-req">funded_date</span>, <span class="f-req">funded_volume</span>, <span class="f-opt">funded_unit=1</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<h2>Zap 5 — Hourly Loan Amount Sync</h2>
+<div class="flow-section">
+  <div class="flow-header">
+    <div class="znum" style="background:#57606a">5</div>
+    <div class="ztitle">SLICE: Hourly Loan Amount Sync</div>
+    <div class="zbadge" style="background:#f7f8fa;color:#57606a">SLICE sends one call per active loan, every 15 min</div>
+  </div>
+  <div class="flow-body">
+    <div class="nodes">
+
+      <div class="node-row">
+        <div class="node node-slice" style="border-color:#57606a;background:#f7f8fa">
+          <div class="node-label nl-db">SLICE Cron — every 15 min</div>
+          <div class="node-title">Sends each active loan to Zapier</div>
+          <div class="node-desc">Vercel runs <code>/api/goal-engine/loan-sync-cron</code>. For every loan in the current month's <code>goal_production</code>, it POSTs to the catch hook.</div>
+          <div class="node-fields">{ "loan_id": "17460264" }   (one call per loan)</div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-trigger">
+          <div class="node-label nl-trigger">Trigger</div>
+          <div class="node-title">Webhooks by Zapier — Catch Hook</div>
+          <div class="node-desc">Copy this URL → Vercel as <code>ZAPIER_LOAN_SYNC_HOOK</code>.</div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-lookup">
+          <div class="node-label nl-lookup">ARIVE Action</div>
+          <div class="node-title">Get Loan Details — <code>{{loan_id}}</code> from trigger</div>
+          <div class="node-desc">Gets the current loan amount + funded status + <code>loanOriginatorId</code>. This is the single source of fresh data.</div>
+          <div class="node-fields">Returns: <span class="f-new">loanOriginatorId</span>, app_date, app_volume, funded_date, funded_volume</div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-post">
+          <div class="node-label nl-post">POST to SLICE</div>
+          <div class="node-title">Webhooks by Zapier → POST <code>https://hcmgloans.com/api/goal-engine/zapier-sync</code></div>
+          <div class="node-desc">Note: this is <strong>zapier-sync</strong>, not zapier. Always overwrites amounts with the latest from ARIVE.</div>
+          <div class="node-fields">
+<span class="f-req">loan_id</span>           ← trigger
+<span class="f-new">lo_arive_id</span>       ← Get Loan Details → loanOriginatorId
+<span class="f-opt">lo_email</span>          ← Get Loan Details → loanOriginatorEmail
+<span class="f-opt">app_date</span>          ← Get Loan Details
+<span class="f-opt">app_volume</span>        ← Get Loan Details → Total Loan Amount
+<span class="f-opt">funded_date</span>       ← Get Loan Details (blank if not funded)
+<span class="f-opt">funded_volume</span>     ← Get Loan Details → Total Loan Amount  <span style="background:#ffd7d5;color:#b91c1c;padding:0 4px;border-radius:3px;font-size:10px">TYPE MANUALLY</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node-row">
+        <div class="node-connector"><div class="nc-line"></div><div class="nc-arrow"></div></div>
+        <div class="node node-db">
+          <div class="node-label nl-db">SLICE</div>
+          <div class="node-title">/api/goal-engine/zapier-sync — always overwrites amounts</div>
+          <div class="node-desc">Unlike <code>/zapier</code>, this route always updates <code>app_volume</code> and <code>funded_volume</code> with whatever ARIVE currently says — even if the amount changed after the original event.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<h2>LO Matching — Before vs After</h2>
+<div class="match-section">
+  <div class="chain-title">Before (old Zaps) — email &amp; name only, breaks on any mismatch</div>
+  <div class="chain" style="margin-bottom:16px">
+    <div class="chain-item c-bad"><div class="chain-num">1</div><div class="chain-key">NMLS</div><div class="chain-sub">never sent</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-ok"><div class="chain-num">2</div><div class="chain-key">lo_email</div><div class="chain-sub">exact match</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-ok"><div class="chain-num">3</div><div class="chain-key">arive_email</div><div class="chain-sub">alias column</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-bad"><div class="chain-num">4</div><div class="chain-key">lo_name</div><div class="chain-sub">exact name</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-bad"><div class="chain-num">5</div><div class="chain-key">arive_name</div><div class="chain-sub">alias column</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-bad"><div class="chain-num">6</div><div class="chain-key">name prefix</div><div class="chain-sub">last resort</div></div>
+  </div>
+
+  <div class="chain-title">After (new Zaps + code update) — ARIVE internal ID is primary key</div>
+  <div class="chain">
+    <div class="chain-item c-new"><div class="chain-num">1</div><div class="chain-key">lo_arive_id</div><div class="chain-sub">stable · NEW</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-bad"><div class="chain-num">2</div><div class="chain-key">NMLS</div><div class="chain-sub">not from ARIVE</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-good"><div class="chain-num">3</div><div class="chain-key">lo_email</div><div class="chain-sub">exact match</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-good"><div class="chain-num">4</div><div class="chain-key">arive_email</div><div class="chain-sub">alias column</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-bad"><div class="chain-num">5</div><div class="chain-key">lo_name</div><div class="chain-sub">fragile</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-bad"><div class="chain-num">6</div><div class="chain-key">arive_name</div><div class="chain-sub">alias</div></div>
+    <div class="chain-sep">→</div>
+    <div class="chain-item c-bad"><div class="chain-num">7</div><div class="chain-key">name prefix</div><div class="chain-sub">last resort</div></div>
+  </div>
+</div>
+
+
+<div class="backfill-box">
+  <h3>Self-Populating arive_lo_id — Zero Manual Work</h3>
+  <p style="font-size:12px;margin-bottom:10px">The code change adds a silent write-back: after any successful LO match, if <code>lo_arive_id</code> was in the payload but <code>profiles.arive_lo_id</code> is still null, it gets stored. Every LO populates on their first loan through. Future lookups skip steps 3–7 entirely.</p>
+  <div class="steps">
+    <div class="bf-step"><strong>Zap fires</strong>Includes lo_arive_id in POST body</div>
+    <div class="bf-arrow">→</div>
+    <div class="bf-step"><strong>SLICE matches LO</strong>by email (first time)</div>
+    <div class="bf-arrow">→</div>
+    <div class="bf-step"><strong>SLICE writes back</strong>profiles.arive_lo_id = value</div>
+    <div class="bf-arrow">→</div>
+    <div class="bf-step"><strong>Next loan</strong>matches by arive_lo_id instantly</div>
+  </div>
+</div>
+
+
+<h2>Vercel Env Vars to Update After Building Zaps</h2>
+<div class="envvars">
+  <table>
+    <thead><tr><th>Variable</th><th>Where to get the value</th><th>Needed by</th></tr></thead>
+    <tbody>
+      <tr><td>ZAPIER_ARIVE_APPS_HOOK</td><td>Zap 3 → Trigger step → Copy catch hook URL</td><td>arive-pull-cron (every 15 min)</td></tr>
+      <tr><td>ZAPIER_ARIVE_FUNDED_HOOK</td><td>Zap 4 → Trigger step → Copy catch hook URL</td><td>arive-pull-cron (every 15 min)</td></tr>
+      <tr><td>ZAPIER_LOAN_SYNC_HOOK</td><td>Zap 5 → Trigger step → Copy catch hook URL</td><td>loan-sync-cron (every 15 min)</td></tr>
+      <tr><td>ZAPIER_WEBHOOK_SECRET</td><td>Already in Vercel — copy the value and paste into each Zap's x-zapier-secret header</td><td>All 5 Zaps</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>
