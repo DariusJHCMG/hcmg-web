@@ -17,11 +17,13 @@ export async function getCurrentProfile(): Promise<Profile | null> {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return null;
     // Fetch profile using service client to bypass any RLS issues
+    // is_active=true ensures deactivated employees are blocked even if their JWT survived the auth ban
     const sb = createServiceClient();
     const { data } = await sb
       .from("profiles")
       .select("*")
       .eq("id", session.user.id)
+      .eq("is_active", true)
       .single();
     return data as Profile | null;
   } catch { return null; }

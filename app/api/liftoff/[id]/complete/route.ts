@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { canAccessLiftOffQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import { sendLiftOffCompleted } from "@/lib/liftoff-mailer";
+import { sendPushToUser } from "@/lib/push";
 
 export async function PATCH(
   req: NextRequest,
@@ -78,6 +79,27 @@ export async function PATCH(
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // In-app notification to LO (non-blocking)
+  if (r.submitter_id) {
+    void sb.from("goal_notifications").insert({
+      profile_id: r.submitter_id,
+      title:      "✅ Request Completed",
+      body:       `${r.borrower_first_name} ${r.borrower_last_name} — your request has been completed.`,
+      type:       "success",
+      link:       `/liftoff/${id}`,
+      source:     "liftoff",
+    }).then(() => {});
+  }
+
+  // Push notification to LO (non-blocking)
+  if (r.submitter_id) {
+    void sendPushToUser(r.submitter_id, {
+      title: "✅ Request Completed",
+      body:  `${r.borrower_first_name} ${r.borrower_last_name} — your request has been completed.`,
+      url:   `/liftoff/${id}`,
+    }).catch(() => {});
+  }
 
   // Send completion email to LO (non-blocking)
   if (r.submitter_email) {

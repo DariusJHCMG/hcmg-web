@@ -87,9 +87,18 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Apply to every route — API routes, pages, static assets
+        // Apply security headers to every route
         source: "/:path*",
         headers: SECURITY_HEADERS,
+      },
+      {
+        // Prevent caching of any API response — protects mortgage, lead,
+        // and employee PII from being stored in HTTP caches or CDN layers.
+        // Legal basis: FTC Safeguards Rule 16 CFR § 314.4(c).
+        source: "/api/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store" },
+        ],
       },
     ];
   },

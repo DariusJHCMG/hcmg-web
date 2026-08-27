@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { NotificationCenter } from "@/components/NotificationCenter";
 
 interface NavItem {
   href: string;
@@ -73,21 +74,24 @@ export function LiftOffNav({
       {/* ── Desktop sidebar ── */}
       <aside className="liftoff-sidebar fixed inset-y-0 left-0 z-40 flex w-56 flex-col border-r border-line bg-white">
         {/* Logo + wordmark + back link */}
-        <div className="px-5 py-4 border-b border-line">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🔑</span>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] ok-gradient-text leading-none">
-                Lift Off
-              </p>
-              <p className="text-[10px] text-muted/60 mt-0.5 leading-none">HCMG</p>
+          <div className="px-5 py-4 border-b border-line">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔑</span>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] ok-gradient-text leading-none">
+                    Lift Off
+                  </p>
+                  <p className="text-[10px] text-muted/60 mt-0.5 leading-none">HCMG</p>
+                </div>
+              </div>
+              <NotificationCenter />
             </div>
+            <Link href={portalHref}
+              className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:opacity-80 transition-opacity">
+              ← Back to Portal
+            </Link>
           </div>
-          <Link href={portalHref}
-            className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:opacity-80 transition-opacity">
-            ← Back to Portal
-          </Link>
-        </div>
 
         {/* Nav links */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
@@ -158,12 +162,15 @@ export function LiftOffNav({
             <p style={{ margin: "2px 0 0", fontSize: 9, color: "#64748B", lineHeight: 1 }}>HCMG</p>
           </div>
         </div>
-        <a href={portalHref} style={{
-          fontSize: 11, fontWeight: 700, color: "#F37021",
-          textDecoration: "none", display: "flex", alignItems: "center", gap: 3,
-        }}>
-          ← Portal
-        </a>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <NotificationCenter />
+          <a href={portalHref} style={{
+            fontSize: 11, fontWeight: 700, color: "#F37021",
+            textDecoration: "none", display: "flex", alignItems: "center", gap: 3,
+          }}>
+            ← Portal
+          </a>
+        </div>
       </div>
 
       {/* ── Mobile bottom tab bar ── */}

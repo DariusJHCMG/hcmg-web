@@ -3,6 +3,9 @@ import { getCurrentProfile } from "@/lib/auth";
 import Link from "next/link";
 import { PortalLayoutClient } from "@/components/portal/PortalLayoutClient";
 import { PortalPing } from "@/components/portal/PortalPing";
+import { PwaInit } from "@/components/PwaInit";
+import { PushPermission } from "@/components/PushPermission";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -40,6 +43,7 @@ export default async function PortalLayout({ children }: { children: React.React
 
   const topBar = (
     <div className="flex items-center gap-3">
+      <NotificationCenter />
       <span className="hidden text-xs text-muted/60 sm:block">
         Signed in as{" "}
         <span className="font-semibold text-ink">{profile.full_name}</span>
@@ -71,6 +75,8 @@ export default async function PortalLayout({ children }: { children: React.React
   return (
     <PortalLayoutClient topBar={topBar}>
       <PortalPing />
+      <PwaInit />
+      <PushPermission />
       {children}
     </PortalLayoutClient>
   );

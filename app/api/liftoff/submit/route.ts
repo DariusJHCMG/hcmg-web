@@ -6,6 +6,7 @@ import type { LiftOffEmailPayload } from "@/lib/liftoff-mailer";
 import { computeSla } from "@/lib/liftoff-sla";
 import type { LiftOffRequestType } from "@/lib/database.types";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendPushToQueueUsers } from "@/lib/push";
 
 export async function POST(req: NextRequest) {
   const profile = await getCurrentProfile();
@@ -150,7 +151,14 @@ export async function POST(req: NextRequest) {
     help_desk_description:     (body.help_desk_description     as string) ?? null,
   };
 
-  // Notify ops queue
+  // Push notification to ops queue (non-blocking)
+  void sendPushToQueueUsers({
+    title: "📥 New Lift Off Request",
+    body:  `${String(body.borrower_first_name ?? "")} ${String(body.borrower_last_name ?? "")} — submitted by ${profile.full_name}`,
+    url:   "/liftoff/queue",
+  }).catch(() => {});
+
+  // Notify ops queue via email
   void sendLiftOffNotification(emailPayload).catch(err =>
     console.error("[liftoff/submit] email notification failed", err),
   );

@@ -581,8 +581,10 @@ export async function POST(request: NextRequest) {
   let loApplicationUrl: string | null = null;
   let loTitle:          string | null = null;
   let loEmail:          string | null = null;
+  let loProfileId: string | null = null;
   if (lead.loSlug) {
     const loProfile = await getProfileBySlug(lead.loSlug);
+    loProfileId      = loProfile?.id ?? null;
     loNotifyEmail    = loProfile?.notify_email ?? loProfile?.email ?? null;
     loEmail          = loProfile?.email ?? null;
     loNmls           = loProfile?.nmls ?? null;
@@ -590,6 +592,18 @@ export async function POST(request: NextRequest) {
     loCalendarUrl    = loProfile?.calendar_url    ?? null;
     loApplicationUrl = loProfile?.application_url ?? null;
     loTitle          = loProfile?.title ?? null;
+  }
+
+  // In-app notification for the LO (non-blocking, portal source)
+  if (loProfileId) {
+    void sb.from("goal_notifications").insert({
+      profile_id: loProfileId,
+      title:      `🏠 New lead — ${fullName}`,
+      body:       `${lead.email} • ${lead.phone}`,
+      type:       "info",
+      link:       "/portal",
+      source:     "portal",
+    }).then(() => {});
   }
 
   // ── 3b. Resolve co-branded page data (if applicable) ─────────────────────

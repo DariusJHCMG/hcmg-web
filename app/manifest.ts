@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "HCMG",
     description: "Loan Officer Portal — Harris Capital Mortgage Group",
     start_url: "/portal",
-    scope: "/portal",
+    scope: "/",
     display: "standalone",
     orientation: "portrait",
     background_color: "#f5f0eb",

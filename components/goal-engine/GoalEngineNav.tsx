@@ -9,6 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import type { Role } from "@/lib/database.types";
+import { NotificationCenter } from "@/components/NotificationCenter";
 
 interface Props {
   fullName:  string;
@@ -149,13 +150,16 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
     }}>
       {/* Logo + back link */}
       <div style={{ padding: "20px 16px 14px", borderBottom: `1px solid ${C.line}` }}>
-        <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <img src="/SLICE.png" alt="SLICE" style={{ height: 44, width: "auto", display: "block" }} />
-          <div>
-            <div style={{ fontSize: 7, fontWeight: 800, letterSpacing: ".2em", textTransform: "uppercase", color: C.orange, lineHeight: 1 }}>by</div>
-            <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 11, width: "auto", display: "block", marginTop: 3 }} />
-          </div>
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+            <img src="/SLICE.png" alt="SLICE" style={{ height: 44, width: "auto", display: "block" }} />
+            <div>
+              <div style={{ fontSize: 7, fontWeight: 800, letterSpacing: ".2em", textTransform: "uppercase", color: C.orange, lineHeight: 1 }}>by</div>
+              <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 11, width: "auto", display: "block", marginTop: 3 }} />
+            </div>
+          </Link>
+          <NotificationCenter />
+        </div>
         <a href="/portal" style={{
           display: "inline-flex", alignItems: "center", gap: 4,
           marginTop: 10, fontSize: 11, fontWeight: 700, color: C.orange,
@@ -244,12 +248,15 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
           <img src="/SLICE.png" alt="SLICE" style={{ height: 30, width: "auto" }} />
           <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 9, width: "auto" }} />
         </Link>
-        <a href="/portal" style={{
-          fontSize: 11, fontWeight: 700, color: C.orange,
-          textDecoration: "none", display: "flex", alignItems: "center", gap: 3,
-        }}>
-          ← Portal
-        </a>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <NotificationCenter />
+          <a href="/portal" style={{
+            fontSize: 11, fontWeight: 700, color: C.orange,
+            textDecoration: "none", display: "flex", alignItems: "center", gap: 3,
+          }}>
+            ← Portal
+          </a>
+        </div>
       </div>
 
       {/* ── Mobile bottom tab bar ── */}

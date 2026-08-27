@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile, canAccessLiftOffQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import { sendLiftOffIncomplete } from "@/lib/liftoff-mailer";
+import { sendPushToUser } from "@/lib/push";
 
 export async function PATCH(
   req: NextRequest,
@@ -56,6 +57,27 @@ export async function PATCH(
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // In-app notification to LO (non-blocking)
+  if (r.submitter_id) {
+    void sb.from("goal_notifications").insert({
+      profile_id: r.submitter_id,
+      title:      "⚠️ Action Needed",
+      body:       `${r.borrower_first_name} ${r.borrower_last_name} — your request needs attention.`,
+      type:       "warning",
+      link:       `/liftoff/${id}`,
+      source:     "liftoff",
+    }).then(() => {});
+  }
+
+  // Push notification to LO (non-blocking)
+  if (r.submitter_id) {
+    void sendPushToUser(r.submitter_id, {
+      title: "⚠️ Action Needed",
+      body:  `${r.borrower_first_name} ${r.borrower_last_name} — your request needs attention.`,
+      url:   `/liftoff/${id}`,
+    }).catch(() => {});
+  }
 
   // Fire non-blocking email to the submitter (LO)
   if (r.submitter_email) {

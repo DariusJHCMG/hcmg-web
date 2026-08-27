@@ -49,13 +49,6 @@ export function PwaInstallBanner() {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  // Register service worker
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {/* silent */});
-    }
-  }, []);
-
   function dismiss() {
     sessionStorage.setItem(DISMISSED_KEY, "1");
     setShow(false);

@@ -2,11 +2,26 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { canAccessLiftOffQueue, canAccessHelpDeskQueue, canAccessLockDeskQueue } from "@/lib/auth";
 import { LiftOffNav } from "@/components/liftoff/LiftOffNav";
+import { PwaInit } from "@/components/PwaInit";
+import { PushPermission } from "@/components/PushPermission";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Lift Off — HCMG",
   robots: { index: false, follow: false },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "HCMG",
+    startupImage: "/icons/apple-touch-icon.png",
+  },
+  icons: { apple: "/icons/apple-touch-icon.png" },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "msapplication-TileColor": "#142850",
+    "msapplication-TileImage": "/icons/icon-192.png",
+  },
 };
 
 function getInitials(name: string): string {
@@ -40,6 +55,8 @@ export default async function LiftOffLayout({ children }: { children: React.Reac
         portalHref={isAdmin ? "/admin" : "/portal"}
       />
 
+      <PwaInit />
+      <PushPermission />
       {/* Main content — offset by sidebar width on desktop only */}
       <main className="lg:ml-56 min-h-screen py-8 px-4 lg:px-8 max-w-5xl pb-20 lg:pb-8">
         {children}
