@@ -21,7 +21,6 @@ const PRINCIPAL_OFFICERS = [
   { name: "Astrine Covington",  title: "President",                                              bio: "Leads corporate strategy, business development, and overall company growth." },
   { name: "Ranada Harris",      title: "COO",                                                    bio: "Oversees daily operations, process improvement, and organizational efficiency." },
   { name: "Aysha Randall",      title: "CCO (Chief Compliance Officer)",                         bio: "Ensures regulatory compliance, risk management, and industry standards." },
-  { name: "Mesia Crews",        title: "Chief Growth Officer",                                   bio: "Drives strategic growth, partnerships, and market expansion." },
   { name: "Adam DeMarco",       title: "Chief Production & Learning Officer",                    bio: "Oversees loan production and training/development programs." },
   { name: "Darius James",       title: "Chief Lending Officer, President of Wholesale Division", bio: "Leads wholesale lending strategy and oversees all wholesale division operations." },
 ];

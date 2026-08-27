@@ -43,7 +43,7 @@ const VALUE_PROPS = [
     icon: "⚡",
     title: "Day-one lender access",
     body:
-      "100+ wholesale lenders, HCMG+ commercial, and HCMGU education stack ready the moment your licenses are transferred. No 90-day ramp.",
+      "100+ wholesale lenders, Orange Key Wholesale for commercial, and HCMGU education stack ready the moment your licenses are transferred. No 90-day ramp.",
   },
 ];
 

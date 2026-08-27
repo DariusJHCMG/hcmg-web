@@ -79,7 +79,7 @@ export function RecruitingForm() {
       if (!result.success) throw new Error(result.error);
       setSubmitted(true);
     } catch {
-      setError("Something went wrong. Please try again or email recruiting@hcmg.com.");
+      setError("Something went wrong. Please try again or email recruiting@hcmgloans.com.");
     }
     setSubmitting(false);
   }

@@ -93,20 +93,7 @@ export const teamMembers: TeamMember[] = [
     ],
     offices: ["Las Vegas, NV"],
   },
-  {
-    slug: "mesia-crews",
-    name: "Mesia Crews",
-    role: "Chief Growth Officer",
-    nmls: null,
-    photo: PLACEHOLDER_PHOTO,
-    shortBio:
-      "Drives strategic growth, partnerships, and market expansion.",
-    longBio: [
-      "Mesia Crews serves as Chief Growth Officer at Harris Capital Mortgage Group, driving strategic growth, partnerships, and market expansion.",
-      "A fuller biography is on the way. To learn more, reach our team through the contact page.",
-    ],
-    offices: ["Las Vegas, NV"],
-  },
+  // Mesia Crews — removed from public roster pending departure (re-add when ready)
   {
     slug: "adam-demarco",
     name: "Adam DeMarco",

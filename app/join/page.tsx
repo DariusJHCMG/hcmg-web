@@ -72,7 +72,7 @@ const WHY_JOIN = [
     icon: "🏦",
     title: "Competitive lender access",
     body:
-      "100+ wholesale lender partners plus HCMG+, our commercial division. Shop the right investor for every file instead of forcing your borrowers into one lender's box.",
+      "100+ wholesale lender partners plus Orange Key Wholesale, our commercial division. Shop the right investor for every file instead of forcing your borrowers into one lender's box.",
   },
   {
     icon: "💰",
@@ -120,7 +120,7 @@ const FAQS = [
   },
   {
     q: "How many lenders does HCMG work with?",
-    a: "Over 100 wholesale lender partners across conventional, government, jumbo, and non-QM products. Plus HCMG+ for commercial loans when your borrower needs more than residential.",
+    a: "Over 100 wholesale lender partners across conventional, government, jumbo, and non-QM products. Plus Orange Key Wholesale for commercial loans when your borrower needs more than residential.",
   },
   {
     q: "What's the revenue-share platform?",
@@ -181,7 +181,7 @@ export default function JoinPage() {
             {/* Stats card */}
             <div className="relative">
               <div className="grid gap-4 sm:grid-cols-2">
-                <StatCard value="100+" label="Lender partners" sub="Plus HCMG+ for commercial" />
+                <StatCard value="100+" label="Lender partners" sub="Plus Orange Key Wholesale" />
                 <StatCard value="Up to 275" label="BPS lender-paid comp" sub="Published grids, no carve-outs" highlight />
                 <StatCard value="$595" label="Per referred loan" sub="Revenue-share, lifetime" />
                 <StatCard value="HCMGU" label="On-demand training" sub="For you and your team" />

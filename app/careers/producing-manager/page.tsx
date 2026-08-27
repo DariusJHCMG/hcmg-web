@@ -41,7 +41,7 @@ const VALUE_PROPS = [
   },
   {
     icon: "🌐",
-    title: "100+ lender partners + HCMG+ commercial",
+    title: "100+ lender partners + Orange Key Wholesale",
     body:
       "Compete on any file in any market. Residential, jumbo, non-QM, and commercial all under one roof.",
   },
