@@ -28,7 +28,8 @@ export async function GET(req: NextRequest) {
     .from("goal_leaderboard")
     .select("*")
     .eq("goal_month_id", goalMonthId)
-    .order("funded_volume_actual", { ascending: false });
+    .order("funded_volume_actual", { ascending: false })
+    .order("app_volume_actual",    { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ leaderboard: data ?? [] });
