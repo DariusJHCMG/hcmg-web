@@ -7,11 +7,9 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import {
   getActiveGoal, getCommitment, getLOProductionForMonth,
-  getLeaderboard, getLOAwards, getNotifications, computeGoalSummary,
+  getLeaderboard, getLOAwards, computeGoalSummary,
   fmt$, fmtPct, daysRemaining, calcPace, requiredPace, monthProgress,
 } from "@/lib/goal-engine";
-import type { GoalNotification } from "@/lib/database.types";
-import { GoalNotificationBell } from "@/components/goal-engine/GoalNotificationBell";
 import { HarryWidget } from "@/components/goal-engine/HarryWidget";
 import Link from "next/link";
 
@@ -95,12 +93,11 @@ export default async function GoalEngineDashboard() {
   if (!profile) redirect("/goal-engine-login");
 
   const goal = await getActiveGoal();
-  const [commitment, production, leaderboard, awards, notifications] = await Promise.all([
+  const [commitment, production, leaderboard, awards] = await Promise.all([
     goal ? getCommitment(goal.id, profile.id) : null,
     goal ? getLOProductionForMonth(profile.id, goal.id) : [],
     goal ? getLeaderboard(goal.id) : [],
     getLOAwards(profile.id),
-    getNotifications(profile.id, 5),
   ]);
 
   const actualVol  = production.reduce((s, r) => s + (r.funded_volume ?? 0), 0);
@@ -118,32 +115,29 @@ export default async function GoalEngineDashboard() {
   const medals     = ["🥇","🥈","🥉"];
 
   return (
-    <div style={{ fontFamily:"Montserrat,system-ui,sans-serif", color: C.ink, maxWidth:1200, margin:"0 auto", padding:"28px 24px 56px" }}>
+    <div style={{ fontFamily:"Montserrat,system-ui,sans-serif", color: C.ink, maxWidth:1200, margin:"0 auto", padding:"20px 16px 80px" }}>
 
       {/* ── Page header ── */}
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:32, flexWrap:"wrap", gap:12 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:24, flexWrap:"wrap", gap:12 }}>
         <div>
-          <h1 style={{ margin:"0 0 0", fontSize:30, fontWeight:900, color: C.ink }}>
+          <h1 style={{ margin:"0 0 0", fontSize:26, fontWeight:900, color: C.ink }}>
             Hi, {profile.full_name.split(" ")[0]} 👋
           </h1>
-          <p style={{ margin:"4px 0 0", fontSize:14, color: C.muted }}>
+          <p style={{ margin:"4px 0 0", fontSize:13, color: C.muted }}>
             {goal ? `${goal.month_label} · ${days} days remaining` : "No active goal this month"}
           </p>
         </div>
-        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-          <GoalNotificationBell notifications={notifications as GoalNotification[]} />
-          {goal && !commitment && (
-            <Link href="/goal-engine/commit" style={{
-              display:"inline-flex", alignItems:"center", gap:8,
-              padding:"11px 22px", borderRadius:14, textDecoration:"none",
-              background:"linear-gradient(135deg,#FF9847,#F37021)",
-              color:"#fff", fontSize:14, fontWeight:800,
-              boxShadow:"0 6px 20px rgba(243,112,33,0.4)",
-            }}>
-              🥧 Claim My Slice
-            </Link>
-          )}
-        </div>
+        {goal && !commitment && (
+          <Link href="/goal-engine/commit" style={{
+            display:"inline-flex", alignItems:"center", gap:8,
+            padding:"11px 22px", borderRadius:14, textDecoration:"none",
+            background:"linear-gradient(135deg,#FF9847,#F37021)",
+            color:"#fff", fontSize:14, fontWeight:800,
+            boxShadow:"0 6px 20px rgba(243,112,33,0.4)",
+          }}>
+            🥧 Claim My Slice
+          </Link>
+        )}
       </div>
 
       {/* ── No active goal ── */}
@@ -169,29 +163,22 @@ export default async function GoalEngineDashboard() {
 
             return (
               <div style={{
-                background: "linear-gradient(to right, #ffffff 0%, #FF9847 50%, #F37021 100%)",
-                borderRadius: 24,
-                padding: "28px 32px",
+                background: "linear-gradient(135deg, #FF9847 0%, #F37021 100%)",
+                borderRadius: 20,
+                padding: "20px 20px",
                 boxShadow: "0 8px 40px rgba(243,112,33,0.25)",
                 border: `1px solid rgba(243,112,33,0.3)`,
               }}>
-                <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.navy }}>
+                <p style={{ margin:"0 0 16px", fontSize:10, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase", color: C.navy }}>
                   {goal.month_label} — Company Goal
                 </p>
 
-                {/* Two-column layout: pie left, stats right */}
-                <div style={{ display:"flex", gap:36, alignItems:"center", flexWrap:"wrap" }} className="ge-banner-wrap">
-
-                  {/* ── SLICE logo on white side ── */}
-                  <div style={{ flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", width:180 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/SLICE.png" alt="SLICE" style={{ width: 110, height: "auto" }} />
-                  </div>
-
+                {/* Stats grid — always 2 cols, no side logo on mobile */}
+                <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
                   {/* ── Stats grid ── */}
-                  <div style={{ flex:1, minWidth:200 }}>
+                  <div style={{ flex:1 }}>
                     {/* Legend + values: 2×2 grid */}
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:20 }} className="ge-stat-grid">
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }} className="ge-stat-grid">
                       {[
                         { dot:"#F37021", label:"Funded Vol Goal",   goal: fmt$(goal.funded_volume_goal),  actual: fmt$(summary?.totalActualVolume ?? 0),           pct: fundedPct  },
                         { dot:"#3b82f6", label:"Funded Units Goal", goal: `${goal.funded_units_goal} loans`, actual: `${summary?.totalActualUnits ?? 0} funded`,  pct: fundedUPct },
@@ -210,14 +197,14 @@ export default async function GoalEngineDashboard() {
                     </div>
 
                     {/* Team + Days */}
-                    <div style={{ display:"flex", gap:12 }}>
-                      <div style={{ flex:1, padding:"8px 14px", borderRadius:10, background: C.navy, border:`1px solid rgba(255,255,255,0.08)` }}>
+                    <div style={{ display:"flex", gap:10 }}>
+                      <div style={{ flex:1, padding:"8px 12px", borderRadius:10, background: C.navy, border:`1px solid rgba(255,255,255,0.08)` }}>
                         <p style={{ margin:0, fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,255,255,0.4)" }}>Team</p>
-                        <p style={{ margin:"3px 0 0", fontSize:16, fontWeight:900, color:"#fff" }}>{summary?.participationCount ?? 0}/{summary?.totalLOs ?? 0} committed</p>
+                        <p style={{ margin:"3px 0 0", fontSize:14, fontWeight:900, color:"#fff" }}>{summary?.participationCount ?? 0}/{summary?.totalLOs ?? 0} committed</p>
                       </div>
-                      <div style={{ flex:1, padding:"8px 14px", borderRadius:10, background: C.navy, border:`1px solid rgba(255,255,255,0.08)` }}>
+                      <div style={{ flex:1, padding:"8px 12px", borderRadius:10, background: C.navy, border:`1px solid rgba(255,255,255,0.08)` }}>
                         <p style={{ margin:0, fontSize:9, fontWeight:800, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,255,255,0.4)" }}>Pace</p>
-                        <p style={{ margin:"3px 0 0", fontSize:16, fontWeight:900, color: compPct >= 90 ? "#22c55e" : compPct >= 70 ? "#f59e0b" : "#ef4444" }}>{fmtPct(compPct)} funded</p>
+                        <p style={{ margin:"3px 0 0", fontSize:14, fontWeight:900, color: compPct >= 90 ? "#22c55e" : compPct >= 70 ? "#f59e0b" : "#ef4444" }}>{fmtPct(compPct)} funded</p>
                       </div>
                     </div>
                   </div>
@@ -425,9 +412,8 @@ export default async function GoalEngineDashboard() {
 
       <style>{`
         @media (max-width:900px) { .ge-kpi-grid { grid-template-columns:repeat(2,1fr) !important; } }
-        @media (max-width:700px) { .ge-banner-wrap { flex-direction:column !important; align-items:center !important; } }
-        @media (max-width:640px) { .ge-kpi-grid,.ge-stat-grid { grid-template-columns:repeat(2,1fr) !important; } }
-        @media (max-width:380px) { .ge-kpi-grid,.ge-stat-grid { grid-template-columns:1fr !important; } }
+        @media (max-width:640px) { .ge-kpi-grid { grid-template-columns:repeat(2,1fr) !important; } }
+        @media (max-width:380px) { .ge-kpi-grid { grid-template-columns:1fr !important; } }
       `}</style>
     </div>
   );

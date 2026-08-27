@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: "HCMG Portal",
   robots: { index: false, follow: false },
   manifest: "/manifest.webmanifest",
+  themeColor: "#142850",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
