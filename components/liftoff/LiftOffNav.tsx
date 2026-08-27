@@ -48,15 +48,21 @@ export function LiftOffNav({
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 flex w-56 flex-col border-r border-line bg-white">
-      {/* Logo + wordmark */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-line">
-        <span className="text-2xl">🔑</span>
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] ok-gradient-text leading-none">
-            Lift Off
-          </p>
-          <p className="text-[10px] text-muted/60 mt-0.5 leading-none">HCMG</p>
+      {/* Logo + wordmark + back link */}
+      <div className="px-5 py-4 border-b border-line">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🔑</span>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] ok-gradient-text leading-none">
+              Lift Off
+            </p>
+            <p className="text-[10px] text-muted/60 mt-0.5 leading-none">HCMG</p>
+          </div>
         </div>
+        <Link href={portalHref}
+          className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:opacity-80 transition-opacity">
+          ← Back to Portal
+        </Link>
       </div>
 
       {/* Nav links */}
