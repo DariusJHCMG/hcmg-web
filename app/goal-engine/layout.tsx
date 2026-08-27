@@ -47,7 +47,9 @@ export default async function GoalEngineLayout({ children }: { children: React.R
         {children}
       </main>
       <style>{`
-        /* Sidebar hide — duplicated here so it applies before JS hydration */
+        /* Single source of truth for sidebar visibility — server-rendered, no client override */
+        .ge-sidebar-desktop { display: flex; }
+        .ge-mobile-only     { display: none !important; }
         @media (max-width: 768px) {
           .ge-sidebar-desktop { display: none !important; }
           .ge-mobile-only     { display: flex !important; }

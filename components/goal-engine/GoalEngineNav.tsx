@@ -376,15 +376,6 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
           </div>
         </div>
       )}
-
-      <style>{`
-        .ge-sidebar-desktop { display: flex; }
-        .ge-mobile-only     { display: none !important; }
-        @media (max-width: 768px) {
-          .ge-sidebar-desktop { display: none !important; }
-          .ge-mobile-only     { display: flex !important; }
-        }
-      `}</style>
     </>
   );
 }
