@@ -3,16 +3,18 @@
 /**
  * PwaInit — mounts in every authenticated layout.
  * 1. Registers the service worker
- * 2. Listens for SW updates and shows a "New version" banner
- * 3. Listens for NOTIFICATION_CLICK messages from the SW and navigates
+ * 2. Detects a waiting SW and shows an update banner
+ * 3. On "Update" — posts SKIP_WAITING to the new SW, then reloads
+ * 4. Listens for NOTIFICATION_CLICK messages from the SW and navigates
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export function PwaInit() {
   const router = useRouter();
   const [showUpdate, setShowUpdate] = useState(false);
+  const waitingWorker = useRef<ServiceWorker | null>(null);
 
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
@@ -20,25 +22,39 @@ export function PwaInit() {
     navigator.serviceWorker
       .register("/sw.js")
       .then((reg) => {
-        // When a new SW is waiting, offer the update banner
-        function checkWaiting() {
-          if (reg.waiting) setShowUpdate(true);
+        function onWaiting(sw: ServiceWorker) {
+          waitingWorker.current = sw;
+          setShowUpdate(true);
         }
-        checkWaiting();
+
+        // Already waiting on mount (e.g. page was open when deploy happened)
+        if (reg.waiting) {
+          onWaiting(reg.waiting);
+        }
+
+        // New SW found and installed
         reg.addEventListener("updatefound", () => {
           const newWorker = reg.installing;
           if (!newWorker) return;
-          newWorker.addEventListener("statechange", checkWaiting);
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+              onWaiting(newWorker);
+            }
+          });
         });
-      })
-      .catch(() => {/* silent — SW not critical */});
 
-    // When the SW activates a new version, auto-reload
+        // Poll every 60s to catch updates on long-lived sessions
+        const interval = setInterval(() => reg.update(), 60_000);
+        return () => clearInterval(interval);
+      })
+      .catch(() => {/* SW not critical */});
+
+    // When the SW controller changes (new SW activated), reload
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       window.location.reload();
     });
 
-    // Deep-link navigation from notification click
+    // Deep-link navigation from push notification click
     function handleMessage(event: MessageEvent) {
       if (event.data?.type === "NOTIFICATION_CLICK" && event.data.url) {
         router.push(event.data.url);
@@ -49,11 +65,21 @@ export function PwaInit() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function applyUpdate() {
+    if (waitingWorker.current) {
+      // Tell the waiting SW to take over immediately
+      waitingWorker.current.postMessage({ type: "SKIP_WAITING" });
+      // controllerchange listener above will reload once it activates
+    } else {
+      window.location.reload();
+    }
+  }
+
   if (!showUpdate) return null;
 
   return (
     <div style={{
-      position: "fixed", bottom: 72, left: "50%", transform: "translateX(-50%)",
+      position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)",
       zIndex: 9999, width: "calc(100% - 32px)", maxWidth: 380,
       background: "#142850", color: "#fff", borderRadius: 14,
       padding: "12px 16px", display: "flex", alignItems: "center",
@@ -65,7 +91,7 @@ export function PwaInit() {
         🔄 New version available
       </p>
       <button
-        onClick={() => window.location.reload()}
+        onClick={applyUpdate}
         style={{
           background: "#F37021", color: "#fff", border: "none",
           borderRadius: 8, padding: "6px 14px", fontSize: 12,
