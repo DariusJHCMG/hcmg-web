@@ -228,29 +228,36 @@ function Sparkline({ data, color = C.orange, height = 40 }: { data: number[]; co
 }
 
 // What-If simulator row
-function SimRow({ label, delta, base, goal }: { label: string; delta: number; base: number; goal: number }) {
-  const sim = base + delta;
+function SimRow({ label, delta, base, goal, selected, onClick }: {
+  label: string; delta: number; base: number; goal: number;
+  selected: boolean; onClick: () => void;
+}) {
+  const sim    = base + delta;
   const newPct = goal > 0 ? Math.round((sim / goal) * 100) : 0;
-  const diff = sim - base;
   return (
-    <button style={{
-      display: "flex", justifyContent: "space-between", alignItems: "center",
-      padding: "11px 14px", borderRadius: 12,
-      border: `1.5px solid ${C.line}`,
-      background: C.white, cursor: "pointer", fontFamily: "inherit",
-      width: "100%", textAlign: "left",
-      transition: "border-color .15s, background .15s",
-    }}
-      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.orange; (e.currentTarget as HTMLButtonElement).style.background = "rgba(243,112,33,0.04)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.line; (e.currentTarget as HTMLButtonElement).style.background = C.white; }}
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "11px 14px", borderRadius: 12,
+        border: `1.5px solid ${selected ? C.orange : C.line}`,
+        background: selected ? "rgba(243,112,33,0.07)" : C.white,
+        cursor: "pointer", fontFamily: "inherit",
+        width: "100%", textAlign: "left",
+        transition: "border-color .15s, background .15s",
+        outline: "none",
+      }}
     >
-      <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{label}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {selected && <span style={{ fontSize: 10, color: C.orange }}>✓</span>}
+        <span style={{ fontSize: 13, fontWeight: 700, color: selected ? C.orange : C.ink }}>{label}</span>
+      </div>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span style={{ fontSize: 12, color: C.muted }}>→ {fmt$short(sim)}</span>
-        <span style={{ fontSize: 12, fontWeight: 800, color: newPct >= 100 ? C.green : C.yellow }}>{newPct}%</span>
-        <span style={{ fontSize: 11, fontWeight: 700, color: diff > 0 ? C.green : C.red }}>
-          {diff > 0 ? "+" : ""}{fmt$short(diff)}
+        <span style={{ fontSize: 12, fontWeight: 900, color: newPct >= 100 ? C.green : newPct >= 80 ? C.yellow : C.red }}>
+          {newPct}%
         </span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: C.green }}>+{fmt$short(delta)}</span>
       </div>
     </button>
   );
@@ -265,6 +272,8 @@ export default function ForecastCenterPage() {
   const [lastUpdate,   setLastUpdate]   = useState("");
   const [sortLO,       setSortLO]       = useState<"forecast" | "pct" | "volume" | "risk">("forecast");
   const [simMode,      setSimMode]      = useState(false);
+  const [simDelta,     setSimDelta]     = useState<number | null>(null);
+  const [simLabel,     setSimLabel]     = useState<string>("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -792,28 +801,121 @@ export default function ForecastCenterPage() {
       {/* ── What-If Simulator ── */}
       {simMode && (
         <Card style={{ padding: "24px 28px", marginBottom: 20, border: `2px solid ${C.orange}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <SectionLabel>What-If Simulator</SectionLabel>
-            <span style={{ padding: "2px 8px", borderRadius: 99, background: "rgba(243,112,33,0.12)", color: C.orange, fontSize: 9, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", marginBottom: 16 }}>
-              Simulation Mode — Live data unchanged
-            </span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4, flexWrap: "wrap", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <SectionLabel>What-If Simulator</SectionLabel>
+              <span style={{ padding: "2px 8px", borderRadius: 99, background: "rgba(243,112,33,0.12)", color: C.orange, fontSize: 9, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>
+                Simulation Mode — Live data unchanged
+              </span>
+            </div>
+            {simDelta !== null && (
+              <button onClick={() => { setSimDelta(null); setSimLabel(""); }} style={{ padding: "5px 12px", borderRadius: 8, border: `1px solid ${C.line}`, background: C.white, color: C.muted, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                ✕ Clear scenario
+              </button>
+            )}
           </div>
           <p className="sim-disclaimer" style={{ margin: "0 0 16px", fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
-            Select a scenario to see its impact on the forecast. <strong>No live data is modified.</strong>
+            Click a scenario to see its impact on the forecast. <strong>No live data is modified.</strong>
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {[
-              { label: "+1 Average Loan",                delta: fc.avg_loan_size * 1  },
-              { label: "+2 Average Loans",               delta: fc.avg_loan_size * 2  },
-              { label: "+3 Average Loans",               delta: fc.avg_loan_size * 3  },
-              { label: "+$250K production",              delta: 250_000               },
-              { label: "+$500K production",              delta: 500_000               },
-              { label: "+$1M production",                delta: 1_000_000             },
-              { label: "Team closes 5 extra apps (25% rate)", delta: fc.avg_loan_size * 5 * 0.25 },
-              { label: "Best LO doubles remaining pace",  delta: fc.top_opportunity ? Math.max(0, fc.top_opportunity.funded_volume_commitment - fc.top_opportunity.funded_volume_actual) * 0.5 : 0 },
-            ].map(s => (
-              <SimRow key={s.label} label={s.label} delta={s.delta} base={fc.forecast_vol} goal={fc.goal_vol} />
-            ))}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {/* Scenario list */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { label: "+1 Average Loan",                    delta: fc.avg_loan_size },
+                { label: "+2 Average Loans",                   delta: fc.avg_loan_size * 2 },
+                { label: "+3 Average Loans",                   delta: fc.avg_loan_size * 3 },
+                { label: "+$250K production",                  delta: 250_000 },
+                { label: "+$500K production",                  delta: 500_000 },
+                { label: "+$1M production",                    delta: 1_000_000 },
+                { label: "Team closes 5 extra apps (25% rate)", delta: Math.round(fc.avg_loan_size * 5 * 0.25) },
+                {
+                  label: "Best LO closes remaining commitment",
+                  delta: fc.top_opportunity
+                    ? Math.max(0, fc.top_opportunity.funded_volume_commitment - fc.top_opportunity.funded_volume_actual)
+                    : fc.avg_loan_size * 2,
+                },
+              ].map(s => (
+                <SimRow
+                  key={s.label}
+                  label={s.label}
+                  delta={s.delta}
+                  base={fc.forecast_vol}
+                  goal={fc.goal_vol}
+                  selected={simDelta === s.delta && simLabel === s.label}
+                  onClick={() => {
+                    if (simDelta === s.delta && simLabel === s.label) {
+                      setSimDelta(null); setSimLabel("");
+                    } else {
+                      setSimDelta(s.delta); setSimLabel(s.label);
+                    }
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Live result panel */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {simDelta === null ? (
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", border: `2px dashed ${C.line}`, borderRadius: 14, padding: "32px 24px", textAlign: "center" }}>
+                  <div>
+                    <p style={{ margin: "0 0 6px", fontSize: 22 }}>👈</p>
+                    <p style={{ margin: 0, fontSize: 12, color: C.muted, fontWeight: 600 }}>Select a scenario<br />to see the impact</p>
+                  </div>
+                </div>
+              ) : (() => {
+                const simVol     = fc.forecast_vol + simDelta;
+                const simPct     = fc.goal_vol > 0 ? Math.round((simVol / fc.goal_vol) * 100) : 0;
+                const simGap     = simVol - fc.goal_vol;
+                const simPositive = simGap >= 0;
+                const loansNeeded = simGap < 0 ? Math.ceil(Math.abs(simGap) / fc.avg_loan_size) : 0;
+                return (
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, animation: "fadeIn .25s ease" }}>
+                    <div style={{ padding: "16px 18px", borderRadius: 14, background: simPositive ? C.greenBg : "#fff5f5", border: `1.5px solid ${simPositive ? "#bbf7d0" : "#fca5a5"}` }}>
+                      <p style={{ margin: "0 0 4px", fontSize: 9, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: simPositive ? C.green : C.red }}>
+                        Simulated Forecast
+                      </p>
+                      <p style={{ margin: "0 0 2px", fontSize: 34, fontWeight: 900, lineHeight: 1, color: simPositive ? C.green : C.red }}>
+                        {fmt$short(simVol)}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 12, color: simPositive ? C.green : C.red, fontWeight: 700 }}>
+                        {simPct}% of goal {simPositive ? "✓ Would hit goal" : `— still ${fmt$short(Math.abs(simGap))} short`}
+                      </p>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      {[
+                        { l: "Scenario",       v: `+${fmt$short(simDelta)}`,              c: C.green },
+                        { l: "vs Current",     v: `${simPct - Math.round((fc.forecast_vol / fc.goal_vol) * 100)}pp`,  c: C.orange },
+                        { l: "Still Needed",   v: loansNeeded > 0 ? `${loansNeeded} loans` : "Goal met ✓", c: loansNeeded > 0 ? C.red : C.green },
+                        { l: "Scenario Label", v: simLabel,                                c: C.ink },
+                      ].map(s => (
+                        <div key={s.l} style={{ padding: "10px 12px", borderRadius: 10, background: C.sand, border: `1px solid ${C.line}` }}>
+                          <p style={{ margin: "0 0 2px", fontSize: 8, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.muted }}>{s.l}</p>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 900, color: s.c, lineHeight: 1.2 }}>{s.v}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Progress bar comparing current vs sim */}
+                    <div style={{ padding: "12px 14px", borderRadius: 10, background: C.white, border: `1px solid ${C.line}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: C.muted }}>Current forecast</span>
+                        <span style={{ fontSize: 10, fontWeight: 800, color: C.orange }}>{Math.round((fc.forecast_vol / fc.goal_vol) * 100)}%</span>
+                      </div>
+                      <div style={{ height: 6, background: C.line, borderRadius: 99, overflow: "hidden", marginBottom: 6 }}>
+                        <div style={{ height: "100%", width: `${Math.min(100, (fc.forecast_vol / fc.goal_vol) * 100)}%`, background: C.orange, borderRadius: 99 }} />
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: C.muted }}>With this scenario</span>
+                        <span style={{ fontSize: 10, fontWeight: 800, color: simPositive ? C.green : C.yellow }}>{simPct}%</span>
+                      </div>
+                      <div style={{ height: 6, background: C.line, borderRadius: 99, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${Math.min(100, simPct)}%`, background: simPositive ? C.green : C.yellow, borderRadius: 99, transition: "width .5s ease" }} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         </Card>
       )}
