@@ -40,8 +40,8 @@ export default async function LiftOffLayout({ children }: { children: React.Reac
         portalHref={isAdmin ? "/admin" : "/portal"}
       />
 
-      {/* Main content — offset by sidebar width */}
-      <main className="ml-56 min-h-screen py-8 px-8 max-w-5xl">
+      {/* Main content — offset by sidebar width on desktop only */}
+      <main className="lg:ml-56 min-h-screen py-8 px-4 lg:px-8 max-w-5xl pb-20 lg:pb-8">
         {children}
       </main>
     </div>

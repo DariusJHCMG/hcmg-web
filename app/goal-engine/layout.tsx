@@ -25,9 +25,14 @@ export default async function GoalEngineLayout({ children }: { children: React.R
         avatarUrl={profile.avatar_url}
         profileId={profile.id}
       />
-      <main style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
+      <main style={{ flex: 1, minWidth: 0, overflowX: "hidden" }} className="ge-main">
         {children}
       </main>
+      <style>{`
+        @media (max-width: 768px) {
+          .ge-main { padding-bottom: 72px; }
+        }
+      `}</style>
     </div>
   );
 }
