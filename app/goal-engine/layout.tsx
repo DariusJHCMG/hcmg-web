@@ -34,7 +34,7 @@ export default async function GoalEngineLayout({ children }: { children: React.R
   if (!profile) redirect("/goal-engine-login");
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#F8FAFC" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#F8FAFC", overflowX: "hidden" }}>
       <PwaInit />
       <PushPermission />
       <GoalEngineNav
@@ -47,8 +47,11 @@ export default async function GoalEngineLayout({ children }: { children: React.R
         {children}
       </main>
       <style>{`
+        /* Sidebar hide — duplicated here so it applies before JS hydration */
         @media (max-width: 768px) {
-          .ge-main { padding-bottom: 72px; }
+          .ge-sidebar-desktop { display: none !important; }
+          .ge-mobile-only     { display: flex !important; }
+          .ge-main            { padding-bottom: 72px; width: 100%; }
         }
       `}</style>
     </div>
