@@ -1,7 +1,7 @@
-// HCMG Service Worker v3
+// HCMG Service Worker v4
 // Network-first caching + offline fallback + web push notifications
 
-const CACHE = "hcmg-v3";
+const CACHE = "hcmg-v4";
 
 // App shell — pre-cached on install
 const SHELL = [
@@ -16,11 +16,12 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll(SHELL))
   );
-  // Do NOT skipWaiting here — let PwaInit show the banner and call SKIP_WAITING
-  // so the user sees the update prompt rather than a silent reload mid-session
+  // Skip waiting immediately — new SW takes over as soon as installed.
+  // PwaInit's controllerchange listener will reload the page automatically.
+  self.skipWaiting();
 });
 
-// ── Message — SKIP_WAITING from PwaInit update banner ─────────────────────
+// ── Message — also accept explicit SKIP_WAITING from PwaInit ──────────────
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {
     self.skipWaiting();
