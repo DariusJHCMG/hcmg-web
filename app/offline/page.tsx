@@ -1,7 +1,8 @@
+"use client";
+
 /**
  * /offline — served by the service worker when the network is unavailable
  * and the requested URL is not in the cache.
- * Must be fully static — no server-side data fetching.
  */
 export default function OfflinePage() {
   return (
