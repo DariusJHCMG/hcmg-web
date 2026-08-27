@@ -1,12 +1,11 @@
-// HCMG Service Worker v4
-// Network-first caching + offline fallback + web push notifications
+// HCMG Service Worker v5
+// Static-assets-only cache + push notifications
+// HTML pages are NEVER cached — always fetched fresh from network
 
-const CACHE = "hcmg-v4";
+const CACHE = "hcmg-v5";
 
-// App shell — pre-cached on install
+// Only pre-cache true static assets — NOT HTML pages
 const SHELL = [
-  "/offline",
-  "/portal",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
 ];
@@ -16,19 +15,17 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll(SHELL))
   );
-  // Skip waiting immediately — new SW takes over as soon as installed.
-  // PwaInit's controllerchange listener will reload the page automatically.
   self.skipWaiting();
 });
 
-// ── Message — also accept explicit SKIP_WAITING from PwaInit ──────────────
+// ── Message — SKIP_WAITING from PwaInit ───────────────────────────────────
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
 
-// ── Activate — purge old caches ────────────────────────────────────────────
+// ── Activate — purge ALL old caches ───────────────────────────────────────
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -38,7 +35,7 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// ── Fetch — network-first, fallback to cache, fallback to /offline ─────────
+// ── Fetch ──────────────────────────────────────────────────────────────────
 self.addEventListener("fetch", (event) => {
   // Only handle same-origin GET requests
   if (
@@ -46,29 +43,40 @@ self.addEventListener("fetch", (event) => {
     !event.request.url.startsWith(self.location.origin)
   ) return;
 
-  // Never cache API routes or auth endpoints — always network only
   const url = new URL(event.request.url);
+
+  // Never intercept API routes
   if (url.pathname.startsWith("/api/")) return;
 
-  event.respondWith(
-    fetch(event.request)
-      .then((res) => {
-        // Cache successful HTML + static asset responses
-        if (res.ok && (
-          res.headers.get("content-type")?.includes("text/html") ||
-          event.request.url.match(/\.(js|css|png|svg|woff2?)$/)
-        )) {
-          const clone = res.clone();
-          caches.open(CACHE).then((c) => c.put(event.request, clone));
-        }
-        return res;
-      })
-      .catch(() =>
-        caches.match(event.request).then((cached) =>
-          cached ?? caches.match("/offline")
-        )
+  // HTML navigation requests — always network-first, never cache
+  // Fall back to /offline only when truly offline
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request).catch(() =>
+        caches.match("/offline").then((r) => r ?? Response.error())
       )
-  );
+    );
+    return;
+  }
+
+  // Static assets (js, css, images, fonts) — cache-first
+  if (url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|woff2?)$/)) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((res) => {
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE).then((c) => c.put(event.request, clone));
+          }
+          return res;
+        });
+      })
+    );
+    return;
+  }
+
+  // Everything else — network only
 });
 
 // ── Push — receive and display notification ────────────────────────────────
@@ -105,7 +113,6 @@ self.addEventListener("notificationclick", (event) => {
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clients) => {
-        // If app is already open, focus it and navigate
         for (const client of clients) {
           if ("focus" in client) {
             client.focus();
@@ -113,7 +120,6 @@ self.addEventListener("notificationclick", (event) => {
             return;
           }
         }
-        // Otherwise open a new window
         if (self.clients.openWindow) {
           return self.clients.openWindow(targetUrl);
         }
