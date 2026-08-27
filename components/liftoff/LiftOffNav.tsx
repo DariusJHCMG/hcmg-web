@@ -144,8 +144,8 @@ export function LiftOffNav({
       {/* ── Mobile top bar ── */}
       <div className="liftoff-mobile-only" style={{
         position: "sticky", top: 0, zIndex: 40,
-        background: "#142850",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        background: "#ffffff",
+        borderBottom: "1px solid #E2E8F0",
         padding: "0 16px", height: 56,
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
@@ -155,7 +155,7 @@ export function LiftOffNav({
             <p style={{ margin: 0, fontSize: 11, fontWeight: 900, color: "#F37021", textTransform: "uppercase", letterSpacing: ".15em", lineHeight: 1 }}>
               Lift Off
             </p>
-            <p style={{ margin: "2px 0 0", fontSize: 9, color: "rgba(255,255,255,0.5)", lineHeight: 1 }}>HCMG</p>
+            <p style={{ margin: "2px 0 0", fontSize: 9, color: "#64748B", lineHeight: 1 }}>HCMG</p>
           </div>
         </div>
         <a href={portalHref} style={{

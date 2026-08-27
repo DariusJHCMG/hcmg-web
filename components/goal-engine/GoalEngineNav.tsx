@@ -235,14 +235,14 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
       {/* ── Mobile top bar ── */}
       <div className="ge-mobile-only" style={{
         position: "sticky", top: 0, zIndex: 40,
-        background: C.navy,
-        borderBottom: `1px solid rgba(255,255,255,0.08)`,
+        background: C.white,
+        borderBottom: `1px solid ${C.line}`,
         padding: "0 16px", height: 56,
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
         <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
           <img src="/SLICE.png" alt="SLICE" style={{ height: 30, width: "auto" }} />
-          <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 9, width: "auto", opacity: 0.7 }} />
+          <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 9, width: "auto" }} />
         </Link>
         <a href="/portal" style={{
           fontSize: 11, fontWeight: 700, color: C.orange,
