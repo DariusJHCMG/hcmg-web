@@ -1,3 +1,8 @@
+/**
+ * GET /api/admin/dev/db-health — run a lightweight connectivity check against the
+ * Supabase database. Returns { ok: true } or error details.
+ * Auth: none (used by uptime monitors). Safe — read-only, no user data exposed.
+ */
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 

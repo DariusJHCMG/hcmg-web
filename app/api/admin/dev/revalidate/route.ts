@@ -1,3 +1,8 @@
+/**
+ * POST /api/admin/dev/revalidate — purge Next.js ISR cache for all public pages.
+ * Useful after bulk content changes that need to be reflected immediately.
+ * Auth: admin role required.
+ */
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";

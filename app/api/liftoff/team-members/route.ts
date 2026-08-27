@@ -1,3 +1,8 @@
+/**
+ * GET /api/liftoff/team-members — return all liftoff-role users for the processor
+ * assignment dropdown in the admin actions panel.
+ * Auth: liftoff queue role required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile, canAccessLiftOffQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";

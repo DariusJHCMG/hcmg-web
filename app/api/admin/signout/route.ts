@@ -1,3 +1,6 @@
+/**
+ * GET /api/admin/signout — sign out the current session and redirect to /login.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
 

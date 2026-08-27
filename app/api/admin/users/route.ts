@@ -1,3 +1,8 @@
+/**
+ * GET /api/admin/users — list all user profiles.
+ * POST /api/admin/users — create a new user profile (invite flow).
+ * Auth: admin role required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { isAdmin, logAudit } from "@/lib/auth";

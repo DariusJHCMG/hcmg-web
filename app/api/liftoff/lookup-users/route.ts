@@ -1,3 +1,9 @@
+/**
+ * GET /api/liftoff/lookup-users — return team members eligible to be assigned to
+ * a LiftOff request (processors, liftoff_team, lock_desk_agent, etc.).
+ * Used by the assignment dropdown in the queue admin actions panel.
+ * Auth: liftoff queue role required.
+ */
 import { NextResponse } from "next/server";
 import { getCurrentProfile, canAccessLiftOffQueue, canAccessHelpDeskQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";

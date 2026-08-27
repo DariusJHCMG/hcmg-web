@@ -1,3 +1,8 @@
+/**
+ * GET /api/goal-engine/profiles-list — return all active LO profiles for admin
+ * goal-assignment dropdowns and Goal Engine user pickers.
+ * Auth: admin role required.
+ */
 import { NextResponse } from "next/server";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";

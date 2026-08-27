@@ -1,3 +1,9 @@
+/**
+ * POST /api/push/subscribe — save or remove a Web Push subscription.
+ * Body: { subscription: PushSubscription } to subscribe, or { unsubscribe: true }.
+ * Subscriptions are stored in the push_subscriptions table keyed by profile ID.
+ * Auth: authenticated user required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";

@@ -1,3 +1,10 @@
+/**
+ * POST /api/liftoff/users/invite — invite a new user to the LiftOff system.
+ * Creates a Supabase auth user, sets the liftoff role, and sends an invite email.
+ * Valid roles: liftoff_admin, liftoff_team, lock_desk_admin, lock_desk_agent,
+ *              ops_manager, help_desk_agent, processor.
+ * Auth: liftoff_admin or admin role required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";

@@ -1,3 +1,8 @@
+/**
+ * GET /api/admin/dev/env — return the presence (not the values) of all required
+ * environment variables. Used by the admin dev page to diagnose missing config.
+ * Auth: admin role required.
+ */
 import { NextResponse } from "next/server";
 
 const REQUIRED_ENV = [

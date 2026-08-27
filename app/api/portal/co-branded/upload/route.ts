@@ -1,3 +1,9 @@
+/**
+ * POST /api/portal/co-branded/upload — upload a co-branded page hero image.
+ * Accepts multipart/form-data with a "file" field (max 3 MB, image only).
+ * Stores the image in the "avatars" Supabase Storage bucket.
+ * Auth: authenticated user required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createServiceClient } from "@/lib/supabase";
 

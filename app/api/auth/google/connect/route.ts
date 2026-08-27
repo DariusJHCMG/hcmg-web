@@ -1,3 +1,8 @@
+/**
+ * GET /api/auth/google/connect — initiates the Google OAuth 2.0 consent flow.
+ * Redirects admin to Google authorization URL with GA4 + Search Console scopes.
+ * Auth: admin role required.
+ */
 import { NextResponse } from "next/server";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";
 

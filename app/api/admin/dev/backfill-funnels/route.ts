@@ -1,3 +1,8 @@
+/**
+ * POST /api/admin/dev/backfill-funnels — seed funnel_links rows for all active
+ * LO profiles using the FUNNEL_CATALOG definition. Idempotent — skips existing rows.
+ * Auth: admin role required. Dev-only endpoint.
+ */
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";

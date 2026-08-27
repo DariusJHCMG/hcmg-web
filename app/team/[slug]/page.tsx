@@ -194,7 +194,7 @@ export default async function TeamMemberPage({
           {/* Left — headline + copy */}
           <div>
             <SectionEyebrow className="mb-6">
-              Harris Capital Mortgage Group{nmls ? ` · NMLS# ${nmls}` : ""}
+              Harris Capital Mortgage Group · NMLS# 1918223
             </SectionEyebrow>
 
             <h1 className="font-extrabold leading-[1.08] tracking-tight text-ink" style={{ fontSize: "clamp(40px, 6vw, 72px)" }}>
@@ -202,7 +202,7 @@ export default async function TeamMemberPage({
               <span className="ok-gradient-text">{first}.</span>
             </h1>
             <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-muted">
-              {role} · Harris Capital Mortgage Group
+              {role} · Harris Capital Mortgage Group{nmls ? <> · <span className="font-normal normal-case tracking-normal">NMLS# {nmls}</span></> : ""}
             </p>
 
             <p className="mt-6 max-w-xl text-lg leading-8 text-muted">{heroBio}</p>

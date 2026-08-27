@@ -1,3 +1,8 @@
+/**
+ * PATCH /api/portal/profile — update the authenticated LO's own profile fields.
+ * Allowed fields: display name, phone, title, bio, website fields, and social links.
+ * Auth: authenticated user required (own profile only).
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createServiceClient } from "@/lib/supabase";
 

@@ -1,3 +1,11 @@
+/**
+ * POST /api/liftoff/arive-result — Zapier callback that delivers an Arive lookup result.
+ * Zapier calls Arive, then POSTs the result here with a shared secret in the
+ * Authorization header. Updates the arive_lookup_results row so the polling
+ * browser receives the data.
+ * Auth: ZAPIER_WEBHOOK_SECRET bearer token (not a user session).
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 

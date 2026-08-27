@@ -49,7 +49,7 @@ export default function TermsPage() {
           <P>You agree to indemnify and hold harmless Harris Capital Mortgage Group, LLC and its officers, employees, and agents from any claims arising from your use of this service or violation of these terms.</P>
 
           <H2>9. Governing Law</H2>
-          <P>These Terms are governed by the laws of the State of Michigan, without regard to conflict of law provisions.</P>
+          <P>These Terms are governed by the laws of the State of Florida, without regard to conflict of law provisions. Where applicable, the laws of the state in which your loan is originated may also apply, and nothing in these Terms limits any rights you may have under the laws of your state of residence.</P>
 
           <H2>10. Contact</H2>
           <P>Legal inquiries: info@hcmgloans.com · Harris Capital Mortgage Group, LLC · HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120 · Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032</P>

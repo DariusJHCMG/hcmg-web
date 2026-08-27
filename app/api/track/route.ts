@@ -1,3 +1,9 @@
+/**
+ * POST /api/track — append a session event to the lead_events table.
+ * Called fire-and-forget by the Tracker component on each significant user action
+ * (page view, scroll depth, button click, form start/complete).
+ * Public endpoint — no auth required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { z } from "zod";

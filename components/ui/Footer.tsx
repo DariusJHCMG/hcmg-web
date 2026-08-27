@@ -103,6 +103,15 @@ const AREAS_WE_SERVE = [
       { label: "Sacramento, CA", href: "/seo/sacramento-fha-loan" },
     ],
   },
+  {
+    state: "Alabama",
+    stateHref: "/areas-we-serve/alabama",
+    cities: [
+      { label: "Birmingham, AL", href: "/seo/birmingham-fha-loan" },
+      { label: "Huntsville, AL", href: "/seo/huntsville-fha-loan" },
+      { label: "Mobile, AL", href: "/seo/mobile-fha-loan" },
+    ],
+  },
 ];
 
 export function Footer() {
@@ -230,19 +239,35 @@ export function Footer() {
 
       {/* Compliance footer */}
       <div className="border-t border-line bg-white">
-        <div className="container-shell py-5 text-xs leading-6 text-muted/50">
-          <span className="mr-2 text-base" aria-label="Equal Housing Lender">⌂</span>
-          Equal Housing Lender ·{" "}
-          Harris Capital Mortgage Group, LLC · NMLS# 1918223 ·{" "}
-          <a
-            href="https://www.nmlsconsumeraccess.org/EntityDetails.aspx/COMPANY/1918223"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-accent"
-          >
-            NMLS Consumer Access
-          </a>{" "}
-          · Not a commitment to lend. Subject to credit approval. Rates and terms subject to change without notice.
+        <div className="container-shell py-6 text-xs leading-7 text-muted/50">
+          <p className="mb-3">
+            <span className="mr-2 text-base" aria-label="Equal Housing Lender">⌂</span>
+            Equal Housing Lender ·{" "}
+            Harris Capital Mortgage Group, LLC · NMLS# 1918223 ·{" "}
+            <a
+              href="https://www.nmlsconsumeraccess.org/EntityDetails.aspx/COMPANY/1918223"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-accent"
+            >
+              NMLS Consumer Access
+            </a>
+          </p>
+          <p className="mb-3">
+            For information purposes only. This is not a commitment to lend or extend credit. Information and/or dates are subject to change without notice.
+            All loans are subject to credit approval. Other restrictions may apply.
+          </p>
+          <p className="mb-3">
+            Harris Capital Mortgage Group, LLC, NMLS #1918223. Alabama Mortgage Brokers License #1918223,
+            California Financing Law License DFPI 60DBO-133112, Colorado Mortgage Company Registration,
+            Florida Mortgage Broker License MBR4020, Georgia Mortgage Broker/Processor License #1918223,
+            Maryland Lender License #1918223, Mississippi Mortgage Broker License #1918223,
+            Nevada Mortgage Company License NMC-1179167, Texas-SML Mortgage Company License,
+            Virginia Broker License MC-7320, Washington DC Mortgage Broker License MLB1918223.
+          </p>
+          <p>
+            Consumer Complaints: <a href="mailto:info@hcmgloans.com" className="underline hover:text-accent">info@hcmgloans.com</a>
+          </p>
         </div>
       </div>
 

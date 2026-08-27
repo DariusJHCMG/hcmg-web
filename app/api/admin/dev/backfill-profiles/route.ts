@@ -1,3 +1,9 @@
+/**
+ * POST /api/admin/dev/backfill-profiles — seed profiles rows from the static
+ * teamMembers data array. Used after a fresh schema migration.
+ * Idempotent — skips profiles that already exist.
+ * Auth: admin role required. Dev-only endpoint.
+ */
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";

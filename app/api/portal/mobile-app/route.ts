@@ -1,3 +1,8 @@
+/**
+ * POST /api/portal/mobile-app — send a PWA install link email to the requesting LO.
+ * Body: { email: string } — the address to send the install instructions to.
+ * Auth: authenticated user required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { buildMobileAppEmail } from "@/lib/email-templates";

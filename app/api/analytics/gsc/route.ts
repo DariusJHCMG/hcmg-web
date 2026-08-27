@@ -1,3 +1,8 @@
+/**
+ * GET /api/analytics/gsc — proxy to Google Search Console API.
+ * Returns search queries, impressions, clicks, and CTR for a date range.
+ * Auth: authenticated admin or loan_officer. Requires Google OAuth connected.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 import { getCurrentProfile } from "@/lib/auth";

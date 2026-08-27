@@ -23,6 +23,7 @@ const STATE_GROUPS: { state: string; abbr: string; slug: string; blurb: string }
   { state: "California",     abbr: "CA", slug: "california",   blurb: "CalHFA down payment assistance. Los Angeles, San Diego & more." },
   { state: "Washington DC",  abbr: "DC", slug: "dc",           blurb: "DC & MD first-time buyer programs. High-value market specialists." },
   { state: "Mississippi",    abbr: "MS", slug: "mississippi",  blurb: "Affordable home prices. Jackson, Gulfport & more." },
+  { state: "Alabama",        abbr: "AL", slug: "alabama",      blurb: "Step Up & Affordable Income programs available. Birmingham, Huntsville & more." },
 ];
 
 export default function AreasWeServePage() {

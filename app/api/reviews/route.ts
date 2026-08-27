@@ -1,3 +1,8 @@
+/**
+ * GET /api/reviews — list approved reviews for public display.
+ * POST /api/reviews — submit a new review (pending admin approval).
+ * Public endpoint — no auth required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { z } from "zod";

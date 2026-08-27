@@ -1,3 +1,11 @@
+/**
+ * POST /api/lead — receive and store a website lead submission.
+ * Applies spam protection: honeypot, timing check, rate limiting, duplicate
+ * suppression, and optional Cloudflare Turnstile CAPTCHA verification.
+ * Sends confirmation email to the lead and notification to the LO (if attributed).
+ * Public endpoint — no auth required.
+ * See: docs/lead-spam-protection.md
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";

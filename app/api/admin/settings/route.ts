@@ -1,3 +1,8 @@
+/**
+ * GET /api/admin/settings — read company settings (Google OAuth tokens, etc.).
+ * PATCH /api/admin/settings — update one or more company settings fields.
+ * Auth: admin role required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";
 import { readSettings, writeSettings } from "@/lib/company-settings";

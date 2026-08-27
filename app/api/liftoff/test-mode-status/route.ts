@@ -1,7 +1,12 @@
+/**
+ * GET /api/liftoff/test-mode-status — return whether LiftOff email test mode is
+ * currently active. Used by the admin UI to show a warning banner.
+ * Auth: admin role required.
+ */
 import { NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 
-// Admin-only — returns whether Liftoff email test mode is active.
+// Admin-only – returns whether Liftoff email test mode is active.
 // Hit this to confirm env vars are set correctly in Vercel before smoke testing.
 
 export async function GET() {

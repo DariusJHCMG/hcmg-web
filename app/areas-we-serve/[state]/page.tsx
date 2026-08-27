@@ -76,6 +76,13 @@ const STATE_META: Record<string, {
     intro: "Mississippi consistently ranks among the most affordable housing markets in the country. Median home prices in Jackson and Hattiesburg are well below $200,000, and property tax rates average just 0.65%. For buyers with limited upfront capital, Mississippi is one of the best markets to leverage a low down payment FHA or USDA loan.",
     programs: "The Mississippi Home Corporation (MHC) offers the Smart6 mortgage program with below-market rates and the MHC Down Payment Assistance program. USDA loan eligibility is widespread across Mississippi's largely rural and suburban areas — many buyers qualify for 100% financing through USDA.",
   },
+  alabama: {
+    name: "Alabama", abbr: "AL",
+    headline: "Mortgage Lender in Alabama: Birmingham, Huntsville, Mobile & More",
+    intro: "Alabama is one of the most underrated homebuying markets in the Southeast. Property tax rates average under 0.40% — among the lowest in the nation — which can save a buyer hundreds of dollars per month compared to neighboring Georgia or Tennessee. The Huntsville-Madison County corridor has emerged as a top-10 fastest-growing metro in the country, driven by aerospace, defense, and technology employment at Redstone Arsenal and the Cummings Research Park. Birmingham's Jefferson County suburbs (Hoover, Vestavia Hills, Homewood, Mountain Brook) offer strong school districts and appreciating home values. Mobile's Gulf Coast access, and the Auburn-Opelika market anchored by Auburn University and a growing automotive manufacturing sector, round out HCMG's Alabama footprint.",
+    programs: "Down payment assistance is available for qualifying buyers across Alabama — covering a portion of your down payment and in some cases closing costs too. USDA loans are widely available across Alabama's largely rural and suburban counties, offering 100% financing for eligible buyers. HCMG's Alabama-licensed loan officers will review your income, credit, and purchase price and match you to every program you qualify for, including options many buyers don't know exist.",
+    googleMapUrl: "https://www.google.com/maps/search/harris+capital+mortgage+birmingham+alabama",
+  },
 };
 
 /** Loan types highlighted on state pages (same order as seoPages) */

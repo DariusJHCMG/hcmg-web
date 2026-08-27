@@ -42,7 +42,7 @@ export default function PrivacyPage() {
           <P>
             As a licensed mortgage company, we are subject to the Gramm-Leach-Bliley Act (GLBA), Regulation P (12 CFR Part 1016),
             the Real Estate Settlement Procedures Act (RESPA), the Equal Credit Opportunity Act (ECOA), and applicable state mortgage
-            privacy laws in Nevada and Texas.
+            privacy laws in Alabama, California, Colorado, Florida, Georgia, Maryland, Mississippi, Nevada, Texas, Virginia, and Washington D.C.
           </P>
 
           {/* ── 2. Information We Collect ────────────────────────── */}
@@ -253,7 +253,7 @@ export default function PrivacyPage() {
             <p>HQ: 6375 S Pecos Rd, Suite 208, Las Vegas, NV 89120</p>
             <p>Branch: 9801 Westheimer Ave, Suite 300, Houston, TX 77032</p>
             <p className="mt-4 text-xs text-muted/70">
-              Equal Housing Lender. Licensed to originate mortgages in Nevada and Texas.
+              Equal Housing Lender. Licensed to originate mortgages in Alabama, California, Colorado, Florida, Georgia, Maryland, Mississippi, Nevada, Texas, Virginia, and Washington D.C.
               NMLS Consumer Access: <a href="https://www.nmlsconsumeraccess.org" target="_blank" rel="noopener noreferrer" className="underline">nmlsconsumeraccess.org</a>
             </p>
           </div>

@@ -1,3 +1,8 @@
+/**
+ * GET /api/analytics/ga4 — proxy to Google Analytics Data API v1.
+ * Runs a date-range report and returns sessions, pageviews, and conversions.
+ * Auth: authenticated admin or loan_officer. Requires Google OAuth connected.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 import { getCurrentProfile } from "@/lib/auth";

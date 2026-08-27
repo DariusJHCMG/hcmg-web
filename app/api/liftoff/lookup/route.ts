@@ -1,3 +1,9 @@
+/**
+ * GET /api/liftoff/lookup — search for an existing LiftOff request or Arive loan
+ * by loan number, borrower name, or request ID.
+ * Used by the lookup slide-over in the queue and pipeline views.
+ * Auth: any liftoff queue role required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile, canAccessLiftOffQueue, canAccessHelpDeskQueue, canAccessLockDeskQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";

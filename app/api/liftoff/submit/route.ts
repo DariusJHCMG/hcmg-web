@@ -1,3 +1,9 @@
+/**
+ * POST /api/liftoff/submit — submit a new LiftOff request (submission, lock request,
+ * disclosure, or help desk ticket). Computes SLA deadline, stores the request, and
+ * sends notification and confirmation emails.
+ * Auth: authenticated user (any role with liftoff access).
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";

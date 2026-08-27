@@ -1,3 +1,8 @@
+/**
+ * POST /api/admin/dev/send-email-samples — fire all email templates to the admin's
+ * email address as a design preview. No DB side effects.
+ * Auth: admin role required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";

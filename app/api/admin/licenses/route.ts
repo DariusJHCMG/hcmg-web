@@ -1,3 +1,8 @@
+/**
+ * GET /api/admin/licenses — list all licensed states from company settings.
+ * PATCH /api/admin/licenses — update the licensed states list.
+ * Auth: admin role required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentProfile, isAdmin, logAudit } from "@/lib/auth";

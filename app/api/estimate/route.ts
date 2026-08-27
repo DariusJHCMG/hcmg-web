@@ -1,3 +1,9 @@
+/**
+ * POST /api/estimate — compute a mortgage payment estimate.
+ * Accepts homePrice, downPaymentPercent, annualRatePercent, loanTermYears, and
+ * optional taxes / insurance / HOA / loanType. Returns full EstimateOutput.
+ * Public endpoint — no auth required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { calculateMortgageEstimate } from "@/lib/calculators";
 

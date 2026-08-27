@@ -17,7 +17,7 @@ export const FAQS = [
   },
   {
     q: "What states are you licensed in?",
-    a: "Harris Capital Mortgage Group, LLC (NMLS# 1918223) is currently licensed in Florida, Texas, Georgia, Nevada, Colorado, Virginia, Washington DC, and Maryland. Contact us to confirm availability in your specific state before applying.",
+    a: "Harris Capital Mortgage Group, LLC (NMLS# 1918223) is currently licensed in Florida, Texas, Georgia, Nevada, Colorado, Virginia, Washington DC, Maryland, California, Mississippi, and Alabama. Contact us to confirm availability in your specific state before applying.",
   },
   {
     q: "How do I connect with a loan officer?",

@@ -1,3 +1,9 @@
+/**
+ * POST /api/portal/profile/avatar — upload a profile avatar image.
+ * Accepts multipart/form-data with a "file" field (max 2 MB, image only).
+ * Stores the image in the "avatars" Supabase Storage bucket and updates the profile.
+ * Auth: authenticated user required (own profile only).
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createServiceClient } from "@/lib/supabase";
 

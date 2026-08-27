@@ -1,8 +1,13 @@
+/**
+ * POST /api/liftoff/test-emails — fire every LiftOff email template to the admin
+ * test address. No DB reads or writes — safe to call repeatedly for smoke testing.
+ * Auth: admin role required.
+ */
 import { NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { sendAllPreviewEmails } from "@/lib/liftoff-mailer";
 
-// Admin-only — fires every Liftoff email template to darius@hcmgloans.com.
+// Admin-only – fires every Liftoff email template to darius@hcmgloans.com.
 // No DB reads or writes. Safe to call repeatedly.
 
 export async function POST() {

@@ -169,7 +169,7 @@ export default async function LamontPage() {
               <span className="ok-gradient-text">{firstName}.</span>
             </h1>
             <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-muted">
-              {role} · Harris Capital Mortgage Group
+              {role} · Harris Capital Mortgage Group{nmls ? <> · <span className="font-normal normal-case tracking-normal">NMLS# {nmls}</span></> : ""}
             </p>
 
             <p className="mt-6 max-w-xl text-lg leading-8 text-muted">{heroBioP1}</p>

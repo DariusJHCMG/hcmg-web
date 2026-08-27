@@ -1,3 +1,10 @@
+/**
+ * GET /api/liftoff/arive-poll?id={requestId} — poll for an Arive lookup result.
+ * Browser calls this every 1.5 s after triggering /arive-lookup. Returns the
+ * current status (pending / found / not_found / error) and data once resolved.
+ * Auth: authenticated user with liftoff access.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { getCurrentProfile } from "@/lib/auth";

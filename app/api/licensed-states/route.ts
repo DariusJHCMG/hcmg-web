@@ -1,3 +1,8 @@
+/**
+ * GET /api/licensed-states — return the list of states HCMG is licensed in.
+ * Used by client-side funnel dropdowns to populate the state selector.
+ * Public endpoint — no auth required.
+ */
 import { NextResponse } from "next/server";
 import { readSettings } from "@/lib/company-settings";
 import { licenseStateLists, STATE_NAMES } from "@/lib/license-states";

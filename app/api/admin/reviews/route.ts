@@ -1,3 +1,7 @@
+/**
+ * GET /api/admin/reviews — list all reviews.
+ * Auth: admin role required.
+ */
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";

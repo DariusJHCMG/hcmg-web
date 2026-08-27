@@ -94,6 +94,13 @@ export const CITY_DATA: Record<string, CityData> = {
   "Hattiesburg":    { county: "Forrest County",       medianHomePrice: 180000, propertyTaxRate: 0.63, fhaLoanLimit: 498257, dpaProgram: "MHC Smart6 and DPA programs for qualifying Hattiesburg buyers", neighborhoods: ["Oak Grove", "Petal", "Sumrall", "USM Area"] },
   "Biloxi":         { county: "Harrison County",      medianHomePrice: 205000, propertyTaxRate: 0.51, fhaLoanLimit: 498257, dpaProgram: "MHC DPA program for Harrison County first-time buyers", neighborhoods: ["Back Bay", "D'Iberville", "Ocean Springs", "Point Cadet"] },
   "Meridian":       { county: "Lauderdale County",    medianHomePrice: 130000, propertyTaxRate: 0.74, fhaLoanLimit: 498257, dpaProgram: "MHC Smart6 program — statewide eligibility for qualifying buyers", neighborhoods: ["Northwest Meridian", "Bonita Lakes", "East Meridian", "Collinsville"] },
+  // Alabama
+  "Birmingham":     { county: "Jefferson County",     medianHomePrice: 235000, propertyTaxRate: 0.37, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available for qualifying buyers in Jefferson County — ask your HCMG loan officer which options fit your income, credit, and purchase price", neighborhoods: ["Homewood", "Hoover", "Mountain Brook", "Vestavia Hills"] },
+  "Huntsville":     { county: "Madison County",       medianHomePrice: 310000, propertyTaxRate: 0.33, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance is available for qualifying buyers in Madison County; Huntsville is one of the fastest-growing markets in the Southeast — ask your loan officer about current programs", neighborhoods: ["Jones Valley", "Meridianville", "Hampton Cove", "Madison City"] },
+  "Mobile":         { county: "Mobile County",        medianHomePrice: 205000, propertyTaxRate: 0.40, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available in Mobile County for qualifying first-time buyers — your HCMG loan officer will identify every option you qualify for", neighborhoods: ["Midtown", "West Mobile", "Springhill", "Tillmans Corner"] },
+  "Montgomery":     { county: "Montgomery County",    medianHomePrice: 185000, propertyTaxRate: 0.39, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance options are available for first-time and repeat buyers in Montgomery — contact an HCMG loan officer to review current program eligibility", neighborhoods: ["Eastdale", "Prattville", "Millbrook", "Pike Road"] },
+  "Tuscaloosa":     { county: "Tuscaloosa County",    medianHomePrice: 240000, propertyTaxRate: 0.32, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available in Tuscaloosa County; the market is bolstered by University of Alabama enrollment and a growing healthcare sector", neighborhoods: ["Northport", "Duncanville", "Lake Nicol", "Alberta City"] },
+  "Auburn":         { county: "Lee County",           medianHomePrice: 285000, propertyTaxRate: 0.31, fhaLoanLimit: 498257, dpaProgram: "Down payment assistance programs are available for qualifying buyers in Lee County — one of Alabama's lowest property tax markets, improving long-term affordability", neighborhoods: ["Opelika", "Auburn University area", "Notasulga", "Loachapoka"] },
 };
 
 const cities = [
@@ -137,6 +144,10 @@ const cities = [
   // Mississippi
   ["Jackson", "MS"], ["Gulfport", "MS"], ["Southaven", "MS"], ["Hattiesburg", "MS"],
   ["Biloxi", "MS"], ["Meridian", "MS"],
+
+  // Alabama
+  ["Birmingham", "AL"], ["Huntsville", "AL"], ["Mobile", "AL"],
+  ["Montgomery", "AL"], ["Tuscaloosa", "AL"], ["Auburn", "AL"],
 ] as const;
 
 const loanTypes = [
@@ -178,6 +189,7 @@ export const STATE_COPY: Record<string, string> = {
   MD: "Maryland offers the MMP (Maryland Mortgage Program) for first-time buyers with competitive rates and down payment help. Proximity to DC affects pricing in many counties.",
   CA: "California has some of the most competitive real estate markets in the country. CalHFA offers down payment assistance and first mortgage programs for qualifying buyers. Conforming loan limits are higher in many CA counties, making jumbo loans less common than in other states.",
   MS: "Mississippi consistently offers some of the most affordable home prices in the Southeast. The Mississippi Home Corporation provides down payment assistance and first mortgage programs for eligible buyers across the state.",
+  AL: "Alabama has some of the lowest property tax rates in the country — averaging under 0.40% — which dramatically lowers monthly housing costs compared to neighboring states. Down payment assistance programs are available for qualifying buyers across Alabama. Markets range from the rapidly growing Huntsville tech corridor to the affordable Gulf Coast cities of Mobile and the university-driven Auburn-Opelika market.",
 };
 
 export const LOAN_TYPE_FAQS: Record<string, { q: string; a: string }[]> = {

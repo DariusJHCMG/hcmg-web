@@ -1,3 +1,11 @@
+/**
+ * POST /api/liftoff/arive-lookup — trigger an Arive loan lookup via Zapier.
+ * Creates an arive_lookup_results row (status: pending) and fires the Zapier
+ * webhook. The browser polls /api/liftoff/arive-poll until a result is ready.
+ * See docs/architecture.md for the full async Zapier polling pattern.
+ * Auth: authenticated user with liftoff access.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";

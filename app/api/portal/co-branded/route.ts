@@ -1,3 +1,8 @@
+/**
+ * GET /api/portal/co-branded — list the authenticated LO's co-branded landing pages.
+ * POST /api/portal/co-branded — create a new co-branded landing page for the LO.
+ * Auth: authenticated user required.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, createServiceClient } from "@/lib/supabase";
 

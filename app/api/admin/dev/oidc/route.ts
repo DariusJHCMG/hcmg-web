@@ -1,3 +1,8 @@
+/**
+ * GET /api/admin/dev/oidc — return the current Google OAuth OIDC token state
+ * from company settings. Used by the admin dev page to diagnose OAuth issues.
+ * Auth: admin role required.
+ */
 import { NextResponse } from "next/server";
 import { getCurrentProfile, isAdmin } from "@/lib/auth";
 

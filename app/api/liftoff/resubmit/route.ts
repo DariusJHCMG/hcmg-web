@@ -1,3 +1,9 @@
+/**
+ * POST /api/liftoff/resubmit — resubmit a previously incomplete LiftOff request.
+ * Creates a new request linked to the original via resubmission_of.
+ * Recomputes SLA and sends a resubmission notification email.
+ * Auth: authenticated user (submitter or any liftoff role).
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";

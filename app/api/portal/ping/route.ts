@@ -1,3 +1,8 @@
+/**
+ * POST /api/portal/ping — update last_seen_at for the authenticated user.
+ * Called fire-and-forget from the portal layout on every page load.
+ * Auth: authenticated user required.
+ */
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient, createServiceClient } from "@/lib/supabase";
 

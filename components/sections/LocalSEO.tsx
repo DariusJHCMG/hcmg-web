@@ -13,7 +13,7 @@ export function LocalSEO() {
           </h2>
           <p className="mt-5 text-lg leading-8 text-muted">
             Harris Capital Mortgage Group is a licensed mortgage company in Florida, Texas, Georgia, Nevada,
-            Colorado, Virginia, Washington DC, Maryland, California, and Mississippi. Find a mortgage lender
+            Colorado, Virginia, Washington DC, Maryland, California, Mississippi, and Alabama. Find a mortgage lender
             near you below.
           </p>
           <Link href="/areas-we-serve" className="primary-button mt-8 inline-flex">

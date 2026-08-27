@@ -1,3 +1,9 @@
+/**
+ * GET /api/auth/google/callback — OAuth 2.0 redirect callback for Google.
+ * Exchanges the authorization code for tokens, stores them in company settings,
+ * and redirects back to the analytics page.
+ * Auth: admin must have initiated the connect flow.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { writeSettings } from "@/lib/company-settings";
 
