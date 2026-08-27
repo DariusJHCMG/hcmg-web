@@ -50,7 +50,19 @@ export default async function GoalEngineLeaderboard() {
   // Active:    has any production (app or funded volume > 0)
   // Waiting:   committed but zero production yet
   // Hidden:    no commitment AND no production — not shown
-  const activeBoard   = board.filter(r => r.app_volume_actual > 0 || r.funded_volume_actual > 0);
+  const activeBoard = board
+    .filter(r => r.app_volume_actual > 0 || r.funded_volume_actual > 0)
+    .sort((a, b) => {
+      // 1. Funded volume — highest first
+      if (b.funded_volume_actual !== a.funded_volume_actual)
+        return b.funded_volume_actual - a.funded_volume_actual;
+      // 2. Committed beats uncommitted (tiebreaker when funded is equal)
+      const aCommitted = a.funded_volume_commitment > 0 ? 1 : 0;
+      const bCommitted = b.funded_volume_commitment > 0 ? 1 : 0;
+      if (bCommitted !== aCommitted) return bCommitted - aCommitted;
+      // 3. App volume — highest first (within same commitment status)
+      return b.app_volume_actual - a.app_volume_actual;
+    });
   const waitingBoard  = board.filter(r => r.app_volume_actual === 0 && r.funded_volume_actual === 0 && r.funded_volume_commitment > 0);
 
   return (
