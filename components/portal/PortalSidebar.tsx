@@ -15,6 +15,11 @@ const NAV = [
   { label: "Mobile App",  href: "/portal/mobile-app",  icon: "📱" },
 ];
 
+const TOOLS = [
+  { label: "SLICE",     href: "/slice",        icon: "🎯" },
+  { label: "Lift Off",  href: "/liftoff-login", icon: "🚀" },
+];
+
 function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -61,6 +66,24 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
               </Link>
             );
           })}
+        </div>
+
+        {/* Tools */}
+        <div className="mt-4 pt-4 border-t border-line">
+          <p className="mb-1.5 px-3 text-[9px] font-bold uppercase tracking-[0.16em] text-muted/50">Tools</p>
+          <div className="space-y-0.5">
+            {TOOLS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavClick}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted hover:bg-sand hover:text-ink transition-colors"
+              >
+                <span className="text-base leading-none">{item.icon}</span>
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </nav>
 

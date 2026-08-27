@@ -12,6 +12,11 @@ const NAV_LINKS = [
   { label: "Mobile App",  href: "/portal/mobile-app" },
 ];
 
+const TOOL_LINKS = [
+  { label: "🎯 SLICE",     href: "/slice" },
+  { label: "🚀 Lift Off",  href: "/liftoff-login" },
+];
+
 export function PortalMobileNav({ fullName }: { fullName: string }) {
   const [open, setOpen] = useState(false);
 
@@ -71,6 +76,23 @@ export function PortalMobileNav({ fullName }: { fullName: string }) {
                     {l.label}
                   </Link>
                 ))}
+              </div>
+
+              {/* Tools */}
+              <div className="mt-4 pt-4 border-t border-line">
+                <p className="mb-2 px-4 text-[9px] font-bold uppercase tracking-[0.16em] text-muted/50">Tools</p>
+                <div className="space-y-1">
+                  {TOOL_LINKS.map((l) => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center rounded-xl px-4 py-3 text-sm font-semibold text-ink transition-colors hover:bg-sand hover:text-accent"
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
             </nav>
 

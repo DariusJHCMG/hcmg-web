@@ -128,7 +128,19 @@ function LoginForm() {
         flex:1, display:"flex", flexDirection:"column",
         alignItems:"center", justifyContent:"center",
         background:"#F8FAFC", padding:"48px 32px",
+        position:"relative",
       }}>
+        {/* Back to portal */}
+        <a
+          href="/portal"
+          style={{
+            position:"absolute", top:20, left:24,
+            fontSize:12, fontWeight:700, color:"#F37021",
+            textDecoration:"none", display:"flex", alignItems:"center", gap:5,
+          }}
+        >
+          ← Back to Portal
+        </a>
         {/* Mobile logo */}
         <div style={{ marginBottom:36, textAlign:"center" }} className="lg:hidden">
           <img src="/SLICE.png" alt="SLICE" style={{ height:80, width:"auto", margin:"0 auto 10px" }} />
