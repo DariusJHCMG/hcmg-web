@@ -147,8 +147,8 @@ export function addBusinessHours(from: Date, hours: number, requestType?: LiftOf
         continue;
       }
       // How many ms until the end of this calendar day in ET?
-      const p = etParts(current);
-      const endOfDay = etToUtc(p.year, p.month, p.day + 1, 0, 0);
+      // Use nextEtDay to safely handle month/year overflow (e.g. Aug 31 → Sep 1)
+      const endOfDay = nextEtDay(current);
       const msUntilEndOfDay = endOfDay.getTime() - current.getTime();
 
       if (remainingMs <= msUntilEndOfDay) {
