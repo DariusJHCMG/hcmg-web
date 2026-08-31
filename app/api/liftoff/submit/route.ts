@@ -15,6 +15,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { sendPushToQueueUsers } from "@/lib/push";
 
 export async function POST(req: NextRequest) {
+  try {
   const profile = await getCurrentProfile();
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -57,7 +58,13 @@ export async function POST(req: NextRequest) {
   // Enforce submitter identity from session — never trust client
   const submittedAt = new Date();
   const now = submittedAt.toISOString();
-  const slaFields = computeSla(body.request_type as LiftOffRequestType, submittedAt);
+  let slaFields: { sla_deadline_at: string; sla_severity: string; priority_score: number };
+  try {
+    slaFields = computeSla(body.request_type as LiftOffRequestType, submittedAt);
+  } catch (e) {
+    console.error("[liftoff/submit] computeSla failed", e);
+    return NextResponse.json({ error: "Failed to compute SLA. Please try again." }, { status: 500 });
+  }
   const payload = {
     ...body,
     submitter_id:     profile.id,
@@ -174,4 +181,8 @@ export async function POST(req: NextRequest) {
   );
 
   return NextResponse.json({ id: data.id }, { status: 201 });
+  } catch (e) {
+    console.error("[liftoff/submit] unhandled", e);
+    return NextResponse.json({ error: `Unhandled: ${e instanceof Error ? e.message : String(e)}` }, { status: 500 });
+  }
 }
