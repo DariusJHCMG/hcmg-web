@@ -36,14 +36,23 @@ const WINDOWED_TYPES = new Set<LiftOffRequestType>(["lock_request"]);
 
 /** Return { year, month (1-based), day, hour, minute } in ET for a given Date. */
 function etParts(d: Date): { year: number; month: number; day: number; hour: number; minute: number } {
-  const fmt = new Intl.DateTimeFormat("en-US", {
+  // Use separate formatters to avoid the hour12:false "24" bug in some Node/V8 versions
+  const dateFmt = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
     year: "numeric", month: "2-digit", day: "2-digit",
+  });
+  const timeFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
     hour: "2-digit", minute: "2-digit", hour12: false,
   });
-  const p = fmt.formatToParts(d);
-  const get = (type: string) => parseInt(p.find(x => x.type === type)?.value ?? "0", 10);
-  return { year: get("year"), month: get("month"), day: get("day"), hour: get("hour"), minute: get("minute") };
+  const dp = dateFmt.formatToParts(d);
+  const tp = timeFmt.formatToParts(d);
+  const getD = (type: string) => parseInt(dp.find(x => x.type === type)?.value ?? "0", 10);
+  const getT = (type: string) => parseInt(tp.find(x => x.type === type)?.value ?? "0", 10);
+  let hour = getT("hour");
+  // Some runtimes return 24 for midnight — normalise to 0
+  if (hour === 24) hour = 0;
+  return { year: getD("year"), month: getD("month"), day: getD("day"), hour, minute: getT("minute") };
 }
 
 /** Build a UTC Date from ET wall-clock components (iterative offset correction). */
