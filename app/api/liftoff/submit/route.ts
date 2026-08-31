@@ -58,12 +58,14 @@ export async function POST(req: NextRequest) {
   // Enforce submitter identity from session — never trust client
   const submittedAt = new Date();
   const now = submittedAt.toISOString();
+  const requestType = body.request_type as LiftOffRequestType;
   let slaFields: { sla_deadline_at: string; sla_severity: string; priority_score: number };
   try {
-    slaFields = computeSla(body.request_type as LiftOffRequestType, submittedAt);
+    slaFields = computeSla(requestType, submittedAt);
   } catch (e) {
-    console.error("[liftoff/submit] computeSla failed", e);
-    return NextResponse.json({ error: "Failed to compute SLA. Please try again." }, { status: 500 });
+    const msg = e instanceof Error ? `${e.message} — requestType=${requestType} submittedAt=${submittedAt.toISOString()}` : String(e);
+    console.error("[liftoff/submit] computeSla failed:", msg);
+    return NextResponse.json({ error: `Failed to compute SLA: ${msg}` }, { status: 500 });
   }
   const payload = {
     ...body,
