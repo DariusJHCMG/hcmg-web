@@ -871,13 +871,14 @@ function WizardInner() {
         },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Submission failed."); setSubmitting(false); return; }
+      let data: Record<string, unknown> = {};
+      try { data = await res.json(); } catch { data = {}; }
+      if (!res.ok) { setError(data.error as string ?? `Server error ${res.status}. Please try again.`); setSubmitting(false); return; }
       // Rotate key so a future re-use of the same wizard instance gets a fresh key
       submissionKeyRef.current = crypto.randomUUID();
       router.push(`/liftoff/${data.id}?submitted=1`);
-    } catch {
-      setError("Network error. Please try again.");
+    } catch (err) {
+      setError(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
       setSubmitting(false);
     }
   }
