@@ -14,6 +14,9 @@ import { addBusinessHours, SLA_WINDOWS } from "@/lib/liftoff-sla";
 export const dynamic = "force-dynamic";
 
 // ── Demo data (same 7 requests as pipeline page) ──────────────────────────────
+// NOTE: keep these inside a function — module-level Date calls crash the Next.js
+// build because they run at bundle time where Intl timezone data may not exist.
+function makeDemoRequests(): { requests: LiftOffRequest[]; viewerId: string; viewerName: string } {
 const now  = new Date();
 const mins = (n: number) => new Date(now.getTime() - n * 60_000).toISOString();
 const slaDeadline = (requestType: keyof typeof SLA_WINDOWS, submittedMinsAgo: number) =>
@@ -87,22 +90,27 @@ function demoBase(overrides: Partial<LiftOffRequest>): LiftOffRequest {
   };
 }
 
-const DEMO_REQUESTS: LiftOffRequest[] = [
-  // Lock — pending, no claim yet
-  demoBase({ id: "demo-p-lock-1", request_type: "lock_request", request_status: "pending", submitter_name: "Sarah Mitchell", borrower_first_name: "Marcus", borrower_last_name: "Thompson", arive_loan_number: "HCMG-2025-4471", loan_type: "purchase", loan_amount: 485000, priority_score: 140, sla_deadline_at: slaDeadline("lock_request", 45), sla_severity: "warning", created_at: mins(45), updated_at: mins(45), certified_at: mins(45) }),
-  // Lock — in review, Alex claimed + started
-  demoBase({ id: "demo-p-lock-2", request_type: "lock_request", request_status: "in_review", submitter_name: "James Rivera", borrower_first_name: "Patricia", borrower_last_name: "Okafor", arive_loan_number: "HCMG-2025-4468", loan_type: "refinance", loan_amount: 320000, priority_score: 120, sla_deadline_at: slaDeadline("lock_request", 20), sla_severity: "normal", created_at: mins(20), updated_at: mins(15), certified_at: mins(20), claimed_by_id: DEMO_VIEWER_ID, claimed_by_name: DEMO_VIEWER_NAME, claimed_at: mins(15), started_at: mins(12) }),
-  // Register — pending, unclaimed
-  demoBase({ id: "demo-p-reg-1", request_type: "register_disclosure", request_status: "pending", submitter_name: "Keisha Brown", borrower_first_name: "DeShawn", borrower_last_name: "Williams", arive_loan_number: "HCMG-2025-4465", loan_type: "purchase_fha", loan_amount: 295000, priority_score: 80, sla_deadline_at: slaDeadline("register_disclosure", 30), sla_severity: "normal", created_at: mins(30), updated_at: mins(30), certified_at: mins(30), lock_status: "locked" }),
-  // Submission — in review, Jordan claimed + started
-  demoBase({ id: "demo-p-sub-1", request_type: "submission", request_status: "in_review", submitter_name: "Tony Marchetti", borrower_first_name: "Ethan", borrower_last_name: "Goldstein", arive_loan_number: "HCMG-2025-4460", loan_type: "purchase", loan_amount: 720000, priority_score: 90, sla_deadline_at: slaDeadline("submission", 1440), sla_severity: "warning", created_at: mins(1440), updated_at: mins(40), certified_at: mins(1440), claimed_by_id: "demo-proc-2", claimed_by_name: "Jordan Patel", claimed_at: mins(1380), started_at: mins(40) }),
-  // Submission — action_needed / sent back by Jordan (SLA critical → BREACHED)
-  demoBase({ id: "demo-p-sub-2", request_type: "submission", request_status: "action_needed", submitter_name: "Carla Nguyen", borrower_first_name: "Robert", borrower_last_name: "Kim", arive_loan_number: "HCMG-2025-4455", loan_type: "refinance", loan_amount: 380000, priority_score: 110, sla_deadline_at: slaDeadline("submission", 2880), sla_severity: "critical", created_at: mins(2880), updated_at: mins(200), certified_at: mins(2880), claimed_by_id: "demo-proc-2", claimed_by_name: "Jordan Patel", claimed_at: mins(2870), started_at: mins(2800), incomplete_reasons: ["Missing W-2s", "Bank statements incomplete"], incomplete_notes: "Need last 2 months bank statements and both years W-2s.", incomplete_at: mins(200), incomplete_by_name: "Jordan Patel" }),
-  // Disclosure — completed on time by Alex (SLA MET)
-  demoBase({ id: "demo-p-disc-1", request_type: "disclosure_only", request_status: "completed", submitter_name: "Mike Torres", borrower_first_name: "Linda", borrower_last_name: "Nguyen", arive_loan_number: "HCMG-2025-4450", loan_type: "purchase", loan_amount: 260000, priority_score: 70, sla_deadline_at: slaDeadline("disclosure_only", 480), sla_severity: "normal", created_at: mins(480), updated_at: mins(5), certified_at: mins(480), claimed_by_id: DEMO_VIEWER_ID, claimed_by_name: DEMO_VIEWER_NAME, claimed_at: mins(470), started_at: mins(460), completed_at: mins(5), completed_email_sent_at: mins(5) }),
-  // Lock — action_needed, SLA BREACHED
-  demoBase({ id: "demo-p-lock-3", request_type: "lock_request", request_status: "action_needed", submitter_name: "Diana Wallace", borrower_first_name: "James", borrower_last_name: "Cho", arive_loan_number: "HCMG-2025-4448", loan_type: "purchase", loan_amount: 510000, priority_score: 130, sla_deadline_at: slaDeadline("lock_request", 75), sla_severity: "critical", created_at: mins(75), updated_at: mins(50), certified_at: mins(75), claimed_by_id: DEMO_VIEWER_ID, claimed_by_name: DEMO_VIEWER_NAME, claimed_at: mins(70), started_at: mins(68), incomplete_reasons: ["Pricing confirmation expired"], incomplete_at: mins(50), incomplete_by_name: DEMO_VIEWER_NAME }),
-];
+  return {
+    viewerId:   DEMO_VIEWER_ID,
+    viewerName: DEMO_VIEWER_NAME,
+    requests: [
+      // Lock — pending, no claim yet
+      demoBase({ id: "demo-p-lock-1", request_type: "lock_request", request_status: "pending", submitter_name: "Sarah Mitchell", borrower_first_name: "Marcus", borrower_last_name: "Thompson", arive_loan_number: "HCMG-2025-4471", loan_type: "purchase", loan_amount: 485000, priority_score: 140, sla_deadline_at: slaDeadline("lock_request", 45), sla_severity: "warning", created_at: mins(45), updated_at: mins(45), certified_at: mins(45) }),
+      // Lock — in review, Alex claimed + started
+      demoBase({ id: "demo-p-lock-2", request_type: "lock_request", request_status: "in_review", submitter_name: "James Rivera", borrower_first_name: "Patricia", borrower_last_name: "Okafor", arive_loan_number: "HCMG-2025-4468", loan_type: "refinance", loan_amount: 320000, priority_score: 120, sla_deadline_at: slaDeadline("lock_request", 20), sla_severity: "normal", created_at: mins(20), updated_at: mins(15), certified_at: mins(20), claimed_by_id: DEMO_VIEWER_ID, claimed_by_name: DEMO_VIEWER_NAME, claimed_at: mins(15), started_at: mins(12) }),
+      // Register — pending, unclaimed
+      demoBase({ id: "demo-p-reg-1", request_type: "register_disclosure", request_status: "pending", submitter_name: "Keisha Brown", borrower_first_name: "DeShawn", borrower_last_name: "Williams", arive_loan_number: "HCMG-2025-4465", loan_type: "purchase_fha", loan_amount: 295000, priority_score: 80, sla_deadline_at: slaDeadline("register_disclosure", 30), sla_severity: "normal", created_at: mins(30), updated_at: mins(30), certified_at: mins(30), lock_status: "locked" }),
+      // Submission — in review, Jordan claimed + started
+      demoBase({ id: "demo-p-sub-1", request_type: "submission", request_status: "in_review", submitter_name: "Tony Marchetti", borrower_first_name: "Ethan", borrower_last_name: "Goldstein", arive_loan_number: "HCMG-2025-4460", loan_type: "purchase", loan_amount: 720000, priority_score: 90, sla_deadline_at: slaDeadline("submission", 1440), sla_severity: "warning", created_at: mins(1440), updated_at: mins(40), certified_at: mins(1440), claimed_by_id: "demo-proc-2", claimed_by_name: "Jordan Patel", claimed_at: mins(1380), started_at: mins(40) }),
+      // Submission — action_needed / sent back by Jordan (SLA critical → BREACHED)
+      demoBase({ id: "demo-p-sub-2", request_type: "submission", request_status: "action_needed", submitter_name: "Carla Nguyen", borrower_first_name: "Robert", borrower_last_name: "Kim", arive_loan_number: "HCMG-2025-4455", loan_type: "refinance", loan_amount: 380000, priority_score: 110, sla_deadline_at: slaDeadline("submission", 2880), sla_severity: "critical", created_at: mins(2880), updated_at: mins(200), certified_at: mins(2880), claimed_by_id: "demo-proc-2", claimed_by_name: "Jordan Patel", claimed_at: mins(2870), started_at: mins(2800), incomplete_reasons: ["Missing W-2s", "Bank statements incomplete"], incomplete_notes: "Need last 2 months bank statements and both years W-2s.", incomplete_at: mins(200), incomplete_by_name: "Jordan Patel" }),
+      // Disclosure — completed on time by Alex (SLA MET)
+      demoBase({ id: "demo-p-disc-1", request_type: "disclosure_only", request_status: "completed", submitter_name: "Mike Torres", borrower_first_name: "Linda", borrower_last_name: "Nguyen", arive_loan_number: "HCMG-2025-4450", loan_type: "purchase", loan_amount: 260000, priority_score: 70, sla_deadline_at: slaDeadline("disclosure_only", 480), sla_severity: "normal", created_at: mins(480), updated_at: mins(5), certified_at: mins(480), claimed_by_id: DEMO_VIEWER_ID, claimed_by_name: DEMO_VIEWER_NAME, claimed_at: mins(470), started_at: mins(460), completed_at: mins(5), completed_email_sent_at: mins(5) }),
+      // Lock — action_needed, SLA BREACHED
+      demoBase({ id: "demo-p-lock-3", request_type: "lock_request", request_status: "action_needed", submitter_name: "Diana Wallace", borrower_first_name: "James", borrower_last_name: "Cho", arive_loan_number: "HCMG-2025-4448", loan_type: "purchase", loan_amount: 510000, priority_score: 130, sla_deadline_at: slaDeadline("lock_request", 75), sla_severity: "critical", created_at: mins(75), updated_at: mins(50), certified_at: mins(75), claimed_by_id: DEMO_VIEWER_ID, claimed_by_name: DEMO_VIEWER_NAME, claimed_at: mins(70), started_at: mins(68), incomplete_reasons: ["Pricing confirmation expired"], incomplete_at: mins(50), incomplete_by_name: DEMO_VIEWER_NAME }),
+    ],
+  };
+}
 
 // ── Real data fetch ────────────────────────────────────────────────────────────
 async function getSLARequests(lockOnly: boolean): Promise<LiftOffRequest[]> {
@@ -153,15 +161,16 @@ export default async function LiftOffSLAPage({
     roles.includes("ops_manager") ||
     roles.includes("lock_desk_admin");
 
-  const viewerId   = isDemo ? DEMO_VIEWER_ID   : profile.id;
-  const viewerName = isDemo ? DEMO_VIEWER_NAME : profile.full_name;
+  const demo = isDemo ? makeDemoRequests() : null;
+  const viewerId   = isDemo ? demo!.viewerId   : profile.id;
+  const viewerName = isDemo ? demo!.viewerName : profile.full_name;
   const roleLabel  = isDemo ? "Demo Mode"      : getLiftOffRoleLabel(roles);
 
   const showLock    = isDemo || canSeeLockRequests(profile);
   const showGeneral = isDemo || canSeeGeneralRequests(profile);
   if (!isDemo && !showLock && !showGeneral) redirect("/liftoff");
 
-  const allRequests = isDemo ? DEMO_REQUESTS : await getSLARequests(lockOnly);
+  const allRequests = isDemo ? demo!.requests : await getSLARequests(lockOnly);
   const requests = isDemo ? allRequests : allRequests.filter(r => {
     if (r.request_type === "lock_request") return showLock;
     return showGeneral;
