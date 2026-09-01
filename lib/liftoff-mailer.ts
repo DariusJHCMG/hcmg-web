@@ -333,7 +333,7 @@ function buildProcessingEmail(r: LiftOffEmailPayload, viewUrl: string): string {
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export async function sendLiftOffNotification(r: LiftOffEmailPayload): Promise<void> {
-  const viewUrl   = `${BASE_URL}/admin/liftoff/${r.id}`;
+  const viewUrl   = `${BASE_URL}/liftoff/${r.id}`;
   const typeLabel = TYPE_LABELS[r.request_type] ?? r.request_type;
   const borrower  = [r.borrower_first_name, r.borrower_last_name].filter(Boolean).join(" ");
 
@@ -752,7 +752,7 @@ function buildResubmissionEmail(p: LiftOffResubmissionPayload, viewUrl: string):
 
 export async function sendLiftOffResubmission(p: LiftOffResubmissionPayload): Promise<void> {
   const r         = p.request;
-  const viewUrl   = `${BASE_URL}/admin/liftoff/${requestField(r, "id")}`;
+  const viewUrl   = `${BASE_URL}/liftoff/${requestField(r, "id")}`;
   const borrower  = [requestField(r, "borrower_first_name"), requestField(r, "borrower_last_name")].filter(Boolean).join(" ");
   const typeLabel = TYPE_LABELS[requestField(r, "request_type") ?? ""] ?? "Lift Off";
   const to = requestField(r, "request_type") === "lock_request" ? LOCK_DESK_EMAIL : PROCESSING_EMAIL;
@@ -836,7 +836,7 @@ export async function sendAllPreviewEmails(to: string): Promise<{ sent: string[]
   const fakeId  = "preview-00000000-0000-0000-0000-000000000001";
   const now     = new Date().toISOString();
   const ago     = (n: number) => new Date(Date.now() - n * 60_000).toISOString();
-  const viewAdm = `${BASE_URL}/admin/liftoff/${fakeId}`;
+  const viewAdm = `${BASE_URL}/liftoff/${fakeId}`;
   const viewLO  = `${BASE_URL}/liftoff/${fakeId}`;
 
   // Shared dummy data
