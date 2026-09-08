@@ -1,5 +1,5 @@
 import { redirect, notFound } from "next/navigation";
-import { getCurrentProfile } from "@/lib/auth";
+import { getCurrentProfile, canAccessLiftOffQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import type { LiftOffRequest } from "@/lib/database.types";
@@ -56,11 +56,35 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-async function getRequest(id: string, userId: string, isAdmin: boolean): Promise<LiftOffRequest | null> {
+async function getRequest(
+  id: string,
+  userId: string,
+  isAdmin: boolean,
+  isOpsUser: boolean,
+): Promise<LiftOffRequest | null> {
   const sb = createServiceClient();
-  let query = sb.from("lift_off_requests").select("*").eq("id", id);
-  if (!isAdmin) query = query.eq("submitter_id", userId);
-  const { data } = await query.single();
+  if (isAdmin) {
+    // Admins see everything
+    const { data } = await sb.from("lift_off_requests").select("*").eq("id", id).single();
+    return data as LiftOffRequest | null;
+  }
+  if (isOpsUser) {
+    // Processors / liftoff_team: only requests assigned or claimed by them
+    const { data } = await sb
+      .from("lift_off_requests")
+      .select("*")
+      .eq("id", id)
+      .or(`assigned_to_id.eq.${userId},claimed_by_id.eq.${userId}`)
+      .single();
+    return data as LiftOffRequest | null;
+  }
+  // Plain LOs: only their own submissions
+  const { data } = await sb
+    .from("lift_off_requests")
+    .select("*")
+    .eq("id", id)
+    .eq("submitter_id", userId)
+    .single();
   return data as LiftOffRequest | null;
 }
 
@@ -77,9 +101,10 @@ export default async function LiftOffDetailPage({
   const { id } = await params;
   const sp = await searchParams;
   const justSubmitted = sp.submitted === "1";
-  const isAdmin = profile.role === "admin" || profile.role === "developer";
+  const isAdmin   = profile.role === "admin" || profile.role === "developer";
+  const isOpsUser = !isAdmin && canAccessLiftOffQueue(profile);
 
-  const request = await getRequest(id, profile.id, isAdmin);
+  const request = await getRequest(id, profile.id, isAdmin, isOpsUser);
   if (!request) notFound();
 
   // Calendar dates (date-only DB fields — no time needed)
