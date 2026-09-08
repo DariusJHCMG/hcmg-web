@@ -27,9 +27,10 @@ const TYPE_ICON: Record<string, string> = {
 
 interface Props {
   initialNotifications?: GoalNotification[];
+  align?: "sidebar" | "right";
 }
 
-export function NotificationCenter({ initialNotifications = [] }: Props) {
+export function NotificationCenter({ initialNotifications = [], align = "right" }: Props) {
   const [open, setOpen]     = useState(false);
   const [list, setList]     = useState<GoalNotification[]>(initialNotifications);
   const [tab, setTab]       = useState<Source>("all");
@@ -112,7 +113,11 @@ export function NotificationCenter({ initialNotifications = [] }: Props) {
 
           {/* Dropdown */}
           <div style={{
-            position: "absolute", right: 0, top: 44, zIndex: 50,
+            position: align === "sidebar" ? "fixed" : "absolute",
+            ...(align === "sidebar"
+              ? { left: 224, top: 8 }
+              : { right: 0,  top: 44 }),
+            zIndex: 50,
             width: 340, maxHeight: "80vh",
             background: "#fff", borderRadius: 16,
             border: "1px solid #E2E8F0",

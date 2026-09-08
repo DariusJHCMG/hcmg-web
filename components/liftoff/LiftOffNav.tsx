@@ -85,7 +85,7 @@ export function LiftOffNav({
                   <p className="text-[10px] text-muted/60 mt-0.5 leading-none">HCMG</p>
                 </div>
               </div>
-              <NotificationCenter />
+              <NotificationCenter align="sidebar" />
             </div>
             <Link href={portalHref}
               className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:opacity-80 transition-opacity">
