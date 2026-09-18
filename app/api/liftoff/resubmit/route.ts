@@ -67,6 +67,9 @@ export async function POST(req: NextRequest) {
     resubmission_notes:       notes ?? null,
     resubmission_confirmed_at: nowStr,
     has_resubmission:         false,
+    // Clear idempotency key — the original key must not be copied or the
+    // unique constraint "idx_lift_off_requests_idempotency_key" will reject the insert
+    idempotency_key:          null,
     // Reset workflow fields
     claimed_by_id:            null,
     claimed_by_name:          null,
