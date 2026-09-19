@@ -1,0 +1,405 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HCMG U — System Implementation Plan</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 40px 20px 60px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  h1 { font-size: 22px; font-weight: 800; color: #142850; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #57606a; margin-bottom: 32px; }
+  .badge {
+    display: inline-block;
+    background: #F37021;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 8px;
+  }
+
+  h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #142850;
+    margin: 36px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  h3 { font-size: 13px; font-weight: 700; color: #1f2328; margin: 18px 0 6px; }
+
+  p { margin-bottom: 10px; color: #374151; }
+
+  /* Section cards */
+  .section { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; }
+  .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #57606a; margin-bottom: 10px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
+  th { background: #142850; color: #fff; text-align: left; padding: 7px 10px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  td { padding: 6px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+
+  /* File tree */
+  .tree { font-family: ui-monospace, Consolas, monospace; font-size: 12px; line-height: 1.85; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
+  .tree-dir { color: #142850; font-weight: 700; }
+  .tree-file { color: #374151; }
+  .tree-new { color: #F37021; font-weight: 600; }
+  .tree-comment { color: #57606a; font-style: italic; }
+
+  /* Tags */
+  .tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+  .tag-new { background: #fff3e0; color: #c45213; }
+  .tag-mod { background: #e8f0fe; color: #1a56db; }
+  .tag-db { background: #e6f9ee; color: #166534; }
+  .tag-api { background: #f3e8ff; color: #6d28d9; }
+  .tag-security { background: #fef3c7; color: #92400e; }
+
+  /* Role matrix */
+  .role-row td:first-child { font-weight: 700; color: #142850; }
+  .yes { color: #166534; font-weight: 700; }
+  .no { color: #991b1b; }
+  .cond { color: #92400e; }
+
+  /* Step list */
+  ol.steps { list-style: none; counter-reset: step; }
+  ol.steps li { counter-increment: step; display: flex; gap: 12px; margin-bottom: 10px; }
+  ol.steps li::before {
+    content: counter(step);
+    display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #142850; color: #fff;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* Warning box */
+  .warn { background: #fef9c3; border: 1px solid #fde047; border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #713f12; margin-bottom: 14px; }
+  .info { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #1e40af; margin-bottom: 14px; }
+
+  .rule { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>HCMG U — Full System Implementation Plan</h1>
+  <p class="subtitle">Harris Capital Mortgage Group · <strong>hcmgloans.com/university</strong> · Integrated into existing Next.js + Supabase application</p>
+
+  
+  <h2>1. Guiding Architecture Decisions</h2>
+
+  <div class="section">
+    <div class="section-title">What we're building on top of</div>
+    <p>The existing HCMG app is a <strong>Next.js 14 App Router</strong> project on Vercel, backed by <strong>Supabase</strong> (Postgres + Auth + Storage + RLS). Auth uses email/password with mandatory TOTP MFA enforced in <code>middleware.ts</code>. The existing <code>profiles</code> table is the single source of truth for identity and roles.</p>
+    <p>HCMG U is added as a new top-level route group <strong><code>/university</code></strong> — the same session, same login page, same Supabase project. No second credential set. No iframe. No separate domain.</p>
+  </div>
+
+  <div class="info">
+    <strong>Auth flow (unchanged):</strong> Visitor → <code>/login?next=/university</code> → password → TOTP MFA → AAL2 JWT issued → middleware validates AAL2 → server layout checks <code>employment_status = active</code> AND <code>university_access = true</code> → user lands in HCMG U.
+  </div>
+
+  <hr class="rule" />
+
+  
+  <h2>2. Database Changes</h2>
+
+  <h3>2a. Extend <code>profiles</code> table — 4 new columns</h3>
+  <table>
+    <tr><th>Column</th><th>Type</th><th>Default</th><th>Purpose</th></tr>
+    <tr><td><code>employment_status</code></td><td>TEXT</td><td><code>'active'</code></td><td>Gating field: <code>active</code> | <code>inactive</code> | <code>suspended</code>. Immediate revocation on change.</td></tr>
+    <tr><td><code>university_access</code></td><td>BOOLEAN</td><td><code>false</code></td><td>Master on/off switch for HCMG U access. Admin can flip instantly.</td></tr>
+    <tr><td><code>university_role</code></td><td>TEXT</td><td><code>'learner'</code></td><td><code>learner</code> | <code>manager</code> | <code>trainer</code> | <code>university_admin</code></td></tr>
+    <tr><td><code>department</code></td><td>TEXT</td><td>NULL</td><td>For department-based course assignments and reporting.</td></tr>
+  </table>
+  <p><em>Existing <code>is_active</code> and <code>manager_id</code> columns are already present and reused.</em></p>
+
+  <h3>2b. New tables — HCMG U schema</h3>
+  <table>
+    <tr><th>Table</th><th>Purpose</th></tr>
+    <tr><td><code>uni_courses</code></td><td>Course catalog. Fields: id, slug, title, description, thumbnail_url, category, path_tag (<code>harrys_playbook</code> | <code>fast_start</code>), is_required, is_published, sort_order, created_by, timestamps.</td></tr>
+    <tr><td><code>uni_lessons</code></td><td>Lessons within a course. Fields: id, course_id, title, description, <strong>video_token</strong> (opaque — real URL resolved server-side only), transcript, resources_json, sort_order, duration_secs, is_published, timestamps.</td></tr>
+    <tr><td><code>uni_enrollments</code></td><td>Assignment records. Fields: id, profile_id, course_id, assigned_by, assignment_type (<code>self</code>|<code>role</code>|<code>department</code>|<code>manager</code>|<code>companywide</code>), due_date. Unique on (profile_id, course_id).</td></tr>
+    <tr><td><code>uni_progress</code></td><td>Per-lesson progress. Fields: id, profile_id, lesson_id, course_id, watch_pct (0–100), completed, completed_at, last_watched_at. Unique on (profile_id, lesson_id).</td></tr>
+    <tr><td><code>uni_quiz_questions</code></td><td>Questions tied to a lesson. Fields: id, lesson_id, question_text, options_json ([{label, is_correct}]), explanation, sort_order.</td></tr>
+    <tr><td><code>uni_quiz_attempts</code></td><td>Attempt records per user per lesson. Fields: id, profile_id, lesson_id, score_pct, passed, answers_json, attempted_at.</td></tr>
+    <tr><td><code>uni_certificates</code></td><td>Issued certificates. Fields: id, profile_id, course_id, issued_at, revoked_at, issued_by. Unique on (profile_id, course_id).</td></tr>
+    <tr><td><code>uni_audit_log</code></td><td>Security + admin event log. Fields: id, actor_id, actor_email, action, entity_type, entity_id, details (JSONB), ip_address, created_at.</td></tr>
+  </table>
+
+  <div class="warn"><strong>Critical security rule on video_token:</strong> The <code>uni_lessons</code> table stores only an opaque token — never a real HeyGen share URL or storage URL. A protected API route (<code>/api/university/video-url</code>) exchanges the token for a short-lived signed URL after verifying the caller's access, then returns it to the client. This keeps real video addresses out of page source entirely.</div>
+
+  <h3>2c. RLS policies (summary)</h3>
+  <table>
+    <tr><th>Table</th><th>SELECT</th><th>INSERT / UPDATE</th><th>DELETE</th></tr>
+    <tr><td>uni_courses</td><td>published OR university_role ≥ trainer</td><td>trainer / university_admin</td><td>university_admin</td></tr>
+    <tr><td>uni_lessons</td><td>parent course accessible + enrollment exists OR admin</td><td>trainer / university_admin</td><td>university_admin</td></tr>
+    <tr><td>uni_enrollments</td><td>own rows OR manager sees team OR admin sees all</td><td>university_admin / manager (team only)</td><td>university_admin</td></tr>
+    <tr><td>uni_progress</td><td>own rows OR manager sees team OR admin sees all</td><td>own rows only (via API)</td><td>—</td></tr>
+    <tr><td>uni_quiz_questions</td><td>trainer / admin</td><td>trainer / admin</td><td>admin</td></tr>
+    <tr><td>uni_quiz_attempts</td><td>own rows OR admin</td><td>own rows (via API)</td><td>—</td></tr>
+    <tr><td>uni_certificates</td><td>own rows OR admin</td><td>university_admin only</td><td>university_admin only</td></tr>
+    <tr><td>uni_audit_log</td><td>university_admin only</td><td>service role only (API)</td><td>—</td></tr>
+  </table>
+  <p><em>All policies use <code>TO authenticated</code> + <code>USING ( auth.uid() = profile_id )</code> ownership predicate. Manager visibility joined through <code>profiles.manager_id</code>. University role read from <code>app_metadata</code> via a <code>SECURITY INVOKER</code> helper function — never from user-editable <code>user_metadata</code>.</em></p>
+
+  <hr class="rule" />
+
+  
+  <h2>3. Middleware Changes</h2>
+
+  <div class="section">
+    <div class="section-title">middleware.ts additions (surgical — no existing logic touched)</div>
+    <ol class="steps">
+      <li>Add <code>isUniversityRoute = pathname.startsWith("/university")</code> to the route detection block.</li>
+      <li>Add <code>isUniversityRoute</code> to <code>isProtectedRoute</code> so MFA (AAL2) is enforced on all <code>/university/*</code> paths automatically — same logic already used for <code>/admin</code> and <code>/portal</code>.</li>
+      <li>Unauthenticated visitor on a university route → redirect to <code>/login?next=/university</code> (sanitized: only <code>/university*</code> internal paths are accepted as <code>next</code> values).</li>
+      <li>Add <code>/university/:path*</code> and <code>/university</code> to the <code>matcher</code> config array.</li>
+      <li>Sanitize <code>next</code> parameter: reject any value that does not start with <code>/</code> or that starts with <code>//</code> or contains a protocol (<code>:</code>).</li>
+    </ol>
+    <p><em>The deeper authorization check (employment_status + university_access) is intentionally done in the layout server component, not middleware, to keep middleware lean and avoid extra DB calls on every route segment during navigation.</em></p>
+  </div>
+
+  <hr class="rule" />
+
+  
+  <h2>4. File &amp; Folder Structure</h2>
+
+  <div class="tree">
+<span class="tree-dir">app/university/</span>
+├── <span class="tree-new">layout.tsx</span>               <span class="tree-comment">← server component; auth + employment + university_access gate; noindex metadata</span>
+├── <span class="tree-new">page.tsx</span>                 <span class="tree-comment">← learner dashboard (Harry's Playbook path, Fast Start, continue watching, progress)</span>
+├── <span class="tree-dir">course/[slug]/</span>
+│   └── <span class="tree-new">page.tsx</span>             <span class="tree-comment">← course overview: lesson list, progress ring, enroll CTA, certificate status</span>
+├── <span class="tree-dir">lesson/[id]/</span>
+│   └── <span class="tree-new">page.tsx</span>             <span class="tree-comment">← lesson player: video embed, transcript, resources, quiz, next-lesson navigation</span>
+├── <span class="tree-dir">search/</span>
+│   └── <span class="tree-new">page.tsx</span>             <span class="tree-comment">← searchable video library with category filters</span>
+├── <span class="tree-dir">certificates/</span>
+│   └── <span class="tree-new">page.tsx</span>             <span class="tree-comment">← user's earned certificates, printable view</span>
+└── <span class="tree-dir">admin/</span>
+    ├── <span class="tree-new">layout.tsx</span>           <span class="tree-comment">← server; requires university_role = university_admin OR trainer (as applicable)</span>
+    ├── <span class="tree-new">page.tsx</span>             <span class="tree-comment">← admin dashboard: completion rates, overdue, recent activity</span>
+    ├── <span class="tree-dir">courses/</span>
+    │   ├── <span class="tree-new">page.tsx</span>         <span class="tree-comment">← course list with publish/archive/reorder controls</span>
+    │   ├── <span class="tree-new">new/page.tsx</span>     <span class="tree-comment">← create course form</span>
+    │   └── <span class="tree-dir">[id]/</span>
+    │       └── <span class="tree-new">page.tsx</span>     <span class="tree-comment">← edit course + manage lessons + add quiz questions</span>
+    ├── <span class="tree-dir">assignments/</span>
+    │   └── <span class="tree-new">page.tsx</span>         <span class="tree-comment">← assign courses by user / role / dept / manager / companywide</span>
+    ├── <span class="tree-dir">reports/</span>
+    │   └── <span class="tree-new">page.tsx</span>         <span class="tree-comment">← completion %, overdue, quiz performance, last activity; CSV export</span>
+    └── <span class="tree-dir">users/</span>
+        └── <span class="tree-new">page.tsx</span>         <span class="tree-comment">← university_access toggle, university_role change, instant deactivation</span>
+  </div>
+
+  <div class="tree">
+<span class="tree-dir">app/api/university/</span>
+├── <span class="tree-new">progress/route.ts</span>        <span class="tree-comment">← POST: upsert watch_pct + mark completed. Server validates auth + enrollment.</span>
+├── <span class="tree-new">quiz/route.ts</span>            <span class="tree-comment">← POST: score attempt, write uni_quiz_attempts, trigger certificate check.</span>
+├── <span class="tree-new">video-url/route.ts</span>       <span class="tree-comment">← GET: exchanges video_token → short-lived signed URL. Never cached.</span>
+├── <span class="tree-new">certificate/route.ts</span>     <span class="tree-comment">← POST (admin): issue or revoke. GET (learner): download signed PDF URL.</span>
+└── <span class="tree-new">resource-url/route.ts</span>    <span class="tree-comment">← GET: Supabase Storage signed URL (60s TTL) for private downloadable resources.</span>
+  </div>
+
+  <div class="tree">
+<span class="tree-dir">components/university/</span>
+├── <span class="tree-new">UniversityLayoutClient.tsx</span>  <span class="tree-comment">← sidebar shell (navy, HCMG U branding)</span>
+├── <span class="tree-new">UniversitySidebar.tsx</span>       <span class="tree-comment">← nav: Dashboard, Harry's Playbook, Fast Start, Search, Certificates, ← Back to Portal</span>
+├── <span class="tree-new">CourseCard.tsx</span>              <span class="tree-comment">← progress ring, required badge, due date, continue/start CTA</span>
+├── <span class="tree-new">LessonPlayer.tsx</span>            <span class="tree-comment">← video embed wrapper; calls /api/university/video-url; reports progress on timeupdate</span>
+├── <span class="tree-new">ProgressRing.tsx</span>            <span class="tree-comment">← SVG ring showing lesson completion %</span>
+├── <span class="tree-new">QuizBlock.tsx</span>               <span class="tree-comment">← inline quiz UI: questions, options, submit, score reveal, explanation</span>
+└── <span class="tree-dir">admin/</span>
+    ├── <span class="tree-new">CourseEditor.tsx</span>         <span class="tree-comment">← form: title, description, thumbnail, category, path_tag, is_required</span>
+    ├── <span class="tree-new">LessonEditor.tsx</span>         <span class="tree-comment">← form: title, video_token, transcript, resources, sort order</span>
+    ├── <span class="tree-new">AssignmentPanel.tsx</span>      <span class="tree-comment">← course × target selector (user / role / dept / manager / all)</span>
+    └── <span class="tree-new">ReportTable.tsx</span>          <span class="tree-comment">← sortable table: assigned, started, completed, overdue, last activity, CSV button</span>
+  </div>
+
+  <div class="tree">
+<span class="tree-dir">lib/</span>
+├── <span class="tree-mod">auth.ts</span>                     <span class="tree-comment">← add: hasUniversityAccess(), getUniversityRole(), isUniversityAdmin(), logUniAudit()</span>
+└── <span class="tree-mod">database.types.ts</span>           <span class="tree-comment">← add: UniCourse, UniLesson, UniEnrollment, UniProgress, UniQuizAttempt, UniCertificate types + UniversityRole enum</span>
+  </div>
+
+  <hr class="rule" />
+
+  
+  <h2>5. Authorization Model</h2>
+
+  <table>
+    <tr><th>university_role</th><th>View own courses</th><th>View team progress</th><th>Create/edit courses</th><th>Manage users/access</th><th>View all reports</th><th>Issue/revoke certs</th></tr>
+    <tr class="role-row"><td>learner</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+    <tr class="role-row"><td>manager</td><td class="yes">✓</td><td class="cond">own team only</td><td class="no">✗</td><td class="no">✗</td><td class="cond">own team only</td><td class="no">✗</td></tr>
+    <tr class="role-row"><td>trainer</td><td class="yes">✓</td><td class="no">✗</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+    <tr class="role-row"><td>university_admin</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+  </table>
+
+  <p>The existing portal <code>role = admin</code> or <code>developer</code> implicitly grants <code>university_admin</code>. These are not stored separately — <code>hasUniversityAccess()</code> in <code>lib/auth.ts</code> checks both.</p>
+
+  <div class="warn">
+    <strong>Dual gate on every server component:</strong> Both conditions must pass to enter HCMG U —<br />
+    1. <code>profile.is_active = true</code> AND <code>profile.employment_status = 'active'</code><br />
+    2. <code>profile.university_access = true</code><br />
+    If either fails: show neutral "Access Denied" screen with support email. Zero course metadata shown.
+  </div>
+
+  <hr class="rule" />
+
+  
+  <h2>6. Security Architecture</h2>
+
+  <table>
+    <tr><th>Concern</th><th>How it's handled</th></tr>
+    <tr><td>Route protection</td><td>Middleware enforces AAL2 (MFA verified). Layout server component enforces employment + university_access. Both must pass.</td></tr>
+    <tr><td>Former employee revocation</td><td>Setting <code>employment_status = 'inactive'</code> OR <code>university_access = false</code> blocks access on next request — even if a browser session is still alive — because <code>getCurrentProfile()</code> re-queries the DB on every protected layout render.</td></tr>
+    <tr><td>Video URL exposure</td><td><code>video_token</code> stored in DB (not the real URL). <code>/api/university/video-url</code> verifies auth + enrollment, then returns a short-lived signed URL. Never stored in DOM or page source.</td></tr>
+    <tr><td>Downloadable resources</td><td>Stored in a private Supabase Storage bucket. <code>/api/university/resource-url</code> issues a 60-second signed URL per file per authenticated, enrolled user.</td></tr>
+    <tr><td>Quiz integrity</td><td>Correct answers never sent to client. <code>/api/university/quiz</code> scores server-side from DB, writes attempt record, triggers certificate logic.</td></tr>
+    <tr><td>RLS</td><td>RLS enabled on all 8 new tables. Users can only SELECT their own progress rows; admins use service-role API routes for writes that span users.</td></tr>
+    <tr><td>SEO exclusion</td><td><code>robots: { index: false, follow: false }</code> in the university layout metadata (same pattern as admin/portal). Matches existing conventions.</td></tr>
+    <tr><td>Audit logging</td><td><code>uni_audit_log</code> records: sign-in to /university, lesson started/completed, quiz attempt, certificate issued/revoked, access granted/revoked, failed access attempt, admin CRUD actions.</td></tr>
+    <tr><td>CSP</td><td>HeyGen embed domain added to <code>frame-src</code> in <code>buildCsp()</code> in middleware. Only approved video hosts.</td></tr>
+  </table>
+
+  <hr class="rule" />
+
+  
+  <h2>7. Learner Experience — Page-by-Page</h2>
+
+  <table>
+    <tr><th>Page / Route</th><th>What the learner sees</th></tr>
+    <tr><td><code>/university</code></td><td>Welcome header ("Train. Learn. Close. Win."), Continue Watching row, Harry's Playbook learning path card, New LO Fast Start card, Required Courses section, Recent Activity.</td></tr>
+    <tr><td><code>/university/course/[slug]</code></td><td>Course hero, lesson list with individual progress indicators, estimated total time, required badge, certificate status, Enroll/Start/Continue button.</td></tr>
+    <tr><td><code>/university/lesson/[id]</code></td><td>Video player (secure embed via signed URL), lesson title, category tag, transcript accordion, downloadable resources (signed 60s URLs), inline quiz block, Next Lesson navigation, Back to Course breadcrumb.</td></tr>
+    <tr><td><code>/university/search</code></td><td>Full-text search across lesson titles + descriptions. Filter by category (Sales &amp; Conversion, Products &amp; Guidelines, Systems &amp; Operations, Compliance). Grid card layout.</td></tr>
+    <tr><td><code>/university/certificates</code></td><td>Grid of earned certificates with course name, completion date, download/print link.</td></tr>
+  </table>
+
+  <hr class="rule" />
+
+  
+  <h2>8. Admin Experience — Page-by-Page</h2>
+
+  <table>
+    <tr><th>Page / Route</th><th>Admin sees / can do</th></tr>
+    <tr><td><code>/university/admin</code></td><td>KPI cards: total enrolled, completions this month, overdue assignments, avg quiz score. Recent sign-ins. Quick links.</td></tr>
+    <tr><td><code>/university/admin/courses</code></td><td>Sortable course table. Publish/unpublish/archive. Drag-to-reorder sort_order. Required toggle. New Course button.</td></tr>
+    <tr><td><code>/university/admin/courses/[id]</code></td><td>Edit course metadata. Manage lessons (add, edit, delete, reorder). Add quiz questions per lesson. Upload thumbnail. Set path_tag.</td></tr>
+    <tr><td><code>/university/admin/assignments</code></td><td>Select course → select target (individual user, role, department, manager's team, or companywide) → set due date → Assign. Bulk assignment.</td></tr>
+    <tr><td><code>/university/admin/reports</code></td><td>Table: employee, assigned courses, started, completed, overdue, last activity, quiz avg. Filter by role/dept/manager. Export CSV. Certificate issuance from here.</td></tr>
+    <tr><td><code>/university/admin/users</code></td><td>Toggle <code>university_access</code>, change <code>university_role</code>, view individual progress summary, immediate revocation button.</td></tr>
+  </table>
+
+  <hr class="rule" />
+
+  
+  <h2>9. Key API Routes</h2>
+
+  <table>
+    <tr><th>Route</th><th>Method</th><th>Auth required</th><th>What it does</th></tr>
+    <tr><td><code>/api/university/progress</code></td><td>POST</td><td>AAL2 + active + university_access + enrolled</td><td>Upsert <code>uni_progress</code> row (watch_pct, completed). Writes audit log.</td></tr>
+    <tr><td><code>/api/university/quiz</code></td><td>POST</td><td>AAL2 + active + enrolled</td><td>Score quiz server-side, write attempt, check if course is now 100% complete → trigger certificate.</td></tr>
+    <tr><td><code>/api/university/video-url</code></td><td>GET</td><td>AAL2 + active + enrollment in parent course</td><td>Resolve <code>video_token</code> → signed URL. No caching. Log access.</td></tr>
+    <tr><td><code>/api/university/resource-url</code></td><td>GET</td><td>AAL2 + active + enrollment</td><td>Supabase Storage <code>createSignedUrl</code> (60s). Log download.</td></tr>
+    <tr><td><code>/api/university/certificate</code></td><td>POST</td><td>AAL2 + university_admin</td><td>Issue or revoke certificate. Log event.</td></tr>
+    <tr><td><code>/api/university/admin/export</code></td><td>GET</td><td>AAL2 + university_admin</td><td>Stream CSV of completion/compliance data.</td></tr>
+  </table>
+
+  <hr class="rule" />
+
+  
+  <h2>10. Visual Design Direction</h2>
+
+  <div class="section">
+    <div class="section-title">Design tokens — extending the existing Tailwind config</div>
+    <p>The existing HCMG design system (navy <code>#142850</code>, orange <code>#F37021</code>, white, Montserrat bold) is reused wholesale. HCMG U adds a thin layer of university-specific brand expression:</p>
+    <ul style="padding-left:18px;margin-bottom:10px;color:#374151">
+      <li>Sidebar label reads <strong>"HCMG U"</strong> under the Orange Key logo</li>
+      <li>Learning path cards use HCMG navy backgrounds with orange accent progress indicators</li>
+      <li>Course hero banners use the navy-to-deep-navy gradient (<code>linear-gradient(145deg, #142850, #1a3260)</code>) already used on the login panel</li>
+      <li>Progress rings are SVG, orange stroke on navy background</li>
+      <li>Required course badge: red dot + "Required" label</li>
+      <li>Certificate cards: gold accent variant of the existing card shadow</li>
+    </ul>
+    <p>No new Tailwind colors needed. Layout pattern mirrors admin/portal: fixed sidebar left, scrollable main content right, 14px mobile hamburger that collapses into a drawer.</p>
+  </div>
+
+  <hr class="rule" />
+
+  
+  <h2>11. Build Sequence (Implementation Order)</h2>
+
+  <ol class="steps">
+    <li><strong>DB migration</strong> — Add 4 profile columns + create all 8 university tables with RLS policies. Single migration file: <code>20260901_hcmg_university.sql</code>. Backfill: existing admins → university_admin access; existing active LOs → learner access.</li>
+    <li><strong>TypeScript types</strong> — Add <code>UniversityRole</code> type + all 8 table interfaces to <code>lib/database.types.ts</code>. Extend <code>Profile</code> interface with 4 new columns.</li>
+    <li><strong>lib/auth.ts additions</strong> — <code>hasUniversityAccess()</code>, <code>getUniversityRole()</code>, <code>isUniversityAdmin()</code>, <code>logUniAudit()</code>. No changes to existing functions.</li>
+    <li><strong>middleware.ts</strong> — Add <code>isUniversityRoute</code>, add to <code>isProtectedRoute</code>, add to matcher, add <code>next</code> sanitization helper.</li>
+    <li><strong>API routes</strong> — All 6 routes under <code>/api/university/</code>. Each validates auth with <code>getUser()</code> + DB profile check before touching any data.</li>
+    <li><strong>University layout + access-denied screen</strong> — <code>app/university/layout.tsx</code> (server, dual gate) + <code>components/university/UniversityLayoutClient.tsx</code> + <code>UniversitySidebar.tsx</code>.</li>
+    <li><strong>Learner pages</strong> — Dashboard, Course, Lesson, Search, Certificates pages in order.</li>
+    <li><strong>Admin sub-layout + pages</strong> — <code>app/university/admin/layout.tsx</code> + all 5 admin pages.</li>
+    <li><strong>Admin components</strong> — CourseEditor, LessonEditor, AssignmentPanel, ReportTable.</li>
+    <li><strong>CSP update</strong> — Add HeyGen embed domain to <code>frame-src</code> in middleware <code>buildCsp()</code>.</li>
+    <li><strong>Typecheck + lint pass</strong> — <code>tsc --noEmit</code> clean before calling done.</li>
+  </ol>
+
+  <hr class="rule" />
+
+  
+  <h2>12. What Is Explicitly Not Changing</h2>
+
+  <div class="section">
+    <ul style="padding-left:18px;color:#374151">
+      <li>The existing <code>/login</code> page — zero modifications. HCMG U reuses it via <code>?next=/university</code>.</li>
+      <li>The existing MFA enrollment / TOTP verification flow — unchanged.</li>
+      <li>The <code>profiles</code> RLS policies for existing columns — only additive column changes.</li>
+      <li>The <code>/portal</code>, <code>/admin</code>, <code>/liftoff</code>, or <code>/goal-engine</code> routes — no cross-contamination.</li>
+      <li>Supabase project — same project, same anon key, same service role. No second Supabase instance.</li>
+    </ul>
+  </div>
+
+  <hr class="rule" />
+
+  
+  <h2>13. Acceptance Checklist Mapping</h2>
+
+  <table>
+    <tr><th>#</th><th>Acceptance Item</th><th>Satisfied By</th></tr>
+    <tr><td>1</td><td>Unauthenticated → redirect to Team Login</td><td>Middleware <code>isUniversityRoute</code> + no user → <code>/login?next=/university</code></td></tr>
+    <tr><td>2</td><td>After MFA → return to /university</td><td>Existing login <code>next</code> param flow (already works for /portal and /admin)</td></tr>
+    <tr><td>3</td><td>Active authorized employee can access training</td><td>Layout dual gate passes; enrollments loaded from DB</td></tr>
+    <tr><td>4</td><td>Inactive employee → access denied, no training data</td><td>Layout checks <code>employment_status + university_access</code> before any data fetch</td></tr>
+    <tr><td>5</td><td>Former employee loses access immediately</td><td><code>getCurrentProfile()</code> re-queries DB on every layout render; deactivation is instant</td></tr>
+    <tr><td>6</td><td>Direct links to lessons/files/APIs bypass nothing</td><td>All API routes call <code>getUser()</code> + profile gate; middleware covers page routes</td></tr>
+    <tr><td>7</td><td>Role permissions block ordinary users from admin</td><td><code>app/university/admin/layout.tsx</code> checks <code>university_role = university_admin OR trainer</code></td></tr>
+    <tr><td>8</td><td>Learner can leave and return to saved progress</td><td><code>uni_progress</code> table; <code>/api/university/progress</code> upserts on timeupdate</td></tr>
+    <tr><td>9</td><td>Completions + quiz results written to employee record</td><td><code>uni_progress.completed</code> + <code>uni_quiz_attempts</code> via API routes</td></tr>
+    <tr><td>10</td><td>Private resources use protected / time-limited URLs</td><td>Storage signed URLs (60s) via <code>/api/university/resource-url</code></td></tr>
+    <tr><td>11</td><td>All /university routes excluded from indexing</td><td><code>robots: { index: false, follow: false }</code> in <code>app/university/layout.tsx</code> metadata</td></tr>
+    <tr><td>12</td><td>Desktop + mobile match HCMG design</td><td>Sidebar shell mirrors portal/admin pattern; Tailwind responsive classes</td></tr>
+    <tr><td>13</td><td>Reports show assigned / started / completed / overdue</td><td><code>/university/admin/reports</code> queries <code>uni_enrollments</code> + <code>uni_progress</code> joins</td></tr>
+    <tr><td>14</td><td>Audit logs record meaningful events</td><td><code>uni_audit_log</code> written by all API routes + access-denied events in layout</td></tr>
+  </table>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

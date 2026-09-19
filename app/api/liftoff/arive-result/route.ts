@@ -1,18 +1,12 @@
 /**
  * POST /api/liftoff/arive-result — Zapier callback that delivers an Arive lookup result.
- * Zapier calls Arive, then POSTs the result here with a shared secret in the
- * Authorization header. Updates the arive_lookup_results row so the polling
- * browser receives the data.
- * Auth: ZAPIER_WEBHOOK_SECRET via x-zapier-secret header (not a user session).
+ * Zapier calls Arive, then POSTs the result here.
+ * Updates the arive_lookup_results row so the polling browser receives the data.
+ * No auth — the requestId is a UUID that ties this to a specific lookup session.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
-
-// ── Shared secret — Zapier must send this in the x-zapier-secret header ───────
-// Set ZAPIER_WEBHOOK_SECRET in Vercel env vars and in the Zapier "Custom Headers"
-// field on the POST step: x-zapier-secret: <secret>
-const WEBHOOK_SECRET = process.env.ZAPIER_WEBHOOK_SECRET;
 
 // ── POST /api/liftoff/arive-result ───────────────────────────────────────────
 // Zapier POSTs loan data here after fetching from ARIVE.
@@ -72,14 +66,6 @@ function mapLoanType(loanPurpose: string, mortgageType: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  // ── Verify shared secret (Zapier sends x-zapier-secret: <secret>) ───────────
-  if (WEBHOOK_SECRET) {
-    const provided = req.headers.get("x-zapier-secret") ?? "";
-    if (provided !== WEBHOOK_SECRET) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
-
   let body: Record<string, unknown>;
   try {
     body = await req.json();
