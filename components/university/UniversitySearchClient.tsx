@@ -1,25 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { CourseCard } from "@/components/university/CourseCard";
 import type { UniCourse } from "@/lib/database.types";
 
 const FILTERS = [
-  { key: "all",           label: "All training" },
-  { key: "start",         label: "New LO Fast Start" },
+  { key: "all",             label: "All training" },
+  { key: "start",           label: "New LO Fast Start" },
   { key: "harrys_playbook", label: "Harry's Playbook" },
-  { key: "sales",         label: "Sales & Conversion" },
-  { key: "product",       label: "Products & Guidelines" },
-  { key: "operations",    label: "Systems & Operations" },
-  { key: "compliance",    label: "Compliance" },
+  { key: "sales",           label: "Sales & Conversion" },
+  { key: "product",         label: "Products & Guidelines" },
+  { key: "operations",      label: "Systems & Operations" },
+  { key: "compliance",      label: "Compliance" },
 ];
 
-// Map path param values to filter keys
 const PATH_TO_FILTER: Record<string, string> = {
   harrys_playbook: "harrys_playbook",
   fast_start:      "start",
 };
+
+interface SearchResult {
+  id: string;
+  title: string;
+  description: string | null;
+  rank?: number;
+}
 
 interface Props {
   courses: UniCourse[];
@@ -32,20 +38,50 @@ export function UniversitySearchClient({ courses, enrolledIds, progressMap }: Pr
   const pathParam     = searchParams.get("path");
   const initialFilter = pathParam ? (PATH_TO_FILTER[pathParam] ?? "all") : "all";
 
-  const [filter, setFilter] = useState(initialFilter);
-  const [search, setSearch] = useState("");
+  const [filter, setFilter]     = useState(initialFilter);
+  const [search, setSearch]     = useState("");
+  const [ftsIds, setFtsIds]     = useState<Set<string> | null>(null);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Re-apply filter if the ?path= param changes (e.g. browser back/forward)
   useEffect(() => {
     const p = searchParams.get("path");
     setFilter(p ? (PATH_TO_FILTER[p] ?? "all") : "all");
   }, [searchParams]);
 
+  // Call FTS API when user types a query; clear results when query is empty
+  const runFts = useCallback((q: string) => {
+    if (!q.trim()) {
+      setFtsIds(null);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    fetch(`/api/university/search?q=${encodeURIComponent(q.trim())}&type=course`)
+      .then(r => r.json())
+      .then((data: { results?: SearchResult[] }) => {
+        setFtsIds(new Set((data.results ?? []).map((r: SearchResult) => r.id)));
+      })
+      .catch(() => setFtsIds(null))
+      .finally(() => setSearching(false));
+  }, []);
+
+  function handleSearch(q: string) {
+    setSearch(q);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => runFts(q), 300);
+  }
+
+  // When a search query exists and FTS has returned results, show only those
+  // course cards. Otherwise fall back to local category filter.
   const filtered = courses.filter(c => {
-    const catMatch  = filter === "all" || c.category === filter || c.path_tag === filter;
-    const q         = search.trim().toLowerCase();
-    const textMatch = !q || c.title.toLowerCase().includes(q) || (c.description ?? "").toLowerCase().includes(q);
-    return catMatch && textMatch;
+    if (search.trim() && ftsIds !== null) {
+      // FTS mode: match against FTS results + optionally category
+      return ftsIds.has(c.id) && (filter === "all" || c.category === filter || c.path_tag === filter);
+    }
+    // Local filter mode
+    const catMatch = filter === "all" || c.category === filter || c.path_tag === filter;
+    return catMatch;
   });
 
   return (
@@ -72,17 +108,20 @@ export function UniversitySearchClient({ courses, enrolledIds, progressMap }: Pr
           borderRadius: 10, padding: "0 16px", height: 48,
           maxWidth: 520,
         }}>
-          <span style={{ color: "#687383", fontSize: 18 }}>⌕</span>
+          <span style={{ color: searching ? "#f58220" : "#687383", fontSize: 18, transition: "color 0.2s" }}>⌕</span>
           <input
             type="search"
             placeholder="Search lessons, products, or skills"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
             style={{
               border: "none", outline: "none", background: "transparent",
               fontSize: 14, color: "#fff", flex: 1,
             }}
           />
+          {searching && (
+            <span style={{ fontSize: 11, color: "#687383", whiteSpace: "nowrap" }}>Searching…</span>
+          )}
         </label>
 
         {/* Filters */}
@@ -107,7 +146,12 @@ export function UniversitySearchClient({ courses, enrolledIds, progressMap }: Pr
 
       {/* Grid */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px clamp(16px,4vw,40px) 64px" }}>
-        {filtered.length > 0 ? (
+        {/* Show searching placeholder */}
+        {searching && (
+          <p style={{ textAlign: "center", color: "#687383", padding: "40px 0", fontSize: 14 }}>Searching…</p>
+        )}
+
+        {!searching && filtered.length > 0 && (
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
@@ -122,9 +166,11 @@ export function UniversitySearchClient({ courses, enrolledIds, progressMap }: Pr
               />
             ))}
           </div>
-        ) : (
+        )}
+
+        {!searching && filtered.length === 0 && (
           <p style={{ textAlign: "center", color: "#687383", padding: "60px 0", fontSize: 14 }}>
-            No lessons match your search.
+            {search.trim() ? `No results for "${search}".` : "No courses in this category."}
           </p>
         )}
       </div>

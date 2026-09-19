@@ -6,7 +6,7 @@ import { QuizBlock } from "@/components/university/QuizBlock";
 import Link from "next/link";
 
 interface Resource { label: string; storage_path: string }
-interface QuizQuestion { id: string; question_text: string; options: { label: string }[]; explanation?: string | null }
+interface QuizQuestion { id: string; question_text: string; options: { label: string }[]; explanation?: string | null; question_type?: string }
 
 interface Props {
   lessonId: string;

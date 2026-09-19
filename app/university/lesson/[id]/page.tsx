@@ -64,7 +64,7 @@ export default async function LessonPage({ params }: Props) {
   // Quiz questions (strip is_correct — sent as options only)
   const { data: questions } = await sb
     .from("uni_quiz_questions")
-    .select("id, question_text, options_json, explanation")
+    .select("id, question_text, options_json, explanation, question_type")
     .eq("lesson_id", id)
     .order("sort_order");
 
@@ -72,6 +72,7 @@ export default async function LessonPage({ params }: Props) {
     id:            q.id,
     question_text: q.question_text,
     explanation:   q.explanation,
+    question_type: (q.question_type ?? "multiple_choice") as string,
     options:       (q.options_json as { label: string; is_correct: boolean }[]).map(o => ({ label: o.label })),
   }));
 

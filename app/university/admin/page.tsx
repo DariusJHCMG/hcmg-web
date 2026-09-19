@@ -1,4 +1,5 @@
-import { getCurrentProfile } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getVerifiedProfile, isUniversityAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -9,8 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default async function UniversityAdminPage() {
-  const profile = await getCurrentProfile();
-  if (!profile) return null;
+  const profile = await getVerifiedProfile();
+  if (!profile) redirect("/login?next=/university/admin");
+  if (!isUniversityAdmin(profile)) redirect("/university");
 
   const sb = createServiceClient();
 

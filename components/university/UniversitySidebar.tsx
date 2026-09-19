@@ -14,12 +14,21 @@ const NAV = [
   { label: "Certificates",     href: "/university/certificates",            icon: "◈" },
 ];
 
+const MANAGER_NAV = [
+  { label: "My Team", href: "/university/manager", icon: "👥" },
+];
+
 const ADMIN_NAV = [
   { label: "Admin Dashboard", href: "/university/admin",              icon: "⚙" },
   { label: "Courses",         href: "/university/admin/courses",      icon: "📋" },
   { label: "Assignments",     href: "/university/admin/assignments",  icon: "▦" },
   { label: "Reports",         href: "/university/admin/reports",      icon: "📊" },
+  { label: "Compliance",      href: "/university/admin/compliance",   icon: "✓" },
+  { label: "Exemptions",      href: "/university/admin/exemptions",   icon: "◎" },
   { label: "Users",           href: "/university/admin/users",        icon: "👥" },
+  { label: "Org Units",       href: "/university/admin/org-units",    icon: "🏢" },
+  { label: "HR Overview",     href: "/university/hr",                 icon: "👔" },
+  { label: "Audit Log",       href: "/university/admin/audit-log",    icon: "🔍" },
 ];
 
 interface Props {
@@ -32,7 +41,8 @@ function SidebarContent({ universityRole, onNavClick }: Props) {
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
 
-  const isAdmin = universityRole === "university_admin" || universityRole === "trainer";
+  const isAdmin   = universityRole === "university_admin" || universityRole === "trainer";
+  const isManager = universityRole === "manager" || universityRole === "university_admin";
 
   async function signOut() {
     setSigningOut(true);
@@ -94,6 +104,34 @@ function SidebarContent({ universityRole, onNavClick }: Props) {
             </Link>
           ))}
         </div>
+
+        {isManager && !isAdmin && (
+          <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "1.4px", color: "#687383", textTransform: "uppercase", padding: "0 12px 8px" }}>
+              Manager
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {MANAGER_NAV.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavClick}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "9px 12px", borderRadius: 10, textDecoration: "none",
+                    fontSize: 13, fontWeight: 600,
+                    background: isActive(item.href) ? "rgba(245,130,32,0.15)" : "transparent",
+                    color: isActive(item.href) ? "#f58220" : "#b9c5d0",
+                    transition: "background 0.15s, color 0.15s",
+                  }}
+                >
+                  <span style={{ fontSize: 14, lineHeight: 1 }}>{item.icon}</span>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {isAdmin && (
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.08)" }}>

@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
-import { getCurrentProfile, isUniversityTrainer, logUniAudit } from "@/lib/auth";
+import {
+  getVerifiedProfile,
+  isUniversityTrainer,
+  isUniversityAdmin,
+  logUniAudit,
+} from "@/lib/auth";
 
 interface Props { params: Promise<{ id: string }> }
 
-// PATCH /api/university/admin/course/[id] — update course (JSON body)
+// PATCH /api/university/admin/course/[id] — update course metadata
+//
+// Phase 0 security changes:
+//   - Uses getVerifiedProfile() (server-validated token).
+//   - is_published and is_required are admin-only fields. Trainers can update
+//     all other metadata. Silently strips admin-only fields from trainer requests
+//     (so the UI does not need special-case logic, but the server enforces it).
 export async function PATCH(request: NextRequest, { params }: Props) {
   const { id } = await params;
-  const profile = await getCurrentProfile();
+  const profile = await getVerifiedProfile();
   if (!profile || !isUniversityTrainer(profile)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -16,18 +27,29 @@ export async function PATCH(request: NextRequest, { params }: Props) {
   try { body = await request.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  const allowed = [
-    "title","slug","description","thumbnail_url","category",
-    "path_tag","pill_color","duration_label","is_published","is_required","sort_order",
+  // Fields any trainer (or admin) can update
+  const trainerAllowed = [
+    "title", "slug", "description", "thumbnail_url", "category",
+    "path_tag", "pill_color", "duration_label", "sort_order",
   ];
+  // Admin-only fields — only applied when caller has university_admin
+  const adminOnly = ["is_published", "is_required"];
+
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  for (const key of allowed) {
+
+  for (const key of trainerAllowed) {
     if (key in body) updates[key] = body[key];
   }
+  if (isUniversityAdmin(profile)) {
+    for (const key of adminOnly) {
+      if (key in body) updates[key] = body[key];
+    }
+  }
 
-  // If slug being changed, check uniqueness
+  const sb = createServiceClient();
+
+  // Slug uniqueness check
   if (updates.slug) {
-    const sb = createServiceClient();
     const { data: existing } = await sb
       .from("uni_courses")
       .select("id")
@@ -39,7 +61,6 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     }
   }
 
-  const sb = createServiceClient();
   const { data, error } = await sb
     .from("uni_courses")
     .update(updates)
@@ -61,7 +82,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
   return NextResponse.json(data);
 }
 
-// Also keep POST for backwards compatibility (same as PATCH)
+// POST for backwards compatibility (CourseEditorForm uses POST)
 export async function POST(request: NextRequest, ctx: Props) {
   return PATCH(request, ctx);
 }

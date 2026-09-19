@@ -6,7 +6,160 @@ export type UniversityRole = "learner" | "manager" | "trainer" | "university_adm
 export type EmploymentStatus = "active" | "inactive" | "suspended";
 export type AssignmentType = "self" | "role" | "department" | "manager" | "companywide";
 export type CourseCategory = "general" | "start" | "sales" | "product" | "operations" | "compliance";
+// PathTag kept for backward compatibility; formal paths now use uni_paths table
 export type PathTag = "harrys_playbook" | "fast_start" | "sales" | "product" | "operations" | "compliance";
+export type ContentStatus = "draft" | "in_review" | "approved" | "published" | "archived";
+export type ActivityType = "video" | "pdf" | "audio" | "link" | "embed" | "document" | "interactive" | "survey";
+export type CertType = "course" | "path" | "program";
+export type OrgUnitType = string; // freeform — admins configure their own taxonomy
+export type NotificationChannel = "in_app" | "email" | "push";
+export type EventType =
+  | "course_started" | "course_completed" | "course_abandoned"
+  | "lesson_started" | "lesson_completed" | "video_watched"
+  | "assessment_started" | "assessment_submitted" | "assessment_passed" | "assessment_failed"
+  | "certificate_issued" | "certificate_expired" | "certificate_renewed"
+  | "path_started" | "path_completed"
+  | "search_performed" | "resource_downloaded" | "content_bookmarked";
+
+export interface UniOrgUnit {
+  id: string;
+  name: string;
+  unit_type: OrgUnitType;
+  parent_id: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniProgram {
+  id: string;
+  name: string;
+  description: string | null;
+  auto_assign_rules: Record<string, string>[];
+  due_days: number | null;
+  is_required: boolean;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniPath {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  legacy_tag: string | null;
+  is_required: boolean;
+  is_published: boolean;
+  sort_order: number;
+  issues_certificate: boolean;
+  recert_interval_days: number | null;
+  program_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniPathCourse {
+  id: string;
+  path_id: string;
+  course_id: string;
+  position: number;
+  is_required: boolean;
+  prerequisite_course_id: string | null;
+}
+
+export interface UniPathEnrollment {
+  id: string;
+  profile_id: string;
+  path_id: string;
+  assigned_by: string | null;
+  enrolled_at: string;
+  due_date: string | null;
+  completed_at: string | null;
+  expires_at: string | null;
+}
+
+export interface UniModule {
+  id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniActivity {
+  id: string;
+  lesson_id: string;
+  activity_type: ActivityType;
+  title: string | null;
+  storage_path: string | null;
+  token: string | null;
+  external_url: string | null;
+  duration_secs: number | null;
+  sort_order: number;
+  is_required: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniCohort {
+  id: string;
+  name: string;
+  description: string | null;
+  org_unit_id: string | null;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniNotification {
+  id: string;
+  profile_id: string;
+  notification_type: string;
+  title: string;
+  body: string;
+  channels: NotificationChannel[];
+  entity_type: string | null;
+  entity_id: string | null;
+  is_read: boolean;
+  read_at: string | null;
+  email_sent_at: string | null;
+  scheduled_for: string | null;
+  error: string | null;
+  created_at: string;
+}
+
+export interface UniEvent {
+  id: string;
+  profile_id: string;
+  event_type: EventType;
+  entity_type: string | null;
+  entity_id: string | null;
+  value: number | null;
+  metadata: Record<string, unknown>;
+  session_id: string | null;
+  created_at: string;
+}
+
+export interface UniCertExemption {
+  id: string;
+  profile_id: string;
+  course_id: string;
+  justification: string;
+  granted_by: string | null;
+  granted_at: string;
+  expires_at: string | null;
+  revoked_at: string | null;
+}
 
 export interface UniCourse {
   id: string;
@@ -18,9 +171,18 @@ export interface UniCourse {
   path_tag: PathTag | null;
   is_required: boolean;
   is_published: boolean;
+  content_status: ContentStatus;
   sort_order: number;
   duration_label: string | null;
   pill_color: string | null;
+  recert_interval_days: number | null;
+  grace_period_days: number;
+  difficulty: "beginner" | "intermediate" | "advanced" | null;
+  tags: string[];
+  skill_tags: string[];
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  expires_at: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -63,6 +225,8 @@ export interface UniProgress {
   last_watched_at: string;
 }
 
+export type QuestionType = "multiple_choice" | "multiple_select" | "true_false" | "short_answer" | "matching" | "scenario";
+
 export interface UniQuizQuestion {
   id: string;
   lesson_id: string;
@@ -70,16 +234,41 @@ export interface UniQuizQuestion {
   options_json: { label: string; is_correct: boolean }[];
   explanation: string | null;
   sort_order: number;
+  question_type: QuestionType;
+  passing_pct: number | null;
   created_at: string;
+}
+
+export interface UniAssessment {
+  id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  passing_pct: number;
+  max_attempts: number | null;
+  time_limit_mins: number | null;
+  randomize_questions: boolean;
+  questions_to_draw: number | null;
+  is_required: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniAssessmentQuestion {
+  assessment_id: string;
+  question_id: string;
+  sort_order: number;
 }
 
 export interface UniQuizAttempt {
   id: string;
   profile_id: string;
   lesson_id: string;
+  assessment_id: string | null;
   score_pct: number;
   passed: boolean;
-  answers_json: Record<string, number> | null;
+  answers_json: Record<string, number | number[]> | null;
   attempted_at: string;
 }
 
@@ -88,7 +277,15 @@ export interface UniCertificate {
   profile_id: string;
   course_id: string;
   issued_at: string;
+  expires_at: string | null;
+  verification_id: string;
+  cert_type: CertType;
+  path_id: string | null;
+  program_id: string | null;
   revoked_at: string | null;
+  revoked_by: string | null;
+  revocation_reason: string | null;
+  renewed_from: string | null;
   issued_by: string | null;
 }
 

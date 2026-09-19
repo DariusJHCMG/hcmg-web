@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
-import { getCurrentProfile, isUniversityTrainer, logUniAudit } from "@/lib/auth";
+import { getVerifiedProfile, isUniversityTrainer, logUniAudit } from "@/lib/auth";
 
 // POST /api/university/admin/lesson — create a new lesson
 export async function POST(request: NextRequest) {
-  const profile = await getCurrentProfile();
+  const profile = await getVerifiedProfile();
   if (!profile || !isUniversityTrainer(profile)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

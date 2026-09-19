@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
-import { getCurrentProfile, isUniversityAdmin } from "@/lib/auth";
+import { getVerifiedProfile, isUniversityAdmin } from "@/lib/auth";
 
 // GET /api/university/admin/export — streams CSV of completion data
 export async function GET(request: NextRequest) {
-  const profile = await getCurrentProfile();
+  const profile = await getVerifiedProfile();
   if (!profile || !isUniversityAdmin(profile)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

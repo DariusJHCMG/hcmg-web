@@ -1,4 +1,5 @@
-import { getCurrentProfile } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getVerifiedProfile, isUniversityAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -9,8 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminReportsPage() {
-  const profile = await getCurrentProfile();
-  if (!profile) return null;
+  // Reports expose all employee training data — university_admin only
+  const profile = await getVerifiedProfile();
+  if (!profile) redirect("/login?next=/university/admin/reports");
+  if (!isUniversityAdmin(profile)) redirect("/university");
 
   const sb = createServiceClient();
 
