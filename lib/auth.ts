@@ -1,5 +1,5 @@
 import { createSupabaseServerClient, createServiceClient } from "./supabase";
-import type { Profile, Role, LiftOffRole } from "./database.types";
+import type { Profile, Role, LiftOffRole, UniversityRole } from "./database.types";
 
 // ── Get current session + profile (server components / API routes) ──
 export async function getSession() {
@@ -119,6 +119,61 @@ export function redirectPath(role: Role, liftoffOnly?: boolean): string {
   if (role === "admin" || role === "developer") return "/admin";
   if (liftoffOnly) return "/liftoff";
   return "/portal";
+}
+
+// ── HCMG University auth helpers ─────────────────────────────
+export function hasUniversityAccess(profile: Profile | null): boolean {
+  if (!profile) return false;
+  if (!profile.is_active) return false;
+  if (profile.employment_status !== "active") return false;
+  return profile.university_access === true;
+}
+
+export function getUniversityRole(profile: Profile | null): UniversityRole | null {
+  if (!hasUniversityAccess(profile)) return null;
+  // Portal admins/devs always get university_admin regardless of stored value
+  if (profile!.role === "admin" || profile!.role === "developer") return "university_admin";
+  return profile!.university_role;
+}
+
+export function isUniversityAdmin(profile: Profile | null): boolean {
+  return getUniversityRole(profile) === "university_admin";
+}
+
+export function isUniversityTrainer(profile: Profile | null): boolean {
+  const r = getUniversityRole(profile);
+  return r === "trainer" || r === "university_admin";
+}
+
+export function isUniversityManager(profile: Profile | null): boolean {
+  const r = getUniversityRole(profile);
+  return r === "manager" || r === "university_admin";
+}
+
+// ── University audit logger ───────────────────────────────────
+export async function logUniAudit(
+  action: string,
+  options?: {
+    actorId?: string;
+    actorEmail?: string;
+    entityType?: string;
+    entityId?: string;
+    details?: Record<string, unknown>;
+    ipAddress?: string;
+  }
+) {
+  try {
+    const supabase = createServiceClient();
+    await supabase.from("uni_audit_log").insert({
+      actor_id:    options?.actorId    ?? null,
+      actor_email: options?.actorEmail ?? null,
+      action,
+      entity_type: options?.entityType ?? null,
+      entity_id:   options?.entityId   ?? null,
+      details:     options?.details    ?? null,
+      ip_address:  options?.ipAddress  ?? null,
+    });
+  } catch { /* non-fatal */ }
 }
 
 // ── Audit logger (server/service-role) ───────────────────────

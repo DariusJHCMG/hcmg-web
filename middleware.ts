@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+// ── Sanitize `next` param — only allow internal HCMG paths ──────────────────
+function sanitizeNext(next: string | null, allowedPrefixes: string[]): string | null {
+  if (!next) return null;
+  if (!next.startsWith("/")) return null;
+  if (next.startsWith("//")) return null;
+  if (next.includes(":")) return null;
+  if (allowedPrefixes.some(p => next.startsWith(p))) return next;
+  return null;
+}
+
 // ── CSP builder ──────────────────────────────────────────────────────────────
 function buildCsp(): string {
   return [
@@ -10,7 +20,7 @@ function buildCsp(): string {
     "img-src 'self' data: https://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
     "font-src 'self' data:",
     "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://challenges.cloudflare.com",
-    "frame-src https://challenges.cloudflare.com",
+    "frame-src https://challenges.cloudflare.com https://app.heygen.com https://share.heygen.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -58,6 +68,8 @@ export async function middleware(request: NextRequest) {
   const isLiftOffRoute      = pathname.startsWith("/liftoff") && !pathname.startsWith("/liftoff-login");
   // Only the actual /goal-engine/* pages — NOT /goal-engine-login
   const isGoalEngineRoute   = pathname.startsWith("/goal-engine/");
+  // /university routes (pages + API)
+  const isUniversityRoute   = pathname.startsWith("/university") || pathname.startsWith("/api/university");
   const isLoginRoute        = pathname === "/login";
   const isLiftOffLoginRoute = pathname === "/liftoff-login";
   const isGoalEngineLogin   = pathname === "/goal-engine-login";
@@ -66,7 +78,7 @@ export async function middleware(request: NextRequest) {
   // Protected routes require AAL2 (MFA verified). AAL1 means the user has a
   // valid password session but has NOT completed MFA — kick them to login.
   // This catches everyone already logged in without MFA, not just new logins.
-  const isProtectedRoute = isAdminRoute || isPortalRoute || isLiftOffRoute || isGoalEngineRoute;
+  const isProtectedRoute = isAdminRoute || isPortalRoute || isLiftOffRoute || isGoalEngineRoute || isUniversityRoute;
 
   if (isProtectedRoute && user) {
     // Use the official Supabase MFA API to read the current AAL from the JWT.
@@ -96,7 +108,7 @@ export async function middleware(request: NextRequest) {
           new URL(`/goal-engine-login?next=${encodeURIComponent(pathname)}`, request.url)
         ));
       }
-      // admin / portal
+      // university / admin / portal
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("next", pathname);
@@ -112,11 +124,13 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  // Not logged in → redirect to main login for admin/portal
-  if ((isAdminRoute || isPortalRoute) && !user) {
+  // Not logged in → redirect to main login for admin/portal/university
+  if ((isAdminRoute || isPortalRoute || isUniversityRoute) && !user) {
+    const rawNext = pathname;
+    const safeNext = sanitizeNext(rawNext, ["/admin", "/portal", "/university", "/api/university"]);
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", pathname);
+    if (safeNext) url.searchParams.set("next", safeNext);
     return NextResponse.redirect(url);
   }
 
@@ -161,5 +175,8 @@ export const config = {
     "/liftoff-login",
     "/login",
     "/goal-engine/:path*",
+    "/university/:path*",
+    "/university",
+    "/api/university/:path*",
   ],
 };

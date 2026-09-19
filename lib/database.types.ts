@@ -1,5 +1,108 @@
 export type Role = "admin" | "developer" | "loan_officer";
 export type LiftOffRole = "liftoff_admin" | "liftoff_team" | "lock_desk_admin" | "lock_desk_agent" | "ops_manager" | "help_desk_agent" | "processor";
+
+// ── HCMG University Types ─────────────────────────────────────
+export type UniversityRole = "learner" | "manager" | "trainer" | "university_admin";
+export type EmploymentStatus = "active" | "inactive" | "suspended";
+export type AssignmentType = "self" | "role" | "department" | "manager" | "companywide";
+export type CourseCategory = "general" | "start" | "sales" | "product" | "operations" | "compliance";
+export type PathTag = "harrys_playbook" | "fast_start" | "sales" | "product" | "operations" | "compliance";
+
+export interface UniCourse {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  category: CourseCategory;
+  path_tag: PathTag | null;
+  is_required: boolean;
+  is_published: boolean;
+  sort_order: number;
+  duration_label: string | null;
+  pill_color: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniLesson {
+  id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  video_token: string | null;
+  transcript: string | null;
+  resources_json: { label: string; storage_path: string }[] | null;
+  sort_order: number;
+  duration_secs: number | null;
+  duration_label: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniEnrollment {
+  id: string;
+  profile_id: string;
+  course_id: string;
+  assigned_by: string | null;
+  assignment_type: AssignmentType;
+  due_date: string | null;
+  enrolled_at: string;
+}
+
+export interface UniProgress {
+  id: string;
+  profile_id: string;
+  lesson_id: string;
+  course_id: string;
+  watch_pct: number;
+  completed: boolean;
+  completed_at: string | null;
+  last_watched_at: string;
+}
+
+export interface UniQuizQuestion {
+  id: string;
+  lesson_id: string;
+  question_text: string;
+  options_json: { label: string; is_correct: boolean }[];
+  explanation: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface UniQuizAttempt {
+  id: string;
+  profile_id: string;
+  lesson_id: string;
+  score_pct: number;
+  passed: boolean;
+  answers_json: Record<string, number> | null;
+  attempted_at: string;
+}
+
+export interface UniCertificate {
+  id: string;
+  profile_id: string;
+  course_id: string;
+  issued_at: string;
+  revoked_at: string | null;
+  issued_by: string | null;
+}
+
+export interface UniAuditLog {
+  id: string;
+  actor_id: string | null;
+  actor_email: string | null;
+  action: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  details: Record<string, unknown> | null;
+  ip_address: string | null;
+  created_at: string;
+}
 export type LockPreference = "lock" | "lock_requested" | "float";
 
 // ── Lift Off Types ────────────────────────────────────────────
@@ -259,6 +362,11 @@ export interface Profile {
   liftoff_roles: LiftOffRole[];
   liftoff_only: boolean;
   invite_pending: boolean;
+  // HCMG University fields
+  employment_status: EmploymentStatus;
+  university_access: boolean;
+  university_role: UniversityRole;
+  department: string | null;
 }
 
 export interface Lead {
