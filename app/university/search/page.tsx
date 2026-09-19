@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getCurrentProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import { UniversitySearchClient } from "@/components/university/UniversitySearchClient";
@@ -39,10 +40,12 @@ export default async function SearchPage() {
   }
 
   return (
-    <UniversitySearchClient
-      courses={courses ?? []}
-      enrolledIds={[...enrolledIds]}
-      progressMap={progressMap}
-    />
+    <Suspense fallback={<div style={{ padding: 40, color: "#687383", fontFamily: "system-ui" }}>Loading library…</div>}>
+      <UniversitySearchClient
+        courses={courses ?? []}
+        enrolledIds={[...enrolledIds]}
+        progressMap={progressMap}
+      />
+    </Suspense>
   );
 }

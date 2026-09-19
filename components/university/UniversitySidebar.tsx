@@ -7,11 +7,11 @@ import { createBrowserClient } from "@/lib/supabase-browser";
 import type { UniversityRole } from "@/lib/database.types";
 
 const NAV = [
-  { label: "Dashboard",       href: "/university",              icon: "⊞" },
-  { label: "Harry's Playbook",href: "/university/course/harrys-playbook", icon: "📖" },
-  { label: "Fast Start",      href: "/university/course/new-lo-fast-start", icon: "🚀" },
-  { label: "Library",         href: "/university/search",       icon: "⌕" },
-  { label: "Certificates",    href: "/university/certificates", icon: "◈" },
+  { label: "Dashboard",        href: "/university",                         icon: "⊞" },
+  { label: "Harry's Playbook", href: "/university/search?path=harrys_playbook", icon: "📖" },
+  { label: "Fast Start",       href: "/university/search?path=fast_start",  icon: "🚀" },
+  { label: "Library",          href: "/university/search",                  icon: "⌕" },
+  { label: "Certificates",     href: "/university/certificates",            icon: "◈" },
 ];
 
 const ADMIN_NAV = [
@@ -42,8 +42,11 @@ function SidebarContent({ universityRole, onNavClick }: Props) {
     router.refresh();
   }
 
-  const isActive = (href: string) =>
-    href === "/university" ? pathname === href : pathname.startsWith(href);
+  const isActive = (href: string) => {
+    const hrefPath = href.split("?")[0];
+    if (hrefPath === "/university") return pathname === hrefPath;
+    return pathname.startsWith(hrefPath);
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>

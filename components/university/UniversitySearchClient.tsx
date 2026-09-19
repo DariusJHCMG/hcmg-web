@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { CourseCard } from "@/components/university/CourseCard";
 import type { UniCourse } from "@/lib/database.types";
 
 const FILTERS = [
-  { key: "all",        label: "All training" },
-  { key: "start",      label: "New LO Fast Start" },
-  { key: "sales",      label: "Sales & Conversion" },
-  { key: "product",    label: "Products & Guidelines" },
-  { key: "operations", label: "Systems & Operations" },
-  { key: "compliance", label: "Compliance" },
+  { key: "all",           label: "All training" },
+  { key: "start",         label: "New LO Fast Start" },
+  { key: "harrys_playbook", label: "Harry's Playbook" },
+  { key: "sales",         label: "Sales & Conversion" },
+  { key: "product",       label: "Products & Guidelines" },
+  { key: "operations",    label: "Systems & Operations" },
+  { key: "compliance",    label: "Compliance" },
 ];
+
+// Map path param values to filter keys
+const PATH_TO_FILTER: Record<string, string> = {
+  harrys_playbook: "harrys_playbook",
+  fast_start:      "start",
+};
 
 interface Props {
   courses: UniCourse[];
@@ -20,8 +28,18 @@ interface Props {
 }
 
 export function UniversitySearchClient({ courses, enrolledIds, progressMap }: Props) {
-  const [filter, setFilter] = useState("all");
+  const searchParams  = useSearchParams();
+  const pathParam     = searchParams.get("path");
+  const initialFilter = pathParam ? (PATH_TO_FILTER[pathParam] ?? "all") : "all";
+
+  const [filter, setFilter] = useState(initialFilter);
   const [search, setSearch] = useState("");
+
+  // Re-apply filter if the ?path= param changes (e.g. browser back/forward)
+  useEffect(() => {
+    const p = searchParams.get("path");
+    setFilter(p ? (PATH_TO_FILTER[p] ?? "all") : "all");
+  }, [searchParams]);
 
   const filtered = courses.filter(c => {
     const catMatch  = filter === "all" || c.category === filter || c.path_tag === filter;
