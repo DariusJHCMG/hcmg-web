@@ -36,6 +36,21 @@ export default async function AdminCourseEditPage({ params }: Props) {
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#fff", minHeight: "100vh" }}>
+      {/* Breadcrumb */}
+      <div style={{
+        background: "#f7f8fa", borderBottom: "1px solid #dfe4e8",
+        padding: "11px clamp(16px,4vw,48px)",
+        display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+      }}>
+        <Link href="/university" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>HCMG U</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <Link href="/university/admin" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>Admin</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <Link href="/university/admin/courses" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>Courses</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <span style={{ fontSize: 12, color: "#142234", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 240 }}>{course.title}</span>
+      </div>
+
       {/* Page header */}
       <div style={{
         background: "linear-gradient(145deg, #06182a, #0c2b4b)",
@@ -45,12 +60,6 @@ export default async function AdminCourseEditPage({ params }: Props) {
         gap: 16, flexWrap: "wrap",
       }}>
         <div style={{ minWidth: 0 }}>
-          <Link
-            href="/university/admin/courses"
-            style={{ fontSize: 12, color: "#687383", textDecoration: "none", display: "block", marginBottom: 6 }}
-          >
-            ← All courses
-          </Link>
           <h1 style={{
             fontSize: "clamp(18px,3vw,26px)", fontWeight: 800, letterSpacing: "-0.5px",
             fontFamily: "Manrope, system-ui", margin: 0,

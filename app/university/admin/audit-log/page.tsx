@@ -86,15 +86,20 @@ export default async function AuditLogPage({
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#fff", minHeight: "100vh" }}>
+      {/* Breadcrumb */}
+      <div style={{ background: "#f7f8fa", borderBottom: "1px solid #dfe4e8", padding: "11px clamp(16px,4vw,48px)", display: "flex", alignItems: "center", gap: 8 }}>
+        <Link href="/university" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>HCMG U</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <Link href="/university/admin" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>Admin</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <span style={{ fontSize: 12, color: "#142234", fontWeight: 600 }}>Audit Log</span>
+      </div>
       {/* Header */}
       <div style={{
         background: "linear-gradient(145deg, #06182a, #0c2b4b)",
         padding: "clamp(28px,4vw,48px) clamp(24px,6vw,64px)",
         color: "#fff",
       }}>
-        <Link href="/university/admin" style={{ fontSize: 12, color: "#687383", textDecoration: "none", display: "block", marginBottom: 8 }}>
-          ← Admin
-        </Link>
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#f58220", marginBottom: 8 }}>
           Security &amp; Compliance
         </p>

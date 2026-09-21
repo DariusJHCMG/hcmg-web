@@ -164,18 +164,31 @@ export async function POST(request: NextRequest, { params }: Props) {
       }
 
       if (lessonsOk) {
-        // Issue certificate
+        // Issue certificate with a verification ID so it appears on /certificates
         const expiresAt = course?.recert_interval_days
           ? new Date(Date.now() + course.recert_interval_days * 86400000).toISOString()
           : null;
 
-        await sb.from("uni_certificates").upsert({
-          profile_id: profile.id,
-          course_id:  assessment.course_id,
-          issued_at:  new Date().toISOString(),
-          expires_at: expiresAt,
-          cert_type:  "course",
-        }, { onConflict: "profile_id,course_id", ignoreDuplicates: true });
+        // Check if a cert already exists (upsert with ignoreDuplicates won't add verification_id)
+        const { data: existing } = await sb
+          .from("uni_certificates")
+          .select("id")
+          .eq("profile_id", profile.id)
+          .eq("course_id", assessment.course_id)
+          .is("revoked_at", null)
+          .maybeSingle();
+
+        if (!existing) {
+          const { randomUUID } = await import("crypto");
+          await sb.from("uni_certificates").insert({
+            profile_id:       profile.id,
+            course_id:        assessment.course_id,
+            issued_at:        new Date().toISOString(),
+            expires_at:       expiresAt,
+            cert_type:        "course",
+            verification_id:  randomUUID(),
+          });
+        }
       }
     }
   }

@@ -20,14 +20,52 @@ function formatDuration(secs: number | null): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-const MEDIA_TYPES: { value: MediaType | "all"; label: string; icon: string }[] = [
-  { value: "all",          label: "All Media",     icon: "🗂" },
-  { value: "video",        label: "Videos",        icon: "🎬" },
-  { value: "image",        label: "Images",        icon: "🖼" },
-  { value: "audio",        label: "Audio",         icon: "🎵" },
-  { value: "document",     label: "Documents",     icon: "📄" },
-  { value: "presentation", label: "Presentations", icon: "📊" },
-  { value: "caption",      label: "Captions",      icon: "💬" },
+const MEDIA_TYPE_ICONS: Record<MediaType | "all", React.ReactNode> = {
+  all: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+  ),
+  video: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10,9 16,12 10,15" fill="currentColor" stroke="none"/>
+    </svg>
+  ),
+  image: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/>
+    </svg>
+  ),
+  audio: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    </svg>
+  ),
+  document: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/>
+    </svg>
+  ),
+  presentation: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+  ),
+  caption: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  ),
+};
+
+const MEDIA_TYPES: { value: MediaType | "all"; label: string }[] = [
+  { value: "all",          label: "All Media" },
+  { value: "video",        label: "Videos" },
+  { value: "image",        label: "Images" },
+  { value: "audio",        label: "Audio" },
+  { value: "document",     label: "Documents" },
+  { value: "presentation", label: "Presentations" },
+  { value: "caption",      label: "Captions" },
 ];
 
 const MIME_MAP: Record<MediaType, string> = {
@@ -42,17 +80,17 @@ const MIME_MAP: Record<MediaType, string> = {
 const S = STUDIO_COLORS;
 
 function AssetIcon({ type }: { type: MediaType }) {
-  const icons: Record<MediaType, string> = {
-    video: "🎬", image: "🖼", audio: "🎵", document: "📄",
-    presentation: "📊", caption: "💬",
-  };
   return (
     <div style={{
       width: 44, height: 44, borderRadius: 8, flexShrink: 0,
       background: "rgba(245,130,32,0.08)",
       display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: 20,
-    }}>{icons[type] ?? "📁"}</div>
+      color: "#f58220",
+    }}>
+      {MEDIA_TYPE_ICONS[type] ?? (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      )}
+    </div>
   );
 }
 
@@ -309,7 +347,8 @@ export default function MediaLibrary({ pickMode, onPick, onClose }: MediaLibrary
                 borderRight: activeType === t.value ? `2px solid ${S.orange}` : "2px solid transparent",
               }}
             >
-              <span>{t.icon}</span> {t.label}
+              <span style={{ display: "flex", alignItems: "center" }}>{MEDIA_TYPE_ICONS[t.value]}</span>
+              {t.label}
             </button>
           ))}
         </div>
@@ -344,7 +383,11 @@ export default function MediaLibrary({ pickMode, onPick, onClose }: MediaLibrary
             }}
             onClick={() => fileRef.current?.click()}
           >
-            <div style={{ fontSize: 28 }}>📂</div>
+            <div style={{ color: S.textMuted, display: "flex", alignItems: "center" }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600, color: S.text }}>
                 Drop files here or click to upload
@@ -418,7 +461,11 @@ export default function MediaLibrary({ pickMode, onPick, onClose }: MediaLibrary
           {/* Empty state */}
           {!loading && assets.length === 0 && (
             <div style={{ textAlign: "center", padding: "60px 20px", color: S.textMuted }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>📂</div>
+              <div style={{ marginBottom: 12, display: "flex", justifyContent: "center", opacity: 0.4 }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
               <div style={{ fontSize: 15, fontWeight: 600, color: S.text, marginBottom: 6 }}>
                 No media yet
               </div>
@@ -522,7 +569,7 @@ export default function MediaLibrary({ pickMode, onPick, onClose }: MediaLibrary
                           background: "transparent", border: `1px solid ${S.border}`,
                           cursor: "pointer", color: S.textMuted,
                         }}
-                      >✏ Rename</button>
+                      >Rename</button>
                       <button
                         onClick={() => archiveAsset(asset.id)}
                         title="Archive"
@@ -531,7 +578,7 @@ export default function MediaLibrary({ pickMode, onPick, onClose }: MediaLibrary
                           background: "transparent", border: `1px solid ${S.border}`,
                           cursor: "pointer", color: S.red,
                         }}
-                      >✕ Archive</button>
+                      >Archive</button>
                     </div>
                   )}
                 </div>

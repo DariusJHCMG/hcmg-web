@@ -206,16 +206,24 @@ export default async function ExemptionsPage() {
                           {ex.justification}
                         </td>
                         <td style={{ padding: "12px 14px" }}>
-                           <form action={`/api/university/admin/exemptions/${ex.id}/revoke`} method="POST" style={{ display: "inline" }}>
-                             <button
-                               type="submit"
-                               formAction={`/api/university/admin/exemptions/${ex.id}/revoke`}
-                               style={{ fontSize: 12, fontWeight: 600, color: "#b91c1c", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                             >
-                               Revoke
-                             </button>
-                           </form>
-                         </td>
+                          <form
+                            action={`/api/university/admin/exemptions/${ex.id}/revoke`}
+                            method="POST"
+                            style={{ display: "inline" }}
+                            onSubmit={e => { if (!confirm(`Revoke the exemption for ${emp?.full_name ?? "this employee"}?\n\nThis will restore their compliance requirement and is logged to the audit trail.`)) e.preventDefault(); }}
+                          >
+                            <button
+                              type="submit"
+                              style={{
+                                fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6,
+                                color: "#b91c1c", background: "rgba(185,28,28,0.07)",
+                                border: "1px solid rgba(185,28,28,0.2)", cursor: "pointer",
+                              }}
+                            >
+                              Revoke
+                            </button>
+                          </form>
+                        </td>
                       </tr>
                     );
                   })}

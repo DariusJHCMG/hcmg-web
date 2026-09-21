@@ -41,16 +41,16 @@ export default async function UniversityAdminPage() {
   ];
 
   const adminLinks = [
-    { href: "/university/admin/courses",     label: "Training Studio",   icon: "🎬", desc: "Build and publish courses, lessons, and assessments" },
-    { href: "/university/admin/media",       label: "Media Library",     icon: "📂", desc: "Upload and manage videos, images, documents, and captions" },
-    { href: "/university/admin/assignments", label: "Assignments",       icon: "▦",  desc: "Assign courses to individuals, roles, or departments" },
-    { href: "/university/admin/reports",     label: "Reports",           icon: "📊", desc: "Completion rates, overdue tracking, quiz performance" },
-    { href: "/university/admin/compliance",  label: "Compliance",        icon: "✅", desc: "Org compliance score, certificate expiry, required training" },
-    { href: "/university/admin/users",       label: "User Access",       icon: "👥", desc: "Manage access and university role assignments" },
-    { href: "/university/admin/audit-log",   label: "Audit Log",         icon: "🔍", desc: "Complete record of all privileged actions" },
-    { href: "/university/admin/exemptions",  label: "Exemptions",        icon: "📋", desc: "Grant and track compliance exemptions" },
-    { href: "/university/admin/org-units",   label: "Org Units",         icon: "🏢", desc: "Manage divisions, departments, branches, and teams" },
-    { href: "/university/hr",               label: "HR Overview",        icon: "👔", desc: "Employee training status, non-compliance, new hire tracking" },
+    { href: "/university/admin/courses",     label: "Training Studio",   desc: "Build and publish courses, lessons, and assessments" },
+    { href: "/university/admin/media",       label: "Media Library",     desc: "Upload and manage videos, images, documents, and captions" },
+    { href: "/university/admin/assignments", label: "Assignments",       desc: "Assign courses to individuals, roles, or departments" },
+    { href: "/university/admin/reports",     label: "Reports",           desc: "Completion rates, overdue tracking, quiz performance" },
+    { href: "/university/admin/compliance",  label: "Compliance",        desc: "Org compliance score, certificate expiry, required training" },
+    { href: "/university/admin/users",       label: "User Access",       desc: "Manage access and university role assignments" },
+    { href: "/university/admin/audit-log",   label: "Audit Log",         desc: "Complete record of all privileged actions" },
+    { href: "/university/admin/exemptions",  label: "Exemptions",        desc: "Grant and track compliance exemptions" },
+    { href: "/university/admin/org-units",   label: "Org Units",         desc: "Manage divisions, departments, branches, and teams" },
+    { href: "/university/hr",               label: "HR Overview",        desc: "Employee training status, non-compliance, new hire tracking" },
   ];
 
   const ACTION_LABELS: Record<string, string> = {
@@ -61,15 +61,37 @@ export default async function UniversityAdminPage() {
     exemption_revoked:           "Exemption revoked",
     quiz_passed:                 "Quiz passed",
     quiz_failed:                 "Quiz failed",
+    assessment_attempted:        "Assessment submitted",
+    lesson_completed:            "Lesson completed",
+    video_accessed:              "Video accessed",
     user_role_updated:           "User role updated",
     user_access_updated:         "User access updated",
     org_unit_created:            "Org unit created",
     org_unit_deactivated:        "Org unit deactivated",
     course_status_changed:       "Course status changed",
+    course_updated:              "Course updated",
+    course_submit_review:        "Course submitted for review",
+    course_approve:              "Course approved",
+    course_publish:              "Course published",
+    course_unpublish:            "Course unpublished",
+    course_archive:              "Course archived",
+    lesson_updated:              "Lesson updated",
+    lesson_deleted:              "Lesson deleted",
   };
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#fff", minHeight: "100vh" }}>
+      {/* Breadcrumb */}
+      <div style={{
+        background: "#f7f8fa", borderBottom: "1px solid #dfe4e8",
+        padding: "11px clamp(16px,4vw,48px)",
+        display: "flex", alignItems: "center", gap: 8,
+      }}>
+        <Link href="/university" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>HCMG U</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <span style={{ fontSize: 12, color: "#142234", fontWeight: 600 }}>Admin</span>
+      </div>
+
       {/* Header */}
       <div style={{
         background: "linear-gradient(145deg, #06182a, #0c2b4b)",
@@ -108,9 +130,18 @@ export default async function UniversityAdminPage() {
               textDecoration: "none",
               background: "#071a2e", borderRadius: 12, padding: "20px",
               border: "1px solid rgba(255,255,255,0.06)",
-              transition: "transform 0.15s",
+              transition: "box-shadow 0.15s",
+              display: "block",
             }}>
-              <div style={{ fontSize: 22, marginBottom: 10 }}>{l.icon}</div>
+              <div style={{
+                width: 36, height: 36, borderRadius: 8, marginBottom: 12,
+                background: "rgba(245,130,32,0.15)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f58220" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9,18 15,12 9,6"/>
+                </svg>
+              </div>
               <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{l.label}</div>
               <div style={{ fontSize: 12, color: "#687383", lineHeight: 1.55 }}>{l.desc}</div>
             </Link>

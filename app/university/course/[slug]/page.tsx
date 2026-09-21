@@ -138,16 +138,25 @@ export default async function CoursePage({ params }: Props) {
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#fff", minHeight: "100vh" }}>
+      {/* Breadcrumb */}
+      <div style={{
+        background: "#f7f8fa", borderBottom: "1px solid #dfe4e8",
+        padding: "11px clamp(16px,4vw,48px)",
+        display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+      }}>
+        <Link href="/university" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>HCMG U</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <Link href="/university/search" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>Library</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <span style={{ fontSize: 12, color: "#142234", fontWeight: 600 }}>{course.title}</span>
+      </div>
+
       {/* Hero */}
       <div style={{
         background: `linear-gradient(145deg, ${S.navy}, ${S.navyM})`,
         padding: "clamp(28px,5vw,56px) clamp(24px,6vw,64px)",
         color: "#fff",
       }}>
-        <Link href="/university" style={{ fontSize: 13, color: S.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 20 }}>
-          ← Back to Dashboard
-        </Link>
-
         <div style={{ display: "flex", alignItems: "flex-start", gap: 24, flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 260 }}>
             {course.is_required && (

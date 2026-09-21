@@ -85,9 +85,14 @@ function SidebarContent({ universityRole, onNavClick }: Props) {
   }
 
   const isActive = (href: string) => {
-    const hrefPath = href.split("?")[0];
-    if (hrefPath === "/university") return pathname === hrefPath;
-    return pathname.startsWith(hrefPath);
+    // For links with query params (e.g. ?path=harrys_playbook), match both path AND query
+    if (href.includes("?")) {
+      const [hrefPath, hrefQuery] = href.split("?");
+      const currentQuery = typeof window !== "undefined" ? window.location.search.slice(1) : "";
+      return pathname === hrefPath && currentQuery === hrefQuery;
+    }
+    if (href === "/university") return pathname === href;
+    return pathname.startsWith(href);
   };
 
   return (
@@ -206,7 +211,8 @@ function SidebarContent({ universityRole, onNavClick }: Props) {
             transition: "color 0.15s",
           }}
         >
-          <span style={{ fontSize: 14 }}>←</span> Back to Portal
+          <Ico><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg></Ico>
+          Back to Portal
         </Link>
         <button
           onClick={signOut}
@@ -222,7 +228,7 @@ function SidebarContent({ universityRole, onNavClick }: Props) {
             width: "100%",
           }}
         >
-          <span style={{ fontSize: 14 }}>⏻</span>
+          <Ico><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></Ico>
           {signingOut ? "Signing out…" : "Sign out"}
         </button>
       </div>

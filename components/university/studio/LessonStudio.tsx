@@ -444,6 +444,152 @@ function TranscriptEditor({ value, onChange }: { value: string; onChange: (v: st
   );
 }
 
+
+// ── Text Article Editor ───────────────────────────────────────────────────────
+// A clean inline content editor for Text-type lessons, matching CreatorLMS style.
+
+function TextArticleEditor({
+  value,
+  onChange,
+  onSave,
+  saving,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  function insertBlock(prefix: string) {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const before = value.slice(0, start);
+    const after  = value.slice(el.selectionEnd);
+    // Add newline before prefix if needed
+    const sep = before.length > 0 && !before.endsWith("\n\n") ? "\n\n" : "";
+    const inserted = `${sep}${prefix}`;
+    const next = before + inserted + after;
+    onChange(next);
+    setShowAddMenu(false);
+    // Move cursor to end of inserted text
+    setTimeout(() => {
+      el.focus();
+      el.selectionStart = el.selectionEnd = (before + inserted).length;
+    }, 0);
+  }
+
+  const ADD_BLOCKS = [
+    { label: "Paragraph",  action: () => insertBlock("") },
+    { label: "Heading 1",  action: () => insertBlock("# ") },
+    { label: "Heading 2",  action: () => insertBlock("## ") },
+    { label: "Heading 3",  action: () => insertBlock("### ") },
+    { label: "Bullet list",action: () => insertBlock("- ") },
+    { label: "Numbered list", action: () => insertBlock("1. ") },
+    { label: "Quote block",action: () => insertBlock("> ") },
+    { label: "Code block", action: () => insertBlock("```\n\n```") },
+    { label: "Divider",    action: () => insertBlock("---") },
+  ];
+
+  return (
+    <div style={{
+      background: STUDIO_COLORS.white, borderRadius: 12,
+      border: `1px solid ${STUDIO_COLORS.border}`,
+      overflow: "visible", position: "relative",
+    }}>
+      {/* Toolbar */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8, justifyContent: "space-between",
+        padding: "10px 16px", borderBottom: `1px solid ${STUDIO_COLORS.border}`,
+        background: STUDIO_COLORS.surface,
+      }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: STUDIO_COLORS.text }}>Article Content</span>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setShowAddMenu(m => !m)}
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "5px 12px", borderRadius: 7, border: `1.5px solid ${STUDIO_COLORS.border}`,
+                background: STUDIO_COLORS.white, cursor: "pointer",
+                fontSize: 12, fontWeight: 600, color: STUDIO_COLORS.textMuted,
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Insert block
+            </button>
+            {showAddMenu && (
+              <div style={{
+                position: "absolute", top: "100%", right: 0, zIndex: 50,
+                marginTop: 4, background: STUDIO_COLORS.white,
+                border: `1px solid ${STUDIO_COLORS.border}`, borderRadius: 10,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)", minWidth: 180, overflow: "hidden",
+              }}>
+                {ADD_BLOCKS.map(b => (
+                  <button
+                    key={b.label} type="button"
+                    onClick={b.action}
+                    style={{
+                      display: "block", width: "100%", textAlign: "left",
+                      padding: "9px 14px", border: "none", background: "transparent",
+                      cursor: "pointer", fontSize: 13, color: STUDIO_COLORS.text,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = STUDIO_COLORS.surface)}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            style={{
+              padding: "5px 14px", borderRadius: 7,
+              background: STUDIO_COLORS.orange, color: "#fff",
+              border: "none", cursor: saving ? "not-allowed" : "pointer",
+              fontSize: 12, fontWeight: 700, opacity: saving ? 0.7 : 1,
+            }}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+
+      {/* Editor area */}
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={"Start writing your lesson content here...\n\nYou can use Markdown:\n# Heading 1\n## Heading 2\n- bullet list\n1. numbered list\n> quote block\n**bold** _italic_"}
+        style={{
+          width: "100%", minHeight: 480, border: "none", outline: "none",
+          padding: "24px 28px", resize: "vertical", boxSizing: "border-box",
+          fontSize: 15, lineHeight: 1.75, color: STUDIO_COLORS.text,
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+          background: "transparent",
+        }}
+      />
+
+      {/* Bottom hint */}
+      <div style={{
+        padding: "8px 16px", borderTop: `1px solid ${STUDIO_COLORS.border}`,
+        background: STUDIO_COLORS.surface, fontSize: 11, color: STUDIO_COLORS.textMuted,
+      }}>
+        Markdown supported — use # for headings, ** for bold, _ for italic, - for bullets.
+        {value.length > 0 && <span style={{ marginLeft: 12 }}>{value.length.toLocaleString()} characters</span>}
+      </div>
+    </div>
+  );
+}
+
+
 // ── Lesson Studio main ────────────────────────────────────────────────────────
 
 type LessonTab = "details" | "media" | "transcript" | "resources" | "knowledge_check" | "completion";
@@ -470,7 +616,7 @@ export function LessonStudio({
   const [error, setError]           = useState("");
 
   // Media picker: which field is being picked
-  const [pickerFor, setPickerFor] = useState<"video" | "thumbnail" | "caption" | null>(null);
+  const [pickerFor, setPickerFor] = useState<"video" | "audio" | "thumbnail" | "caption" | null>(null);
 
   // Settings panel state (right column)
   const [allowPreview, setAllowPreview]   = useState(false);
@@ -580,37 +726,53 @@ export function LessonStudio({
               Visibility
               <span title="Controls whether learners can see this lesson" style={{ width: 14, height: 14, borderRadius: "50%", background: STUDIO_COLORS.border, color: STUDIO_COLORS.textMuted, fontSize: 9, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "default" }}>i</span>
             </div>
-            <div style={{ display: "flex", borderRadius: 8, border: `1.5px solid ${STUDIO_COLORS.border}`, overflow: "hidden" }}>
-              <button
-                type="button"
-                onClick={() => completion.is_published && togglePublish()}
-                style={{
-                  flex: 1, padding: "8px 0", border: "none",
-                  background: !completion.is_published ? STUDIO_COLORS.surface : STUDIO_COLORS.white,
-                  cursor: "pointer", fontSize: 12, fontWeight: !completion.is_published ? 700 : 500,
-                  color: !completion.is_published ? STUDIO_COLORS.text : STUDIO_COLORS.textMuted,
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-                Draft
-              </button>
-              <button
-                type="button"
-                onClick={() => !completion.is_published && togglePublish()}
-                style={{
-                  flex: 1, padding: "8px 0", border: "none",
-                  background: completion.is_published ? STUDIO_COLORS.orange : STUDIO_COLORS.white,
-                  cursor: "pointer", fontSize: 12, fontWeight: completion.is_published ? 700 : 500,
-                  color: completion.is_published ? "#fff" : STUDIO_COLORS.textMuted,
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                  borderLeft: `1px solid ${STUDIO_COLORS.border}`,
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/></svg>
-                Publish
-              </button>
-            </div>
+            {isAdmin ? (
+              <div style={{ display: "flex", borderRadius: 8, border: `1.5px solid ${STUDIO_COLORS.border}`, overflow: "hidden" }}>
+                <button
+                  type="button"
+                  onClick={() => completion.is_published && togglePublish()}
+                  style={{
+                    flex: 1, padding: "8px 0", border: "none",
+                    background: !completion.is_published ? STUDIO_COLORS.surface : STUDIO_COLORS.white,
+                    cursor: "pointer", fontSize: 12, fontWeight: !completion.is_published ? 700 : 500,
+                    color: !completion.is_published ? STUDIO_COLORS.text : STUDIO_COLORS.textMuted,
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                  Draft
+                </button>
+                <button
+                  type="button"
+                  onClick={() => !completion.is_published && togglePublish()}
+                  style={{
+                    flex: 1, padding: "8px 0", border: "none",
+                    background: completion.is_published ? STUDIO_COLORS.orange : STUDIO_COLORS.white,
+                    cursor: "pointer", fontSize: 12, fontWeight: completion.is_published ? 700 : 500,
+                    color: completion.is_published ? "#fff" : STUDIO_COLORS.textMuted,
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                    borderLeft: `1px solid ${STUDIO_COLORS.border}`,
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/></svg>
+                  Publish
+                </button>
+              </div>
+            ) : (
+              <div style={{
+                padding: "10px 12px", borderRadius: 8,
+                background: completion.is_published ? "rgba(52,211,153,0.08)" : STUDIO_COLORS.surface,
+                border: `1.5px solid ${completion.is_published ? "rgba(52,211,153,0.3)" : STUDIO_COLORS.border}`,
+                fontSize: 12,
+              }}>
+                <span style={{ fontWeight: 700, color: completion.is_published ? STUDIO_COLORS.greenDark : STUDIO_COLORS.textMuted }}>
+                  {completion.is_published ? "✓ Published" : "Draft"}
+                </span>
+                <span style={{ color: STUDIO_COLORS.textMuted, marginLeft: 6 }}>
+                  — publish requires Admin access
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Allow Lesson Preview */}
@@ -766,28 +928,47 @@ export function LessonStudio({
         {/* Top bar */}
         <div style={{ height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* Lesson type label */}
-            <span style={{ fontSize: 15, fontWeight: 700, color: STUDIO_COLORS.text }}>
-              {LESSON_TYPE_LABELS[details.lesson_type]?.label ?? "Lesson"}
-            </span>
+            {/* Lesson type icon + label */}
+            {(() => {
+              const cfg = LESSON_TYPE_LABELS[details.lesson_type];
+              return (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {cfg && (
+                    <div style={{
+                      width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                      background: `${cfg.color}14`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 14, color: cfg.color,
+                    }}>
+                      {cfg.icon}
+                    </div>
+                  )}
+                  <span style={{ fontSize: 15, fontWeight: 700, color: STUDIO_COLORS.text }}>
+                    {cfg?.label ?? "Lesson"}
+                  </span>
+                </div>
+              );
+            })()}
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <SaveIndicator state={saveState} />
-            {/* Preview link */}
-            <a
-              href={`/university/course/${courseId}`}
-              target="_blank" rel="noopener noreferrer"
-              style={{
-                display: "flex", alignItems: "center", gap: 5,
-                padding: "6px 12px", borderRadius: 7,
-                border: `1px solid ${STUDIO_COLORS.border}`,
-                color: STUDIO_COLORS.textMuted, fontSize: 12, fontWeight: 600, textDecoration: "none",
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              Preview
-            </a>
+            {/* Preview link — opens the live lesson page in a new tab */}
+            {lesson.is_published && (
+              <a
+                href={`/university/lesson/${lesson.id}`}
+                target="_blank" rel="noopener noreferrer"
+                style={{
+                  display: "flex", alignItems: "center", gap: 5,
+                  padding: "6px 12px", borderRadius: 7,
+                  border: `1px solid ${STUDIO_COLORS.border}`,
+                  color: STUDIO_COLORS.textMuted, fontSize: 12, fontWeight: 600, textDecoration: "none",
+                }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Preview
+              </a>
+            )}
             <StudioButton size="sm" onClick={() => save()} disabled={saveState === "saving"}>
               {saveState === "saving" ? "Saving…" : "Save"}
             </StudioButton>
@@ -1085,7 +1266,7 @@ export function LessonStudio({
                     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={STUDIO_COLORS.textLight} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                       <polygon points="11,5 6,9 2,9 2,15 6,15 11,19" fill="none"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
                     </svg>
-                    <StudioButton variant="primary" onClick={() => setPickerFor("video")}>Select audio</StudioButton>
+                    <StudioButton variant="primary" onClick={() => setPickerFor("audio")}>Select audio</StudioButton>
                     <div style={{ fontSize: 12, color: STUDIO_COLORS.textMuted }}>
                       Supported Files: .mp3, .wav, .aac, .flac, .ogg, .m4a
                     </div>
@@ -1102,13 +1283,12 @@ export function LessonStudio({
               )}
 
               {details.lesson_type === "text" && (
-                <div style={{
-                  background: STUDIO_COLORS.white, borderRadius: 12,
-                  border: `1px solid ${STUDIO_COLORS.border}`, padding: "24px",
-                  textAlign: "center", color: STUDIO_COLORS.textMuted, fontSize: 13,
-                }}>
-                  Rich text article editing coming soon. Use the Transcript tab to write text content for now.
-                </div>
+                <TextArticleEditor
+                  value={transcript}
+                  onChange={setTranscript}
+                  onSave={() => save("transcript")}
+                  saving={saveState === "saving"}
+                />
               )}
 
               <StudioButton onClick={() => save("media")} disabled={saveState === "saving"}>Save Media</StudioButton>
@@ -1247,9 +1427,9 @@ export function LessonStudio({
       </div>
 
       {/* Media picker modals */}
-      {pickerFor === "video" && (
+      {(pickerFor === "video" || pickerFor === "audio") && (
         <MediaPicker
-          mediaType="video"
+          mediaType={pickerFor}
           onPick={(asset: UniMediaAsset) => {
             setMedia(m => ({ ...m, video_token: asset.storage_path }));
             setPickerFor(null);

@@ -25,16 +25,6 @@ export default async function AssessmentPage({ params }: Props) {
 
   if (!assessment) notFound();
 
-  // Verify enrollment
-  const { data: enrollment } = await sb
-    .from("uni_enrollments")
-    .select("id")
-    .eq("profile_id", profile.id)
-    .eq("course_id", assessment.course_id)
-    .maybeSingle();
-
-  if (!enrollment) redirect(`/university/course`);
-
   // Course info for breadcrumb
   const { data: course } = await sb
     .from("uni_courses")
@@ -43,6 +33,16 @@ export default async function AssessmentPage({ params }: Props) {
     .single();
 
   if (!course) notFound();
+
+  // Verify enrollment — redirect to the course page if not enrolled
+  const { data: enrollment } = await sb
+    .from("uni_enrollments")
+    .select("id")
+    .eq("profile_id", profile.id)
+    .eq("course_id", assessment.course_id)
+    .maybeSingle();
+
+  if (!enrollment) redirect(`/university/course/${course.slug}`);
 
   // Fetch questions via assessment_questions join
   const { data: linkedQuestions } = await sb

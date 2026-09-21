@@ -29,8 +29,9 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
   // Fields any trainer (or admin) can update
   const trainerAllowed = [
-    "title", "slug", "description", "thumbnail_url", "category",
-    "path_tag", "pill_color", "duration_label", "sort_order",
+    "title", "slug", "short_description", "description", "thumbnail_url",
+    "category", "path_tag", "pill_color", "duration_label", "sort_order",
+    "difficulty", "audience", "instructor_name", "completion_rules",
   ];
   // Admin-only fields — only applied when caller has university_admin
   const adminOnly = ["is_published", "is_required"];

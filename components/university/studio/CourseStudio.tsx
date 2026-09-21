@@ -9,6 +9,8 @@ import {
   StatusBadge, SaveIndicator, SaveState, SectionCard, EmptyState, ErrorBanner,
   LessonTypeBadge, LESSON_TYPE_LABELS, AssessmentTypeBadge, StudioTabs, Breadcrumb,
 } from "./StudioPrimitives";
+import { MediaPicker } from "./MediaLibrary";
+import type { UniMediaAsset } from "@/lib/database.types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -298,6 +300,7 @@ function OverviewTab({
   const [slugEdited, setSlugEdited] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState("");
+  const [showThumbnailPicker, setShowThumbnailPicker] = useState(false);
 
   const set = (k: keyof typeof form, v: unknown) => {
     setForm(f => ({ ...f, [k]: v }));
@@ -432,16 +435,51 @@ function OverviewTab({
       {/* Thumbnail */}
       <SectionCard title="Course Thumbnail">
         <div>
-          <FieldLabel>Thumbnail URL</FieldLabel>
+          {/* Thumbnail preview / placeholder */}
+          <div style={{
+            borderRadius: 10, overflow: "hidden",
+            background: STUDIO_COLORS.surface, border: `1px solid ${STUDIO_COLORS.border}`,
+            marginBottom: 12,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            height: form.thumbnail_url ? "auto" : 120,
+          }}>
+            {form.thumbnail_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={form.thumbnail_url} alt="Thumbnail preview" style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+            ) : (
+              <div style={{ textAlign: "center", color: STUDIO_COLORS.textLight, padding: 20 }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" style={{ opacity: 0.4 }}>
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/>
+                </svg>
+                <div style={{ fontSize: 12, marginTop: 6, color: STUDIO_COLORS.textMuted }}>No thumbnail set</div>
+              </div>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+            <StudioButton size="sm" variant="secondary" onClick={() => setShowThumbnailPicker(true)}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 5 }}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+              Pick from Library
+            </StudioButton>
+            {form.thumbnail_url && (
+              <StudioButton size="sm" variant="ghost" onClick={() => set("thumbnail_url", "")}>Remove</StudioButton>
+            )}
+          </div>
+          <FieldLabel>Or paste URL</FieldLabel>
           <StudioInput value={form.thumbnail_url} onChange={e => set("thumbnail_url", e.target.value)} placeholder="https://..." hint="Recommended: 1280×720px (16:9)" />
-          {form.thumbnail_url && (
-            <div style={{ marginTop: 12, borderRadius: 10, overflow: "hidden", maxHeight: 160, background: STUDIO_COLORS.surface, border: `1px solid ${STUDIO_COLORS.border}` }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={form.thumbnail_url} alt="Thumbnail preview" style={{ width: "100%", height: 160, objectFit: "cover" }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-            </div>
-          )}
         </div>
       </SectionCard>
+
+      {/* Thumbnail picker modal */}
+      {showThumbnailPicker && (
+        <MediaPicker
+          mediaType="image"
+          onPick={(asset: UniMediaAsset) => {
+            set("thumbnail_url", asset.storage_path);
+            setShowThumbnailPicker(false);
+          }}
+          onClose={() => setShowThumbnailPicker(false)}
+        />
+      )}
 
       {/* Classification */}
       <SectionCard title="Classification">

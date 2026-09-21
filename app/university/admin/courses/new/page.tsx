@@ -15,6 +15,16 @@ export default async function NewCoursePage() {
   if (!isUniversityAdmin(profile) && !isUniversityTrainer(profile)) redirect("/university");
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#fff", minHeight: "100vh" }}>
+      {/* Breadcrumb */}
+      <div style={{ background: "#f7f8fa", borderBottom: "1px solid #dfe4e8", padding: "11px clamp(16px,4vw,48px)", display: "flex", alignItems: "center", gap: 8 }}>
+        <Link href="/university" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>HCMG U</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <Link href="/university/admin" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>Admin</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <Link href="/university/admin/courses" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>Courses</Link>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <span style={{ fontSize: 12, color: "#142234", fontWeight: 600 }}>New Course</span>
+      </div>
       {/* Page header */}
       <div style={{
         background: "linear-gradient(145deg, #06182a, #0c2b4b)",
@@ -23,12 +33,6 @@ export default async function NewCoursePage() {
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
         <div>
-          <Link
-            href="/university/admin/courses"
-            style={{ fontSize: 12, color: "#687383", textDecoration: "none", display: "block", marginBottom: 6 }}
-          >
-            ← All courses
-          </Link>
           <h1 style={{ fontSize: "clamp(20px,3vw,28px)", fontWeight: 800, letterSpacing: "-0.5px", fontFamily: "Manrope, system-ui", margin: 0 }}>
             New Course
           </h1>

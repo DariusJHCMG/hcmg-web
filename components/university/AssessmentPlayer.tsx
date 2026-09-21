@@ -216,9 +216,13 @@ export function AssessmentPlayer({
   if (phase === "submitted") {
     return (
       <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: S.white, minHeight: "100vh" }}>
-        {/* Header */}
+        {/* Header breadcrumb */}
         <div style={{ background: S.navy, padding: "14px clamp(16px,4vw,48px)", display: "flex", alignItems: "center", gap: 10 }}>
-          <Link href={`/university/course/${courseSlug}`} style={{ fontSize: 12, color: S.muted, textDecoration: "none" }}>← Back to course</Link>
+          <Link href="/university" style={{ fontSize: 12, color: S.muted, textDecoration: "none" }}>HCMG U</Link>
+          <span style={{ color: "#405166", fontSize: 12 }}>/</span>
+          <Link href={`/university/course/${courseSlug}`} style={{ fontSize: 12, color: S.muted, textDecoration: "none" }}>{courseTitle}</Link>
+          <span style={{ color: "#405166", fontSize: 12 }}>/</span>
+          <span style={{ fontSize: 12, color: S.light }}>{assessmentTitle}</span>
         </div>
 
         <div style={{ maxWidth: 640, margin: "40px auto", padding: "0 clamp(16px,4vw,40px) 80px" }}>
@@ -239,9 +243,28 @@ export function AssessmentPlayer({
             </div>
 
             {passed && (
-              <div style={{ marginTop: 20, padding: "12px 16px", background: "rgba(52,211,153,0.1)", borderRadius: 10, fontSize: 13, color: S.green }}>
-                Your completion has been recorded. Your certificate has been issued — check your Certificates page.
-              </div>
+              <>
+                <div style={{ marginTop: 20, padding: "12px 16px", background: "rgba(52,211,153,0.1)", borderRadius: 10, fontSize: 13, color: S.green }}>
+                  Your completion has been recorded. Your certificate has been issued — check your Certificates page.
+                </div>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 16, flexWrap: "wrap" }}>
+                  <Link href={`/university/course/${courseSlug}`} style={{
+                    padding: "11px 22px", borderRadius: 10,
+                    background: `linear-gradient(135deg, ${S.orangeL}, ${S.orange})`,
+                    color: S.white, fontWeight: 700, fontSize: 13, textDecoration: "none",
+                  }}>
+                    ← Back to course
+                  </Link>
+                  <Link href="/university/certificates" style={{
+                    padding: "11px 22px", borderRadius: 10,
+                    border: `1px solid rgba(52,211,153,0.4)`,
+                    background: "rgba(52,211,153,0.08)",
+                    color: S.green, fontWeight: 700, fontSize: 13, textDecoration: "none",
+                  }}>
+                    View certificates ◈
+                  </Link>
+                </div>
+              </>
             )}
 
             {!passed && !maxAttemptsReached && (

@@ -21,6 +21,12 @@ function derivePageTitle(pathname: string): string {
   if (pathname.startsWith("/university/assessment/")) return "Assessment";
   if (pathname === "/university/admin") return "Admin Overview";
   if (pathname.startsWith("/university/admin/compliance")) return "Compliance";
+  // Studio sub-routes — lesson and assessment editors
+  if (/\/university\/admin\/studio\/[^/]+\/lesson\//.test(pathname)) return "Lesson Editor";
+  if (/\/university\/admin\/studio\/[^/]+\/assessment\//.test(pathname)) return "Assessment Editor";
+  if (pathname.startsWith("/university/admin/studio")) return "Course Studio";
+  if (pathname.startsWith("/university/admin/courses/new")) return "New Course";
+  if (/\/university\/admin\/courses\/[^/]+/.test(pathname)) return "Edit Course";
   if (pathname.startsWith("/university/admin/courses")) return "Courses";
   if (pathname.startsWith("/university/admin/users")) return "Users";
   if (pathname.startsWith("/university/admin/assignments")) return "Assignments";
@@ -29,9 +35,10 @@ function derivePageTitle(pathname: string): string {
   if (pathname.startsWith("/university/admin/exemptions")) return "Exemptions";
   if (pathname.startsWith("/university/admin/media")) return "Media Library";
   if (pathname.startsWith("/university/admin/org-units")) return "Org Units";
-  if (pathname.startsWith("/university/admin/studio")) return "Studio";
   if (pathname.startsWith("/university/hr")) return "HR Overview";
-  if (pathname.startsWith("/university/manager")) return "Manager";
+  if (pathname.startsWith("/university/manager/employee/")) return "Employee Detail";
+  if (pathname.startsWith("/university/manager")) return "My Team";
+  if (pathname.startsWith("/university/verify/")) return "Verify Certificate";
   return "HCMG U";
 }
 

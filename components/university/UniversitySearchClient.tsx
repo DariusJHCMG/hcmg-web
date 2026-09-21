@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { CourseCard } from "@/components/university/CourseCard";
 import type { UniCourse } from "@/lib/database.types";
@@ -38,7 +38,8 @@ interface Props {
 }
 
 export function UniversitySearchClient({ courses, enrolledIds, progressMap }: Props) {
-  const enrolledSet = new Set(enrolledIds);
+  // Stable set from prop array — useMemo avoids recreation on every render
+  const enrolledSet = React.useMemo(() => new Set(enrolledIds), [enrolledIds]);
   const searchParams  = useSearchParams();
   const pathParam     = searchParams.get("path");
   const initialFilter = pathParam ? (PATH_TO_FILTER[pathParam] ?? "all") : "all";

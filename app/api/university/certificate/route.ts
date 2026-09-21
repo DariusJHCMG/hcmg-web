@@ -94,22 +94,51 @@ export async function POST(request: NextRequest) {
       ? new Date(Date.now() + course.recert_interval_days * 24 * 60 * 60 * 1000).toISOString()
       : null;
 
-    const { data: issuedCert, error } = await sb
+    // Check for existing active cert first so we never overwrite a verification_id
+    const { data: existingCert } = await sb
       .from("uni_certificates")
-      .upsert(
-        {
+      .select("id")
+      .eq("profile_id", profile_id)
+      .eq("course_id", course_id)
+      .is("revoked_at", null)
+      .maybeSingle();
+
+    let issuedCert: { id: string } | null = null;
+    let error: { message: string } | null = null;
+
+    if (existingCert) {
+      // Re-issue: update timestamps, clear revocation, keep verification_id
+      const { data, error: e } = await sb
+        .from("uni_certificates")
+        .update({
+          issued_by:         profile.id,
+          issued_at:         new Date().toISOString(),
+          revoked_at:        null,
+          revocation_reason: null,
+          expires_at:        expiresAt,
+        })
+        .eq("id", existingCert.id)
+        .select("id")
+        .single();
+      issuedCert = data;
+      error = e ?? null;
+    } else {
+      const { randomUUID } = await import("crypto");
+      const { data, error: e } = await sb
+        .from("uni_certificates")
+        .insert({
           profile_id,
           course_id,
-          issued_by:  profile.id,
-          issued_at:  new Date().toISOString(),
-          revoked_at: null,
-          revocation_reason: null,
-          expires_at: expiresAt,
-        },
-        { onConflict: "profile_id,course_id" }
-      )
-      .select("id")
-      .single();
+          issued_by:        profile.id,
+          issued_at:        new Date().toISOString(),
+          expires_at:       expiresAt,
+          verification_id:  randomUUID(),
+        })
+        .select("id")
+        .single();
+      issuedCert = data;
+      error = e ?? null;
+    }
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
