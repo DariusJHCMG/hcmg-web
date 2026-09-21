@@ -1,5 +1,5 @@
-import { notFound } from "next/navigation";
-import { getCurrentProfile } from "@/lib/auth";
+import { notFound, redirect } from "next/navigation";
+import { getVerifiedProfile, isUniversityAdmin, isUniversityTrainer } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import { CourseEditorForm } from "@/components/university/admin/CourseEditorForm";
@@ -14,8 +14,9 @@ interface Props { params: Promise<{ id: string }> }
 
 export default async function AdminCourseEditPage({ params }: Props) {
   const { id } = await params;
-  const profile = await getCurrentProfile();
-  if (!profile) return null;
+  const profile = await getVerifiedProfile();
+  if (!profile) redirect("/login?next=/university/admin/courses");
+  if (!isUniversityAdmin(profile) && !isUniversityTrainer(profile)) redirect("/university");
 
   const sb = createServiceClient();
 
@@ -60,6 +61,20 @@ export default async function AdminCourseEditPage({ params }: Props) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {/* Studio link */}
+          <Link
+            href={`/university/admin/studio/${course.id}`}
+            style={{
+              padding: "6px 14px", borderRadius: 7,
+              border: "1px solid rgba(245,130,32,0.4)",
+              background: "rgba(245,130,32,0.1)",
+              color: "#f58220", fontSize: 12, fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            Open Studio →
+          </Link>
+
           {/* Published badge */}
           <div style={{
             padding: "6px 12px", borderRadius: 6,

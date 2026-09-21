@@ -247,7 +247,7 @@ export default async function HRDashboardPage() {
           <h1 style={{ fontSize: "clamp(22px,3.5vw,34px)", fontWeight: 800, letterSpacing: "-1px", fontFamily: "Manrope, system-ui", marginBottom: 4 }}>
             Employee Training
           </h1>
-          <p style={{ fontSize: 12, color: "#687383" }}>Internal use — authorized HR personnel only</p>
+          <p style={{ fontSize: 12, color: "#687383" }}>Admin access required</p>
         </div>
         <a
           href="/api/university/admin/export"

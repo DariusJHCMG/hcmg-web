@@ -17,7 +17,7 @@ function daysUntil(dateStr: string): number {
 }
 
 function formatDate(d: string | null): string {
-  if (!d) return "Never";
+  if (!d) return "—";
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 

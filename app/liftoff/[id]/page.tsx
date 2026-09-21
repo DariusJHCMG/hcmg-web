@@ -197,6 +197,38 @@ export default async function LiftOffDetailPage({
         </div>
       )}
 
+      {/* Resubmission context — shown on the NEW record so both LO and ops can see the full picture */}
+      {request.resubmission_of && (
+        <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 px-6 py-4 space-y-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-amber-700">Resubmission</p>
+          {/* Original incomplete reasons */}
+          {Array.isArray(request.incomplete_reasons) && request.incomplete_reasons.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-amber-800">Original incomplete reason{request.incomplete_reasons.length > 1 ? "s" : ""}:</p>
+              <ul className="space-y-0.5">
+                {(request.incomplete_reasons as string[]).map((r, i) => (
+                  <li key={i} className="text-xs text-amber-900 flex items-start gap-1.5">
+                    <span className="text-amber-500 mt-0.5">•</span>{r}
+                  </li>
+                ))}
+              </ul>
+              {request.incomplete_notes && (
+                <p className="text-xs text-amber-800 border-t border-amber-200 pt-2 mt-1">
+                  <span className="font-bold">Ops notes:</span> {request.incomplete_notes}
+                </p>
+              )}
+            </div>
+          )}
+          {/* LO's response */}
+          {request.resubmission_notes && (
+            <div className="border-t border-amber-200 pt-3 space-y-1">
+              <p className="text-xs font-bold text-amber-800">LO response:</p>
+              <p className="text-sm text-amber-900">{request.resubmission_notes}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Return note (legacy field) */}
       {request.request_status === "action_needed" && request.return_reason && !request.incomplete_reasons?.length && (
         <div className="rounded-2xl border-2 border-orange-300 bg-orange-50 px-6 py-4">

@@ -138,7 +138,7 @@ export function AssessmentPlayer({
       <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: S.white, minHeight: "100vh" }}>
         {/* Header */}
         <div style={{ background: S.navy, padding: "14px clamp(16px,4vw,48px)", display: "flex", alignItems: "center", gap: 10 }}>
-          <Link href={`/university/course/${courseSlug}`} style={{ fontSize: 12, color: S.muted, textDecoration: "none" }}>
+          <Link href="/university" style={{ fontSize: 12, color: S.muted, textDecoration: "none" }}>
             HCMG U
           </Link>
           <span style={{ color: "#405166", fontSize: 12 }}>/</span>
@@ -240,7 +240,7 @@ export function AssessmentPlayer({
 
             {passed && (
               <div style={{ marginTop: 20, padding: "12px 16px", background: "rgba(52,211,153,0.1)", borderRadius: 10, fontSize: 13, color: S.green }}>
-                Your completion has been recorded. You&apos;ll receive your certificate shortly.
+                Your completion has been recorded. Your certificate has been issued — check your Certificates page.
               </div>
             )}
 

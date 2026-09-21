@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import type { UniCourse, UniLesson, UniModule, UniAssessment, UniCourseObjective, UniCertificateConfig } from "@/lib/database.types";
+import type { UniCourse, UniLesson, UniModule, UniAssessment, UniCourseObjective, UniCertificateConfig, LessonType } from "@/lib/database.types";
 import {
   STUDIO_COLORS, STATUS_CONFIG,
   StudioInput, StudioTextarea, StudioSelect, FieldLabel, StudioToggle, StudioButton,
@@ -41,6 +41,216 @@ const PILL_COLORS = [
   { value: "gray",   label: "Gray",   dot: "#b9c5d0" },
 ];
 
+// ── Add Content Modal ─────────────────────────────────────────────────────────
+
+const CONTENT_TYPES_LESSONS: { type: LessonType; label: string; icon: React.ReactNode; description: string }[] = [
+  {
+    type: "text",
+    label: "Text",
+    description: "Create text-based content with links and images",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M7 8h10M7 12h10M7 16h6"/>
+      </svg>
+    ),
+  },
+  {
+    type: "video",
+    label: "Video",
+    description: "Deliver video content in a variety of formats",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <polygon points="10,9 16,12 10,15" fill="currentColor" stroke="none"/>
+      </svg>
+    ),
+  },
+  {
+    type: "audio",
+    label: "Audio",
+    description: "Deliver audio content in a variety of formats",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="11,5 6,9 2,9 2,15 6,15 11,19" fill="none"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+      </svg>
+    ),
+  },
+];
+
+const CONTENT_TYPES_OTHERS: { type: LessonType; label: string; icon: React.ReactNode; description: string }[] = [
+  {
+    type: "knowledge_check",
+    label: "Quiz",
+    description: "Evaluate members with a variety of question types",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 9h.01M9 12h.01M9 15h.01M13 9h3M13 12h3M13 15h3"/>
+      </svg>
+    ),
+  },
+  {
+    type: "assignment",
+    label: "Assignment",
+    description: "Prompt members to complete a project or assignment",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <path d="M8 13h8M8 17h5"/>
+      </svg>
+    ),
+  },
+];
+
+function AddContentModal({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (type: LessonType) => void;
+  onClose: () => void;
+}) {
+  // Close on backdrop click
+  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  return (
+    <div
+      onClick={handleBackdrop}
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: "rgba(6,24,42,0.55)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      <div style={{
+        background: STUDIO_COLORS.white, borderRadius: 16,
+        width: "min(680px, 100%)",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.2)",
+        overflow: "hidden",
+      }}>
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "20px 28px", borderBottom: `1px solid ${STUDIO_COLORS.border}`,
+        }}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: STUDIO_COLORS.text, margin: 0 }}>Add Content</h2>
+          <button
+            type="button" onClick={onClose}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: STUDIO_COLORS.textMuted, fontSize: 22, lineHeight: 1,
+              display: "flex", alignItems: "center", padding: 4, borderRadius: 6,
+            }}
+          >×</button>
+        </div>
+
+        <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 24 }}>
+          {/* Lessons group */}
+          <div>
+            <div style={{
+              fontSize: 11, fontWeight: 700, textTransform: "uppercase",
+              letterSpacing: "0.1em", color: STUDIO_COLORS.orange, marginBottom: 12,
+            }}>
+              Lessons
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+              {CONTENT_TYPES_LESSONS.map(ct => (
+                <button
+                  key={ct.type}
+                  type="button"
+                  onClick={() => onSelect(ct.type)}
+                  style={{
+                    display: "flex", flexDirection: "column", gap: 10,
+                    padding: "18px 16px", borderRadius: 12,
+                    border: `1.5px solid ${STUDIO_COLORS.border}`,
+                    background: STUDIO_COLORS.white,
+                    cursor: "pointer", textAlign: "left",
+                    transition: "border-color 0.15s, box-shadow 0.15s",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = STUDIO_COLORS.orange;
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 0 3px rgba(245,130,32,0.08)`;
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = STUDIO_COLORS.border;
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+                  }}
+                >
+                  <div style={{
+                    width: 44, height: 44, borderRadius: "50%",
+                    border: `1.5px solid ${STUDIO_COLORS.border}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: STUDIO_COLORS.text,
+                  }}>
+                    {ct.icon}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text, marginBottom: 4 }}>{ct.label}</div>
+                    <div style={{ fontSize: 12, color: STUDIO_COLORS.textMuted, lineHeight: 1.5 }}>{ct.description}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Others group */}
+          <div>
+            <div style={{
+              fontSize: 11, fontWeight: 700, textTransform: "uppercase",
+              letterSpacing: "0.1em", color: STUDIO_COLORS.textMuted, marginBottom: 12,
+            }}>
+              Others
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+              {CONTENT_TYPES_OTHERS.map(ct => (
+                <button
+                  key={ct.type}
+                  type="button"
+                  onClick={() => onSelect(ct.type)}
+                  style={{
+                    display: "flex", flexDirection: "column", gap: 10,
+                    padding: "18px 16px", borderRadius: 12,
+                    border: `1.5px solid ${STUDIO_COLORS.border}`,
+                    background: STUDIO_COLORS.white,
+                    cursor: "pointer", textAlign: "left",
+                    transition: "border-color 0.15s, box-shadow 0.15s",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = STUDIO_COLORS.orange;
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 0 3px rgba(245,130,32,0.08)`;
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = STUDIO_COLORS.border;
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+                  }}
+                >
+                  <div style={{
+                    width: 44, height: 44, borderRadius: "50%",
+                    border: `1.5px solid ${STUDIO_COLORS.border}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: STUDIO_COLORS.text,
+                  }}>
+                    {ct.icon}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text, marginBottom: 4 }}>{ct.label}</div>
+                    <div style={{ fontSize: 12, color: STUDIO_COLORS.textMuted, lineHeight: 1.5 }}>{ct.description}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type StudioTab = "overview" | "curriculum" | "assessments" | "settings";
@@ -75,6 +285,7 @@ function OverviewTab({
     description:        course.description ?? "",
     thumbnail_url:      course.thumbnail_url ?? "",
     category:           course.category,
+    path_tag:           course.path_tag ?? "",
     difficulty:         course.difficulty ?? "",
     duration_label:     course.duration_label ?? "",
     pill_color:         course.pill_color ?? "gray",
@@ -114,6 +325,7 @@ function OverviewTab({
           description:       form.description.trim() || null,
           thumbnail_url:     form.thumbnail_url.trim() || null,
           category:          form.category,
+          path_tag:          form.path_tag.trim() || null,
           difficulty:        form.difficulty || null,
           duration_label:    form.duration_label.trim() || null,
           pill_color:        form.pill_color,
@@ -246,6 +458,15 @@ function OverviewTab({
               {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
             </StudioSelect>
           </div>
+          <div>
+            <FieldLabel>Learning path tag</FieldLabel>
+            <StudioInput
+              value={form.path_tag}
+              onChange={e => set("path_tag", e.target.value)}
+              placeholder="e.g. harrys_playbook, fast_start"
+              hint="Enables course to appear in the matching learning path"
+            />
+          </div>
         </div>
 
         <div style={{ marginTop: 14 }}>
@@ -339,10 +560,12 @@ function CurriculumTab({
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
   const [editModuleTitle, setEditModuleTitle] = useState("");
+  const [editModuleDesc, setEditModuleDesc] = useState("");
   const [collapsedModules, setCollapsedModules] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
   const [dragLesson, setDragLesson] = useState<string | null>(null);
-  const [dragModule, setDragModule] = useState<string | null>(null);
+  // addContentFor: null = closed, "root" = unassigned, moduleId string = that module
+  const [addContentFor, setAddContentFor] = useState<string | null>(null);
 
   // Group lessons by module
   const unassigned = lessons.filter(l => !l.module_id);
@@ -373,13 +596,13 @@ function CurriculumTab({
     } catch { setError("Network error"); }
   }
 
-  async function saveModuleTitle(moduleId: string) {
+  async function saveModuleEdits(moduleId: string) {
     if (!editModuleTitle.trim()) return;
     try {
       const res = await fetch(`/api/university/admin/module/${moduleId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: editModuleTitle.trim() }),
+        body: JSON.stringify({ title: editModuleTitle.trim(), description: editModuleDesc.trim() || null }),
       });
       if (res.ok) {
         const updated = await res.json();
@@ -414,16 +637,18 @@ function CurriculumTab({
     router.push(`/university/admin/studio/${course.id}/lesson/${lessonId}`);
   }
 
-  async function createLesson(moduleId: string | null) {
+  async function createLesson(moduleId: string | null, lessonType: LessonType = "video") {
     try {
       const targetLessons = moduleId ? lessonsByModule(moduleId) : unassigned;
+      const typeLabel = lessonType.charAt(0).toUpperCase() + lessonType.slice(1).replace("_", " ");
       const res = await fetch("/api/university/admin/lesson", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           course_id: course.id,
           module_id: moduleId,
-          title: "New Lesson",
+          title: `New ${typeLabel} Lesson`,
+          lesson_type: lessonType,
           sort_order: lessons.length,
           module_sort_order: targetLessons.length,
         }),
@@ -433,6 +658,12 @@ function CurriculumTab({
       onLessonsChange([...lessons, lesson]);
       router.push(`/university/admin/studio/${course.id}/lesson/${lesson.id}`);
     } catch {}
+  }
+
+  function handleAddContent(type: LessonType) {
+    const moduleId = addContentFor === "root" ? null : (addContentFor ?? null);
+    setAddContentFor(null);
+    createLesson(moduleId, type);
   }
 
   function LessonRow({ lesson, moduleId }: { lesson: UniLesson; moduleId: string | null }) {
@@ -512,73 +743,118 @@ function CurriculumTab({
 
     return (
       <div
-        style={{ border: `1px solid ${STUDIO_COLORS.border}`, borderRadius: 10, overflow: "hidden" }}
+        style={{ border: `1px solid ${STUDIO_COLORS.border}`, borderRadius: 12, overflow: "hidden" }}
         onDragOver={e => { e.preventDefault(); }}
-        onDrop={() => {
-          if (dragLesson) assignLessonToModule(dragLesson, mod.id);
-        }}
+        onDrop={() => { if (dragLesson) assignLessonToModule(dragLesson, mod.id); }}
       >
         {/* Module header */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 10,
-          padding: "12px 16px",
-          background: STUDIO_COLORS.navy, color: STUDIO_COLORS.white,
+          background: STUDIO_COLORS.surface,
+          borderBottom: collapsed ? "none" : `1px solid ${STUDIO_COLORS.border}`,
         }}>
-          <button type="button" onClick={() => toggleCollapse(mod.id)}
-            style={{ background: "none", border: "none", cursor: "pointer", color: STUDIO_COLORS.textLight, fontSize: 12, padding: 0 }}>
-            {collapsed ? "▶" : "▼"}
-          </button>
+          {/* Title row */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "14px 18px",
+          }}>
+            <button type="button" onClick={() => toggleCollapse(mod.id)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: STUDIO_COLORS.textMuted, fontSize: 11, padding: 0, flexShrink: 0 }}>
+              {collapsed ? "▶" : "▼"}
+            </button>
 
-          {isEditing ? (
-            <div style={{ flex: 1, display: "flex", gap: 8 }}>
-              <input
-                value={editModuleTitle}
-                onChange={e => setEditModuleTitle(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") saveModuleTitle(mod.id); if (e.key === "Escape") setEditingModuleId(null); }}
-                autoFocus
-                style={{ flex: 1, padding: "4px 8px", borderRadius: 6, border: "none", fontSize: 14, fontWeight: 700, background: "rgba(255,255,255,0.15)", color: "#fff" }}
-              />
-              <StudioButton size="sm" onClick={() => saveModuleTitle(mod.id)}>Save</StudioButton>
-              <StudioButton size="sm" variant="ghost" onClick={() => setEditingModuleId(null)} style={{ color: STUDIO_COLORS.textLight }}>Cancel</StudioButton>
-            </div>
-          ) : (
-            <>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: STUDIO_COLORS.white }}>{mod.title}</div>
-                <div style={{ fontSize: 11, color: STUDIO_COLORS.textLight, marginTop: 1 }}>
-                  {modLessons.length} lesson{modLessons.length !== 1 ? "s" : ""}
+            {isEditing ? (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                <input
+                  value={editModuleTitle}
+                  onChange={e => setEditModuleTitle(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") saveModuleEdits(mod.id); if (e.key === "Escape") setEditingModuleId(null); }}
+                  autoFocus
+                  placeholder="Chapter name"
+                  style={{
+                    padding: "6px 10px", borderRadius: 7,
+                    border: `1.5px solid ${STUDIO_COLORS.orange}`,
+                    fontSize: 15, fontWeight: 700, color: STUDIO_COLORS.text,
+                    outline: "none", fontFamily: "inherit", width: "100%", boxSizing: "border-box",
+                  }}
+                />
+                <input
+                  value={editModuleDesc}
+                  onChange={e => setEditModuleDesc(e.target.value)}
+                  placeholder="Add chapter description..."
+                  style={{
+                    padding: "6px 10px", borderRadius: 7,
+                    border: `1.5px solid ${STUDIO_COLORS.border}`,
+                    fontSize: 13, color: STUDIO_COLORS.textMuted,
+                    outline: "none", fontFamily: "inherit", width: "100%", boxSizing: "border-box",
+                  }}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <StudioButton size="sm" onClick={() => saveModuleEdits(mod.id)}>Save</StudioButton>
+                  <StudioButton size="sm" variant="secondary" onClick={() => setEditingModuleId(null)}>Cancel</StudioButton>
                 </div>
               </div>
-              <button type="button" onClick={() => { setEditingModuleId(mod.id); setEditModuleTitle(mod.title); }}
-                style={{ background: "none", border: "none", cursor: "pointer", color: STUDIO_COLORS.textLight, fontSize: 12, padding: "2px 6px" }}>
-                Rename
-              </button>
-              <button type="button" onClick={() => deleteModule(mod.id)}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(248,113,113,0.7)", fontSize: 12, padding: "2px 6px" }}>
-                Delete
-              </button>
-            </>
-          )}
+            ) : (
+              <>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: STUDIO_COLORS.text }}>
+                    {mod.title}
+                  </div>
+                  {mod.description ? (
+                    <div style={{ fontSize: 12, color: STUDIO_COLORS.textMuted, marginTop: 2 }}>{mod.description}</div>
+                  ) : (
+                    <div style={{ fontSize: 12, color: STUDIO_COLORS.textLight, marginTop: 2, fontStyle: "italic" }}>
+                      Add chapter description…
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 11, color: STUDIO_COLORS.textMuted, marginRight: 6 }}>
+                    {modLessons.length} lesson{modLessons.length !== 1 ? "s" : ""}
+                  </span>
+                  <button type="button"
+                    onClick={() => { setEditingModuleId(mod.id); setEditModuleTitle(mod.title); setEditModuleDesc(mod.description ?? ""); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: STUDIO_COLORS.textMuted, fontSize: 12, padding: "3px 8px", borderRadius: 6 }}>
+                    Edit
+                  </button>
+                  <button type="button" onClick={() => deleteModule(mod.id)}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: STUDIO_COLORS.red, fontSize: 12, padding: "3px 8px", borderRadius: 6 }}>
+                    Delete
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Lessons */}
         {!collapsed && (
-          <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
             {modLessons.length === 0 ? (
               <div style={{ fontSize: 13, color: STUDIO_COLORS.textMuted, textAlign: "center", padding: "16px 0" }}>
-                Drag lessons here or <button type="button" onClick={() => createLesson(mod.id)}
+                Drag lessons here or{" "}
+                <button type="button" onClick={() => setAddContentFor(mod.id)}
                   style={{ background: "none", border: "none", cursor: "pointer", color: STUDIO_COLORS.orange, fontWeight: 700, fontSize: 13, padding: 0 }}>
-                  + add a lesson
+                  + add content
                 </button>
               </div>
             ) : (
               modLessons.map(l => <LessonRow key={l.id} lesson={l} moduleId={mod.id} />)
             )}
             <div style={{ paddingTop: 4 }}>
-              <StudioButton size="sm" variant="ghost" onClick={() => createLesson(mod.id)}
-                style={{ color: STUDIO_COLORS.orange, fontWeight: 700 }}>
-                + Add lesson to this module
-              </StudioButton>
+              <button
+                type="button"
+                onClick={() => setAddContentFor(mod.id)}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "7px 14px", borderRadius: 8,
+                  border: `1.5px solid ${STUDIO_COLORS.border}`,
+                  background: STUDIO_COLORS.white,
+                  cursor: "pointer", fontSize: 12, fontWeight: 700,
+                  color: STUDIO_COLORS.orange,
+                }}
+              >
+                + Add Content
+              </button>
             </div>
           </div>
         )}
@@ -593,9 +869,9 @@ function CurriculumTab({
       {/* Stats row */}
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
         {[
-          { label: "Modules",  value: modules.length },
-          { label: "Lessons",  value: lessons.length },
-          { label: "Published",value: lessons.filter(l => l.is_published).length },
+          { label: "Chapters",  value: modules.length },
+          { label: "Lessons",   value: lessons.length },
+          { label: "Published", value: lessons.filter(l => l.is_published).length },
         ].map(s => (
           <div key={s.label} style={{
             flex: "1 1 100px", padding: "12px 16px",
@@ -607,59 +883,79 @@ function CurriculumTab({
         ))}
       </div>
 
-      {/* Modules */}
+      {/* Modules / Chapters */}
       {modules.map(m => <ModuleSection key={m.id} mod={m} />)}
 
       {/* Unassigned lessons */}
       {lessons.length > 0 && (
         <div
-          style={{ border: `1px solid ${STUDIO_COLORS.border}`, borderRadius: 10, overflow: "hidden" }}
+          style={{ border: `1px solid ${STUDIO_COLORS.border}`, borderRadius: 12, overflow: "hidden" }}
           onDragOver={e => e.preventDefault()}
           onDrop={() => { if (dragLesson) assignLessonToModule(dragLesson, null); }}
         >
-          <div style={{ padding: "12px 16px", background: STUDIO_COLORS.surface, borderBottom: `1px solid ${STUDIO_COLORS.border}` }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: STUDIO_COLORS.text }}>
+          <div style={{ padding: "14px 18px", background: STUDIO_COLORS.surface, borderBottom: `1px solid ${STUDIO_COLORS.border}` }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text }}>
               {modules.length > 0 ? "Unassigned Lessons" : "Lessons"}
             </span>
             <span style={{ marginLeft: 8, fontSize: 11, color: STUDIO_COLORS.textMuted }}>{unassigned.length} lesson{unassigned.length !== 1 ? "s" : ""}</span>
           </div>
-          <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
             {unassigned.length === 0 && modules.length > 0 ? (
               <p style={{ fontSize: 13, color: STUDIO_COLORS.textMuted, textAlign: "center", padding: "12px 0" }}>
-                All lessons are assigned to modules.
+                All lessons are assigned to chapters.
               </p>
             ) : unassigned.length === 0 ? (
               <EmptyState
                 icon="▶"
                 title="No lessons yet"
-                description="Build the first lesson in this course. Lessons can be organized into modules."
-                action={<StudioButton onClick={() => createLesson(null)}>+ Create First Lesson</StudioButton>}
+                description="Add the first lesson. Use chapters to organize content into sections."
+                action={
+                  <StudioButton onClick={() => setAddContentFor("root")}>+ Add Content</StudioButton>
+                }
               />
             ) : (
               unassigned.map(l => <LessonRow key={l.id} lesson={l} moduleId={null} />)
+            )}
+            {unassigned.length > 0 && (
+              <div style={{ paddingTop: 4 }}>
+                <button
+                  type="button"
+                  onClick={() => setAddContentFor("root")}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "7px 14px", borderRadius: 8,
+                    border: `1.5px solid ${STUDIO_COLORS.border}`,
+                    background: STUDIO_COLORS.white,
+                    cursor: "pointer", fontSize: 12, fontWeight: 700,
+                    color: STUDIO_COLORS.orange,
+                  }}
+                >
+                  + Add Content
+                </button>
+              </div>
             )}
           </div>
         </div>
       )}
 
-      {lessons.length === 0 && (
+      {lessons.length === 0 && modules.length === 0 && (
         <EmptyState
           icon="▶"
-          title="No lessons yet"
-          description="Build the first lesson in this course. Lessons can be organized into modules."
-          action={<StudioButton onClick={() => createLesson(null)}>+ Create First Lesson</StudioButton>}
+          title="No content yet"
+          description="Add your first lesson or chapter to start building this course."
+          action={<StudioButton onClick={() => setAddContentFor("root")}>+ Add Content</StudioButton>}
         />
       )}
 
-      {/* Add actions */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <StudioButton onClick={() => createLesson(null)} variant="secondary">
-          + Add Lesson
+      {/* Bottom toolbar */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 4 }}>
+        <StudioButton onClick={() => setAddContentFor("root")} variant="secondary">
+          + Add Content
         </StudioButton>
 
         {!addingModule ? (
           <StudioButton variant="secondary" onClick={() => setAddingModule(true)}>
-            + Add Module
+            + Add Chapter
           </StudioButton>
         ) : (
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -667,7 +963,7 @@ function CurriculumTab({
               value={newModuleTitle}
               onChange={e => setNewModuleTitle(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") createModule(); if (e.key === "Escape") { setAddingModule(false); setNewModuleTitle(""); } }}
-              placeholder="Module title"
+              placeholder="Chapter title"
               autoFocus
               style={{ width: 240 }}
             />
@@ -676,6 +972,14 @@ function CurriculumTab({
           </div>
         )}
       </div>
+
+      {/* Add Content Modal */}
+      {addContentFor !== null && (
+        <AddContentModal
+          onSelect={handleAddContent}
+          onClose={() => setAddContentFor(null)}
+        />
+      )}
     </div>
   );
 }
@@ -1194,6 +1498,15 @@ export function CourseStudio({
     { id: "settings" as StudioTab,    label: "Settings" },
   ];
 
+  // Wizard steps (maps tabs to step numbers for the progress indicator)
+  const WIZARD_STEPS: { id: StudioTab; label: string }[] = [
+    { id: "overview",    label: "Content" },
+    { id: "curriculum",  label: "Curriculum" },
+    { id: "assessments", label: "Assessments" },
+    { id: "settings",    label: "Settings" },
+  ];
+  const currentStepIdx = WIZARD_STEPS.findIndex(s => s.id === tab);
+
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: STUDIO_COLORS.white, minHeight: "100vh" }}>
       {/* ── Studio header ──────────────────────────────────────────────────── */}
@@ -1208,18 +1521,85 @@ export function CourseStudio({
           height: 56, display: "flex", alignItems: "center",
           justifyContent: "space-between", gap: 16,
         }}>
-          {/* Left: brand + breadcrumb */}
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", color: STUDIO_COLORS.orange, marginBottom: 3 }}>
-              HCMG U · Training Studio
+          {/* Left: back + breadcrumb */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <a
+              href="/university/admin/courses"
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "5px 10px", borderRadius: 7,
+                border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)",
+                color: STUDIO_COLORS.textLight, fontSize: 12, fontWeight: 600, textDecoration: "none",
+              }}
+            >
+              ← Back
+            </a>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", color: STUDIO_COLORS.orange, marginBottom: 3 }}>
+                Training Studio
+              </div>
+              <Breadcrumb items={[
+                { label: "Courses",  href: "/university/admin/courses" },
+                { label: course.title },
+              ]} />
             </div>
-            <Breadcrumb items={[
-              { label: "Courses",  href: "/university/admin/courses" },
-              { label: course.title },
-            ]} />
           </div>
 
-          {/* Right: status + actions */}
+          {/* Centre: wizard step progress */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 0,
+            position: "absolute", left: "50%", transform: "translateX(-50%)",
+          }}>
+            {WIZARD_STEPS.map((step, i) => (
+              <React.Fragment key={step.id}>
+                {/* Step */}
+                <button
+                  type="button"
+                  onClick={() => setTab(step.id)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 7,
+                    background: "none", border: "none", cursor: "pointer",
+                    padding: "4px 8px",
+                  }}
+                >
+                  <div style={{
+                    width: 22, height: 22, borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 11, fontWeight: 800,
+                    background: i < currentStepIdx
+                      ? STUDIO_COLORS.orange
+                      : i === currentStepIdx
+                        ? STUDIO_COLORS.white
+                        : "rgba(255,255,255,0.12)",
+                    color: i === currentStepIdx
+                      ? STUDIO_COLORS.navy
+                      : i < currentStepIdx
+                        ? "#fff"
+                        : "rgba(255,255,255,0.4)",
+                    border: i === currentStepIdx ? "none" : "none",
+                    flexShrink: 0,
+                  }}>
+                    {i < currentStepIdx ? "✓" : i + 1}
+                  </div>
+                  <span style={{
+                    fontSize: 12, fontWeight: i === currentStepIdx ? 700 : 400,
+                    color: i === currentStepIdx ? "#fff" : "rgba(255,255,255,0.45)",
+                  }}>
+                    {step.label}
+                  </span>
+                </button>
+                {/* Connector line */}
+                {i < WIZARD_STEPS.length - 1 && (
+                  <div style={{
+                    width: 32, height: 1,
+                    background: i < currentStepIdx ? STUDIO_COLORS.orange : "rgba(255,255,255,0.15)",
+                  }} />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Right: status + preview + next */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, position: "relative" }} ref={statusRef}>
             <ReadinessPanel
               courseId={course.id}
@@ -1238,6 +1618,20 @@ export function CourseStudio({
             >
               Preview ↗
             </a>
+            {currentStepIdx < WIZARD_STEPS.length - 1 && (
+              <button
+                type="button"
+                onClick={() => setTab(WIZARD_STEPS[currentStepIdx + 1].id)}
+                style={{
+                  padding: "7px 16px", borderRadius: 8,
+                  background: STUDIO_COLORS.orange, color: "#fff",
+                  border: "none", fontSize: 12, fontWeight: 700,
+                  cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                Next →
+              </button>
+            )}
           </div>
         </div>
 

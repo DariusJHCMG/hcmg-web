@@ -17,13 +17,17 @@ export default async function AdminAssignmentsPage() {
 
   const sb = createServiceClient();
 
-  const [{ data: courses }, { data: profiles }] = await Promise.all([
+  const [{ data: courses }, { data: profiles }, { data: recentEnrollments }] = await Promise.all([
     sb.from("uni_courses").select("id, title, slug").eq("is_published", true).order("sort_order"),
     sb.from("profiles")
       .select("id, full_name, email, role, department, university_access")
       .eq("is_active", true)
       .eq("university_access", true)
       .order("full_name"),
+    sb.from("uni_enrollments")
+      .select("profile_id, course_id, assignment_type, enrolled_at, profiles:profile_id(full_name, email), uni_courses:course_id(title)")
+      .order("enrolled_at", { ascending: false })
+      .limit(40),
   ]);
 
   return (
@@ -43,12 +47,53 @@ export default async function AdminAssignmentsPage() {
         </p>
       </div>
 
-      <div style={{ maxWidth: 700, margin: "0 auto", padding: "40px clamp(16px,4vw,40px) 64px" }}>
-        <AssignmentFormClient
-          courses={courses ?? []}
-          profiles={profiles ?? []}
-          adminId={profile.id}
-        />
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "40px clamp(16px,4vw,40px) 64px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "start" }}>
+          <AssignmentFormClient
+            courses={courses ?? []}
+            profiles={profiles ?? []}
+            adminId={profile.id}
+          />
+
+          {/* Recent assignments */}
+          <div>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: "#071a2e", marginBottom: 14, fontFamily: "Manrope" }}>
+              Recent Enrollments
+            </h2>
+            {(recentEnrollments ?? []).length === 0 ? (
+              <p style={{ fontSize: 13, color: "#687383" }}>No assignments yet.</p>
+            ) : (
+              <div style={{ border: "1px solid #dfe4e8", borderRadius: 10, overflow: "hidden" }}>
+                {(recentEnrollments ?? []).map((e, i) => {
+                  const emp    = (e.profiles as unknown as { full_name: string; email: string } | null);
+                  const course = (e.uni_courses as unknown as { title: string } | null);
+                  return (
+                    <div key={i} style={{
+                      padding: "10px 14px",
+                      borderBottom: i < (recentEnrollments ?? []).length - 1 ? "1px solid #dfe4e8" : undefined,
+                      background: i % 2 === 0 ? "#fff" : "#f7f8fa",
+                      fontSize: 12,
+                    }}>
+                      <div style={{ fontWeight: 600, color: "#071a2e" }}>{emp?.full_name ?? "—"}</div>
+                      <div style={{ color: "#687383" }}>{course?.title ?? "—"}</div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 3 }}>
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 4,
+                          background: "rgba(245,130,32,0.1)", color: "#f58220", textTransform: "uppercase",
+                        }}>
+                          {e.assignment_type ?? "self"}
+                        </span>
+                        <span style={{ fontSize: 10, color: "#b9c5d0" }}>
+                          {new Date(e.enrolled_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

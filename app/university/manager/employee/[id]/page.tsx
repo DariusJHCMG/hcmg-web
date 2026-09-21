@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 interface Props { params: Promise<{ id: string }> }
 
-function fmtDate(d: string | null): string {
+function fmtDate(d: string | null | undefined): string {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
@@ -54,7 +54,7 @@ export default async function ManagerEmployeePage({ params }: Props) {
       .select("id, course_id, issued_at, expires_at, verification_id, revoked_at, uni_courses!inner(title)")
       .eq("profile_id", id),
     sb.from("uni_quiz_attempts")
-      .select("lesson_id, score_pct, passed, attempted_at")
+      .select("lesson_id, score_pct, passed, attempted_at, uni_lessons!lesson_id(title)")
       .eq("profile_id", id)
       .order("attempted_at", { ascending: false })
       .limit(20),
@@ -221,23 +221,27 @@ export default async function ManagerEmployeePage({ params }: Props) {
               Recent Quiz Attempts
             </h2>
             <div style={{ border: "1px solid #dfe4e8", borderRadius: 10, overflow: "hidden" }}>
-              {(attempts ?? []).map((a, i) => (
-                <div key={i} style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "11px 16px", borderBottom: i < (attempts ?? []).length - 1 ? "1px solid #dfe4e8" : undefined,
-                  background: i % 2 === 0 ? "#fff" : "#f7f8fa", fontSize: 13,
-                }}>
-                  <span style={{
-                    fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
-                    background: a.passed ? "rgba(52,211,153,0.1)" : "rgba(248,113,113,0.1)",
-                    color: a.passed ? "#118568" : "#f87171",
+              {(attempts ?? []).map((a, i) => {
+                  const lessonTitle = (a.uni_lessons as unknown as { title: string } | null)?.title;
+                  return (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "11px 16px", borderBottom: i < (attempts ?? []).length - 1 ? "1px solid #dfe4e8" : undefined,
+                    background: i % 2 === 0 ? "#fff" : "#f7f8fa", fontSize: 13,
                   }}>
-                    {a.passed ? "Passed" : "Failed"}
-                  </span>
-                  <span style={{ fontWeight: 700, color: "#071a2e" }}>{a.score_pct}%</span>
-                  <span style={{ color: "#687383", flex: 1, fontSize: 12 }}>{fmtDate(a.attempted_at)}</span>
-                </div>
-              ))}
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
+                      background: a.passed ? "rgba(52,211,153,0.1)" : "rgba(248,113,113,0.1)",
+                      color: a.passed ? "#118568" : "#f87171",
+                    }}>
+                      {a.passed ? "Passed" : "Failed"}
+                    </span>
+                    <span style={{ fontWeight: 700, color: "#071a2e" }}>{a.score_pct}%</span>
+                    <span style={{ color: "#687383", flex: 1, fontSize: 13 }}>{lessonTitle ?? "—"}</span>
+                    <span style={{ color: "#b9c5d0", fontSize: 11, whiteSpace: "nowrap" }}>{fmtDate(a.attempted_at)}</span>
+                  </div>
+                  );
+                })}
             </div>
           </div>
         )}

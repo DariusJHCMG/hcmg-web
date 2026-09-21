@@ -16,10 +16,10 @@ export default async function UniversityPage() {
     .eq("is_published", true)
     .order("sort_order");
 
-  // User's enrollments
+  // User's enrollments (include due_date for overdue detection)
   const { data: enrollments } = await sb
     .from("uni_enrollments")
-    .select("*")
+    .select("course_id, due_date, assignment_type")
     .eq("profile_id", profile.id);
 
   // User's progress
@@ -27,6 +27,29 @@ export default async function UniversityPage() {
     .from("uni_progress")
     .select("*")
     .eq("profile_id", profile.id);
+
+  // Certificates earned
+  const { count: certificatesEarned } = await sb
+    .from("uni_certificates")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", profile.id)
+    .is("revoked_at", null);
+
+  // Harry's Playbook lesson count
+  const harrysPlaybookCourse = (await sb
+    .from("uni_courses")
+    .select("id")
+    .eq("path_tag", "harrys_playbook")
+    .eq("is_published", true)
+    .maybeSingle()).data;
+
+  const harrysPlaybookLessonCount = harrysPlaybookCourse
+    ? ((await sb
+        .from("uni_lessons")
+        .select("id", { count: "exact", head: true })
+        .eq("course_id", harrysPlaybookCourse.id)
+        .eq("is_published", true)).count ?? 0)
+    : 0;
 
   // Completed lesson count
   const completedLessons = (progress ?? []).filter(p => p.completed).length;
@@ -75,6 +98,27 @@ export default async function UniversityPage() {
 
   const enrolledCourseIds = new Set((enrollments ?? []).map(e => e.course_id));
 
+  // Required + overdue courses: enrolled, not complete, and either is_required or past due_date
+  const today = new Date().toISOString().slice(0, 10);
+  const requiredIncomplete: { courseId: string; title: string; slug: string; dueDate: string | null; isOverdue: boolean }[] = [];
+  for (const enr of (enrollments ?? [])) {
+    const course = (courses ?? []).find(c => c.id === enr.course_id);
+    if (!course) continue;
+    const prog = progressMap[enr.course_id];
+    const done = prog && prog.total > 0 && prog.completed === prog.total;
+    if (done) continue;
+    const overdue = !!enr.due_date && enr.due_date < today;
+    if (course.is_required || overdue) {
+      requiredIncomplete.push({
+        courseId: course.id,
+        title: course.title,
+        slug: course.slug,
+        dueDate: enr.due_date ?? null,
+        isOverdue: overdue,
+      });
+    }
+  }
+
   return (
     <UniversityDashboardClient
       profileName={profile.full_name}
@@ -84,6 +128,9 @@ export default async function UniversityPage() {
       completedLessons={completedLessons}
       activePaths={(enrollments ?? []).length}
       continueLesson={continueLesson}
+      certificatesEarned={certificatesEarned ?? 0}
+      harrysPlaybookLessonCount={harrysPlaybookLessonCount}
+      requiredIncomplete={requiredIncomplete}
     />
   );
 }

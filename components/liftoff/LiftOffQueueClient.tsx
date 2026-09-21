@@ -562,6 +562,14 @@ function RequestRow({
         </div>
       )}
 
+      {/* Resubmission context — LO's response to the incomplete */}
+      {r.resubmission_of && r.resubmission_notes && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 space-y-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-amber-700">LO Response to Incomplete</p>
+          <p className="text-xs text-amber-900">{r.resubmission_notes}</p>
+        </div>
+      )}
+
       {/* Error */}
       {err && <p className="text-xs text-red-600 font-medium">{err}</p>}
 

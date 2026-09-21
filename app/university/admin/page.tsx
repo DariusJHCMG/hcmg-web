@@ -41,12 +41,32 @@ export default async function UniversityAdminPage() {
   ];
 
   const adminLinks = [
-    { href: "/university/admin/courses",     label: "Training Studio",  icon: "🎬", desc: "Build and publish courses, lessons, and assessments" },
-    { href: "/university/admin/media",       label: "Media Library",    icon: "📂", desc: "Upload and manage videos, images, documents, and captions" },
-    { href: "/university/admin/assignments", label: "Assignments",      icon: "▦",  desc: "Assign courses to users, roles, or departments" },
-    { href: "/university/admin/reports",     label: "Reports",          icon: "📊", desc: "View completion rates, overdue, quiz performance" },
-    { href: "/university/admin/users",       label: "User Access",      icon: "👥", desc: "Manage university_access and roles" },
+    { href: "/university/admin/courses",     label: "Training Studio",   icon: "🎬", desc: "Build and publish courses, lessons, and assessments" },
+    { href: "/university/admin/media",       label: "Media Library",     icon: "📂", desc: "Upload and manage videos, images, documents, and captions" },
+    { href: "/university/admin/assignments", label: "Assignments",       icon: "▦",  desc: "Assign courses to individuals, roles, or departments" },
+    { href: "/university/admin/reports",     label: "Reports",           icon: "📊", desc: "Completion rates, overdue tracking, quiz performance" },
+    { href: "/university/admin/compliance",  label: "Compliance",        icon: "✅", desc: "Org compliance score, certificate expiry, required training" },
+    { href: "/university/admin/users",       label: "User Access",       icon: "👥", desc: "Manage access and university role assignments" },
+    { href: "/university/admin/audit-log",   label: "Audit Log",         icon: "🔍", desc: "Complete record of all privileged actions" },
+    { href: "/university/admin/exemptions",  label: "Exemptions",        icon: "📋", desc: "Grant and track compliance exemptions" },
+    { href: "/university/admin/org-units",   label: "Org Units",         icon: "🏢", desc: "Manage divisions, departments, branches, and teams" },
+    { href: "/university/hr",               label: "HR Overview",        icon: "👔", desc: "Employee training status, non-compliance, new hire tracking" },
   ];
+
+  const ACTION_LABELS: Record<string, string> = {
+    certificate_issued:          "Certificate issued",
+    certificate_revoked:         "Certificate revoked",
+    certificate_expired_auto:    "Certificate auto-expired",
+    exemption_granted:           "Exemption granted",
+    exemption_revoked:           "Exemption revoked",
+    quiz_passed:                 "Quiz passed",
+    quiz_failed:                 "Quiz failed",
+    user_role_updated:           "User role updated",
+    user_access_updated:         "User access updated",
+    org_unit_created:            "Org unit created",
+    org_unit_deactivated:        "Org unit deactivated",
+    course_status_changed:       "Course status changed",
+  };
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#fff", minHeight: "100vh" }}>
@@ -109,7 +129,7 @@ export default async function UniversityAdminPage() {
               borderBottom: i < (recentActivity ?? []).length - 1 ? "1px solid #dfe4e8" : undefined,
               background: i % 2 === 0 ? "#fff" : "#f7f8fa",
             }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#071a2e", minWidth: 160 }}>{a.action.replace(/_/g, " ")}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#071a2e", minWidth: 160 }}>{ACTION_LABELS[a.action] ?? a.action.replace(/_/g, " ")}</div>
               <div style={{ fontSize: 12, color: "#687383", flex: 1 }}>{a.actor_email ?? "system"}</div>
               <div style={{ fontSize: 11, color: "#b9c5d0" }}>{new Date(a.created_at).toLocaleString()}</div>
             </div>

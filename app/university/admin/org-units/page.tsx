@@ -73,6 +73,20 @@ async function handleDeactivate(formData: FormData): Promise<void> {
   redirect("/university/admin/org-units");
 }
 
+async function handleRename(formData: FormData): Promise<void> {
+  "use server";
+  const profile = await getVerifiedProfile();
+  if (!profile || !isUniversityAdmin(profile)) return;
+
+  const id   = formData.get("id") as string;
+  const name = (formData.get("name") as string)?.trim();
+  if (!id || !name) return;
+
+  const sb = createServiceClient();
+  await sb.from("uni_org_units").update({ name }).eq("id", id);
+  redirect("/university/admin/org-units");
+}
+
 async function handleActivate(formData: FormData): Promise<void> {
   "use server";
   const profile = await getVerifiedProfile();
@@ -139,7 +153,24 @@ function UnitTree({
                 )}
               </div>
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              {/* Rename inline form */}
+              <form action={handleRename} style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                <input type="hidden" name="id" value={u.id} />
+                <input
+                  name="name"
+                  defaultValue={u.name}
+                  required
+                  style={{
+                    fontSize: 12, padding: "3px 8px", borderRadius: 5,
+                    border: "1px solid #dfe4e8", fontFamily: "inherit",
+                    color: "#071a2e", width: 140,
+                  }}
+                />
+                <button type="submit" style={{ fontSize: 11, fontWeight: 700, color: "#f58220", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "0 4px" }}>
+                  Rename
+                </button>
+              </form>
               {u.is_active ? (
                 <form action={handleDeactivate}>
                   <input type="hidden" name="id" value={u.id} />

@@ -48,7 +48,8 @@ export function AssignmentFormClient({ courses, profiles, adminId }: Props) {
           assigned_by:     adminId,
           course_id:       courseId,
           assignment_type: assignmentType,
-          profile_id:      assignmentType === "self" && profileId ? profileId : undefined,
+          profile_id:      assignmentType === "self" ? (profileId || undefined) : undefined,
+          target:          (assignmentType === "role" || assignmentType === "department") ? (profileId || undefined) : undefined,
           due_date:        dueDate || undefined,
         }),
       });
@@ -120,7 +121,7 @@ export function AssignmentFormClient({ courses, profiles, adminId }: Props) {
       {assignmentType === "self" && (
         <div>
           <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#071a2e", display: "block", marginBottom: 7 }}>
-            User <span style={{ color: "#f58220" }}>*</span>
+            Team Member <span style={{ color: "#f58220" }}>*</span>
           </label>
           <select
             value={profileId}
@@ -133,6 +134,52 @@ export function AssignmentFormClient({ courses, profiles, adminId }: Props) {
               <option key={p.id} value={p.id}>{p.full_name} — {p.email}</option>
             ))}
           </select>
+        </div>
+      )}
+
+      {/* Role target — shown only when assignment_type = role */}
+      {assignmentType === "role" && (
+        <div>
+          <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#071a2e", display: "block", marginBottom: 7 }}>
+            Role <span style={{ color: "#f58220" }}>*</span>
+          </label>
+          <select
+            value={profileId}
+            onChange={e => setProfileId(e.target.value)}
+            required={assignmentType === "role"}
+            style={inputStyle}
+          >
+            <option value="">Select a role…</option>
+            {[...new Set(profiles.map(p => p.role).filter(Boolean))].sort().map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+          <p style={{ fontSize: 11, color: "#687383", marginTop: 5 }}>
+            The course will be assigned to all active members with this role.
+          </p>
+        </div>
+      )}
+
+      {/* Department target — shown only when assignment_type = department */}
+      {assignmentType === "department" && (
+        <div>
+          <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#071a2e", display: "block", marginBottom: 7 }}>
+            Department <span style={{ color: "#f58220" }}>*</span>
+          </label>
+          <select
+            value={profileId}
+            onChange={e => setProfileId(e.target.value)}
+            required={assignmentType === "department"}
+            style={inputStyle}
+          >
+            <option value="">Select a department…</option>
+            {[...new Set(profiles.map(p => p.department).filter((d): d is string => !!d))].sort().map(d => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+          <p style={{ fontSize: 11, color: "#687383", marginTop: 5 }}>
+            The course will be assigned to all active members in this department.
+          </p>
         </div>
       )}
 

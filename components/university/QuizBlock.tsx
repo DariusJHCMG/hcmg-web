@@ -18,6 +18,8 @@ interface Props {
   lessonId: string;
   questions: Question[];
   onPassed?: (score: number) => void;
+  nextLessonId?: string | null;
+  courseSlug?: string;
 }
 
 type Phase = "quiz" | "submitted";
@@ -31,7 +33,7 @@ interface Result {
 // answers: for multiple_choice/true_false → number; for multiple_select → number[]
 type AnswerValue = number | number[];
 
-export function QuizBlock({ lessonId, questions, onPassed }: Props) {
+export function QuizBlock({ lessonId, questions, onPassed, nextLessonId, courseSlug }: Props) {
   const [answers, setAnswers]   = useState<Record<string, AnswerValue>>({});
   const [phase, setPhase]       = useState<Phase>("quiz");
   const [results, setResults]   = useState<Result[]>([]);
@@ -100,6 +102,24 @@ export function QuizBlock({ lessonId, questions, onPassed }: Props) {
           </div>
         </div>
 
+        {/* Passed: show Continue button prominently before answer review */}
+        {passed && (nextLessonId || courseSlug) && (
+          <div style={{ marginBottom: 20, textAlign: "center" }}>
+            <a
+              href={nextLessonId ? `/university/lesson/${nextLessonId}` : `/university/course/${courseSlug}`}
+              style={{
+                display: "inline-block",
+                padding: "12px 28px", borderRadius: 10,
+                background: "linear-gradient(135deg,#FF9847,#F37021)",
+                color: "#fff", fontWeight: 700, fontSize: 14,
+                textDecoration: "none",
+              }}
+            >
+              {nextLessonId ? "Next lesson →" : "Back to course ✓"}
+            </a>
+          </div>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {questions.map((q, i) => {
             const r       = results.find(r => r.question_id === q.id);
@@ -167,6 +187,11 @@ export function QuizBlock({ lessonId, questions, onPassed }: Props) {
           >
             Try again
           </button>
+        )}
+        {passed && !(nextLessonId || courseSlug) && (
+          <div style={{ marginTop: 20, padding: "10px 14px", background: "rgba(52,211,153,0.1)", borderRadius: 8, textAlign: "center", fontSize: 13, color: "#34d399" }}>
+            ✓ Lesson complete
+          </div>
         )}
       </div>
     );

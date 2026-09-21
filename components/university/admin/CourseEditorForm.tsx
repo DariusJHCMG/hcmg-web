@@ -151,10 +151,19 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 
 // ── Lesson Editor (inline, per-lesson modal/panel) ────────────────────────────
 
+const LESSON_TYPES = [
+  { value: "video",       label: "Video" },
+  { value: "audio",       label: "Audio" },
+  { value: "text",        label: "Reading / Text" },
+  { value: "assignment",  label: "Field Assignment" },
+  { value: "presentation",label: "Presentation" },
+];
+
 interface LessonFormState {
   id?: string;
   title: string;
   description: string;
+  lesson_type: string;
   video_token: string;
   transcript: string;
   duration_label: string;
@@ -165,7 +174,7 @@ interface LessonFormState {
 
 const emptyLesson = (sort_order: number): LessonFormState => ({
   title: "", description: "", video_token: "", transcript: "",
-  duration_label: "", is_published: false, sort_order,
+  lesson_type: "video", duration_label: "", is_published: false, sort_order,
   resources_json: [],
 });
 
@@ -268,6 +277,18 @@ function LessonPanel({
           </div>
 
           <div>
+            <FieldLabel required>Lesson type</FieldLabel>
+            <Select
+              value={form.lesson_type}
+              onChange={e => set("lesson_type", e.target.value)}
+            >
+              {LESSON_TYPES.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </Select>
+          </div>
+
+          <div>
             <FieldLabel>Short description</FieldLabel>
             <Textarea
               value={form.description}
@@ -278,12 +299,12 @@ function LessonPanel({
           </div>
 
           <div>
-            <FieldLabel>Video URL / HeyGen token</FieldLabel>
+            <FieldLabel>{form.lesson_type === "audio" ? "Audio URL / storage path" : form.lesson_type === "text" || form.lesson_type === "assignment" ? "Content (stored as text — use Transcript field below)" : "Video URL / HeyGen token"}</FieldLabel>
             <Input
               value={form.video_token}
               onChange={e => set("video_token", e.target.value)}
-              placeholder="https://share.heygen.com/... or storage path"
-              hint="This is stored securely — never exposed to learners directly."
+              placeholder={form.lesson_type === "audio" ? "https://... or storage path" : form.lesson_type === "text" || form.lesson_type === "assignment" ? "Leave blank — content goes in Transcript below" : "https://share.heygen.com/... or storage path"}
+              hint={form.lesson_type === "video" || form.lesson_type === "presentation" ? "Stored securely — never exposed to learners directly." : undefined}
             />
           </div>
 
@@ -413,6 +434,7 @@ function LessonList({
       id:             l.id,
       title:          l.title,
       description:    l.description ?? "",
+      lesson_type:    (l.lesson_type as string) ?? "video",
       video_token:    l.video_token ?? "",
       transcript:     l.transcript ?? "",
       duration_label: l.duration_label ?? "",

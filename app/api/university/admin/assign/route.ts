@@ -22,12 +22,13 @@ export async function POST(request: NextRequest) {
     course_id: string;
     assignment_type: string;
     profile_id?: string | null;
+    target?: string | null;     // role name or department name for bulk-by-filter
     due_date?: string | null;
   };
   try { body = await request.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 }); }
 
-  const { course_id, assignment_type, profile_id, due_date } = body;
+  const { course_id, assignment_type, profile_id, target, due_date } = body;
 
   if (!course_id) {
     return NextResponse.json({ error: "course_id is required" }, { status: 400 });
@@ -55,8 +56,66 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Cannot assign an unpublished course" }, { status: 400 });
   }
 
-  if (assignment_type === "companywide" || (!profile_id && assignment_type !== "self")) {
-    // Bulk assign to all active university_access users
+  // --- Role-based assignment ---
+  if (assignment_type === "role") {
+    if (!target) return NextResponse.json({ error: "target (role) is required" }, { status: 400 });
+    const { data: matchedProfiles } = await sb
+      .from("profiles")
+      .select("id")
+      .eq("is_active", true)
+      .eq("university_access", true)
+      .eq("role", target);
+
+    const inserts = (matchedProfiles ?? []).map(p => ({
+      profile_id:      p.id,
+      course_id,
+      assigned_by:     profile.id,
+      assignment_type: "role",
+      due_date:        due_date || null,
+    }));
+    if (inserts.length > 0) {
+      await sb.from("uni_enrollments").upsert(inserts, { onConflict: "profile_id,course_id", ignoreDuplicates: true });
+    }
+    await logUniAudit("course_assigned_bulk", {
+      actorId: profile.id, actorEmail: profile.email,
+      entityType: "course", entityId: course_id,
+      details: { assignment_type, target, count: inserts.length, due_date: due_date || null, course_title: course.title },
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+    });
+    return NextResponse.json({ ok: true, enrolled: inserts.length });
+  }
+
+  // --- Department-based assignment ---
+  if (assignment_type === "department") {
+    if (!target) return NextResponse.json({ error: "target (department) is required" }, { status: 400 });
+    const { data: matchedProfiles } = await sb
+      .from("profiles")
+      .select("id")
+      .eq("is_active", true)
+      .eq("university_access", true)
+      .eq("department", target);
+
+    const inserts = (matchedProfiles ?? []).map(p => ({
+      profile_id:      p.id,
+      course_id,
+      assigned_by:     profile.id,
+      assignment_type: "department",
+      due_date:        due_date || null,
+    }));
+    if (inserts.length > 0) {
+      await sb.from("uni_enrollments").upsert(inserts, { onConflict: "profile_id,course_id", ignoreDuplicates: true });
+    }
+    await logUniAudit("course_assigned_bulk", {
+      actorId: profile.id, actorEmail: profile.email,
+      entityType: "course", entityId: course_id,
+      details: { assignment_type, target, count: inserts.length, due_date: due_date || null, course_title: course.title },
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+    });
+    return NextResponse.json({ ok: true, enrolled: inserts.length });
+  }
+
+  // --- Companywide assignment ---
+  if (assignment_type === "companywide") {
     const { data: allProfiles } = await sb
       .from("profiles")
       .select("id")
@@ -95,6 +154,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, enrolled: inserts.length });
   }
 
+  // --- Individual assignment ---
   if (profile_id) {
     // Individual assignment — verify the target user exists and has university access
     const { data: targetUser } = await sb

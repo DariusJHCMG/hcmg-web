@@ -287,12 +287,14 @@ export function ErrorBanner({ message, onDismiss }: { message: string; onDismiss
 }
 
 // ── Lesson type badge ─────────────────────────────────────────────────────────
-export const LESSON_TYPE_LABELS: Record<string, { label: string; icon: string; color: string }> = {
-  video:           { label: "Video",           icon: "▶",  color: "#3b82f6" },
-  text:            { label: "Text / Article",  icon: "📄", color: "#8b5cf6" },
-  presentation:    { label: "Presentation",    icon: "📊", color: "#f59e0b" },
-  resource:        { label: "Resource",        icon: "📎", color: "#10b981" },
-  knowledge_check: { label: "Knowledge Check", icon: "✏", color: "#ef4444" },
+export const LESSON_TYPE_LABELS: Record<string, { label: string; icon: string; color: string; description?: string }> = {
+  video:           { label: "Video",           icon: "▶",  color: "#3b82f6", description: "Deliver video content in a variety of formats" },
+  text:            { label: "Text / Article",  icon: "📄", color: "#8b5cf6", description: "Create text-based content with links and images" },
+  audio:           { label: "Audio",           icon: "🔊", color: "#06b6d4", description: "Deliver audio content in a variety of formats" },
+  presentation:    { label: "Presentation",    icon: "📊", color: "#f59e0b", description: "Slide-based presentation content" },
+  resource:        { label: "Resource",        icon: "📎", color: "#10b981", description: "Downloadable files and reference materials" },
+  knowledge_check: { label: "Knowledge Check", icon: "✏", color: "#ef4444", description: "Evaluate members with a variety of question types" },
+  assignment:      { label: "Assignment",      icon: "📋", color: "#7c3aed", description: "Prompt members to complete a project or assignment" },
 };
 
 export function LessonTypeBadge({ lessonType }: { lessonType: string }) {

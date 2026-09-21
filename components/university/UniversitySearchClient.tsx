@@ -7,6 +7,8 @@ import type { UniCourse } from "@/lib/database.types";
 
 const FILTERS = [
   { key: "all",             label: "All training" },
+  { key: "enrolled",        label: "My courses" },
+  { key: "required",        label: "Required" },
   { key: "start",           label: "New LO Fast Start" },
   { key: "harrys_playbook", label: "Harry's Playbook" },
   { key: "sales",           label: "Sales & Conversion" },
@@ -18,6 +20,8 @@ const FILTERS = [
 const PATH_TO_FILTER: Record<string, string> = {
   harrys_playbook: "harrys_playbook",
   fast_start:      "start",
+  required:        "required",
+  enrolled:        "enrolled",
 };
 
 interface SearchResult {
@@ -34,6 +38,7 @@ interface Props {
 }
 
 export function UniversitySearchClient({ courses, enrolledIds, progressMap }: Props) {
+  const enrolledSet = new Set(enrolledIds);
   const searchParams  = useSearchParams();
   const pathParam     = searchParams.get("path");
   const initialFilter = pathParam ? (PATH_TO_FILTER[pathParam] ?? "all") : "all";
@@ -75,13 +80,19 @@ export function UniversitySearchClient({ courses, enrolledIds, progressMap }: Pr
   // When a search query exists and FTS has returned results, show only those
   // course cards. Otherwise fall back to local category filter.
   const filtered = courses.filter(c => {
-    if (search.trim() && ftsIds !== null) {
-      // FTS mode: match against FTS results + optionally category
-      return ftsIds.has(c.id) && (filter === "all" || c.category === filter || c.path_tag === filter);
+    // Special "enrolled" / "required" filters
+    if (filter === "enrolled") {
+      if (!enrolledSet.has(c.id)) return false;
+    } else if (filter === "required") {
+      if (!c.is_required) return false;
+    } else if (filter !== "all") {
+      if (c.category !== filter && c.path_tag !== filter) return false;
     }
-    // Local filter mode
-    const catMatch = filter === "all" || c.category === filter || c.path_tag === filter;
-    return catMatch;
+
+    if (search.trim() && ftsIds !== null) {
+      return ftsIds.has(c.id);
+    }
+    return true;
   });
 
   return (

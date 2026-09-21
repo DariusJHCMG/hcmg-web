@@ -240,7 +240,7 @@ export interface UniProgress {
 }
 
 export type QuestionType = "multiple_choice" | "multiple_select" | "true_false" | "short_answer" | "matching" | "scenario";
-export type LessonType = "video" | "text" | "presentation" | "resource" | "knowledge_check";
+export type LessonType = "video" | "text" | "audio" | "presentation" | "resource" | "knowledge_check" | "assignment";
 export type CompletionMode = "watch_pct" | "manual" | "quiz_pass" | "any";
 export type AssessmentType = "knowledge_check" | "quiz" | "final_assessment" | "certification_exam";
 export type RenewalMode = "manual" | "auto_reassign";

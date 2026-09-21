@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { getVerifiedProfile, isUniversityAdmin, isUniversityTrainer } from "@/lib/auth";
 import Link from "next/link";
 import { CourseEditorForm } from "@/components/university/admin/CourseEditorForm";
 import type { Metadata } from "next";
@@ -7,7 +9,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function NewCoursePage() {
+export default async function NewCoursePage() {
+  const profile = await getVerifiedProfile();
+  if (!profile) redirect("/login?next=/university/admin/courses/new");
+  if (!isUniversityAdmin(profile) && !isUniversityTrainer(profile)) redirect("/university");
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#fff", minHeight: "100vh" }}>
       {/* Page header */}

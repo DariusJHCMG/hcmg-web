@@ -34,10 +34,11 @@ export function LessonPageClient({
   prevLessonId, nextLessonId, initialWatchPct,
   completionMode = "watch_pct", completionThresholdPct = 80,
 }: Props) {
-  const [watchPct, setWatchPct]         = useState(initialWatchPct);
-  const [completed, setCompleted]       = useState(initialWatchPct >= completionThresholdPct);
-  const [transcriptOpen, setTransOpen]  = useState(false);
+  const [watchPct, setWatchPct]          = useState(initialWatchPct);
+  const [completed, setCompleted]        = useState(initialWatchPct >= completionThresholdPct);
+  const [transcriptOpen, setTransOpen]   = useState(false);
   const [resourceLoading, setResLoading] = useState<string | null>(null);
+  const [resourceError, setResError]     = useState<string | null>(null);
 
   async function saveProgress(pct: number, done?: boolean) {
     await fetch("/api/university/progress", {
@@ -54,6 +55,7 @@ export function LessonPageClient({
 
   async function downloadResource(path: string, label: string) {
     setResLoading(path);
+    setResError(null);
     try {
       const res = await fetch(`/api/university/resource-url?lesson_id=${lessonId}&path=${encodeURIComponent(path)}`);
       const data = await res.json();
@@ -62,7 +64,11 @@ export function LessonPageClient({
         a.href = data.url;
         a.download = label;
         a.click();
+      } else {
+        setResError(`Could not generate download link for "${label}". Please try again.`);
       }
+    } catch {
+      setResError(`Download failed for "${label}". Please check your connection and try again.`);
     } finally {
       setResLoading(null);
     }
@@ -72,20 +78,25 @@ export function LessonPageClient({
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#fff", minHeight: "100vh" }}>
       {/* Breadcrumb */}
       <div style={{
-        background: "#071a2e", padding: "14px clamp(16px,4vw,48px)",
-        display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
+        background: "#f7f8fa", borderBottom: "1px solid #dfe4e8",
+        padding: "11px clamp(16px,4vw,48px)",
+        display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
       }}>
         <Link href="/university" style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>HCMG U</Link>
-        <span style={{ color: "#405166", fontSize: 12 }}>/</span>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
         <Link href={`/university/course/${courseSlug}`} style={{ fontSize: 12, color: "#687383", textDecoration: "none" }}>{courseTitle}</Link>
-        <span style={{ color: "#405166", fontSize: 12 }}>/</span>
-        <span style={{ fontSize: 12, color: "#b9c5d0" }}>{lessonTitle}</span>
+        <span style={{ color: "#dfe4e8", fontSize: 12 }}>/</span>
+        <span style={{ fontSize: 12, color: "#142234", fontWeight: 600 }}>{lessonTitle}</span>
       </div>
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px clamp(16px,4vw,40px) 64px" }}>
         {/* Pill + title */}
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", background: "rgba(245,130,32,0.12)", color: "#f58220", padding: "3px 9px", borderRadius: 5 }}>
-          HCMG U LESSON
+          {lessonType === "audio" ? "Audio Lesson"
+            : lessonType === "text" ? "Reading"
+            : lessonType === "assignment" ? "Assignment"
+            : lessonType === "presentation" ? "Presentation"
+            : "Video Lesson"}
         </span>
         <h1 style={{ fontSize: "clamp(22px,3.5vw,34px)", fontWeight: 800, color: "#071a2e", letterSpacing: "-1px", margin: "12px 0 6px", fontFamily: "Manrope, system-ui" }}>
           {lessonTitle}
@@ -94,7 +105,7 @@ export function LessonPageClient({
           <p style={{ fontSize: 14, color: "#687383", lineHeight: 1.65, marginBottom: 24 }}>{lessonDescription}</p>
         )}
 
-        {/* Video player — only for video/presentation lessons */}
+        {/* Video / presentation player */}
         {(!lessonType || lessonType === "video" || lessonType === "presentation") && (
           <LessonPlayer
             lessonId={lessonId}
@@ -115,8 +126,84 @@ export function LessonPageClient({
           />
         )}
 
+        {/* Audio player */}
+        {lessonType === "audio" && (
+          <div style={{
+            marginBottom: 20, padding: "20px 24px", borderRadius: 12,
+            background: "#f7f8fa", border: "1.5px solid #dfe4e8",
+          }}>
+            <audio
+              controls
+              style={{ width: "100%", display: "block" }}
+              onEnded={() => {
+                if (completionMode !== "quiz_pass") {
+                  setCompleted(true);
+                  saveProgress(100, true);
+                }
+              }}
+            >
+              <source src={`/api/university/video-url?lesson_id=${lessonId}`} />
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        )}
+
+        {/* Text / reading content — rendered from transcript field */}
+        {lessonType === "text" && transcript && (
+          <div style={{
+            marginBottom: 20, padding: "24px 28px", borderRadius: 12,
+            background: "#f7f8fa", border: "1px solid #dfe4e8",
+            fontSize: 15, color: "#142234", lineHeight: 1.8,
+            whiteSpace: "pre-wrap",
+          }}>
+            {transcript}
+          </div>
+        )}
+        {lessonType === "text" && !transcript && (
+          <div style={{
+            marginBottom: 20, padding: "24px", borderRadius: 12,
+            background: "#f7f8fa", border: "1px solid #dfe4e8",
+            textAlign: "center", color: "#687383", fontSize: 14,
+          }}>
+            No reading content available for this lesson yet.
+          </div>
+        )}
+
+        {/* Assignment */}
+        {lessonType === "assignment" && (
+          <div style={{
+            marginBottom: 20, padding: "20px 24px", borderRadius: 12,
+            background: "rgba(245,130,32,0.04)", border: "1.5px solid rgba(245,130,32,0.2)",
+          }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#071a2e", marginBottom: 8 }}>
+              Field Assignment
+            </div>
+            {transcript ? (
+              <div style={{ fontSize: 14, color: "#142234", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{transcript}</div>
+            ) : (
+              <p style={{ fontSize: 14, color: "#687383", margin: 0 }}>
+                Complete the assignment as described by your instructor, then mark this lesson as complete below.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Auto-complete for text/assignment on first view if no quiz */}
+        {(lessonType === "text" || lessonType === "assignment") && completionMode !== "quiz_pass" && !completed && quizQuestions.length === 0 && (
+          <button
+            onClick={() => { setCompleted(true); saveProgress(100, true); }}
+            style={{
+              marginTop: 8, width: "100%", padding: "13px", borderRadius: 10,
+              background: "rgba(245,130,32,0.08)", border: "1.5px solid rgba(245,130,32,0.3)",
+              fontSize: 14, fontWeight: 700, color: "#f58220", cursor: "pointer",
+            }}
+          >
+            ✓ Mark as complete
+          </button>
+        )}
+
         {/* Manual completion button */}
-        {completionMode === "manual" && !completed && (
+        {completionMode === "manual" && !completed && (lessonType === "video" || lessonType === "presentation" || !lessonType) && (
           <button
             onClick={() => { setCompleted(true); saveProgress(watchPct, true); }}
             style={{
@@ -160,6 +247,16 @@ export function LessonPageClient({
         {resources.length > 0 && (
           <div style={{ marginTop: 28 }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, color: "#071a2e", marginBottom: 10 }}>Downloads</h3>
+            {resourceError && (
+              <div style={{
+                marginBottom: 10, padding: "10px 14px", borderRadius: 8,
+                background: "rgba(185,28,28,0.06)", border: "1.5px solid rgba(185,28,28,0.2)",
+                fontSize: 12, color: "#b91c1c", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+              }}>
+                <span>⚠ {resourceError}</span>
+                <button onClick={() => setResError(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#687383", fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
+              </div>
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {resources.map(r => (
                 <button
@@ -183,8 +280,8 @@ export function LessonPageClient({
           </div>
         )}
 
-        {/* Transcript */}
-        {transcript && (
+        {/* Transcript — only show toggle for video/audio/presentation; text lessons render it inline above */}
+        {transcript && lessonType !== "text" && lessonType !== "assignment" && (
           <div style={{ marginTop: 24 }}>
             <button
               onClick={() => setTransOpen(o => !o)}
@@ -217,6 +314,8 @@ export function LessonPageClient({
               lessonId={lessonId}
               questions={quizQuestions}
               onPassed={() => setCompleted(true)}
+              nextLessonId={nextLessonId}
+              courseSlug={courseSlug}
             />
           </div>
         )}

@@ -105,10 +105,15 @@ export function CourseCard({ course, progress, isEnrolled }: Props) {
               pct === 100 ? (
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#34d399" }}>✓ Complete</span>
               ) : (
-                <span style={{ fontSize: 11, color: "#f58220", fontWeight: 600 }}>{pct}%</span>
+                <span style={{ fontSize: 11, color: "#f58220", fontWeight: 600 }}>{pct}% done</span>
               )
             ) : (
-              <span style={{ fontSize: 11, color: "#687383" }}>○</span>
+              <span style={{
+                fontSize: 10, fontWeight: 700, color: "#f58220",
+                background: "rgba(245,130,32,0.12)", padding: "2px 8px", borderRadius: 4,
+              }}>
+                {status}
+              </span>
             )}
           </div>
 

@@ -166,7 +166,7 @@ export default async function ExemptionsPage() {
             </div>
           </form>
           <p style={{ fontSize: 12, color: "#687383", marginTop: 10 }}>
-            Note: exemptions are saved via <code>/api/university/admin/exemptions</code> (POST). All grants are written to the audit log.
+            All exemption grants are written to the audit log and attributed to your account.
           </p>
         </section>
 
@@ -206,16 +206,16 @@ export default async function ExemptionsPage() {
                           {ex.justification}
                         </td>
                         <td style={{ padding: "12px 14px" }}>
-                          <form action={`/api/university/admin/exemptions/${ex.id}/revoke`} method="POST" style={{ display: "inline" }}>
-                            <button
-                              type="submit"
-                              style={{ fontSize: 12, fontWeight: 600, color: "#b91c1c", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                              onClick={e => { if (!confirm("Revoke this exemption? The employee will become non-compliant.")) e.preventDefault(); }}
-                            >
-                              Revoke
-                            </button>
-                          </form>
-                        </td>
+                           <form action={`/api/university/admin/exemptions/${ex.id}/revoke`} method="POST" style={{ display: "inline" }}>
+                             <button
+                               type="submit"
+                               formAction={`/api/university/admin/exemptions/${ex.id}/revoke`}
+                               style={{ fontSize: 12, fontWeight: 600, color: "#b91c1c", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                             >
+                               Revoke
+                             </button>
+                           </form>
+                         </td>
                       </tr>
                     );
                   })}

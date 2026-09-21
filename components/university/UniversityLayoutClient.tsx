@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { UniversitySidebar, UniversityMobileDrawer } from "@/components/university/UniversitySidebar";
 import type { UniversityRole } from "@/lib/database.types";
 
@@ -11,7 +12,32 @@ interface Props {
   universityRole: UniversityRole;
 }
 
+function derivePageTitle(pathname: string): string {
+  if (pathname === "/university") return "Dashboard";
+  if (pathname === "/university/search") return "Training Library";
+  if (pathname === "/university/certificates") return "Certificates";
+  if (pathname.startsWith("/university/course/")) return "Course";
+  if (pathname.startsWith("/university/lesson/")) return "Lesson";
+  if (pathname.startsWith("/university/assessment/")) return "Assessment";
+  if (pathname === "/university/admin") return "Admin Overview";
+  if (pathname.startsWith("/university/admin/compliance")) return "Compliance";
+  if (pathname.startsWith("/university/admin/courses")) return "Courses";
+  if (pathname.startsWith("/university/admin/users")) return "Users";
+  if (pathname.startsWith("/university/admin/assignments")) return "Assignments";
+  if (pathname.startsWith("/university/admin/reports")) return "Reports";
+  if (pathname.startsWith("/university/admin/audit-log")) return "Audit Log";
+  if (pathname.startsWith("/university/admin/exemptions")) return "Exemptions";
+  if (pathname.startsWith("/university/admin/media")) return "Media Library";
+  if (pathname.startsWith("/university/admin/org-units")) return "Org Units";
+  if (pathname.startsWith("/university/admin/studio")) return "Studio";
+  if (pathname.startsWith("/university/hr")) return "HR Overview";
+  if (pathname.startsWith("/university/manager")) return "Manager";
+  return "HCMG U";
+}
+
 export function UniversityLayoutClient({ children, profileName, profileAvatar, universityRole }: Props) {
+  const pathname = usePathname();
+  const pageTitle = derivePageTitle(pathname);
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [bellOpen, setBellOpen]       = useState(false);
@@ -162,6 +188,8 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
 
       {/* Main content column */}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Hide hamburger on desktop */}
+        <style>{`@media (min-width: 1024px) { .uni-hamburger { display: none !important; } }`}</style>
         {/* Top bar */}
         <header style={{
           height: 56,
@@ -175,8 +203,9 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
           top: 0,
           zIndex: 10,
         }}>
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger — hidden on desktop (sidebar visible) */}
           <button
+            className="uni-hamburger"
             onClick={() => setMobileOpen(true)}
             style={{
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -189,6 +218,12 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
               <path d="M2 4h12M2 8h12M2 12h12" stroke="#071a2e" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
+
+          {/* Page title */}
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#071a2e", marginLeft: 12 }}>
+            {pageTitle}
+          </span>
+
           <div style={{ flex: 1 }} />
 
           {/* Right: notification bell + user chip */}

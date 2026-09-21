@@ -472,6 +472,11 @@ export function LessonStudio({
   // Media picker: which field is being picked
   const [pickerFor, setPickerFor] = useState<"video" | "thumbnail" | "caption" | null>(null);
 
+  // Settings panel state (right column)
+  const [allowPreview, setAllowPreview]   = useState(false);
+  const [prerequisites, setPrerequisites] = useState(false);
+  const [dripEnabled, setDripEnabled]     = useState(false);
+
   // Form state
   const [details, setDetails] = useState<{ title: string; lesson_type: LessonType; description: string; duration_label: string; duration_secs: number }>({
     title:          lesson.title,
@@ -518,6 +523,17 @@ export function LessonStudio({
     } catch { setError("Network error"); setSaveState("error"); }
   }
 
+  async function togglePublish() {
+    const next = !completion.is_published;
+    setCompletion(c => ({ ...c, is_published: next }));
+    await fetch(`/api/university/admin/lesson/${lesson.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_published: next }),
+    });
+    setLesson(l => ({ ...l, is_published: next }));
+  }
+
   function addResource() {
     setResources(r => [...r, { label: "", storage_path: "" }]);
   }
@@ -537,105 +553,396 @@ export function LessonStudio({
     { id: "completion" as LessonTab,      label: "Completion" },
   ];
 
+  // ── Settings panel (right column) ──────────────────────────────────────────
+  function SettingsPanel() {
+    return (
+      <div style={{
+        width: 300, flexShrink: 0,
+        border: `1px solid ${STUDIO_COLORS.border}`, borderRadius: 12,
+        background: STUDIO_COLORS.white, overflow: "hidden",
+        alignSelf: "flex-start", position: "sticky", top: 80,
+      }}>
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "14px 18px", borderBottom: `1px solid ${STUDIO_COLORS.border}`,
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={STUDIO_COLORS.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+          </svg>
+          <span style={{ fontSize: 13, fontWeight: 700, color: STUDIO_COLORS.text }}>Settings</span>
+        </div>
+
+        <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Visibility */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: STUDIO_COLORS.text, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+              Visibility
+              <span title="Controls whether learners can see this lesson" style={{ width: 14, height: 14, borderRadius: "50%", background: STUDIO_COLORS.border, color: STUDIO_COLORS.textMuted, fontSize: 9, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "default" }}>i</span>
+            </div>
+            <div style={{ display: "flex", borderRadius: 8, border: `1.5px solid ${STUDIO_COLORS.border}`, overflow: "hidden" }}>
+              <button
+                type="button"
+                onClick={() => completion.is_published && togglePublish()}
+                style={{
+                  flex: 1, padding: "8px 0", border: "none",
+                  background: !completion.is_published ? STUDIO_COLORS.surface : STUDIO_COLORS.white,
+                  cursor: "pointer", fontSize: 12, fontWeight: !completion.is_published ? 700 : 500,
+                  color: !completion.is_published ? STUDIO_COLORS.text : STUDIO_COLORS.textMuted,
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                Draft
+              </button>
+              <button
+                type="button"
+                onClick={() => !completion.is_published && togglePublish()}
+                style={{
+                  flex: 1, padding: "8px 0", border: "none",
+                  background: completion.is_published ? STUDIO_COLORS.orange : STUDIO_COLORS.white,
+                  cursor: "pointer", fontSize: 12, fontWeight: completion.is_published ? 700 : 500,
+                  color: completion.is_published ? "#fff" : STUDIO_COLORS.textMuted,
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                  borderLeft: `1px solid ${STUDIO_COLORS.border}`,
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16,3 21,3 21,8"/><line x1="4" y1="20" x2="21" y2="3"/></svg>
+                Publish
+              </button>
+            </div>
+          </div>
+
+          {/* Allow Lesson Preview */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: STUDIO_COLORS.text, display: "flex", alignItems: "center", gap: 6 }}>
+                Allow Lesson Preview
+                <span title="Allow non-enrolled users to preview this lesson" style={{ width: 14, height: 14, borderRadius: "50%", background: STUDIO_COLORS.border, color: STUDIO_COLORS.textMuted, fontSize: 9, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "default" }}>i</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAllowPreview(v => !v)}
+                style={{
+                  width: 40, height: 22, borderRadius: 11,
+                  background: allowPreview ? STUDIO_COLORS.orange : STUDIO_COLORS.border,
+                  position: "relative", border: "none", cursor: "pointer", transition: "background 0.2s",
+                }}
+              >
+                <div style={{
+                  position: "absolute", top: 3, left: allowPreview ? 21 : 3,
+                  width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                  transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+                }} />
+              </button>
+            </div>
+          </div>
+
+          {/* Prerequisites */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: STUDIO_COLORS.text, display: "flex", alignItems: "center", gap: 6 }}>
+                Prerequisites
+                <span title="Require other lessons to be completed first" style={{ width: 14, height: 14, borderRadius: "50%", background: STUDIO_COLORS.border, color: STUDIO_COLORS.textMuted, fontSize: 9, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "default" }}>i</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPrerequisites(v => !v)}
+                style={{
+                  width: 40, height: 22, borderRadius: 11,
+                  background: prerequisites ? STUDIO_COLORS.orange : STUDIO_COLORS.border,
+                  position: "relative", border: "none", cursor: "pointer", transition: "background 0.2s",
+                }}
+              >
+                <div style={{
+                  position: "absolute", top: 3, left: prerequisites ? 21 : 3,
+                  width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                  transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+                }} />
+              </button>
+            </div>
+          </div>
+
+          {/* Drip Settings */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: STUDIO_COLORS.text, display: "flex", alignItems: "center", gap: 6 }}>
+                Drip Settings
+                <span title="Schedule when this lesson becomes available" style={{ width: 14, height: 14, borderRadius: "50%", background: STUDIO_COLORS.border, color: STUDIO_COLORS.textMuted, fontSize: 9, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "default" }}>i</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDripEnabled(v => !v)}
+                style={{
+                  width: 40, height: 22, borderRadius: 11,
+                  background: dripEnabled ? STUDIO_COLORS.orange : STUDIO_COLORS.border,
+                  position: "relative", border: "none", cursor: "pointer", transition: "background 0.2s",
+                }}
+              >
+                <div style={{
+                  position: "absolute", top: 3, left: dripEnabled ? 21 : 3,
+                  width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                  transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+                }} />
+              </button>
+            </div>
+          </div>
+
+          {/* Download Resources */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: STUDIO_COLORS.text, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+              Download Resources
+              <span title="Files learners can download from this lesson" style={{ width: 14, height: 14, borderRadius: "50%", background: STUDIO_COLORS.border, color: STUDIO_COLORS.textMuted, fontSize: 9, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "default" }}>i</span>
+            </div>
+            <div style={{
+              minHeight: 48, border: `1.5px solid ${STUDIO_COLORS.border}`, borderRadius: 8,
+              padding: "8px 10px",
+              display: "flex", flexDirection: "column", gap: 6,
+            }}>
+              {resources.map((r, i) => (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  fontSize: 11, color: STUDIO_COLORS.textMuted,
+                }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || r.storage_path}</span>
+                  <button type="button" onClick={() => removeResource(i)}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: STUDIO_COLORS.textMuted, fontSize: 14, padding: 0, lineHeight: 1 }}>×</button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => { setTab("resources"); addResource(); }}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                  width: "100%", padding: "6px 0", borderRadius: 6,
+                  border: `1px dashed ${STUDIO_COLORS.border}`,
+                  background: "transparent", cursor: "pointer",
+                  fontSize: 11, color: STUDIO_COLORS.textMuted,
+                }}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                Add files
+              </button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div style={{ borderTop: `1px solid ${STUDIO_COLORS.border}` }} />
+
+          {/* Delete Lesson */}
+          <button
+            type="button"
+            onClick={async () => {
+              if (!confirm("Delete this lesson? This cannot be undone.")) return;
+              await fetch(`/api/university/admin/lesson/${lesson.id}`, { method: "DELETE" });
+              router.push(`/university/admin/studio/${courseId}?tab=curriculum`);
+            }}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              background: "none", border: "none", cursor: "pointer",
+              color: STUDIO_COLORS.redDark, fontSize: 13, fontWeight: 600, padding: 0,
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5,6"/><path d="M10,11v6M14,11v6"/><path d="M9,6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+            Delete Lesson
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: STUDIO_COLORS.white, minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: STUDIO_COLORS.surface, minHeight: "100vh" }}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div style={{
         position: "sticky", top: 0, zIndex: 40,
-        background: STUDIO_COLORS.navy,
-        borderBottom: `1px solid rgba(255,255,255,0.08)`,
+        background: STUDIO_COLORS.surface,
+        borderBottom: `1px solid ${STUDIO_COLORS.border}`,
         padding: "0 clamp(16px,4vw,48px)",
       }}>
         {/* Top bar */}
-        <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", color: STUDIO_COLORS.orange, marginBottom: 3 }}>
-              Lesson Editor
-            </div>
-            <Breadcrumb items={[
-              { label: "Courses",   href: "/university/admin/courses" },
-              { label: courseTitle, href: `/university/admin/studio/${courseId}?tab=curriculum` },
-              { label: lesson.title },
-            ]} />
+        <div style={{ height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Lesson type label */}
+            <span style={{ fontSize: 15, fontWeight: 700, color: STUDIO_COLORS.text }}>
+              {LESSON_TYPE_LABELS[details.lesson_type]?.label ?? "Lesson"}
+            </span>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <SaveIndicator state={saveState} />
-            {/* Publish toggle (admin only) */}
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={async () => {
-                  const next = !completion.is_published;
-                  setCompletion(c => ({ ...c, is_published: next }));
-                  await fetch(`/api/university/admin/lesson/${lesson.id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ is_published: next }),
-                  });
-                  setLesson(l => ({ ...l, is_published: next }));
-                }}
-                style={{
-                  padding: "5px 12px", borderRadius: 7, fontSize: 11, fontWeight: 700,
-                  border: lesson.is_published ? "1px solid rgba(52,211,153,0.3)" : "1px solid rgba(255,255,255,0.15)",
-                  background: lesson.is_published ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.06)",
-                  color: lesson.is_published ? STUDIO_COLORS.green : STUDIO_COLORS.textLight,
-                  cursor: "pointer", letterSpacing: "0.5px", textTransform: "uppercase",
-                }}
-              >
-                {lesson.is_published ? "● Published" : "○ Draft"}
-              </button>
-            )}
+            {/* Preview link */}
+            <a
+              href={`/university/course/${courseId}`}
+              target="_blank" rel="noopener noreferrer"
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "6px 12px", borderRadius: 7,
+                border: `1px solid ${STUDIO_COLORS.border}`,
+                color: STUDIO_COLORS.textMuted, fontSize: 12, fontWeight: 600, textDecoration: "none",
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Preview
+            </a>
             <StudioButton size="sm" onClick={() => save()} disabled={saveState === "saving"}>
               {saveState === "saving" ? "Saving…" : "Save"}
             </StudioButton>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: 0 }}>
-          {tabs.map(t => (
-            <button key={t.id} type="button" onClick={() => setTab(t.id)}
+            <button
+              type="button"
+              onClick={() => router.push(`/university/admin/studio/${courseId}?tab=curriculum`)}
               style={{
-                padding: "10px 16px", border: "none", background: "transparent", cursor: "pointer",
-                fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
-                color: tab === t.id ? "#fff" : STUDIO_COLORS.textLight,
-                borderBottom: `2px solid ${tab === t.id ? STUDIO_COLORS.orange : "transparent"}`,
-                fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s",
+                background: "none", border: "none", cursor: "pointer",
+                color: STUDIO_COLORS.textMuted, fontSize: 20, lineHeight: 1, padding: "4px 6px",
               }}
-            >
-              {t.label}
-              {t.badge != null && (
-                <span style={{
-                  minWidth: 18, height: 18, borderRadius: 9, padding: "0 5px",
-                  background: tab === t.id ? STUDIO_COLORS.orange : "rgba(255,255,255,0.15)",
-                  color: "#fff", fontSize: 10, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  {t.badge}
-                </span>
-              )}
-            </button>
-          ))}
+            >×</button>
+          </div>
         </div>
       </div>
 
-      {/* ── Content ─────────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "32px clamp(16px,4vw,40px) 80px" }}>
-        {error && <ErrorBanner message={error} onDismiss={() => setError("")} />}
+      {/* ── Two-column layout ──────────────────────────────────────────────── */}
+      <div style={{
+        maxWidth: 1180, margin: "0 auto",
+        padding: "0 clamp(16px,4vw,40px) 80px",
+        display: "flex", gap: 0,
+      }}>
+        {/* ── Left: editor canvas ─────────────────────────────────────────── */}
+        <div style={{ flex: 1, minWidth: 0, padding: "28px 28px 80px 0" }}>
+          {error && <ErrorBanner message={error} onDismiss={() => setError("")} />}
 
-        {/* ── Details ── */}
-        {tab === "details" && (
-          <SectionCard title="Lesson Details">
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div>
-                <FieldLabel required>Lesson title</FieldLabel>
-                <StudioInput
-                  value={details.title}
-                  onChange={e => setDetails(d => ({ ...d, title: e.target.value }))}
-                  placeholder="e.g. FHA Borrower Eligibility"
+          {/* Cover image area */}
+          <div style={{
+            background: STUDIO_COLORS.white, borderRadius: 12, marginBottom: 20,
+            border: `1px solid ${STUDIO_COLORS.border}`, overflow: "hidden",
+          }}>
+            {/* Cover image / placeholder */}
+            <div style={{
+              height: media.thumbnail_url ? 200 : 120,
+              background: media.thumbnail_url ? "transparent" : "#f0f2f5",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              position: "relative",
+            }}>
+              {media.thumbnail_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={media.thumbnail_url}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                 />
-              </div>
+              ) : (
+                <div style={{ textAlign: "center", color: "#b0b8c4" }}>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" style={{ opacity: 0.5 }}>
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/>
+                  </svg>
+                </div>
+              )}
+            </div>
+            {/* Cover buttons */}
+            <div style={{ display: "flex", gap: 8, padding: "10px 14px", borderTop: `1px solid ${STUDIO_COLORS.border}` }}>
+              <button
+                type="button"
+                onClick={() => setPickerFor("thumbnail")}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "7px 14px", borderRadius: 7,
+                  border: `1.5px solid ${STUDIO_COLORS.border}`,
+                  background: STUDIO_COLORS.white,
+                  cursor: "pointer", fontSize: 12, fontWeight: 600, color: STUDIO_COLORS.textMuted,
+                }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                Add Cover Image
+              </button>
+              {media.thumbnail_url && (
+                <button
+                  type="button"
+                  onClick={() => setMedia(m => ({ ...m, thumbnail_url: "" }))}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 5,
+                    padding: "7px 12px", borderRadius: 7,
+                    border: `1.5px solid ${STUDIO_COLORS.border}`,
+                    background: STUDIO_COLORS.white,
+                    cursor: "pointer", fontSize: 12, color: STUDIO_COLORS.textMuted,
+                  }}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
 
+          {/* Lesson title + description inline */}
+          <div style={{
+            background: STUDIO_COLORS.white, borderRadius: 12, marginBottom: 20,
+            border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px",
+          }}>
+            <input
+              value={details.title}
+              onChange={e => setDetails(d => ({ ...d, title: e.target.value }))}
+              placeholder="Enter lesson title"
+              style={{
+                width: "100%", border: "none", outline: "none",
+                fontSize: 22, fontWeight: 700, color: STUDIO_COLORS.text,
+                fontFamily: "inherit", marginBottom: 8, background: "transparent",
+                boxSizing: "border-box",
+              }}
+            />
+            <textarea
+              value={details.description}
+              onChange={e => setDetails(d => ({ ...d, description: e.target.value }))}
+              placeholder="Enter lesson description..."
+              rows={2}
+              style={{
+                width: "100%", border: "none", outline: "none", resize: "none",
+                fontSize: 14, color: STUDIO_COLORS.textMuted,
+                fontFamily: "inherit", background: "transparent", boxSizing: "border-box",
+                lineHeight: 1.6,
+              }}
+            />
+          </div>
+
+          {/* Tab selector for content type editing */}
+          <div style={{
+            display: "flex", gap: 2, marginBottom: 16,
+            borderBottom: `1px solid ${STUDIO_COLORS.border}`,
+          }}>
+            {tabs.map(t => (
+              <button key={t.id} type="button" onClick={() => setTab(t.id)}
+                style={{
+                  padding: "9px 16px", border: "none", background: "transparent", cursor: "pointer",
+                  fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
+                  color: tab === t.id ? STUDIO_COLORS.orange : STUDIO_COLORS.textMuted,
+                  borderBottom: `2px solid ${tab === t.id ? STUDIO_COLORS.orange : "transparent"}`,
+                  marginBottom: -1,
+                  fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s",
+                }}
+              >
+                {t.label}
+                {t.badge != null && (
+                  <span style={{
+                    minWidth: 18, height: 18, borderRadius: 9, padding: "0 5px",
+                    background: tab === t.id ? STUDIO_COLORS.orange : STUDIO_COLORS.border,
+                    color: tab === t.id ? "#fff" : STUDIO_COLORS.textMuted,
+                    fontSize: 10, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    {t.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Details ── */}
+          {tab === "details" && (
+            <div style={{
+              background: STUDIO_COLORS.white, borderRadius: 12,
+              border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px",
+              display: "flex", flexDirection: "column", gap: 16,
+            }}>
               <div>
                 <FieldLabel>Lesson type</FieldLabel>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -654,16 +961,6 @@ export function LessonStudio({
                     </button>
                   ))}
                 </div>
-              </div>
-
-              <div>
-                <FieldLabel>Description</FieldLabel>
-                <StudioTextarea
-                  value={details.description}
-                  onChange={e => setDetails(d => ({ ...d, description: e.target.value }))}
-                  placeholder="Brief summary shown on the course outline"
-                  rows={2}
-                />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -686,41 +983,55 @@ export function LessonStudio({
                 </div>
               </div>
 
-              <div style={{ paddingTop: 4 }}>
+              <div>
                 <StudioButton onClick={() => save("details")} disabled={saveState === "saving"}>
                   Save Details
                 </StudioButton>
               </div>
             </div>
-          </SectionCard>
-        )}
+          )}
 
-        {/* ── Media ── */}
-        {tab === "media" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {(details.lesson_type === "video" || !details.lesson_type) && (
-              <SectionCard title="Video">
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* ── Media ── */}
+          {tab === "media" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {(details.lesson_type === "video" || !details.lesson_type) && (
+                <div style={{
+                  background: STUDIO_COLORS.white, borderRadius: 12,
+                  border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px",
+                  display: "flex", flexDirection: "column", gap: 14,
+                }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text }}>Video</div>
+                  {/* Video upload area */}
+                  {!media.video_token && (
+                    <div style={{
+                      borderRadius: 10, background: "#f7f8fa",
+                      padding: "40px 24px",
+                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                      border: `1.5px dashed ${STUDIO_COLORS.border}`,
+                      gap: 12,
+                    }}>
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={STUDIO_COLORS.textLight} strokeWidth="1.4">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10,9 16,12 10,15" fill={STUDIO_COLORS.textLight} stroke="none"/>
+                      </svg>
+                      <StudioButton variant="primary" onClick={() => setPickerFor("video")}>Select video</StudioButton>
+                      <div style={{ fontSize: 12, color: STUDIO_COLORS.textMuted }}>
+                        Supported Files: .mp4, .mov, .avi, .mkv, .flv, .wmv, .webm
+                      </div>
+                    </div>
+                  )}
                   {/* Video preview */}
                   {media.video_token && (
                     <div style={{
                       borderRadius: 10, overflow: "hidden",
                       background: STUDIO_COLORS.navy, aspectRatio: "16/9",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      border: `1px solid rgba(255,255,255,0.1)`,
                     }}>
                       {media.video_token.startsWith("http") ? (
-                        <video
-                          src={media.video_token}
-                          controls
-                          poster={media.thumbnail_url || undefined}
-                          style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                        />
+                        <video src={media.video_token} controls poster={media.thumbnail_url || undefined} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                       ) : (
                         <div style={{ textAlign: "center", color: STUDIO_COLORS.textMuted, padding: 20 }}>
                           <div style={{ fontSize: 32, marginBottom: 8 }}>▶</div>
-                          <div style={{ fontSize: 12 }}>Video token set — preview available after publishing</div>
-                          <div style={{ fontSize: 11, marginTop: 4, opacity: 0.6 }}>{media.video_token.substring(0, 40)}…</div>
+                          <div style={{ fontSize: 12 }}>Token set — preview after publishing</div>
                         </div>
                       )}
                     </div>
@@ -733,32 +1044,12 @@ export function LessonStudio({
                         value={media.video_token}
                         onChange={e => setMedia(m => ({ ...m, video_token: e.target.value }))}
                         placeholder="https://share.heygen.com/… or storage path"
-                        hint="Stored securely — the actual URL is resolved server-side and never exposed to learners directly."
+                        hint="Stored securely — URL resolved server-side."
                       />
                       <StudioButton size="sm" variant="secondary" onClick={() => setPickerFor("video")}>
                         📂 Library
                       </StudioButton>
                     </div>
-                  </div>
-
-                  <div>
-                    <FieldLabel>Thumbnail / poster image URL</FieldLabel>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <StudioInput
-                        value={media.thumbnail_url}
-                        onChange={e => setMedia(m => ({ ...m, thumbnail_url: e.target.value }))}
-                        placeholder="https://…"
-                      />
-                      <StudioButton size="sm" variant="secondary" onClick={() => setPickerFor("thumbnail")}>
-                        📂 Library
-                      </StudioButton>
-                    </div>
-                    {media.thumbnail_url && (
-                      <div style={{ marginTop: 8, borderRadius: 8, overflow: "hidden", height: 90, background: STUDIO_COLORS.surface, border: `1px solid ${STUDIO_COLORS.border}` }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={media.thumbnail_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                      </div>
-                    )}
                   </div>
 
                   <div>
@@ -775,98 +1066,134 @@ export function LessonStudio({
                     </div>
                   </div>
                 </div>
-              </SectionCard>
-            )}
+              )}
 
-            {details.lesson_type === "text" && (
-              <SectionCard title="Article Content">
-                <div style={{ padding: "24px", background: STUDIO_COLORS.surface, borderRadius: 8, textAlign: "center", color: STUDIO_COLORS.textMuted, fontSize: 13 }}>
+              {details.lesson_type === "audio" && (
+                <div style={{
+                  background: STUDIO_COLORS.white, borderRadius: 12,
+                  border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px",
+                  display: "flex", flexDirection: "column", gap: 14,
+                }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text }}>Audio</div>
+                  <div style={{
+                    borderRadius: 10, background: "#f7f8fa",
+                    padding: "40px 24px",
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                    border: `1.5px dashed ${STUDIO_COLORS.border}`,
+                    gap: 12,
+                  }}>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={STUDIO_COLORS.textLight} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="11,5 6,9 2,9 2,15 6,15 11,19" fill="none"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                    </svg>
+                    <StudioButton variant="primary" onClick={() => setPickerFor("video")}>Select audio</StudioButton>
+                    <div style={{ fontSize: 12, color: STUDIO_COLORS.textMuted }}>
+                      Supported Files: .mp3, .wav, .aac, .flac, .ogg, .m4a
+                    </div>
+                  </div>
+                  <div>
+                    <FieldLabel>Audio source URL</FieldLabel>
+                    <StudioInput
+                      value={media.video_token}
+                      onChange={e => setMedia(m => ({ ...m, video_token: e.target.value }))}
+                      placeholder="https://… or storage path"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {details.lesson_type === "text" && (
+                <div style={{
+                  background: STUDIO_COLORS.white, borderRadius: 12,
+                  border: `1px solid ${STUDIO_COLORS.border}`, padding: "24px",
+                  textAlign: "center", color: STUDIO_COLORS.textMuted, fontSize: 13,
+                }}>
                   Rich text article editing coming soon. Use the Transcript tab to write text content for now.
                 </div>
-              </SectionCard>
-            )}
+              )}
 
-            <div style={{ paddingTop: 4 }}>
               <StudioButton onClick={() => save("media")} disabled={saveState === "saving"}>Save Media</StudioButton>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ── Transcript ── */}
-        {tab === "transcript" && (
-          <SectionCard title="Transcript" description="Full lesson text for accessibility and learner reference">
-            <TranscriptEditor value={transcript} onChange={setTranscript} />
-            <div style={{ marginTop: 16 }}>
-              <StudioButton onClick={() => save("transcript")} disabled={saveState === "saving"}>Save Transcript</StudioButton>
-            </div>
-          </SectionCard>
-        )}
-
-        {/* ── Resources ── */}
-        {tab === "resources" && (
-          <SectionCard
-            title="Resources"
-            description="Downloadable files and links available to learners"
-            actions={<StudioButton size="sm" onClick={addResource}>+ Add Resource</StudioButton>}
-          >
-            {resources.length === 0 ? (
-              <EmptyState
-                icon="📎"
-                title="No resources yet"
-                description="Add PDFs, guides, forms, or external links to support this lesson."
-                action={<StudioButton onClick={addResource}>+ Add Resource</StudioButton>}
-              />
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {resources.map((r, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                    <StudioInput
-                      value={r.label}
-                      onChange={e => updateResource(i, "label", e.target.value)}
-                      placeholder="Label (e.g. FHA Guidelines PDF)"
-                      style={{ flex: "0 0 220px" }}
-                    />
-                    <StudioInput
-                      value={r.storage_path}
-                      onChange={e => updateResource(i, "storage_path", e.target.value)}
-                      placeholder="URL or storage path"
-                      style={{ flex: 1 }}
-                    />
-                    <button type="button" onClick={() => removeResource(i)}
-                      style={{ background: "none", border: "none", cursor: "pointer", color: STUDIO_COLORS.textMuted, fontSize: 18, padding: "10px 4px" }}>
-                      ×
-                    </button>
-                  </div>
-                ))}
-                <div style={{ paddingTop: 8 }}>
-                  <StudioButton onClick={() => save("resources")} disabled={saveState === "saving"}>Save Resources</StudioButton>
-                </div>
+          {/* ── Transcript ── */}
+          {tab === "transcript" && (
+            <div style={{
+              background: STUDIO_COLORS.white, borderRadius: 12,
+              border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px",
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text, marginBottom: 14 }}>
+                Transcript
+                <span style={{ fontSize: 12, fontWeight: 400, color: STUDIO_COLORS.textMuted, marginLeft: 8 }}>Full lesson text for accessibility and learner reference</span>
               </div>
-            )}
-          </SectionCard>
-        )}
+              <TranscriptEditor value={transcript} onChange={setTranscript} />
+              <div style={{ marginTop: 16 }}>
+                <StudioButton onClick={() => save("transcript")} disabled={saveState === "saving"}>Save Transcript</StudioButton>
+              </div>
+            </div>
+          )}
 
-        {/* ── Knowledge Check ── */}
-        {tab === "knowledge_check" && (
-          <KnowledgeCheckTab
-            lessonId={lesson.id}
-            questions={questions}
-            onQuestionsChange={setQuestions}
-          />
-        )}
+          {/* ── Resources ── */}
+          {tab === "resources" && (
+            <div style={{
+              background: STUDIO_COLORS.white, borderRadius: 12,
+              border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text }}>Resources</div>
+                <StudioButton size="sm" onClick={addResource}>+ Add Resource</StudioButton>
+              </div>
+              {resources.length === 0 ? (
+                <EmptyState
+                  icon="📎"
+                  title="No resources yet"
+                  description="Add PDFs, guides, forms, or external links to support this lesson."
+                  action={<StudioButton onClick={addResource}>+ Add Resource</StudioButton>}
+                />
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {resources.map((r, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                      <StudioInput value={r.label} onChange={e => updateResource(i, "label", e.target.value)} placeholder="Label (e.g. FHA Guidelines PDF)" style={{ flex: "0 0 200px" }} />
+                      <StudioInput value={r.storage_path} onChange={e => updateResource(i, "storage_path", e.target.value)} placeholder="URL or storage path" style={{ flex: 1 }} />
+                      <button type="button" onClick={() => removeResource(i)}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: STUDIO_COLORS.textMuted, fontSize: 18, padding: "10px 4px" }}>×</button>
+                    </div>
+                  ))}
+                  <div style={{ paddingTop: 8 }}>
+                    <StudioButton onClick={() => save("resources")} disabled={saveState === "saving"}>Save Resources</StudioButton>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* ── Completion ── */}
-        {tab === "completion" && (
-          <SectionCard title="Completion Settings" description="Define what the learner must do to complete this lesson">
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* ── Knowledge Check ── */}
+          {tab === "knowledge_check" && (
+            <div style={{ background: STUDIO_COLORS.white, borderRadius: 12, border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px" }}>
+              <KnowledgeCheckTab
+                lessonId={lesson.id}
+                questions={questions}
+                onQuestionsChange={setQuestions}
+              />
+            </div>
+          )}
+
+          {/* ── Completion ── */}
+          {tab === "completion" && (
+            <div style={{
+              background: STUDIO_COLORS.white, borderRadius: 12,
+              border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px",
+              display: "flex", flexDirection: "column", gap: 16,
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text }}>Completion Settings</div>
               <div>
                 <FieldLabel>Completion mode</FieldLabel>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {[
-                    { value: "watch_pct",  label: "Watch percentage",      desc: "Lesson marked complete when learner watches the required percentage" },
-                    { value: "quiz_pass",  label: "Pass knowledge check",  desc: "Lesson marked complete when learner passes the attached quiz" },
+                    { value: "watch_pct",  label: "Watch percentage",      desc: "Lesson complete when learner watches the required percentage" },
+                    { value: "quiz_pass",  label: "Pass knowledge check",  desc: "Lesson complete when learner passes the attached quiz" },
                     { value: "manual",     label: "Manual completion",     desc: "Learner manually marks the lesson as complete" },
-                    { value: "any",        label: "Any activity",          desc: "Lesson marked complete when learner opens it" },
+                    { value: "any",        label: "Any activity",          desc: "Lesson complete when learner opens it" },
                   ].map(opt => (
                     <button key={opt.value} type="button"
                       onClick={() => setCompletion(c => ({ ...c, completion_mode: opt.value as CompletionMode }))}
@@ -910,8 +1237,13 @@ export function LessonStudio({
 
               <StudioButton onClick={() => save("completion")} disabled={saveState === "saving"}>Save Completion Settings</StudioButton>
             </div>
-          </SectionCard>
-        )}
+          )}
+        </div>
+
+        {/* ── Right: Settings panel ────────────────────────────────────────── */}
+        <div style={{ paddingTop: 28 }}>
+          <SettingsPanel />
+        </div>
       </div>
 
       {/* Media picker modals */}

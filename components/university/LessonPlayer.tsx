@@ -13,12 +13,14 @@ export function LessonPlayer({ lessonId, onProgress, onComplete }: Props) {
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState("");
   const [started, setStarted]   = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const reportedComplete        = useRef(false);
   const lastReportPct           = useRef(0);
 
   useEffect(() => {
     setLoading(true);
     setError("");
+    setVideoUrl(null);
     fetch(`/api/university/video-url?lesson_id=${lessonId}`, { cache: "no-store" })
       .then(r => r.json())
       .then(d => {
@@ -27,7 +29,7 @@ export function LessonPlayer({ lessonId, onProgress, onComplete }: Props) {
       })
       .catch(() => setError("Could not load video. Please try again."))
       .finally(() => setLoading(false));
-  }, [lessonId]);
+  }, [lessonId, retryKey]);
 
   function handleTimeUpdate(e: React.SyntheticEvent<HTMLVideoElement>) {
     const video = e.currentTarget;
@@ -67,12 +69,22 @@ export function LessonPlayer({ lessonId, onProgress, onComplete }: Props) {
         borderRadius: 12,
         height: 360,
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        gap: 12,
+        gap: 16,
       }}>
         <div style={{ fontSize: 32 }}>HCMG <strong style={{ color: "#f58220" }}>U</strong></div>
-        <p style={{ color: "#687383", fontSize: 13 }}>
+        <p style={{ color: "#687383", fontSize: 13, textAlign: "center", maxWidth: 320, lineHeight: 1.6 }}>
           {error || "Video not yet available for this lesson."}
         </p>
+        <button
+          onClick={() => { reportedComplete.current = false; lastReportPct.current = 0; setRetryKey(k => k + 1); }}
+          style={{
+            padding: "9px 20px", borderRadius: 8,
+            background: "rgba(245,130,32,0.15)", border: "1.5px solid rgba(245,130,32,0.4)",
+            color: "#f58220", fontSize: 13, fontWeight: 700, cursor: "pointer",
+          }}
+        >
+          ↺ Try again
+        </button>
       </div>
     );
   }
@@ -115,22 +127,25 @@ export function LessonPlayer({ lessonId, onProgress, onComplete }: Props) {
           <div style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>
             HCMG <span style={{ color: "#f58220" }}>U</span>
           </div>
-          <button style={{
-            width: 64, height: 64, borderRadius: "50%",
-            background: "linear-gradient(135deg,#FF9847,#F37021)",
-            border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 22, color: "#fff",
-          }}>▶</button>
+          <button
+            type="button"
+            style={{
+              width: 64, height: 64, borderRadius: "50%",
+              background: "linear-gradient(135deg,#FF9847,#F37021)",
+              border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 22, color: "#fff",
+            }}
+          >▶</button>
           <p style={{ color: "#b9c5d0", fontSize: 13 }}>Click to play</p>
         </div>
       )}
       <video
+        ref={(el) => { if (el && started) { el.play().catch(() => {}); } }}
         src={videoUrl}
         controls
-        style={{ width: "100%", display: "block", maxHeight: 480 }}
+        style={{ width: "100%", display: "block", maxHeight: 480, opacity: started ? 1 : 0 }}
         onTimeUpdate={handleTimeUpdate}
-        autoPlay={started}
       />
     </div>
   );

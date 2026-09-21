@@ -15,6 +15,14 @@ interface ContinueLesson {
   total_lessons: number;
 }
 
+interface RequiredItem {
+  courseId: string;
+  title: string;
+  slug: string;
+  dueDate: string | null;
+  isOverdue: boolean;
+}
+
 interface Props {
   profileName: string;
   courses: UniCourse[];
@@ -23,6 +31,9 @@ interface Props {
   completedLessons: number;
   activePaths: number;
   continueLesson: ContinueLesson | null;
+  certificatesEarned: number;
+  harrysPlaybookLessonCount: number;
+  requiredIncomplete: RequiredItem[];
 }
 
 const FILTERS = [
@@ -35,9 +46,9 @@ const FILTERS = [
 ];
 
 const PATHS = [
-  { key: "start",   label: "New LO Fast Start",       meta: "7 lessons · 1.4 hours" },
-  { key: "sales",   label: "Producer to Top Producer", meta: "10 lessons · 2.8 hours" },
-  { key: "product", label: "Non-QM Specialist",        meta: "8 lessons · 2.1 hours" },
+  { key: "start",   label: "New LO Fast Start",        meta: null },
+  { key: "sales",   label: "Producer to Top Producer",  meta: null },
+  { key: "product", label: "Non-QM Specialist",         meta: null },
 ];
 
 export function UniversityDashboardClient({
@@ -48,6 +59,9 @@ export function UniversityDashboardClient({
   completedLessons,
   activePaths,
   continueLesson,
+  certificatesEarned,
+  harrysPlaybookLessonCount,
+  requiredIncomplete,
 }: Props) {
   const [filter, setFilter]  = useState("start");
   const [search, setSearch]  = useState("");
@@ -74,8 +88,43 @@ export function UniversityDashboardClient({
     return totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
   }
 
+  const overdueCount = requiredIncomplete.filter(r => r.isOverdue).length;
+
   return (
     <div style={{ background: "#fff", fontFamily: "'DM Sans', system-ui, sans-serif", color: "#142234" }}>
+
+      {/* ── REQUIRED TRAINING BANNER ─────────────────────────────────────────── */}
+      {requiredIncomplete.length > 0 && (
+        <div style={{
+          background: overdueCount > 0 ? "#b91c1c" : "#92400e",
+          padding: "12px clamp(16px,4vw,40px)",
+          display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap",
+        }}>
+          <span style={{ fontSize: 16 }}>{overdueCount > 0 ? "⚠" : "📋"}</span>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+              {overdueCount > 0
+                ? `${overdueCount} required course${overdueCount !== 1 ? "s are" : " is"} overdue`
+                : `${requiredIncomplete.length} required course${requiredIncomplete.length !== 1 ? "s" : ""} to complete`}
+            </span>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginLeft: 8 }}>
+              {requiredIncomplete.map(r => r.title).slice(0, 3).join(" · ")}
+              {requiredIncomplete.length > 3 ? ` + ${requiredIncomplete.length - 3} more` : ""}
+            </span>
+          </div>
+          <Link
+            href="/university/search?path=required"
+            style={{
+              padding: "7px 16px", borderRadius: 8,
+              background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.4)",
+              color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {overdueCount > 0 ? "Complete now →" : "View required →"}
+          </Link>
+        </div>
+      )}
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section style={{
@@ -113,7 +162,7 @@ export function UniversityDashboardClient({
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
             <Link
-              href="/university/search"
+              href={continueLesson ? `/university/lesson/${continueLesson.lesson_id}` : "/university/search"}
               style={{
                 padding: "13px 26px", borderRadius: 10,
                 background: "linear-gradient(135deg,#FF9847,#F37021)",
@@ -144,7 +193,7 @@ export function UniversityDashboardClient({
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <span style={{ position: "absolute", bottom: 8, right: 10, fontSize: 11, fontWeight: 700, background: "rgba(0,0,0,0.4)", padding: "2px 7px", borderRadius: 5, color: "#fff" }}>
-                HCMG FAST START
+                {continueLesson.course_title.toUpperCase()}
               </span>
               <Link href={`/university/lesson/${continueLesson.lesson_id}`} style={{ textDecoration: "none" }}>
                 <button style={{
@@ -188,16 +237,16 @@ export function UniversityDashboardClient({
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
         {[
-          { value: completedLessons, label: "Lessons completed" },
-          { value: `${Math.round((completedLessons * 12) / 60 * 10) / 10} hrs`, label: "Time invested" },
-          { value: activePaths,     label: "Courses enrolled" },
-          { value: "🔥 Train. Learn. Close. Win.", label: "The HCMG standard", small: true },
+          { value: completedLessons,  label: "Lessons completed" },
+          { value: activePaths,       label: "Courses enrolled" },
+          { value: enrolledCourseIds.filter(id => (progressMap[id]?.completed ?? 0) === (progressMap[id]?.total ?? -1) && (progressMap[id]?.total ?? 0) > 0).length, label: "Courses completed" },
+          { value: certificatesEarned, label: "Certificates earned" },
         ].map((stat, i) => (
           <div key={i} style={{
             padding: "20px 24px",
             borderRight: i < 3 ? "1px solid rgba(255,255,255,0.06)" : undefined,
           }}>
-            <strong style={{ fontSize: stat.small ? 13 : 28, fontWeight: 800, color: "#fff", display: "block", fontFamily: "Manrope, system-ui, sans-serif" }}>
+            <strong style={{ fontSize: 28, fontWeight: 800, color: "#fff", display: "block", fontFamily: "Manrope, system-ui, sans-serif" }}>
               {stat.value}
             </strong>
             <span style={{ fontSize: 12, color: "#687383" }}>{stat.label}</span>
@@ -304,7 +353,9 @@ export function UniversityDashboardClient({
                 >
                   Start the playbook <span>▶</span>
                 </Link>
-                <small style={{ color: "#94a5b4", fontSize: 12 }}>7 modules · Train. Learn. Close. Win.</small>
+                <small style={{ color: "#94a5b4", fontSize: 12 }}>
+                  {harrysPlaybookLessonCount > 0 ? `${harrysPlaybookLessonCount} lessons` : "Signature curriculum"} · Train. Learn. Close. Win.
+                </small>
               </div>
             </div>
           </div>
@@ -382,7 +433,7 @@ export function UniversityDashboardClient({
           </div>
         ) : (
           <p style={{ textAlign: "center", color: "#687383", padding: "48px 0", fontSize: 14 }}>
-            No lessons match your search.
+            No courses match your search.
           </p>
         )}
       </section>
@@ -413,12 +464,18 @@ export function UniversityDashboardClient({
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {PATHS.map((path, i) => {
             const pct = pathPct(path.key);
+            const pathCourses = courses.filter(c => c.category === path.key || c.path_tag === path.key);
+            const courseMeta = pathCourses.length > 0 ? `${pathCourses.length} course${pathCourses.length !== 1 ? "s" : ""}` : "No courses yet";
             return (
-              <button
+              <Link
                 key={path.key}
-                onClick={() => setFilter(path.key)}
+                href={`/university/search?path=${path.key}`}
+                style={{ textDecoration: "none" }}
+              >
+              <button
+                onClick={() => {}}
                 style={{
-                  display: "grid",
+                  display: "grid", width: "100%",
                   gridTemplateColumns: "44px 1fr auto auto",
                   alignItems: "center",
                   gap: 14,
@@ -441,13 +498,14 @@ export function UniversityDashboardClient({
                 }}>0{i + 1}</div>
                 <div>
                   <div style={{ fontWeight: 700, color: "#fff", fontSize: 14 }}>{path.label}</div>
-                  <div style={{ fontSize: 11, color: "#687383" }}>{path.meta}</div>
+                  <div style={{ fontSize: 11, color: "#687383" }}>{courseMeta}</div>
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#f58220", minWidth: 36, textAlign: "right" }}>
-                  {pct}%
+                <div style={{ fontSize: 13, fontWeight: 700, color: pct > 0 ? "#f58220" : "#687383", minWidth: 50, textAlign: "right" }}>
+                  {pct > 0 ? `${pct}%` : "—"}
                 </div>
                 <div style={{ color: "#687383", fontSize: 16 }}>→</div>
               </button>
+              </Link>
             );
           })}
         </div>

@@ -180,14 +180,16 @@ export default async function CoursePage({ params }: Props) {
                 ) : (
                   <span style={{ fontSize: 14, fontWeight: 700, color: S.green }}>✓ Course complete!</span>
                 )
-              ) : (
-                <Link href={`/university/lesson/${(lessons ?? [])[0]?.id}`} style={{
+              ) : (lessons ?? []).length > 0 ? (
+                <Link href={`/university/lesson/${(lessons ?? [])[0].id}`} style={{
                   padding: "12px 24px", borderRadius: 10,
                   background: `linear-gradient(135deg,#FF9847,#F37021)`,
                   color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none",
                 }}>
                   Start course ▶
                 </Link>
+              ) : (
+                <span style={{ fontSize: 14, color: S.muted, fontStyle: "italic" }}>No lessons published yet.</span>
               )}
               <span style={{ fontSize: 13, color: S.muted }}>
                 {totalCount} lesson{totalCount !== 1 ? "s" : ""}

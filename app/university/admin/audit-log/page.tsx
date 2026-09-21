@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 50;
 
 const ACTION_LABELS: Record<string, string> = {
   certificate_issued:          "Certificate issued",
@@ -49,32 +49,32 @@ function fmtDate(d: string): string {
 export default async function AuditLogPage({
   searchParams: searchParamsPromise,
 }: {
-  searchParams: Promise<{ action?: string; actor?: string; before?: string }>;
+  searchParams: Promise<{ action?: string; actor?: string; page?: string }>;
 }) {
   const searchParams = await searchParamsPromise;
+  const currentPage = Math.max(1, parseInt(searchParams.page ?? "1", 10) || 1);
   const profile = await getVerifiedProfile();
   if (!profile) redirect("/login?next=/university/admin/audit-log");
   if (!isUniversityAdmin(profile)) redirect("/university");
 
   const sb = createServiceClient();
 
-  let query = sb
+  let baseQuery = sb
     .from("uni_audit_log")
-    .select("id, actor_id, actor_email, action, entity_type, entity_id, details, ip_address, created_at")
-    .order("created_at", { ascending: false })
-    .limit(PAGE_SIZE);
+    .select("id, actor_id, actor_email, action, entity_type, entity_id, details, ip_address, created_at", { count: "exact" })
+    .order("created_at", { ascending: false });
 
   if (searchParams.action) {
-    query = query.eq("action", searchParams.action);
+    baseQuery = baseQuery.eq("action", searchParams.action);
   }
   if (searchParams.actor) {
-    query = query.ilike("actor_email", `%${searchParams.actor}%`);
-  }
-  if (searchParams.before) {
-    query = query.lt("created_at", searchParams.before);
+    baseQuery = baseQuery.ilike("actor_email", `%${searchParams.actor}%`);
   }
 
-  const { data: logs } = await query;
+  const offset = (currentPage - 1) * PAGE_SIZE;
+  const { data: logs, count: totalCount } = await baseQuery.range(offset, offset + PAGE_SIZE - 1);
+
+  const totalPages = Math.max(1, Math.ceil((totalCount ?? 0) / PAGE_SIZE));
 
   // Get distinct actions for the filter dropdown
   const { data: distinctActions } = await sb
@@ -107,6 +107,12 @@ export default async function AuditLogPage({
       </div>
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px clamp(16px,4vw,40px) 64px" }}>
+        {/* Count badge */}
+        {totalCount !== null && (
+          <p style={{ fontSize: 12, color: "#687383", marginBottom: 16 }}>
+            {totalCount.toLocaleString()} total record{totalCount !== 1 ? "s" : ""}
+          </p>
+        )}
 
         {/* Filters */}
         <form method="GET" style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap", alignItems: "flex-end" }}>
@@ -156,6 +162,14 @@ export default async function AuditLogPage({
             </Link>
           )}
         </form>
+
+        {/* Active filter summary */}
+        {(searchParams.action || searchParams.actor) && (
+          <p style={{ fontSize: 12, color: "#687383", marginBottom: 16 }}>
+            Filtering by{searchParams.action ? ` action: "${ACTION_LABELS[searchParams.action] ?? searchParams.action}"` : ""}
+            {searchParams.actor ? ` actor: "${searchParams.actor}"` : ""}
+          </p>
+        )}
 
         {/* Log table */}
         {(logs ?? []).length > 0 ? (
@@ -232,8 +246,35 @@ export default async function AuditLogPage({
           </div>
         )}
 
-        <p style={{ marginTop: 16, fontSize: 12, color: "#687383" }}>
-          Showing the most recent {PAGE_SIZE} entries.
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 20 }}>
+            {currentPage > 1 ? (
+              <Link
+                href={`/university/admin/audit-log?${new URLSearchParams({ ...(searchParams.action ? { action: searchParams.action } : {}), ...(searchParams.actor ? { actor: searchParams.actor } : {}), page: String(currentPage - 1) })}`}
+                style={{ padding: "7px 16px", borderRadius: 7, border: "1.5px solid #dfe4e8", fontSize: 12, fontWeight: 600, color: "#071a2e", textDecoration: "none", background: "#fff" }}
+              >
+                ← Previous
+              </Link>
+            ) : (
+              <span style={{ padding: "7px 16px", borderRadius: 7, border: "1.5px solid #dfe4e8", fontSize: 12, fontWeight: 600, color: "#aab4be", background: "#f7f8fa" }}>← Previous</span>
+            )}
+            <span style={{ fontSize: 12, color: "#687383" }}>
+              Page {currentPage} of {totalPages} · entries {offset + 1}–{Math.min(offset + PAGE_SIZE, totalCount ?? 0)}
+            </span>
+            {currentPage < totalPages ? (
+              <Link
+                href={`/university/admin/audit-log?${new URLSearchParams({ ...(searchParams.action ? { action: searchParams.action } : {}), ...(searchParams.actor ? { actor: searchParams.actor } : {}), page: String(currentPage + 1) })}`}
+                style={{ padding: "7px 16px", borderRadius: 7, border: "1.5px solid #dfe4e8", fontSize: 12, fontWeight: 600, color: "#071a2e", textDecoration: "none", background: "#fff" }}
+              >
+                Next →
+              </Link>
+            ) : (
+              <span style={{ padding: "7px 16px", borderRadius: 7, border: "1.5px solid #dfe4e8", fontSize: 12, fontWeight: 600, color: "#aab4be", background: "#f7f8fa" }}>Next →</span>
+            )}
+          </div>
+        )}
+        <p style={{ marginTop: 12, fontSize: 12, color: "#687383" }}>
           All certificate issues, revocations, exemptions, role changes, and admin actions are recorded here.
         </p>
       </div>

@@ -16,7 +16,7 @@ export default async function CertificatesPage() {
 
   const { data: certs } = await sb
     .from("uni_certificates")
-    .select("id, course_id, issued_at, uni_courses:course_id(title, slug, thumbnail_url)")
+    .select("id, course_id, issued_at, verification_id, uni_courses:course_id(title, slug, thumbnail_url)")
     .eq("profile_id", profile.id)
     .is("revoked_at", null)
     .order("issued_at", { ascending: false });
@@ -62,6 +62,9 @@ export default async function CertificatesPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
             {certs.map(cert => {
               const course = (cert.uni_courses as unknown) as { title: string; slug: string; thumbnail_url: string | null } | null;
+              const verifyUrl = cert.verification_id
+                ? `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/university/verify/${cert.verification_id}`
+                : null;
               return (
                 <div key={cert.id} style={{
                   background: "linear-gradient(145deg, #06182a, #0c2b4b)",
@@ -69,6 +72,7 @@ export default async function CertificatesPage() {
                   padding: "24px 20px",
                   border: "1px solid rgba(245,130,32,0.2)",
                   boxShadow: "0 4px 20px rgba(245,130,32,0.08)",
+                  display: "flex", flexDirection: "column",
                 }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: 10,
@@ -82,7 +86,21 @@ export default async function CertificatesPage() {
                   <p style={{ fontSize: 12, color: "#687383", marginBottom: 14 }}>
                     Issued {new Date(cert.issued_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                   </p>
-                  <div style={{ display: "flex", gap: 8 }}>
+                  {/* Primary actions row */}
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <a
+                      href={`/api/university/certificate/${cert.id}/pdf`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: "8px 14px", borderRadius: 8,
+                        background: "linear-gradient(135deg,#FF9847,#F37021)",
+                        color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none",
+                        display: "inline-flex", alignItems: "center", gap: 5,
+                      }}
+                    >
+                      ↓ Download PDF
+                    </a>
                     {course?.slug && (
                       <Link href={`/university/course/${course.slug}`} style={{
                         padding: "8px 14px", borderRadius: 8,
@@ -93,14 +111,32 @@ export default async function CertificatesPage() {
                         View course
                       </Link>
                     )}
-                    <span style={{
-                      padding: "8px 14px", borderRadius: 8,
-                      background: "rgba(52,211,153,0.1)",
-                      color: "#34d399", fontSize: 12, fontWeight: 700,
-                    }}>
-                      ✓ Complete
-                    </span>
                   </div>
+                  {/* Verify / share row */}
+                  {verifyUrl && (
+                    <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase", color: "#687383", marginBottom: 6 }}>
+                        Verification link
+                      </p>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <code style={{
+                          fontSize: 10, color: "#687383", background: "rgba(255,255,255,0.05)",
+                          padding: "4px 8px", borderRadius: 5, flex: 1,
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        }}>
+                          {verifyUrl}
+                        </code>
+                        <a
+                          href={verifyUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: 11, fontWeight: 700, color: "#34d399", textDecoration: "none", whiteSpace: "nowrap" }}
+                        >
+                          Open ↗
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

@@ -38,7 +38,7 @@ export default async function AdminUsersPage() {
           User Access
         </h1>
         <p style={{ fontSize: 13, color: "#b9c5d0", marginTop: 6 }}>
-          Manage <code>university_access</code> and <code>university_role</code> inline. Changes are applied immediately and written to the audit log.
+          Manage university access and role assignments inline. All changes are applied immediately and written to the audit log.
         </p>
       </div>
 
@@ -47,8 +47,8 @@ export default async function AdminUsersPage() {
 
         <p style={{ marginTop: 16, fontSize: 12, color: "#687383" }}>
           {(users ?? []).length} team members listed.
-          To change a user&apos;s system role (<code>role</code>) or activation status (<code>is_active</code>),
-          use the <Link href="/admin/users" style={{ color: "#f58220" }}>Admin → Users</Link> panel.
+          To change a user&apos;s system role or activation status, use the{" "}
+          <Link href="/admin/users" style={{ color: "#f58220" }}>Admin → Users</Link> panel.
         </p>
       </div>
     </div>

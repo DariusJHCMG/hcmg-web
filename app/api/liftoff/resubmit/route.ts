@@ -78,9 +78,10 @@ export async function POST(req: NextRequest) {
     completed_at:             null,
     inflight_email_sent_at:   null,
     completed_email_sent_at:  null,
-    // Reset incomplete fields
-    incomplete_reasons:       null,
-    incomplete_notes:         null,
+    // Carry forward the original incomplete reasons/notes so ops can see context,
+    // but clear the workflow-state fields (who/when it was flagged).
+    incomplete_reasons:       original.incomplete_reasons ?? null,
+    incomplete_notes:         original.incomplete_notes ?? null,
     incomplete_at:            null,
     incomplete_by_name:       null,
     // Reset assignment fields
