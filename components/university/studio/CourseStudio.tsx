@@ -586,14 +586,40 @@ function CurriculumTab({
   modules,
   onLessonsChange,
   onModulesChange,
+  onCourseChange,
 }: {
   course: UniCourse;
   lessons: UniLesson[];
   modules: UniModule[];
   onLessonsChange: (ls: UniLesson[]) => void;
   onModulesChange: (ms: UniModule[]) => void;
+  onCourseChange?: (c: UniCourse) => void;
 }) {
   const router = useRouter();
+
+  // Inline course title / description editing
+  const [editTitle, setEditTitle]       = useState(course.title);
+  const [editDesc, setEditDesc]         = useState(course.short_description ?? "");
+  const [savingMeta, setSavingMeta]     = useState(false);
+  const titleInputRef                   = React.useRef<HTMLInputElement>(null);
+
+  async function saveMeta() {
+    if (!editTitle.trim() || savingMeta) return;
+    setSavingMeta(true);
+    try {
+      const res = await fetch(`/api/university/admin/course/${course.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editTitle.trim(), short_description: editDesc.trim() || null }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        onCourseChange?.(updated);
+      }
+    } catch {}
+    setSavingMeta(false);
+  }
+
   const [addingModule, setAddingModule] = useState(false);
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
@@ -903,6 +929,59 @@ function CurriculumTab({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {error && <ErrorBanner message={error} onDismiss={() => setError("")} />}
+
+      {/* ── Inline course header — matches CreatorLMS canvas style ── */}
+      <div style={{
+        background: STUDIO_COLORS.white, borderRadius: 12,
+        border: `1px solid ${STUDIO_COLORS.border}`,
+        padding: "0 0 20px",
+        overflow: "hidden",
+      }}>
+        {/* Thumbnail strip */}
+        <div style={{
+          height: 140, background: "#f0f2f5",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          position: "relative", overflow: "hidden",
+        }}>
+          {course.thumbnail_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={course.thumbnail_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+          ) : (
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#c5cdd8" strokeWidth="1">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/>
+            </svg>
+          )}
+        </div>
+
+        {/* Title + description */}
+        <div style={{ padding: "16px 24px 0" }}>
+          <input
+            ref={titleInputRef}
+            value={editTitle}
+            onChange={e => setEditTitle(e.target.value)}
+            onBlur={saveMeta}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); titleInputRef.current?.blur(); } }}
+            placeholder="Enter Course Title"
+            style={{
+              width: "100%", border: "none", outline: "none", background: "transparent",
+              fontSize: 22, fontWeight: 700, color: STUDIO_COLORS.text, fontFamily: "inherit",
+              marginBottom: 6, boxSizing: "border-box",
+            }}
+          />
+          <textarea
+            value={editDesc}
+            onChange={e => setEditDesc(e.target.value)}
+            onBlur={saveMeta}
+            placeholder="Add course description..."
+            rows={2}
+            style={{
+              width: "100%", border: "none", outline: "none", resize: "none", background: "transparent",
+              fontSize: 13, color: STUDIO_COLORS.textMuted, fontFamily: "inherit",
+              lineHeight: 1.6, boxSizing: "border-box",
+            }}
+          />
+        </div>
+      </div>
 
       {/* Stats row */}
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
@@ -1722,6 +1801,7 @@ export function CourseStudio({
             modules={modules}
             onLessonsChange={setLessons}
             onModulesChange={setModules}
+            onCourseChange={setCourse}
           />
         )}
         {tab === "assessments" && (
