@@ -27,8 +27,9 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
   // Fields any trainer can update
   const trainerAllowed = [
-    "title", "description", "video_token", "transcript",
-    "resources_json", "sort_order", "duration_label", "duration_secs",
+    "title", "lesson_type", "description", "video_token", "thumbnail_url", "caption_url",
+    "transcript", "resources_json", "sort_order", "module_id", "module_sort_order",
+    "duration_label", "duration_secs", "completion_mode", "completion_threshold_pct",
   ];
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 

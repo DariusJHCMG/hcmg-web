@@ -165,10 +165,13 @@ export interface UniCourse {
   id: string;
   slug: string;
   title: string;
+  short_description: string | null;
   description: string | null;
   thumbnail_url: string | null;
   category: CourseCategory;
   path_tag: PathTag | null;
+  audience: string | null;
+  instructor_name: string | null;
   is_required: boolean;
   is_published: boolean;
   content_status: ContentStatus;
@@ -180,8 +183,12 @@ export interface UniCourse {
   difficulty: "beginner" | "intermediate" | "advanced" | null;
   tags: string[];
   skill_tags: string[];
+  completion_rules: { require_all_lessons: boolean; require_assessment: boolean; passing_score?: number };
   reviewed_by: string | null;
   reviewed_at: string | null;
+  review_notes: string | null;
+  submitted_by: string | null;
+  submitted_at: string | null;
   expires_at: string | null;
   created_by: string | null;
   created_at: string;
@@ -191,14 +198,21 @@ export interface UniCourse {
 export interface UniLesson {
   id: string;
   course_id: string;
+  module_id: string | null;
   title: string;
   description: string | null;
+  lesson_type: LessonType;
   video_token: string | null;
+  thumbnail_url: string | null;
+  caption_url: string | null;
   transcript: string | null;
   resources_json: { label: string; storage_path: string }[] | null;
   sort_order: number;
+  module_sort_order: number;
   duration_secs: number | null;
   duration_label: string | null;
+  completion_mode: CompletionMode;
+  completion_threshold_pct: number;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -226,10 +240,14 @@ export interface UniProgress {
 }
 
 export type QuestionType = "multiple_choice" | "multiple_select" | "true_false" | "short_answer" | "matching" | "scenario";
+export type LessonType = "video" | "text" | "presentation" | "resource" | "knowledge_check";
+export type CompletionMode = "watch_pct" | "manual" | "quiz_pass" | "any";
+export type AssessmentType = "knowledge_check" | "quiz" | "final_assessment" | "certification_exam";
+export type RenewalMode = "manual" | "auto_reassign";
 
 export interface UniQuizQuestion {
   id: string;
-  lesson_id: string;
+  lesson_id: string | null;
   question_text: string;
   options_json: { label: string; is_correct: boolean }[];
   explanation: string | null;
@@ -242,13 +260,17 @@ export interface UniQuizQuestion {
 export interface UniAssessment {
   id: string;
   course_id: string;
+  lesson_id: string | null;
   title: string;
   description: string | null;
+  instructions: string | null;
+  assessment_type: AssessmentType;
   passing_pct: number;
   max_attempts: number | null;
   time_limit_mins: number | null;
   randomize_questions: boolean;
   questions_to_draw: number | null;
+  show_answers_after: boolean;
   is_required: boolean;
   is_active: boolean;
   created_at: string;
@@ -300,6 +322,45 @@ export interface UniAuditLog {
   ip_address: string | null;
   created_at: string;
 }
+export type MediaType = "video" | "image" | "audio" | "document" | "presentation" | "caption";
+
+export interface UniMediaAsset {
+  id: string;
+  uploaded_by: string;
+  name: string;
+  media_type: MediaType;
+  storage_path: string;
+  mime_type: string | null;
+  file_size: number | null;
+  duration_secs: number | null;
+  width_px: number | null;
+  height_px: number | null;
+  description: string | null;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UniCourseObjective {
+  id: string;
+  course_id: string;
+  objective: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface UniCertificateConfig {
+  id: string;
+  course_id: string;
+  issue_certificate: boolean;
+  validity_days: number | null;
+  renewal_mode: RenewalMode;
+  include_verification: boolean;
+  trigger_assessment_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type LockPreference = "lock" | "lock_requested" | "float";
 
 // ── Lift Off Types ────────────────────────────────────────────

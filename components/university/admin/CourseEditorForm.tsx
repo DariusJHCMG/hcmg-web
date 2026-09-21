@@ -649,7 +649,7 @@ export function CourseEditorForm({ mode, course, initialLessons = [] }: Props) {
       if (!res.ok) { setError(data.error ?? "Save failed"); return; }
       setSaved(true);
       if (mode === "new") {
-        router.push(`/university/admin/courses/${data.id}?tab=lessons`);
+        router.push(`/university/admin/studio/${data.id}`);
       }
     } catch { setError("Network error. Please try again."); }
     finally { setSaving(false); }

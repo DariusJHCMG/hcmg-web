@@ -6,14 +6,14 @@ import { getVerifiedProfile, isUniversityAdmin, logUniAudit } from "@/lib/auth";
 // Revokes an active exemption. university_admin only.
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const profile = await getVerifiedProfile();
   if (!profile || !isUniversityAdmin(profile)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const sb = createServiceClient();
 
   // Verify the exemption exists and is not already revoked

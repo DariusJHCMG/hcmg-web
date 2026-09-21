@@ -95,12 +95,14 @@ export default async function AdminCoursesPage() {
                   background: c.is_published ? "rgba(52,211,153,0.1)" : "rgba(255,255,255,0.06)",
                   color: c.is_published ? "#34d399" : "#687383",
                 }}>
-                  {c.is_published ? "Published" : "Draft"}
+                  {c.is_published ? "Published" : c.content_status === "in_review" ? "In Review" : c.content_status === "approved" ? "Approved" : "Draft"}
                 </span>
-                <Link href={`/university/admin/courses/${c.id}`} style={{
-                  fontSize: 12, fontWeight: 600, color: "#f58220", textDecoration: "none",
+                <Link href={`/university/admin/studio/${c.id}`} style={{
+                  fontSize: 12, fontWeight: 700, color: "#f58220", textDecoration: "none",
+                  padding: "4px 10px", borderRadius: 7,
+                  background: "rgba(245,130,32,0.08)", border: "1px solid rgba(245,130,32,0.2)",
                 }}>
-                  Edit →
+                  Studio →
                 </Link>
               </div>
             ))}

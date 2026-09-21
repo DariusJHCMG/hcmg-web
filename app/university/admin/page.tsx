@@ -41,10 +41,11 @@ export default async function UniversityAdminPage() {
   ];
 
   const adminLinks = [
-    { href: "/university/admin/courses",     label: "Manage Courses",  icon: "📋", desc: "Create, edit, publish, and reorder courses" },
-    { href: "/university/admin/assignments", label: "Assignments",     icon: "▦",  desc: "Assign courses to users, roles, or departments" },
-    { href: "/university/admin/reports",     label: "Reports",         icon: "📊", desc: "View completion rates, overdue, quiz performance" },
-    { href: "/university/admin/users",       label: "User Access",     icon: "👥", desc: "Manage university_access and roles" },
+    { href: "/university/admin/courses",     label: "Training Studio",  icon: "🎬", desc: "Build and publish courses, lessons, and assessments" },
+    { href: "/university/admin/media",       label: "Media Library",    icon: "📂", desc: "Upload and manage videos, images, documents, and captions" },
+    { href: "/university/admin/assignments", label: "Assignments",      icon: "▦",  desc: "Assign courses to users, roles, or departments" },
+    { href: "/university/admin/reports",     label: "Reports",          icon: "📊", desc: "View completion rates, overdue, quiz performance" },
+    { href: "/university/admin/users",       label: "User Access",      icon: "👥", desc: "Manage university_access and roles" },
   ];
 
   return (

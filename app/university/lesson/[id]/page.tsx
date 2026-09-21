@@ -49,10 +49,10 @@ export default async function LessonPage({ params }: Props) {
     });
   }
 
-  // All lessons in course for prev/next navigation
+  // All lessons in course for prev/next navigation (ordered by module then sort)
   const { data: allLessons } = await sb
     .from("uni_lessons")
-    .select("id, sort_order")
+    .select("id, sort_order, module_sort_order, module_id")
     .eq("course_id", course.id)
     .eq("is_published", true)
     .order("sort_order");
@@ -76,6 +76,14 @@ export default async function LessonPage({ params }: Props) {
     options:       (q.options_json as { label: string; is_correct: boolean }[]).map(o => ({ label: o.label })),
   }));
 
+  // Find linked assessment (for quiz_pass completion mode)
+  const { data: linkedAssessment } = await sb
+    .from("uni_assessments")
+    .select("id")
+    .eq("lesson_id", id)
+    .eq("is_active", true)
+    .maybeSingle();
+
   // Current progress
   const { data: progress } = await sb
     .from("uni_progress")
@@ -87,16 +95,21 @@ export default async function LessonPage({ params }: Props) {
   return (
     <LessonPageClient
       lessonId={lesson.id}
+      courseId={course.id}
       courseSlug={course.slug}
       courseTitle={course.title}
       lessonTitle={lesson.title}
       lessonDescription={lesson.description}
+      lessonType={lesson.lesson_type ?? "video"}
       transcript={lesson.transcript}
       resources={(lesson.resources_json as { label: string; storage_path: string }[]) ?? []}
       quizQuestions={safeQuestions}
+      linkedAssessmentId={linkedAssessment?.id ?? null}
       prevLessonId={prevId}
       nextLessonId={nextId}
       initialWatchPct={progress?.watch_pct ?? 0}
+      completionMode={lesson.completion_mode ?? "watch_pct"}
+      completionThresholdPct={lesson.completion_threshold_pct ?? 80}
     />
   );
 }

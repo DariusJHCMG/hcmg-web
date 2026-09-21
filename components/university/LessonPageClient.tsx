@@ -10,24 +10,32 @@ interface QuizQuestion { id: string; question_text: string; options: { label: st
 
 interface Props {
   lessonId: string;
+  courseId: string;
   courseSlug: string;
   courseTitle: string;
   lessonTitle: string;
   lessonDescription: string | null;
+  lessonType?: string;
   transcript: string | null;
   resources: Resource[];
   quizQuestions: QuizQuestion[];
+  /** ID of the assessment linked to this lesson (for knowledge_check completion_mode) */
+  linkedAssessmentId: string | null;
   prevLessonId: string | null;
   nextLessonId: string | null;
   initialWatchPct: number;
+  completionMode?: string;
+  completionThresholdPct?: number;
 }
 
 export function LessonPageClient({
-  lessonId, courseSlug, courseTitle, lessonTitle, lessonDescription,
-  transcript, resources, quizQuestions, prevLessonId, nextLessonId, initialWatchPct,
+  lessonId, courseId, courseSlug, courseTitle, lessonTitle, lessonDescription,
+  lessonType, transcript, resources, quizQuestions, linkedAssessmentId,
+  prevLessonId, nextLessonId, initialWatchPct,
+  completionMode = "watch_pct", completionThresholdPct = 80,
 }: Props) {
   const [watchPct, setWatchPct]         = useState(initialWatchPct);
-  const [completed, setCompleted]       = useState(initialWatchPct >= 90);
+  const [completed, setCompleted]       = useState(initialWatchPct >= completionThresholdPct);
   const [transcriptOpen, setTransOpen]  = useState(false);
   const [resourceLoading, setResLoading] = useState<string | null>(null);
 
@@ -37,7 +45,7 @@ export function LessonPageClient({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         lesson_id: lessonId,
-        course_id: "", // filled by API via lesson lookup — pass empty, API uses lesson's course_id
+        course_id: courseId,
         watch_pct: pct,
         completed: done,
       }),
@@ -86,12 +94,55 @@ export function LessonPageClient({
           <p style={{ fontSize: 14, color: "#687383", lineHeight: 1.65, marginBottom: 24 }}>{lessonDescription}</p>
         )}
 
-        {/* Video player */}
-        <LessonPlayer
-          lessonId={lessonId}
-          onProgress={pct => { setWatchPct(pct); saveProgress(pct); }}
-          onComplete={() => { setCompleted(true); saveProgress(100, true); }}
-        />
+        {/* Video player — only for video/presentation lessons */}
+        {(!lessonType || lessonType === "video" || lessonType === "presentation") && (
+          <LessonPlayer
+            lessonId={lessonId}
+            onProgress={pct => {
+              setWatchPct(pct);
+              saveProgress(pct);
+              if (completionMode === "watch_pct" && pct >= completionThresholdPct && !completed) {
+                setCompleted(true);
+                saveProgress(pct, true);
+              }
+            }}
+            onComplete={() => {
+              if (completionMode !== "quiz_pass") {
+                setCompleted(true);
+                saveProgress(100, true);
+              }
+            }}
+          />
+        )}
+
+        {/* Manual completion button */}
+        {completionMode === "manual" && !completed && (
+          <button
+            onClick={() => { setCompleted(true); saveProgress(watchPct, true); }}
+            style={{
+              marginTop: 16, width: "100%", padding: "13px", borderRadius: 10,
+              background: "rgba(245,130,32,0.08)", border: "1.5px solid rgba(245,130,32,0.3)",
+              fontSize: 14, fontWeight: 700, color: "#f58220", cursor: "pointer",
+            }}
+          >
+            ✓ Mark as complete
+          </button>
+        )}
+
+        {/* Knowledge check CTA — for quiz_pass completion mode */}
+        {completionMode === "quiz_pass" && linkedAssessmentId && !completed && (
+          <div style={{
+            marginTop: 16, padding: "16px 18px", borderRadius: 10,
+            background: "rgba(245,130,32,0.06)", border: "1.5px solid rgba(245,130,32,0.25)",
+          }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#071a2e", marginBottom: 6 }}>
+              Complete the knowledge check to finish this lesson
+            </div>
+            <p style={{ fontSize: 13, color: "#687383", margin: "0 0 12px" }}>
+              Pass the knowledge check below to mark this lesson as complete.
+            </p>
+          </div>
+        )}
 
         {/* Completion badge */}
         {completed && (

@@ -47,10 +47,11 @@ function fmtDate(d: string): string {
 }
 
 export default async function AuditLogPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: { action?: string; actor?: string; before?: string };
+  searchParams: Promise<{ action?: string; actor?: string; before?: string }>;
 }) {
+  const searchParams = await searchParamsPromise;
   const profile = await getVerifiedProfile();
   if (!profile) redirect("/login?next=/university/admin/audit-log");
   if (!isUniversityAdmin(profile)) redirect("/university");
