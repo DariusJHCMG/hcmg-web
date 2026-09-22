@@ -23,6 +23,7 @@ const SECURITY_HEADERS = [
       "style-src 'self' 'unsafe-inline'",
       // Tightened: no wildcard https: — explicit domains only
       "img-src 'self' data: https://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
+      "media-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co",
       "font-src 'self' data:",
       "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://challenges.cloudflare.com",
       "frame-src https://challenges.cloudflare.com",

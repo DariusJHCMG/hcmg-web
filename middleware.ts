@@ -18,6 +18,7 @@ function buildCsp(): string {
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://us.i.posthog.com https://challenges.cloudflare.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
+    "media-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co",
     "font-src 'self' data:",
     "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://challenges.cloudflare.com",
     "frame-src https://challenges.cloudflare.com https://app.heygen.com https://share.heygen.com",
