@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { getCurrentProfile, hasUniversityAccess, logUniAudit } from "@/lib/auth";
-import { deriveMinDwellSecs } from "@/app/api/university/lesson/session/heartbeat/route";
+import { deriveMinDwellSecs } from "@/lib/university/integrity";
 
 // POST /api/university/lesson/session/complete
 //
