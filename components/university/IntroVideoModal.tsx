@@ -11,8 +11,8 @@ import { useEffect, useRef, useState } from "react";
 //   • Native <video> tag  — for direct .mp4 / storage URLs
 //     → tracks timeupdate events; unlocks at UNLOCK_PCT (80%)
 //   • iframe embed        — for HeyGen, Vimeo, YouTube, etc.
-//     → user must click "Play Video" first; THEN 128s dwell timer starts
-//     → keeps timer in sync with the video
+//     → 158s visible dwell timer (2m 8s video + 30s buffer)
+//     → progress bar counts up in real time
 //
 // Rules:
 //   • Blocks the entire UI until dismissed
@@ -22,7 +22,7 @@ import { useEffect, useRef, useState } from "react";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const UNLOCK_PCT         = 80;   // % of native video that must be watched
-const IFRAME_UNLOCK_SECS = 128;  // 2 min 8 sec — matches CEO intro video length
+const IFRAME_UNLOCK_SECS = 158;  // 2 min 8 sec + 30 sec buffer
 
 function isIframeUrl(url: string): boolean {
   return (
@@ -50,8 +50,7 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
   // ── iframe dwell-time state ─────────────────────────────────────────────────
   const dwellRef         = useRef(0);
   const dwellIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [dwellSecs,   setDwellSecs]   = useState(0);
-  const [videoStarted, setVideoStarted] = useState(false); // has the user clicked Play?
+  const [dwellSecs,  setDwellSecs]  = useState(0);
 
   // ── Shared ──────────────────────────────────────────────────────────────────
   const [canDismiss, setCanDismiss] = useState(false);
@@ -82,16 +81,12 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
     };
   }, [useIframe]);
 
-  // ── iframe: start dwell timer only AFTER user clicks Play ───────────────────
-  function handleStartVideo() {
-    setVideoStarted(true);
-  }
-
+  // ── iframe: count visible dwell seconds from mount ───────────────────────────
   useEffect(() => {
-    if (!useIframe || !videoStarted) return;
+    if (!useIframe) return;
 
     dwellIntervalRef.current = setInterval(() => {
-      if (document.hidden) return; // only credit when tab is visible
+      if (document.hidden) return;
       dwellRef.current += 1;
       const secs = dwellRef.current;
       setDwellSecs(secs);
@@ -104,7 +99,7 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
     return () => {
       if (dwellIntervalRef.current) clearInterval(dwellIntervalRef.current);
     };
-  }, [useIframe, videoStarted]);
+  }, [useIframe]);
 
   // ── Dismiss ─────────────────────────────────────────────────────────────────
   async function handleDismiss() {
@@ -162,11 +157,7 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
           </span>
         </div>
         <span style={{ fontSize: 12, color: canDismiss ? "#94a3b8" : "#3b4a5a" }}>
-          {canDismiss
-            ? "Ready to continue ↓"
-            : !videoStarted && useIframe
-            ? "Press play to begin"
-            : lockLabel}
+          {canDismiss ? "Ready to continue ↓" : lockLabel}
         </span>
       </div>
 
@@ -179,59 +170,13 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
         boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
       }}>
         {useIframe ? (
-          !videoStarted ? (
-            /* ── Play splash — shown before user starts the video ── */
-            <div style={{
-              position: "absolute", inset: 0,
-              display: "flex", flexDirection: "column",
-              alignItems: "center", justifyContent: "center",
-              gap: 20,
-              background: "linear-gradient(145deg,#06182a,#0c2b4b)",
-            }}>
-              <div style={{
-                width: 72, height: 72, borderRadius: "50%",
-                background: "linear-gradient(135deg,#FF9847,#F37021)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer",
-                boxShadow: "0 0 0 12px rgba(245,130,32,0.15)",
-              }}
-                onClick={handleStartVideo}
-              >
-                {/* Play triangle */}
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
-                  <polygon points="5,3 19,12 5,21"/>
-                </svg>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "Manrope, system-ui", marginBottom: 6 }}>
-                  A message from the CEO
-                </div>
-                <div style={{ fontSize: 13, color: "#687383" }}>
-                  Click play to watch — the timer starts when you do
-                </div>
-              </div>
-              <button
-                onClick={handleStartVideo}
-                style={{
-                  padding: "12px 32px", borderRadius: 10, border: "none",
-                  background: "linear-gradient(135deg,#FF9847,#F37021)",
-                  color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
-                  letterSpacing: "-0.2px",
-                }}
-              >
-                ▶ Play Video
-              </button>
-            </div>
-          ) : (
-            /* ── iframe loads only after Play is clicked ── */
-            <iframe
-              src={embedSrc}
-              title="Welcome to HCMG University"
-              allow="encrypted-media; fullscreen; autoplay"
-              allowFullScreen
-              style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-            />
-          )
+          <iframe
+            src={embedSrc}
+            title="Welcome to HCMG University"
+            allow="encrypted-media; fullscreen; autoplay"
+            allowFullScreen
+            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+          />
         ) : videoError ? (
           <div style={{
             position: "absolute", inset: 0,
@@ -311,8 +256,6 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
             ? "Saving…"
             : canDismiss
             ? "✓ I've watched it — Enter HCMG U"
-            : !videoStarted && useIframe
-            ? "🔒 Press play to start the video"
             : `🔒 ${lockLabel}`}
         </button>
       </div>
