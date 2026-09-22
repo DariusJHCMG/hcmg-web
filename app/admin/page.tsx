@@ -69,12 +69,13 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Quick actions */}
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-5">
         {[
           { label: "All Leads",     href: "/admin/leads",   icon: "✉" },
           { label: "Manage Team",   href: "/admin/team",    icon: "👥" },
           { label: "Funnel Links",  href: "/admin/funnels", icon: "⟶" },
           { label: "User Accounts", href: "/admin/users",   icon: "🔑" },
+          { label: "HCMG U",        href: "/university",    icon: "🎓" },
         ].map((a) => (
           <Link
             key={a.href}
