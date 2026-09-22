@@ -145,6 +145,26 @@ export async function POST(request: NextRequest) {
     answers_json: answers,
   });
 
+  // ── When quiz is passed, mark the lesson as complete in uni_progress ────────
+  // Knowledge-check lessons complete via quiz pass, not via video session.
+  // Without this, uni_progress never gets completed=true and course completion
+  // and cert issuance never trigger.
+  if (passed) {
+    const now = new Date().toISOString();
+    await sb.from("uni_progress").upsert(
+      {
+        profile_id:      profile.id,
+        lesson_id,
+        course_id:       lesson.course_id,
+        watch_pct:       100,
+        completed:       true,
+        completed_at:    now,
+        last_watched_at: now,
+      },
+      { onConflict: "profile_id,lesson_id" }
+    );
+  }
+
   await logUniAudit("quiz_attempted", {
     actorId: profile.id,
     actorEmail: profile.email,

@@ -180,70 +180,81 @@ export async function POST(request: NextRequest, { params }: Props) {
       await sendUniEmail({ to: learner.email, subject: `You passed: ${course?.title ?? "Final Assessment"}`, html });
     }
 
-    if (rules.require_assessment) {
-      // Check all lessons are completed
-      let lessonsOk = true;
-      const { data: allLessons } = await sb
-        .from("uni_lessons")
+    // ── Cert issuance: issue when assessment is passed ─────────────────────
+    // A lesson is considered "done" if it has a completed uni_progress row OR
+    // a passed quiz attempt (knowledge-check lessons complete via quiz, not
+    // via video session). This makes the check robust regardless of lesson type.
+    const { data: allLessons } = await sb
+      .from("uni_lessons")
+      .select("id")
+      .eq("course_id", assessment.course_id)
+      .eq("is_published", true);
+
+    let lessonsOk = true;
+    if (allLessons && allLessons.length > 0) {
+      const [{ data: progressRows }, { data: passedQuizzes }] = await Promise.all([
+        sb.from("uni_progress")
+          .select("lesson_id")
+          .eq("profile_id", profile.id)
+          .eq("course_id", assessment.course_id)
+          .eq("completed", true),
+        sb.from("uni_quiz_attempts")
+          .select("lesson_id")
+          .eq("profile_id", profile.id)
+          .eq("passed", true)
+          .in("lesson_id", allLessons.map(l => l.id)),
+      ]);
+      const completedLessonIds = new Set([
+        ...(progressRows ?? []).map(p => p.lesson_id),
+        ...(passedQuizzes ?? []).filter(q => q.lesson_id).map(q => q.lesson_id),
+      ]);
+      lessonsOk = allLessons.every(l => completedLessonIds.has(l.id));
+    }
+
+    if (lessonsOk) {
+      const expiresAt = course?.recert_interval_days
+        ? new Date(Date.now() + course.recert_interval_days * 86400000).toISOString()
+        : null;
+
+      const { data: existing } = await sb
+        .from("uni_certificates")
         .select("id")
+        .eq("profile_id", profile.id)
         .eq("course_id", assessment.course_id)
-        .eq("is_published", true);
+        .is("revoked_at", null)
+        .maybeSingle();
 
-      if (allLessons && allLessons.length > 0) {
-        const { count: completedCount } = await sb
-          .from("uni_progress")
-          .select("id", { count: "exact", head: true })
-          .eq("profile_id", profile.id)
-          .eq("course_id", assessment.course_id)
-          .eq("completed", true);
-        lessonsOk = (completedCount ?? 0) >= allLessons.length;
-      }
+      if (!existing) {
+        const { randomUUID } = await import("crypto");
+        await sb.from("uni_certificates").insert({
+          profile_id:      profile.id,
+          course_id:       assessment.course_id,
+          issued_at:       new Date().toISOString(),
+          expires_at:      expiresAt,
+          cert_type:       "course",
+          verification_id: randomUUID(),
+        });
 
-      if (lessonsOk) {
-        const expiresAt = course?.recert_interval_days
-          ? new Date(Date.now() + course.recert_interval_days * 86400000).toISOString()
-          : null;
-
-        const { data: existing } = await sb
-          .from("uni_certificates")
-          .select("id")
-          .eq("profile_id", profile.id)
-          .eq("course_id", assessment.course_id)
-          .is("revoked_at", null)
-          .maybeSingle();
-
-        if (!existing) {
-          const { randomUUID } = await import("crypto");
-          await sb.from("uni_certificates").insert({
-            profile_id:       profile.id,
-            course_id:        assessment.course_id,
-            issued_at:        new Date().toISOString(),
-            expires_at:       expiresAt,
-            cert_type:        "course",
-            verification_id:  randomUUID(),
+        // Send certificate issued email
+        if (learner?.email) {
+          const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://portal.hcmgloans.com";
+          const html = uniEmailTemplate({
+            title: "🎓 Your certificate is ready",
+            bodyHtml: `
+              <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">
+                Hi ${learner.full_name ?? "there"},
+              </p>
+              <p style="margin:0 0 16px;font-size:14px;color:#374151;line-height:1.6;">
+                Congratulations — you have completed <strong>${course?.title ?? "your course"}</strong>
+                and your completion certificate has been issued.
+              </p>
+              <p style="margin:0;font-size:13px;color:#687383;line-height:1.6;">
+                You can download and share your certificate from the Certificates section in HCMG U.
+              </p>`,
+            ctaLabel: "View My Certificates →",
+            ctaUrl:   `${BASE_URL}/university/certificates`,
           });
-
-          // Send certificate issued email
-          if (learner?.email) {
-            const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://portal.hcmgloans.com";
-            const html = uniEmailTemplate({
-              title: "🎓 Your certificate is ready",
-              bodyHtml: `
-                <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">
-                  Hi ${learner.full_name ?? "there"},
-                </p>
-                <p style="margin:0 0 16px;font-size:14px;color:#374151;line-height:1.6;">
-                  Congratulations — you have completed <strong>${course?.title ?? "your course"}</strong>
-                  and your completion certificate has been issued.
-                </p>
-                <p style="margin:0;font-size:13px;color:#687383;line-height:1.6;">
-                  You can download and share your certificate from the Certificates section in HCMG U.
-                </p>`,
-              ctaLabel: "View My Certificates →",
-              ctaUrl:   `${BASE_URL}/university/certificates`,
-            });
-            await sendUniEmail({ to: learner.email, subject: `Certificate issued: ${course?.title ?? "Course Complete"}`, html });
-          }
+          await sendUniEmail({ to: learner.email, subject: `Certificate issued: ${course?.title ?? "Course Complete"}`, html });
         }
       }
     }
