@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { UniversitySidebar, UniversityMobileDrawer } from "@/components/university/UniversitySidebar";
+import { IntroVideoModal } from "@/components/university/IntroVideoModal";
 import type { UniversityRole } from "@/lib/database.types";
 
 interface Props {
@@ -52,6 +53,10 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
     id: string; title: string; body: string; is_read: boolean; created_at: string;
   }[]>([]);
 
+  // Intro video modal state
+  const [introVideoUrl,    setIntroVideoUrl]    = useState<string | null>(null);
+  const [introChecked,     setIntroChecked]     = useState(false);
+
   const initials = profileName
     .trim()
     .split(/\s+/)
@@ -81,6 +86,19 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
     return () => clearInterval(id);
   }, [fetchNotifications]);
 
+  // Check intro video on first mount
+  useEffect(() => {
+    fetch("/api/university/intro-video")
+      .then(r => r.json())
+      .then(data => {
+        if (!data.has_completed && data.video_url) {
+          setIntroVideoUrl(data.video_url);
+        }
+        setIntroChecked(true);
+      })
+      .catch(() => setIntroChecked(true)); // On error, don't block the user
+  }, []);
+
   async function markAllRead() {
     await fetch("/api/university/notifications", { method: "PATCH" });
     setUnreadCount(0);
@@ -97,6 +115,14 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#fff" }}>
+      {/* Intro video modal — shown until user completes it */}
+      {introChecked && introVideoUrl && (
+        <IntroVideoModal
+          videoUrl={introVideoUrl}
+          onDismiss={() => setIntroVideoUrl(null)}
+        />
+      )}
+
       {/* Desktop sidebar */}
       <UniversitySidebar universityRole={universityRole} />
 

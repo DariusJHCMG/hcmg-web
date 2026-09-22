@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getVerifiedProfile, isUniversityAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
+import { IntroVideoSettings } from "@/components/university/admin/IntroVideoSettings";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -147,6 +148,10 @@ export default async function UniversityAdminPage() {
             </Link>
           ))}
         </div>
+
+        {/* Settings */}
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#071a2e", marginBottom: 12 }}>Settings</h2>
+        <IntroVideoSettings />
 
         {/* Recent activity */}
         <h2 style={{ fontSize: 16, fontWeight: 700, color: "#071a2e", marginBottom: 12 }}>Recent Activity</h2>
