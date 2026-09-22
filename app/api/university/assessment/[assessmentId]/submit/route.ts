@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { getVerifiedProfile, hasUniversityAccess, logUniAudit } from "@/lib/auth";
+import { sendUniEmail, uniEmailTemplate } from "@/lib/university/sendUniEmail";
 
 // POST /api/university/assessment/[assessmentId]/submit
 // Body: { answers: { [questionId]: number | number[] } }
@@ -132,19 +133,48 @@ export async function POST(request: NextRequest, { params }: Props) {
     answers_json:  answers,
   });
 
-  // Issue certificate if passed and this is a required assessment
+  // Issue certificate if passed — also send a congratulations email
   if (passed) {
-    // Check completion rules
     const { data: course } = await sb
       .from("uni_courses")
-      .select("completion_rules, recert_interval_days")
+      .select("title, slug, completion_rules, recert_interval_days")
       .eq("id", assessment.course_id)
       .single();
 
     const rules = (course?.completion_rules ?? {}) as { require_assessment?: boolean };
 
+    // Always send a "you passed the assessment" email
+    const { data: learner } = await sb
+      .from("profiles")
+      .select("email, full_name")
+      .eq("id", profile.id)
+      .maybeSingle();
+
+    if (learner?.email) {
+      const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://portal.hcmgloans.com";
+      const html = uniEmailTemplate({
+        title: "You passed your final assessment!",
+        bodyHtml: `
+          <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">
+            Hi ${learner.full_name ?? "there"},
+          </p>
+          <p style="margin:0 0 16px;font-size:14px;color:#374151;line-height:1.6;">
+            You scored <strong>${score_pct}%</strong> on the final assessment for
+            <strong>${course?.title ?? "your course"}</strong>. Great work!
+          </p>
+          <p style="margin:0;font-size:13px;color:#687383;line-height:1.6;">
+            ${rules.require_assessment
+              ? "Your completion certificate will be issued automatically once all course requirements are met."
+              : "Head back to the course to view your certificate."}
+          </p>`,
+        ctaLabel: "View My Training →",
+        ctaUrl:   `${BASE_URL}/university/course/${course?.slug ?? ""}`,
+      });
+      await sendUniEmail({ to: learner.email, subject: `You passed: ${course?.title ?? "Final Assessment"}`, html });
+    }
+
     if (rules.require_assessment) {
-      // Check all lessons are completed if required
+      // Check all lessons are completed
       let lessonsOk = true;
       const { data: allLessons } = await sb
         .from("uni_lessons")
@@ -159,17 +189,14 @@ export async function POST(request: NextRequest, { params }: Props) {
           .eq("profile_id", profile.id)
           .eq("course_id", assessment.course_id)
           .eq("completed", true);
-
         lessonsOk = (completedCount ?? 0) >= allLessons.length;
       }
 
       if (lessonsOk) {
-        // Issue certificate with a verification ID so it appears on /certificates
         const expiresAt = course?.recert_interval_days
           ? new Date(Date.now() + course.recert_interval_days * 86400000).toISOString()
           : null;
 
-        // Check if a cert already exists (upsert with ignoreDuplicates won't add verification_id)
         const { data: existing } = await sb
           .from("uni_certificates")
           .select("id")
@@ -188,6 +215,28 @@ export async function POST(request: NextRequest, { params }: Props) {
             cert_type:        "course",
             verification_id:  randomUUID(),
           });
+
+          // Send certificate issued email
+          if (learner?.email) {
+            const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://portal.hcmgloans.com";
+            const html = uniEmailTemplate({
+              title: "🎓 Your certificate is ready",
+              bodyHtml: `
+                <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">
+                  Hi ${learner.full_name ?? "there"},
+                </p>
+                <p style="margin:0 0 16px;font-size:14px;color:#374151;line-height:1.6;">
+                  Congratulations — you have completed <strong>${course?.title ?? "your course"}</strong>
+                  and your completion certificate has been issued.
+                </p>
+                <p style="margin:0;font-size:13px;color:#687383;line-height:1.6;">
+                  You can download and share your certificate from the Certificates section in HCMG U.
+                </p>`,
+              ctaLabel: "View My Certificates →",
+              ctaUrl:   `${BASE_URL}/university/certificates`,
+            });
+            await sendUniEmail({ to: learner.email, subject: `Certificate issued: ${course?.title ?? "Course Complete"}`, html });
+          }
         }
       }
     }
