@@ -605,6 +605,252 @@ export interface LessonStudioProps {
   isAdmin: boolean;
 }
 
+// ── VideoMediaPanel ───────────────────────────────────────────────────────────
+// Three-tab panel: Upload/Library | HeyGen | Direct URL
+// HeyGen tab accepts the share URL (app.heygen.com/videos/…) and auto-converts
+// to the embed URL (app.heygen.com/embeds/…) stored in video_token.
+
+function extractHeyGenEmbedUrl(raw: string): string | null {
+  // Accepts both share URLs and embed URLs, returns embed URL or null
+  const shareMatch = raw.match(/app\.heygen\.com\/videos\/[^?#]*?([a-f0-9]{32})(?:[?#].*)?$/);
+  if (shareMatch) return `https://app.heygen.com/embeds/${shareMatch[1]}`;
+  const embedMatch = raw.match(/app\.heygen\.com\/embeds\/([a-f0-9]{32})/);
+  if (embedMatch) return `https://app.heygen.com/embeds/${embedMatch[1]}`;
+  return null;
+}
+
+function isEmbedUrl(token: string): boolean {
+  return token.includes("heygen.com/embeds") ||
+    token.includes("vimeo.com") ||
+    token.includes("youtube.com/embed") ||
+    token.includes("loom.com/embed");
+}
+
+function VideoMediaPanel({
+  videoToken, captionUrl, thumbnailUrl,
+  previewUrl, previewLoading,
+  onVideoTokenChange, onCaptionUrlChange,
+  onOpenLibrary, onOpenCaptionLibrary,
+}: {
+  videoToken: string;
+  captionUrl: string;
+  thumbnailUrl: string;
+  previewUrl: string | null;
+  previewLoading: boolean;
+  onVideoTokenChange: (val: string) => void;
+  onCaptionUrlChange: (val: string) => void;
+  onOpenLibrary: () => void;
+  onOpenCaptionLibrary: () => void;
+}) {
+  // Which input tab is active: "upload" | "heygen" | "url"
+  type VTab = "upload" | "heygen" | "url";
+  const [vTab, setVTab] = React.useState<VTab>(() => {
+    if (!videoToken) return "upload";
+    if (videoToken.includes("heygen.com")) return "heygen";
+    if (videoToken.startsWith("http")) return "url";
+    return "upload";
+  });
+
+  const [heygenInput, setHeygenInput] = React.useState(() => {
+    if (videoToken.includes("heygen.com")) return videoToken;
+    return "";
+  });
+  const [heygenError, setHeygenError] = React.useState("");
+
+  function applyHeyGen() {
+    const embed = extractHeyGenEmbedUrl(heygenInput.trim());
+    if (!embed) {
+      setHeygenError("Couldn't find a HeyGen video ID. Paste the full video URL from app.heygen.com/videos/…");
+      return;
+    }
+    setHeygenError("");
+    onVideoTokenChange(embed);
+  }
+
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    padding: "7px 16px", borderRadius: 7, border: "none",
+    background: active ? STUDIO_COLORS.navy : "transparent",
+    color: active ? "#fff" : STUDIO_COLORS.textMuted,
+    fontSize: 12, fontWeight: 700, cursor: "pointer",
+    fontFamily: "inherit",
+  });
+
+  const isEmbed = videoToken ? isEmbedUrl(videoToken) : false;
+
+  return (
+    <div style={{
+      background: STUDIO_COLORS.white, borderRadius: 12,
+      border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px",
+      display: "flex", flexDirection: "column", gap: 14,
+    }}>
+      <div style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text }}>Video</div>
+
+      {/* Source tabs */}
+      <div style={{
+        display: "flex", gap: 4, padding: 4,
+        background: STUDIO_COLORS.surface, borderRadius: 10,
+        width: "fit-content",
+      }}>
+        <button style={tabStyle(vTab === "upload")} onClick={() => setVTab("upload")}>
+          ⬆ Upload / Library
+        </button>
+        <button style={tabStyle(vTab === "heygen")} onClick={() => setVTab("heygen")}>
+          ✦ HeyGen
+        </button>
+        <button style={tabStyle(vTab === "url")} onClick={() => setVTab("url")}>
+          🔗 Direct URL
+        </button>
+      </div>
+
+      {/* ── Upload / Library tab ── */}
+      {vTab === "upload" && (
+        <div style={{
+          borderRadius: 10, background: "#f7f8fa",
+          padding: "32px 24px",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          border: `1.5px dashed ${STUDIO_COLORS.border}`,
+          gap: 12,
+        }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={STUDIO_COLORS.textLight} strokeWidth="1.4">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10,9 16,12 10,15" fill={STUDIO_COLORS.textLight} stroke="none"/>
+          </svg>
+          <StudioButton variant="primary" onClick={onOpenLibrary}>Select video</StudioButton>
+          <div style={{ fontSize: 12, color: STUDIO_COLORS.textMuted, textAlign: "center" }}>
+            Supported: .mp4, .mov, .avi, .mkv, .flv, .wmv, .webm
+          </div>
+          {videoToken && !videoToken.startsWith("http") && (
+            <div style={{ fontSize: 11, color: STUDIO_COLORS.textMuted, marginTop: 4 }}>
+              Current: <code style={{ background: "#e2e8f0", padding: "1px 5px", borderRadius: 3 }}>{videoToken.slice(0, 50)}</code>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── HeyGen tab ── */}
+      {vTab === "heygen" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{
+            padding: "14px 16px", borderRadius: 10,
+            background: "rgba(124,92,216,0.06)", border: "1.5px solid rgba(124,92,216,0.2)",
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#5b21b6", marginBottom: 4 }}>
+              ✦ HeyGen AI Video
+            </div>
+            <div style={{ fontSize: 12, color: "#7c3aed", lineHeight: 1.6 }}>
+              Paste the full URL from your HeyGen video page. The system will extract the embed ID automatically.
+            </div>
+          </div>
+
+          <FieldLabel>HeyGen video URL</FieldLabel>
+          <div style={{ display: "flex", gap: 8 }}>
+            <StudioInput
+              value={heygenInput}
+              onChange={e => { setHeygenInput(e.target.value); setHeygenError(""); }}
+              placeholder="https://app.heygen.com/videos/the-hcmg-success-formula-10a0d31a…"
+              hint="Paste the URL from the HeyGen video page — share URL or embed URL both work."
+            />
+            <StudioButton variant="primary" size="sm" onClick={applyHeyGen}>
+              Apply
+            </StudioButton>
+          </div>
+          {heygenError && (
+            <div style={{ fontSize: 12, color: "#b91c1c", padding: "8px 12px", borderRadius: 7, background: "rgba(185,28,28,0.06)" }}>
+              ⚠ {heygenError}
+            </div>
+          )}
+          {videoToken.includes("heygen.com/embeds") && (
+            <div style={{ fontSize: 12, color: "#16a34a", display: "flex", alignItems: "center", gap: 6 }}>
+              <span>✓</span>
+              <span>HeyGen embed saved: <code style={{ background: "#f0fdf4", padding: "1px 5px", borderRadius: 3 }}>{videoToken}</code></span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Direct URL tab ── */}
+      {vTab === "url" && (
+        <div>
+          <FieldLabel>Video source URL or storage path</FieldLabel>
+          <div style={{ display: "flex", gap: 8 }}>
+            <StudioInput
+              value={videoToken}
+              onChange={e => onVideoTokenChange(e.target.value)}
+              placeholder="https://… or storage/path/video.mp4"
+              hint="Any direct HTTPS video URL, or a path in the uni-media storage bucket."
+            />
+            <StudioButton size="sm" variant="secondary" onClick={onOpenLibrary}>
+              📂 Library
+            </StudioButton>
+          </div>
+        </div>
+      )}
+
+      {/* ── Preview ── */}
+      {videoToken && (
+        <div style={{
+          borderRadius: 10, overflow: "hidden",
+          background: STUDIO_COLORS.navy, aspectRatio: "16/9",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          position: "relative",
+        }}>
+          {previewLoading && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ color: STUDIO_COLORS.textMuted, fontSize: 12 }}>Loading preview…</div>
+            </div>
+          )}
+          {/* iframe preview for embed URLs (HeyGen, Vimeo, etc.) */}
+          {isEmbed && !previewLoading && (
+            <iframe
+              src={videoToken}
+              title="Video preview"
+              allow="encrypted-media; fullscreen"
+              allowFullScreen
+              style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+            />
+          )}
+          {/* Native video preview for direct files */}
+          {!isEmbed && previewUrl && !previewLoading && (
+            <video
+              key={previewUrl}
+              src={previewUrl}
+              controls
+              playsInline
+              preload="metadata"
+              poster={thumbnailUrl || undefined}
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              onError={(e) => {
+                const v = e.currentTarget;
+                console.error("[Studio preview] video error:", v.error?.code, previewUrl?.slice(0, 80));
+              }}
+            />
+          )}
+          {!isEmbed && !previewUrl && !previewLoading && videoToken && (
+            <div style={{ textAlign: "center", color: STUDIO_COLORS.textMuted, padding: 20 }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>▶</div>
+              <div style={{ fontSize: 12 }}>Could not load preview — check the video URL</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Captions */}
+      <div>
+        <FieldLabel>Captions (VTT) URL</FieldLabel>
+        <div style={{ display: "flex", gap: 8 }}>
+          <StudioInput
+            value={captionUrl}
+            onChange={e => onCaptionUrlChange(e.target.value)}
+            placeholder="https://… or /captions/lesson-id.vtt"
+          />
+          <StudioButton size="sm" variant="secondary" onClick={onOpenCaptionLibrary}>
+            📂 Library
+          </StudioButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function LessonStudio({
   courseId, courseTitle, lesson: initialLesson, module, questions: initialQuestions, isAdmin,
 }: LessonStudioProps) {
@@ -1195,97 +1441,17 @@ export function LessonStudio({
           {tab === "media" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {(details.lesson_type === "video" || !details.lesson_type) && (
-                <div style={{
-                  background: STUDIO_COLORS.white, borderRadius: 12,
-                  border: `1px solid ${STUDIO_COLORS.border}`, padding: "20px 24px",
-                  display: "flex", flexDirection: "column", gap: 14,
-                }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: STUDIO_COLORS.text }}>Video</div>
-                  {/* Video upload area */}
-                  {!media.video_token && (
-                    <div style={{
-                      borderRadius: 10, background: "#f7f8fa",
-                      padding: "40px 24px",
-                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                      border: `1.5px dashed ${STUDIO_COLORS.border}`,
-                      gap: 12,
-                    }}>
-                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={STUDIO_COLORS.textLight} strokeWidth="1.4">
-                        <rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10,9 16,12 10,15" fill={STUDIO_COLORS.textLight} stroke="none"/>
-                      </svg>
-                      <StudioButton variant="primary" onClick={() => setPickerFor("video")}>Select video</StudioButton>
-                      <div style={{ fontSize: 12, color: STUDIO_COLORS.textMuted }}>
-                        Supported Files: .mp4, .mov, .avi, .mkv, .flv, .wmv, .webm
-                      </div>
-                    </div>
-                  )}
-                  {/* Video preview */}
-                  {media.video_token && (
-                    <div style={{
-                      borderRadius: 10, overflow: "hidden",
-                      background: STUDIO_COLORS.navy, aspectRatio: "16/9",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      position: "relative",
-                    }}>
-                      {previewLoading && (
-                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <div style={{ color: STUDIO_COLORS.textMuted, fontSize: 12 }}>Loading preview…</div>
-                        </div>
-                      )}
-                      {previewUrl && !previewLoading && (
-                        <video
-                          key={previewUrl}
-                          src={previewUrl}
-                          controls
-                          playsInline
-                          preload="metadata"
-                          poster={media.thumbnail_url || undefined}
-                          style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                          onError={(e) => {
-                            const v = e.currentTarget;
-                            const code = v.error?.code;
-                            console.error("[Studio preview] video error code:", code, "src:", previewUrl?.slice(0, 80));
-                          }}
-                        />
-                      )}
-                      {!previewUrl && !previewLoading && media.video_token && (
-                        <div style={{ textAlign: "center", color: STUDIO_COLORS.textMuted, padding: 20 }}>
-                          <div style={{ fontSize: 32, marginBottom: 8 }}>▶</div>
-                          <div style={{ fontSize: 12 }}>Could not load preview — check the video URL</div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <div>
-                    <FieldLabel>Video source URL or token</FieldLabel>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <StudioInput
-                        value={media.video_token}
-                        onChange={e => setMedia(m => ({ ...m, video_token: e.target.value }))}
-                        placeholder="https://share.heygen.com/… or storage path"
-                        hint="Stored securely — URL resolved server-side."
-                      />
-                      <StudioButton size="sm" variant="secondary" onClick={() => setPickerFor("video")}>
-                        📂 Library
-                      </StudioButton>
-                    </div>
-                  </div>
-
-                  <div>
-                    <FieldLabel>Captions (VTT) URL</FieldLabel>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <StudioInput
-                        value={media.caption_url}
-                        onChange={e => setMedia(m => ({ ...m, caption_url: e.target.value }))}
-                        placeholder="https://… or /captions/lesson-id.vtt"
-                      />
-                      <StudioButton size="sm" variant="secondary" onClick={() => setPickerFor("caption")}>
-                        📂 Library
-                      </StudioButton>
-                    </div>
-                  </div>
-                </div>
+                <VideoMediaPanel
+                  videoToken={media.video_token}
+                  captionUrl={media.caption_url}
+                  thumbnailUrl={media.thumbnail_url}
+                  previewUrl={previewUrl}
+                  previewLoading={previewLoading}
+                  onVideoTokenChange={val => setMedia(m => ({ ...m, video_token: val }))}
+                  onCaptionUrlChange={val => setMedia(m => ({ ...m, caption_url: val }))}
+                  onOpenLibrary={() => setPickerFor("video")}
+                  onOpenCaptionLibrary={() => setPickerFor("caption")}
+                />
               )}
 
               {details.lesson_type === "audio" && (

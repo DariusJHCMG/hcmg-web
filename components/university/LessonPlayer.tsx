@@ -288,16 +288,44 @@ export function LessonPlayer({
     );
   }
 
+  // HeyGen embed URL — render as iframe directly in the player
+  if (videoUrl.includes("heygen.com/embeds")) {
+    return (
+      <div style={{ borderRadius: 12, overflow: "hidden", background: "#000", aspectRatio: "16/9" }}>
+        <iframe
+          src={videoUrl}
+          title="Lesson video"
+          allow="encrypted-media; fullscreen; autoplay"
+          allowFullScreen
+          style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+        />
+      </div>
+    );
+  }
+
+  // HeyGen share/videos URL (not yet converted to embed) — show link fallback
   if (videoUrl.includes("heygen.com")) {
+    const embedId = videoUrl.match(/([a-f0-9]{32})/)?.[1];
+    const embedSrc = embedId ? `https://app.heygen.com/embeds/${embedId}` : null;
+    if (embedSrc) {
+      return (
+        <div style={{ borderRadius: 12, overflow: "hidden", background: "#000", aspectRatio: "16/9" }}>
+          <iframe
+            src={embedSrc}
+            title="Lesson video"
+            allow="encrypted-media; fullscreen; autoplay"
+            allowFullScreen
+            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+          />
+        </div>
+      );
+    }
     return (
       <div style={{
         borderRadius: 12, background: "linear-gradient(145deg,#071a2e,#0d2a48)",
         aspectRatio: "16/9",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16,
       }}>
-        <div style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>
-          HCMG <span style={{ color: "#f58220" }}>U</span>
-        </div>
         <a
           href={videoUrl} target="_blank" rel="noopener noreferrer"
           style={{
@@ -305,7 +333,6 @@ export function LessonPlayer({
             width: 72, height: 72, borderRadius: "50%",
             background: "linear-gradient(135deg,#FF9847,#F37021)",
             textDecoration: "none", fontSize: 26, color: "#fff",
-            boxShadow: "0 8px 32px rgba(245,130,32,0.4)",
           }}
         >▶</a>
         <p style={{ color: "#b9c5d0", fontSize: 13 }}>Click to open in HeyGen viewer</p>
