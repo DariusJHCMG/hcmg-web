@@ -1237,14 +1237,21 @@ export function LessonStudio({
                           key={previewUrl}
                           src={previewUrl}
                           controls
+                          playsInline
+                          preload="metadata"
                           poster={media.thumbnail_url || undefined}
                           style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                          onError={(e) => {
+                            const v = e.currentTarget;
+                            const code = v.error?.code;
+                            console.error("[Studio preview] video error code:", code, "src:", previewUrl?.slice(0, 80));
+                          }}
                         />
                       )}
-                      {!previewUrl && !previewLoading && (
+                      {!previewUrl && !previewLoading && media.video_token && (
                         <div style={{ textAlign: "center", color: STUDIO_COLORS.textMuted, padding: 20 }}>
                           <div style={{ fontSize: 32, marginBottom: 8 }}>▶</div>
-                          <div style={{ fontSize: 12 }}>Could not load preview</div>
+                          <div style={{ fontSize: 12 }}>Could not load preview — check the video URL</div>
                         </div>
                       )}
                     </div>
