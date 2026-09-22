@@ -11,8 +11,8 @@ import { useEffect, useRef, useState } from "react";
 //   • Native <video> tag  — for direct .mp4 / storage URLs
 //     → tracks timeupdate events; unlocks at UNLOCK_PCT (80%)
 //   • iframe embed        — for HeyGen, Vimeo, YouTube, etc.
-//     → tracks minimum dwell time (IFRAME_UNLOCK_SECS = 60s visible)
-//     → progress bar counts up in real time
+//     → user must click "Play Video" first; THEN 128s dwell timer starts
+//     → keeps timer in sync with the video
 //
 // Rules:
 //   • Blocks the entire UI until dismissed
@@ -48,9 +48,10 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
   const [videoError, setVideoError] = useState(false);
 
   // ── iframe dwell-time state ─────────────────────────────────────────────────
-  const dwellRef         = useRef(0);               // accumulated visible seconds
+  const dwellRef         = useRef(0);
   const dwellIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [dwellSecs,  setDwellSecs]  = useState(0);
+  const [dwellSecs,   setDwellSecs]   = useState(0);
+  const [videoStarted, setVideoStarted] = useState(false); // has the user clicked Play?
 
   // ── Shared ──────────────────────────────────────────────────────────────────
   const [canDismiss, setCanDismiss] = useState(false);
@@ -81,9 +82,13 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
     };
   }, [useIframe]);
 
-  // ── iframe: count visible dwell seconds ─────────────────────────────────────
+  // ── iframe: start dwell timer only AFTER user clicks Play ───────────────────
+  function handleStartVideo() {
+    setVideoStarted(true);
+  }
+
   useEffect(() => {
-    if (!useIframe) return;
+    if (!useIframe || !videoStarted) return;
 
     dwellIntervalRef.current = setInterval(() => {
       if (document.hidden) return; // only credit when tab is visible
@@ -99,7 +104,7 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
     return () => {
       if (dwellIntervalRef.current) clearInterval(dwellIntervalRef.current);
     };
-  }, [useIframe]);
+  }, [useIframe, videoStarted]);
 
   // ── Dismiss ─────────────────────────────────────────────────────────────────
   async function handleDismiss() {
@@ -157,7 +162,11 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
           </span>
         </div>
         <span style={{ fontSize: 12, color: canDismiss ? "#94a3b8" : "#3b4a5a" }}>
-          {canDismiss ? "Ready to continue ↓" : lockLabel}
+          {canDismiss
+            ? "Ready to continue ↓"
+            : !videoStarted && useIframe
+            ? "Press play to begin"
+            : lockLabel}
         </span>
       </div>
 
@@ -170,13 +179,59 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
         boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
       }}>
         {useIframe ? (
-          <iframe
-            src={embedSrc}
-            title="Welcome to HCMG University"
-            allow="encrypted-media; fullscreen; autoplay"
-            allowFullScreen
-            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-          />
+          !videoStarted ? (
+            /* ── Play splash — shown before user starts the video ── */
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center",
+              gap: 20,
+              background: "linear-gradient(145deg,#06182a,#0c2b4b)",
+            }}>
+              <div style={{
+                width: 72, height: 72, borderRadius: "50%",
+                background: "linear-gradient(135deg,#FF9847,#F37021)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer",
+                boxShadow: "0 0 0 12px rgba(245,130,32,0.15)",
+              }}
+                onClick={handleStartVideo}
+              >
+                {/* Play triangle */}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
+                  <polygon points="5,3 19,12 5,21"/>
+                </svg>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "Manrope, system-ui", marginBottom: 6 }}>
+                  A message from the CEO
+                </div>
+                <div style={{ fontSize: 13, color: "#687383" }}>
+                  Click play to watch — the timer starts when you do
+                </div>
+              </div>
+              <button
+                onClick={handleStartVideo}
+                style={{
+                  padding: "12px 32px", borderRadius: 10, border: "none",
+                  background: "linear-gradient(135deg,#FF9847,#F37021)",
+                  color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  letterSpacing: "-0.2px",
+                }}
+              >
+                ▶ Play Video
+              </button>
+            </div>
+          ) : (
+            /* ── iframe loads only after Play is clicked ── */
+            <iframe
+              src={embedSrc}
+              title="Welcome to HCMG University"
+              allow="encrypted-media; fullscreen; autoplay"
+              allowFullScreen
+              style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+            />
+          )
         ) : videoError ? (
           <div style={{
             position: "absolute", inset: 0,
@@ -256,6 +311,8 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
             ? "Saving…"
             : canDismiss
             ? "✓ I've watched it — Enter HCMG U"
+            : !videoStarted && useIframe
+            ? "🔒 Press play to start the video"
             : `🔒 ${lockLabel}`}
         </button>
       </div>
