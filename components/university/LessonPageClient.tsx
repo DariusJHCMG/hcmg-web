@@ -55,6 +55,8 @@ interface Props {
   prevLessonId: string | null;
   nextLessonId: string | null;
   initialWatchPct: number;
+  /** True if the user has already passed the quiz for this lesson in a previous visit */
+  initialQuizPassed?: boolean;
   completionMode?: string;
   completionThresholdPct?: number;
 }
@@ -62,11 +64,24 @@ interface Props {
 export function LessonPageClient({
   lessonId, courseId, courseSlug, courseTitle, lessonTitle, lessonDescription,
   lessonType, transcript, resources, quizQuestions, linkedAssessmentId,
-  prevLessonId, nextLessonId, initialWatchPct,
+  prevLessonId, nextLessonId, initialWatchPct, initialQuizPassed = false,
   completionMode = "watch_pct", completionThresholdPct = 80,
 }: Props) {
+  const hasQuiz = quizQuestions.length > 0;
+  const isVideoOrPres = !lessonType || lessonType === "video" || lessonType === "presentation";
+
   const [watchPct, setWatchPct]          = useState(initialWatchPct);
-  const [completed, setCompleted]        = useState(initialWatchPct >= completionThresholdPct);
+  // videoReady: video/text/audio portion is done
+  const [videoReady, setVideoReady]      = useState(initialWatchPct >= completionThresholdPct);
+  // quizPassed: quiz portion is done (only relevant when hasQuiz)
+  const [quizPassed, setQuizPassed]      = useState(initialQuizPassed);
+  // completed: the real gate — true only when ALL required portions are done
+  const completed = hasQuiz && isVideoOrPres
+    ? videoReady && quizPassed   // video lesson WITH quiz: need both
+    : hasQuiz
+      ? quizPassed               // text/etc with quiz: quiz is the gate
+      : videoReady;              // no quiz: video/text completion is the gate
+
   const [transcriptOpen, setTransOpen]   = useState(false);
   const [resourceLoading, setResLoading] = useState<string | null>(null);
   const [resourceError, setResError]     = useState<string | null>(null);
@@ -148,7 +163,7 @@ export function LessonPageClient({
             }}
             onServerComplete={() => {
               // Server has validated and recorded completion
-              setCompleted(true);
+              setVideoReady(true);
             }}
           />
         )}
@@ -158,7 +173,7 @@ export function LessonPageClient({
           <TextLessonEngine
             lessonId={lessonId}
             courseId={courseId}
-            onServerComplete={() => setCompleted(true)}
+            onServerComplete={() => setVideoReady(true)}
             onVerifiedProgress={pct => setWatchPct(pct)}
           >
             <div style={{
@@ -181,7 +196,7 @@ export function LessonPageClient({
           <TextLessonEngine
             lessonId={lessonId}
             courseId={courseId}
-            onServerComplete={() => setCompleted(true)}
+            onServerComplete={() => setVideoReady(true)}
             onVerifiedProgress={pct => setWatchPct(pct)}
           >
             {transcript ? (
@@ -205,7 +220,7 @@ export function LessonPageClient({
           <TextLessonEngine
             lessonId={lessonId}
             courseId={courseId}
-            onServerComplete={() => setCompleted(true)}
+            onServerComplete={() => setVideoReady(true)}
             onVerifiedProgress={pct => setWatchPct(pct)}
           >
             <div style={{
@@ -231,7 +246,7 @@ export function LessonPageClient({
         {/* Manual completion button */}
         {completionMode === "manual" && !completed && (lessonType === "video" || lessonType === "presentation" || !lessonType) && (
           <button
-            onClick={() => { setCompleted(true); saveProgress(watchPct, true); }}
+            onClick={() => { setVideoReady(true); saveProgress(watchPct, true); }}
             style={{
               marginTop: 16, width: "100%", padding: "13px", borderRadius: 10,
               background: "rgba(245,130,32,0.08)", border: "1.5px solid rgba(245,130,32,0.3)",
@@ -337,12 +352,12 @@ export function LessonPageClient({
         {quizQuestions.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <QuizBlock
-              lessonId={lessonId}
-              questions={quizQuestions}
-              onPassed={() => setCompleted(true)}
-              nextLessonId={nextLessonId}
-              courseSlug={courseSlug}
-            />
+                lessonId={lessonId}
+                questions={quizQuestions}
+                onPassed={() => setQuizPassed(true)}
+                nextLessonId={null}
+                courseSlug={undefined}
+              />
           </div>
         )}
 
@@ -358,21 +373,59 @@ export function LessonPageClient({
           ) : <div />}
 
           {nextLessonId ? (
-            <Link href={`/university/lesson/${nextLessonId}`} style={{
-              padding: "12px 20px", borderRadius: 10,
-              background: "linear-gradient(135deg,#FF9847,#F37021)",
-              color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none",
-            }}>
-              Next lesson →
-            </Link>
+            completed ? (
+              <Link href={`/university/lesson/${nextLessonId}`} style={{
+                padding: "12px 20px", borderRadius: 10,
+                background: "linear-gradient(135deg,#FF9847,#F37021)",
+                color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none",
+              }}>
+                Next lesson →
+              </Link>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                <button disabled style={{
+                  padding: "12px 20px", borderRadius: 10,
+                  background: "#e2e8f0", color: "#9ca3af",
+                  fontWeight: 700, fontSize: 13, border: "none", cursor: "not-allowed",
+                }}>
+                  🔒 Next lesson
+                </button>
+                <span style={{ fontSize: 11, color: "#9ca3af" }}>
+                  {quizQuestions.length > 0
+                    ? "Pass the knowledge check to continue"
+                    : lessonType === "text" || lessonType === "assignment" || lessonType === "audio"
+                      ? "Complete the reading to continue"
+                      : "Finish watching to continue"}
+                </span>
+              </div>
+            )
           ) : (
-            <Link href={`/university/course/${courseSlug}`} style={{
-              padding: "12px 20px", borderRadius: 10,
-              background: "linear-gradient(135deg,#FF9847,#F37021)",
-              color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none",
-            }}>
-              Back to course ✓
-            </Link>
+            completed ? (
+              <Link href={`/university/course/${courseSlug}`} style={{
+                padding: "12px 20px", borderRadius: 10,
+                background: "linear-gradient(135deg,#FF9847,#F37021)",
+                color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none",
+              }}>
+                Back to course ✓
+              </Link>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                <button disabled style={{
+                  padding: "12px 20px", borderRadius: 10,
+                  background: "#e2e8f0", color: "#9ca3af",
+                  fontWeight: 700, fontSize: 13, border: "none", cursor: "not-allowed",
+                }}>
+                  🔒 Back to course
+                </button>
+                <span style={{ fontSize: 11, color: "#9ca3af" }}>
+                  {quizQuestions.length > 0
+                    ? "Pass the knowledge check to continue"
+                    : lessonType === "text" || lessonType === "assignment" || lessonType === "audio"
+                      ? "Complete the reading to continue"
+                      : "Finish watching to continue"}
+                </span>
+              </div>
+            )
           )}
         </div>
       </div>

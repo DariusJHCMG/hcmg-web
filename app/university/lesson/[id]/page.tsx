@@ -92,6 +92,16 @@ export default async function LessonPage({ params }: Props) {
     .eq("lesson_id", id)
     .maybeSingle();
 
+  // Check if this user has already passed the quiz for this lesson
+  const { data: passingAttempt } = await sb
+    .from("uni_quiz_attempts")
+    .select("id")
+    .eq("profile_id", profile.id)
+    .eq("lesson_id", id)
+    .eq("passed", true)
+    .limit(1)
+    .maybeSingle();
+
   return (
     <LessonPageClient
       lessonId={lesson.id}
@@ -108,6 +118,7 @@ export default async function LessonPage({ params }: Props) {
       prevLessonId={prevId}
       nextLessonId={nextId}
       initialWatchPct={progress?.watch_pct ?? 0}
+      initialQuizPassed={!!passingAttempt}
       completionMode={lesson.completion_mode ?? "watch_pct"}
       completionThresholdPct={lesson.completion_threshold_pct ?? 80}
     />
