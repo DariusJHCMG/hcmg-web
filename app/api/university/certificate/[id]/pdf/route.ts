@@ -3,29 +3,15 @@ import { createServiceClient } from "@/lib/supabase";
 import { getCurrentProfile } from "@/lib/auth";
 import QRCode from "qrcode";
 
-// GET /api/university/certificate/[id]/pdf
-//
-// Returns a print-ready HTML page styled as a professional certificate.
-// The browser's native print dialog (Ctrl+P → Save as PDF) produces a clean PDF.
-// This approach requires zero native binary dependencies and works in all environments.
-//
-// Security:
-//   - Authenticated learners may only download their own certificates.
-//   - university_admin may download any certificate (for HR records).
-//   - No certificate data is leaked to unauthorized users.
-
 interface Params { params: Promise<{ id: string }> }
 
 export async function GET(request: NextRequest, { params }: Params) {
   const { id } = await params;
   const profile = await getCurrentProfile();
-  if (!profile) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  if (!profile) return new NextResponse("Unauthorized", { status: 401 });
 
   const sb = createServiceClient();
 
-  // Fetch certificate with course and learner info
   const { data: cert } = await sb
     .from("uni_certificates")
     .select(`
@@ -38,11 +24,8 @@ export async function GET(request: NextRequest, { params }: Params) {
     .is("revoked_at", null)
     .maybeSingle();
 
-  if (!cert) {
-    return new NextResponse("Certificate not found", { status: 404 });
-  }
+  if (!cert) return new NextResponse("Certificate not found", { status: 404 });
 
-  // Authorization: learner can only view their own cert; admin can view any
   const isAdmin = profile.university_role === "university_admin"
     || profile.role === "admin"
     || profile.role === "developer";
@@ -51,18 +34,18 @@ export async function GET(request: NextRequest, { params }: Params) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 
-  const courseInfo  = cert.uni_courses  as unknown as { title: string } | null;
-  const profileInfo = cert.profiles     as unknown as { full_name: string } | null;
-  const courseTitle = courseInfo?.title ?? "HCMG U Course";
+  const courseInfo  = cert.uni_courses as unknown as { title: string } | null;
+  const profileInfo = cert.profiles    as unknown as { full_name: string } | null;
+  const courseTitle = courseInfo?.title    ?? "HCMG U Course";
   const learnerName = profileInfo?.full_name ?? "Team Member";
 
-  const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com"}/university/verify/${cert.verification_id}`;
+  const BASE_URL   = process.env.NEXT_PUBLIC_SITE_URL ?? "https://portal.hcmgloans.com";
+  const verifyUrl  = `${BASE_URL}/university/verify/${cert.verification_id}`;
 
-  // Generate QR code as data URI
   const qrDataUri = await QRCode.toDataURL(verifyUrl, {
-    width:  160,
+    width:  140,
     margin: 1,
-    color:  { dark: "#071a2e", light: "#ffffff" },
+    color:  { dark: "#06182a", light: "#ffffff" },
   });
 
   const issuedDate  = new Date(cert.issued_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
@@ -77,234 +60,294 @@ export async function GET(request: NextRequest, { params }: Params) {
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Certificate — ${learnerName} — ${courseTitle}</title>
+<title>Certificate — ${e(learnerName)} — ${e(courseTitle)}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 100%; height: 100%; background: #f0f2f5; }
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; background: #e8ecf0; font-family: 'DM Sans', -apple-system, system-ui, sans-serif; }
 
   @media screen {
-    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 32px 16px; flex-direction: column; gap: 20px; }
-    .print-hint { font-family: -apple-system, system-ui, sans-serif; font-size: 13px; color: #57606a; text-align: center; }
-    .print-hint strong { color: #1f2328; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 20px; gap: 24px; }
+    .ui-bar { display: flex; align-items: center; gap: 12px; }
+    .ui-hint { font-size: 13px; color: #57606a; font-family: -apple-system, system-ui, sans-serif; }
     .print-btn {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 11px 24px; border-radius: 9px;
       background: linear-gradient(135deg,#FF9847,#F37021);
       color: #fff; font-family: -apple-system, system-ui, sans-serif;
-      font-size: 14px; font-weight: 700; border: none; cursor: pointer;
-      text-decoration: none;
+      font-size: 14px; font-weight: 700; border: none; cursor: pointer; text-decoration: none;
     }
   }
   @media print {
-    .print-hint, .print-btn { display: none !important; }
-    body { background: #fff; display: block; padding: 0; }
-    .cert { box-shadow: none !important; page-break-inside: avoid; }
+    html, body { background: #fff; }
+    .ui-bar, .ui-hint { display: none !important; }
+    @page { size: landscape; margin: 0; }
+    .cert { box-shadow: none !important; border-radius: 0 !important; page-break-inside: avoid; width: 100vw !important; height: 100vh !important; }
   }
 
+  /* ── Certificate shell ───────────────────────────── */
   .cert {
-    width: 760px;
+    width: 960px;
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 8px 40px rgba(7,26,46,.18);
-    font-family: 'DM Sans', -apple-system, system-ui, sans-serif;
+    box-shadow: 0 20px 80px rgba(6,24,42,.22);
     position: relative;
   }
 
-  /* Gold border stripe at top */
-  .cert-top-stripe {
-    height: 6px;
-    background: linear-gradient(90deg, #f58220, #d4a017, #f58220);
+  /* Top accent bar */
+  .cert-accent-top {
+    height: 8px;
+    background: linear-gradient(90deg, #f58220 0%, #d4a017 50%, #f58220 100%);
   }
 
+  /* Dark header band */
+  .cert-header-band {
+    background: linear-gradient(135deg, #06182a 0%, #0d2d50 60%, #06182a 100%);
+    padding: 36px 56px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Decorative circles in header */
+  .cert-header-band::before {
+    content: '';
+    position: absolute;
+    right: -60px; top: -80px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    border: 2px solid rgba(245,130,32,0.12);
+  }
+  .cert-header-band::after {
+    content: '';
+    position: absolute;
+    right: 20px; top: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    border: 2px solid rgba(245,130,32,0.08);
+  }
+
+  .cert-logo-area { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
+  .cert-logo-icon {
+    width: 52px; height: 52px; border-radius: 12px;
+    background: linear-gradient(135deg,#FF9847,#F37021);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 900; color: #fff;
+    font-family: 'Manrope', system-ui; flex-shrink: 0;
+  }
+  .cert-logo-text .org-name {
+    font-size: 20px; font-weight: 900; color: #fff;
+    font-family: 'Manrope', system-ui; letter-spacing: -0.3px; line-height: 1;
+  }
+  .cert-logo-text .org-sub {
+    font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.45);
+    letter-spacing: 1.8px; text-transform: uppercase; margin-top: 4px;
+  }
+
+  .cert-official-badge {
+    position: relative; z-index: 1;
+    text-align: right;
+  }
+  .cert-official-badge .badge-label {
+    font-size: 9px; font-weight: 800; letter-spacing: 2.5px;
+    text-transform: uppercase; color: #f58220;
+    border: 1.5px solid rgba(245,130,32,0.4);
+    padding: 5px 14px; border-radius: 20px;
+    background: rgba(245,130,32,0.08);
+    display: inline-block; margin-bottom: 6px;
+  }
+  .cert-official-badge .badge-sub {
+    font-size: 10px; color: rgba(255,255,255,0.35); display: block;
+  }
+
+  /* Main body */
   .cert-body {
-    padding: 48px 56px 40px;
+    padding: 44px 56px 36px;
     position: relative;
   }
 
-  /* Watermark hex */
+  /* Subtle watermark H */
   .cert-watermark {
     position: absolute;
-    right: 48px; top: 40px;
-    width: 80px; height: 80px;
-    opacity: 0.04;
-    font-size: 72px;
-    font-weight: 900;
-    color: #071a2e;
+    right: 48px; top: 30px;
+    font-size: 180px; font-weight: 900; line-height: 1;
+    color: #06182a; opacity: 0.025;
     font-family: 'Manrope', system-ui;
-    line-height: 1;
-    user-select: none;
+    user-select: none; pointer-events: none;
   }
 
-  .cert-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 36px;
+  /* Content layout */
+  .cert-content { display: flex; gap: 40px; align-items: flex-start; }
+  .cert-main { flex: 1; min-width: 0; }
+  .cert-side { width: 160px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+  .cert-presented-to {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: #687383; margin-bottom: 10px;
   }
 
-  .cert-brand { display: flex; align-items: center; gap: 12px; }
-  .cert-hex {
-    width: 44px; height: 44px;
-    background: #f58220;
-    clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; font-weight: 900; color: #fff;
-    font-family: 'Manrope', system-ui;
-  }
-  .cert-brand-text { line-height: 1.2; }
-  .cert-brand-text .org { font-size: 15px; font-weight: 800; color: #071a2e; font-family: 'Manrope', system-ui; }
-  .cert-brand-text .dept { font-size: 11px; color: #687383; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
-
-  .cert-type-badge {
-    font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
-    color: #f58220; border: 1.5px solid rgba(245,130,32,.3);
-    padding: 4px 12px; border-radius: 20px; background: rgba(245,130,32,.06);
+  .cert-name {
+    font-size: 48px; font-weight: 800; color: #06182a;
+    font-family: 'Manrope', system-ui; letter-spacing: -2px;
+    line-height: 1.05; margin-bottom: 0;
   }
 
-  .cert-presented {
-    font-size: 12px; color: #687383; font-weight: 600; letter-spacing: 0.5px;
-    text-transform: uppercase; margin-bottom: 8px;
+  .cert-divider {
+    width: 64px; height: 3px; margin: 16px 0;
+    background: linear-gradient(90deg,#f58220,#d4a017);
+    border-radius: 2px;
   }
 
-  .cert-learner {
-    font-size: 38px; font-weight: 800; color: #071a2e;
-    font-family: 'Manrope', system-ui; letter-spacing: -1px;
-    line-height: 1.1; margin-bottom: 20px;
-    border-bottom: 2px solid #f58220; padding-bottom: 16px;
+  .cert-completing {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: #687383; margin-bottom: 8px;
   }
 
-  .cert-for {
-    font-size: 12px; color: #687383; font-weight: 600; letter-spacing: 0.5px;
-    text-transform: uppercase; margin-bottom: 10px;
-  }
   .cert-course {
-    font-size: 22px; font-weight: 800; color: #071a2e;
+    font-size: 24px; font-weight: 800; color: #06182a;
     font-family: 'Manrope', system-ui; letter-spacing: -0.5px;
-    line-height: 1.3; margin-bottom: 28px;
+    line-height: 1.25; margin-bottom: 28px;
   }
 
-  .cert-details-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0;
+  /* Detail boxes */
+  .cert-details {
+    display: flex; gap: 0;
     border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 32px;
+    border-radius: 10px; overflow: hidden;
   }
   .cert-detail {
-    padding: 14px 16px;
+    flex: 1; padding: 12px 16px;
     border-right: 1px solid #e5e7eb;
   }
   .cert-detail:last-child { border-right: none; }
   .cert-detail-label {
     font-size: 9px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.2px; color: #687383; margin-bottom: 4px;
+    letter-spacing: 1.2px; color: #9ca3af; margin-bottom: 4px;
   }
   .cert-detail-value {
-    font-size: 13px; font-weight: 700; color: #071a2e;
+    font-size: 13px; font-weight: 700; color: #06182a;
   }
-  .cert-detail-value.expires { color: ${expiresDate ? "#b23b3b" : "#34d399"}; }
+  .cert-detail-value.green { color: #16a34a; }
+  .cert-detail-value.red   { color: #b23b3b; }
 
+  /* QR side */
+  .cert-qr-img { width: 100px; height: 100px; display: block; }
+  .cert-qr-label {
+    font-size: 8px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: #9ca3af; text-align: center;
+  }
+  .cert-qr-id {
+    font-size: 11px; font-family: monospace; font-weight: 700;
+    color: #06182a; text-align: center;
+  }
+
+  /* Footer */
   .cert-footer {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding-top: 24px;
-    border-top: 1px solid #e5e7eb;
+    padding: 20px 56px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid #f0f2f5;
   }
+  .cert-sig { }
+  .cert-sig-line { width: 180px; height: 1px; background: #06182a; margin-bottom: 6px; }
+  .cert-sig-name { font-size: 13px; font-weight: 800; color: #06182a; }
+  .cert-sig-title { font-size: 10px; color: #9ca3af; font-weight: 500; margin-top: 2px; }
 
-  .cert-sig-block { }
-  .cert-sig-line {
-    width: 200px; height: 1px; background: #071a2e; margin-bottom: 6px;
-  }
-  .cert-sig-name { font-size: 14px; font-weight: 800; color: #071a2e; }
-  .cert-sig-title { font-size: 11px; color: #687383; }
+  .cert-verify-info { text-align: right; }
+  .cert-verify-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #9ca3af; margin-bottom: 3px; }
+  .cert-verify-url { font-size: 10px; color: #687383; word-break: break-all; }
 
-  .cert-qr-block { text-align: center; }
-  .cert-qr-block img { width: 80px; height: 80px; display: block; margin: 0 auto 4px; }
-  .cert-qr-label { font-size: 9px; color: #687383; letter-spacing: 0.5px; text-transform: uppercase; }
-  .cert-qr-code { font-size: 10px; font-family: monospace; color: #071a2e; font-weight: 700; margin-top: 2px; }
-
-  .cert-bottom-stripe {
-    height: 4px;
-    background: linear-gradient(90deg, #071a2e, #0c2b4b, #071a2e);
+  /* Bottom accent bar */
+  .cert-accent-bottom {
+    height: 6px;
+    background: linear-gradient(90deg, #06182a 0%, #0d2d50 50%, #06182a 100%);
   }
 </style>
 </head>
 <body>
 
-<div class="print-hint">
-  <p style="margin-bottom:12px;">
-    <strong>${learnerName}</strong> — Certificate of Completion for <strong>${courseTitle}</strong>
-  </p>
-  <button class="print-btn" onclick="window.print()">⬇ Download / Print PDF</button>
+<div class="ui-bar">
+  <span class="ui-hint"><strong>${e(learnerName)}</strong> · Certificate of Completion · <strong>${e(courseTitle)}</strong></span>
+  <button class="print-btn" onclick="window.print()">⬇ Save as PDF</button>
 </div>
 
 <div class="cert">
-  <div class="cert-top-stripe"></div>
+  <div class="cert-accent-top"></div>
 
+  <!-- Header band -->
+  <div class="cert-header-band">
+    <div class="cert-logo-area">
+      <div class="cert-logo-icon">H</div>
+      <div class="cert-logo-text">
+        <div class="org-name">HCMG University</div>
+        <div class="org-sub">Harris Capital Mortgage Group</div>
+      </div>
+    </div>
+    <div class="cert-official-badge">
+      <span class="badge-label">Official Certificate</span>
+      <span class="badge-sub">Certificate of Completion</span>
+    </div>
+  </div>
+
+  <!-- Body -->
   <div class="cert-body">
     <div class="cert-watermark">H</div>
 
-    <div class="cert-header">
-      <div class="cert-brand">
-        <div class="cert-hex">H</div>
-        <div class="cert-brand-text">
-          <div class="org">HCMG University</div>
-          <div class="dept">Certificate of Completion</div>
+    <div class="cert-content">
+      <div class="cert-main">
+        <p class="cert-presented-to">This certificate is proudly presented to</p>
+        <h1 class="cert-name">${e(learnerName)}</h1>
+        <div class="cert-divider"></div>
+        <p class="cert-completing">For successfully completing</p>
+        <h2 class="cert-course">${e(courseTitle)}</h2>
+
+        <div class="cert-details">
+          <div class="cert-detail">
+            <div class="cert-detail-label">Date Issued</div>
+            <div class="cert-detail-value">${issuedDate}</div>
+          </div>
+          <div class="cert-detail">
+            <div class="cert-detail-label">${expiresDate ? "Expires" : "Valid"}</div>
+            <div class="cert-detail-value ${expiresDate ? "red" : "green"}">${expiresDate ?? "No expiration"}</div>
+          </div>
+          <div class="cert-detail">
+            <div class="cert-detail-label">Certificate ID</div>
+            <div class="cert-detail-value">${verificationShort}</div>
+          </div>
         </div>
       </div>
-      <div class="cert-type-badge">Official Certificate</div>
-    </div>
 
-    <p class="cert-presented">This certificate is proudly presented to</p>
-    <div class="cert-learner">${escapeHtml(learnerName)}</div>
-
-    <p class="cert-for">For successfully completing</p>
-    <div class="cert-course">${escapeHtml(courseTitle)}</div>
-
-    <div class="cert-details-row">
-      <div class="cert-detail">
-        <div class="cert-detail-label">Date Issued</div>
-        <div class="cert-detail-value">${issuedDate}</div>
-      </div>
-      <div class="cert-detail">
-        <div class="cert-detail-label">${expiresDate ? "Expires" : "Valid"}</div>
-        <div class="cert-detail-value expires">${expiresDate ?? "No expiration"}</div>
-      </div>
-      <div class="cert-detail">
-        <div class="cert-detail-label">Certificate ID</div>
-        <div class="cert-detail-value">${verificationShort}</div>
-      </div>
-    </div>
-
-    <div class="cert-footer">
-      <div class="cert-sig-block">
-        <div class="cert-sig-line"></div>
-        <div class="cert-sig-name">HCMG University</div>
-        <div class="cert-sig-title">Training &amp; Development</div>
-      </div>
-
-      <div class="cert-qr-block">
-        <img src="${qrDataUri}" alt="Verification QR Code"/>
-        <div class="cert-qr-label">Verify this certificate</div>
-        <div class="cert-qr-code">${verificationShort}</div>
+      <div class="cert-side">
+        <img class="cert-qr-img" src="${qrDataUri}" alt="Verify QR"/>
+        <div class="cert-qr-label">Verify Certificate</div>
+        <div class="cert-qr-id">${verificationShort}</div>
       </div>
     </div>
   </div>
 
-  <div class="cert-bottom-stripe"></div>
+  <!-- Footer -->
+  <div class="cert-footer">
+    <div class="cert-sig">
+      <div class="cert-sig-line"></div>
+      <div class="cert-sig-name">HCMG University</div>
+      <div class="cert-sig-title">Training &amp; Development · Harris Capital Mortgage Group</div>
+    </div>
+    <div class="cert-verify-info">
+      <div class="cert-verify-label">Verify at</div>
+      <div class="cert-verify-url">${verifyUrl}</div>
+    </div>
+  </div>
+
+  <div class="cert-accent-bottom"></div>
 </div>
 
-<div class="print-hint" style="margin-top:8px;">
-  <p>Verify at: <a href="${verifyUrl}" style="color:#3b82d4;">${verifyUrl}</a></p>
+<div class="ui-hint" style="font-size:11px;">
+  Scan the QR code or visit <a href="${verifyUrl}" style="color:#3b82d4;">${verifyUrl}</a> to verify this certificate.
 </div>
 
 <script>
-  // Auto-trigger print dialog when ?print=1 is appended
   if (new URLSearchParams(window.location.search).get('print') === '1') {
     window.addEventListener('load', () => setTimeout(() => window.print(), 400));
   }
@@ -315,15 +358,11 @@ export async function GET(request: NextRequest, { params }: Params) {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "no-store, no-cache",
-      // When ?download=1 is added, trigger a download
-      ...(new URL(request.url).searchParams.get("download") === "1"
-        ? { "Content-Disposition": `attachment; filename="HCMG-U-Certificate-${verificationShort}.html"` }
-        : {}),
     },
   });
 }
 
-function escapeHtml(str: string): string {
+function e(str: string): string {
   return str
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
