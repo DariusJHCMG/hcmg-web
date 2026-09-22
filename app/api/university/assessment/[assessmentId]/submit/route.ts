@@ -86,9 +86,16 @@ export async function POST(request: NextRequest, { params }: Props) {
     return NextResponse.json({ error: "Questions not found" }, { status: 404 });
   }
 
-  // Sort questions by assessment order
+  // Sort questions by assessment order, restricted to only the questions the
+  // client was actually shown (i.e. present in the answers object).
+  // The assessment draws a random subset (questions_to_draw) — grading must
+  // only count questions that were presented, not all linked questions.
+  const answeredIds = new Set(Object.keys(answers));
   const qMap   = new Map(questions.map(q => [q.id, q]));
-  const sorted = linked.map(l => qMap.get(l.question_id)).filter(Boolean) as typeof questions;
+  const sorted = linked
+    .filter(l => answeredIds.has(l.question_id))
+    .map(l => qMap.get(l.question_id))
+    .filter(Boolean) as typeof questions;
 
   // Grade
   let gradableCount = 0;
