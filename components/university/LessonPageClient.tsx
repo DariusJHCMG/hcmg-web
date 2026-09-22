@@ -109,19 +109,14 @@ export function LessonPageClient({
         {(!lessonType || lessonType === "video" || lessonType === "presentation") && (
           <LessonPlayer
             lessonId={lessonId}
-            onProgress={pct => {
+            courseId={courseId}
+            onVerifiedProgress={pct => {
+              // Server-verified percentage — update UI only, no client completion
               setWatchPct(pct);
-              saveProgress(pct);
-              if (completionMode === "watch_pct" && pct >= completionThresholdPct && !completed) {
-                setCompleted(true);
-                saveProgress(pct, true);
-              }
             }}
-            onComplete={() => {
-              if (completionMode !== "quiz_pass") {
-                setCompleted(true);
-                saveProgress(100, true);
-              }
+            onServerComplete={() => {
+              // Server has validated and recorded completion
+              setCompleted(true);
             }}
           />
         )}
