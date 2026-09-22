@@ -34,7 +34,7 @@ interface SearchResult {
 interface Props {
   courses: UniCourse[];
   enrolledIds: string[];
-  progressMap: Record<string, { completed: number; total: number }>;
+  progressMap: Record<string, { completed: number; total: number; started?: boolean }>;
 }
 
 export function UniversitySearchClient({ courses, enrolledIds, progressMap }: Props) {

@@ -32,10 +32,28 @@ export default async function SearchPage() {
     .eq("profile_id", profile.id);
 
   const enrolledIds = new Set((enrollments ?? []).map(e => e.course_id));
-  const progressMap: Record<string, { completed: number; total: number }> = {};
+  const enrolledIdList = [...enrolledIds];
+
+  // Fetch actual published lesson counts so pct is based on real totals
+  const lessonCountMap: Record<string, number> = {};
+  if (enrolledIdList.length > 0) {
+    const { data: lessonCounts } = await sb
+      .from("uni_lessons")
+      .select("course_id")
+      .in("course_id", enrolledIdList)
+      .eq("is_published", true);
+    for (const l of (lessonCounts ?? [])) {
+      lessonCountMap[l.course_id] = (lessonCountMap[l.course_id] ?? 0) + 1;
+    }
+  }
+
+  const progressMap: Record<string, { completed: number; total: number; started: boolean }> = {};
+  for (const courseId of enrolledIdList) {
+    progressMap[courseId] = { completed: 0, total: lessonCountMap[courseId] ?? 0, started: false };
+  }
   for (const p of (progress ?? [])) {
-    if (!progressMap[p.course_id]) progressMap[p.course_id] = { completed: 0, total: 0 };
-    progressMap[p.course_id].total++;
+    if (!progressMap[p.course_id]) progressMap[p.course_id] = { completed: 0, total: lessonCountMap[p.course_id] ?? 0, started: false };
+    progressMap[p.course_id].started = true;
     if (p.completed) progressMap[p.course_id].completed++;
   }
 

@@ -12,16 +12,17 @@ const PILL_COLORS: Record<string, { bg: string; color: string; label: string }> 
 
 interface Props {
   course: UniCourse;
-  progress?: { completed: number; total: number };
+  progress?: { completed: number; total: number; started?: boolean };
   isEnrolled?: boolean;
 }
 
 export function CourseCard({ course, progress, isEnrolled }: Props) {
-  const pill   = PILL_COLORS[course.pill_color ?? "gray"] ?? PILL_COLORS.gray;
-  const pct    = progress && progress.total > 0
+  const pill    = PILL_COLORS[course.pill_color ?? "gray"] ?? PILL_COLORS.gray;
+  const pct     = progress && progress.total > 0
     ? Math.round((progress.completed / progress.total) * 100)
     : 0;
-  const status = !isEnrolled ? "Enroll" : pct === 0 ? "Start" : pct === 100 ? "Review" : "Continue";
+  const started = progress?.started ?? (pct > 0);
+  const status  = !isEnrolled ? "Enroll" : pct === 100 ? "Review" : started ? "Continue" : "Start";
 
   return (
     <Link href={`/university/course/${course.slug}`} style={{ textDecoration: "none" }}>
@@ -102,12 +103,14 @@ export function CourseCard({ course, progress, isEnrolled }: Props) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
             <span style={{ fontSize: 11, color: "#687383" }}>{course.duration_label ?? ""}</span>
             {isEnrolled && progress && progress.total > 0 ? (
-              pct === 100 ? (
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#34d399" }}>✓ Complete</span>
+                pct === 100 ? (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#34d399" }}>✓ Complete</span>
+                ) : started ? (
+                  <span style={{ fontSize: 11, color: "#f58220", fontWeight: 600 }}>{pct > 0 ? `${pct}% done` : "In progress"}</span>
+                ) : (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#f58220", background: "rgba(245,130,32,0.12)", padding: "2px 8px", borderRadius: 4 }}>Start</span>
+                )
               ) : (
-                <span style={{ fontSize: 11, color: "#f58220", fontWeight: 600 }}>{pct}% done</span>
-              )
-            ) : (
               <span style={{
                 fontSize: 10, fontWeight: 700, color: "#f58220",
                 background: "rgba(245,130,32,0.12)", padding: "2px 8px", borderRadius: 4,

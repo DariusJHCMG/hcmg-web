@@ -43,8 +43,9 @@ export default async function CoursePage({ params }: Props) {
     sb.from("uni_assessments").select("id, title, assessment_type, passing_pct, is_required, is_active").eq("course_id", course.id).eq("is_active", true).order("created_at"),
   ]);
 
-  const progressMap = new Map((progressRows ?? []).map(p => [p.lesson_id, p]));
+  const progressMap    = new Map((progressRows ?? []).map(p => [p.lesson_id, p]));
   const completedCount = (progressRows ?? []).filter(p => p.completed).length;
+  const startedCount   = (progressRows ?? []).length; // any row = lesson has been opened
   const totalCount     = (lessons ?? []).length;
   const pct            = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const nextLesson     = (lessons ?? []).find(l => !progressMap.get(l.id)?.completed);
@@ -182,7 +183,7 @@ export default async function CoursePage({ params }: Props) {
                     background: `linear-gradient(135deg,#FF9847,#F37021)`,
                     color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none",
                   }}>
-                    {completedCount === 0 ? "Start course ▶" : "Continue →"}
+                    {startedCount === 0 ? "Start course ▶" : "Continue →"}
                   </Link>
                 ) : cert ? (
                   <span style={{ fontSize: 14, fontWeight: 700, color: S.green }}>✓ Certificate earned {new Date(cert.issued_at).toLocaleDateString()}</span>

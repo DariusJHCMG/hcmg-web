@@ -27,7 +27,7 @@ interface Props {
   profileName: string;
   courses: UniCourse[];
   enrolledCourseIds: string[];
-  progressMap: Record<string, { completed: number; total: number }>;
+  progressMap: Record<string, { completed: number; total: number; started?: boolean }>;
   completedLessons: number;
   activePaths: number;
   continueLesson: ContinueLesson | null;
