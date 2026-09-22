@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
-import { getCurrentProfile, hasUniversityAccess, logUniAudit } from "@/lib/auth";
+import { getCurrentProfile, hasUniversityAccess, isUniversityAdmin, isUniversityTrainer, logUniAudit } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   const profile = await getCurrentProfile();
@@ -13,32 +13,50 @@ export async function GET(request: NextRequest) {
   if (!lessonId) return NextResponse.json({ error: "Missing lesson_id" }, { status: 400 });
 
   const sb = createServiceClient();
+  const isAdmin = isUniversityAdmin(profile) || isUniversityTrainer(profile);
 
-  // Verify the user is enrolled in the course that contains this lesson
-  const { data: lesson } = await sb
+  // Admins/trainers can preview any lesson regardless of publish status.
+  // Learners can only access published lessons they are enrolled in.
+  let query = sb
     .from("uni_lessons")
     .select("id, video_token, course_id")
-    .eq("id", lessonId)
-    .eq("is_published", true)
-    .single();
+    .eq("id", lessonId);
+
+  if (!isAdmin) query = query.eq("is_published", true);
+
+  const { data: lesson } = await query.single();
 
   if (!lesson) return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
 
-  const { data: enrollment } = await sb
-    .from("uni_enrollments")
-    .select("id")
-    .eq("profile_id", profile.id)
-    .eq("course_id", lesson.course_id)
-    .maybeSingle();
+  if (!isAdmin) {
+    const { data: enrollment } = await sb
+      .from("uni_enrollments")
+      .select("id")
+      .eq("profile_id", profile.id)
+      .eq("course_id", lesson.course_id)
+      .maybeSingle();
 
-  if (!enrollment) return NextResponse.json({ error: "Not enrolled" }, { status: 403 });
+    if (!enrollment) return NextResponse.json({ error: "Not enrolled" }, { status: 403 });
+  }
 
   if (!lesson.video_token) return NextResponse.json({ url: null });
 
-  // The video_token is the real HeyGen share URL (stored server-side only).
-  // In production, replace this with your token→signed-URL resolution logic
-  // (e.g. Supabase Storage createSignedUrl, or a HeyGen API call).
-  const videoUrl = lesson.video_token;
+  let videoUrl: string;
+
+  // Storage path (no protocol prefix) → resolve to a signed URL
+  if (!lesson.video_token.startsWith("http")) {
+    const { data: signed, error: signErr } = await sb.storage
+      .from("uni-media")
+      .createSignedUrl(lesson.video_token, 60 * 60); // 1-hour expiry
+
+    if (signErr || !signed?.signedUrl) {
+      return NextResponse.json({ error: "Could not generate video URL" }, { status: 500 });
+    }
+    videoUrl = signed.signedUrl;
+  } else {
+    // Already a full URL (HeyGen share link, external CDN, etc.)
+    videoUrl = lesson.video_token;
+  }
 
   await logUniAudit("video_accessed", {
     actorId: profile.id,

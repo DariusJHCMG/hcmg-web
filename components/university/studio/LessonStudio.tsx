@@ -618,6 +618,10 @@ export function LessonStudio({
   // Media picker: which field is being picked
   const [pickerFor, setPickerFor] = useState<"video" | "audio" | "thumbnail" | "caption" | null>(null);
 
+  // Signed URL for studio video preview (storage paths are not directly playable)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
   // Settings panel state (right column)
   const [allowPreview, setAllowPreview]   = useState(false);
   const [prerequisites, setPrerequisites] = useState(false);
@@ -645,6 +649,21 @@ export function LessonStudio({
     completion_threshold_pct: lesson.completion_threshold_pct ?? 80,
     is_published:             lesson.is_published,
   });
+
+  // Fetch a signed preview URL whenever video_token changes (storage paths need signing)
+  useEffect(() => {
+    const token = media.video_token;
+    if (!token) { setPreviewUrl(null); return; }
+    if (token.startsWith("http")) { setPreviewUrl(token); return; }
+    // Storage path — call the video-url API (admin bypass is built in)
+    setPreviewLoading(true);
+    fetch(`/api/university/video-url?lesson_id=${lesson.id}`)
+      .then(r => r.json())
+      .then(d => setPreviewUrl(d.url ?? null))
+      .catch(() => setPreviewUrl(null))
+      .finally(() => setPreviewLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [media.video_token, lesson.id]);
 
   async function save(field?: string) {
     setSaveState("saving"); setError("");
@@ -1206,13 +1225,26 @@ export function LessonStudio({
                       borderRadius: 10, overflow: "hidden",
                       background: STUDIO_COLORS.navy, aspectRatio: "16/9",
                       display: "flex", alignItems: "center", justifyContent: "center",
+                      position: "relative",
                     }}>
-                      {media.video_token.startsWith("http") ? (
-                        <video src={media.video_token} controls poster={media.thumbnail_url || undefined} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                      ) : (
+                      {previewLoading && (
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div style={{ color: STUDIO_COLORS.textMuted, fontSize: 12 }}>Loading preview…</div>
+                        </div>
+                      )}
+                      {previewUrl && !previewLoading && (
+                        <video
+                          key={previewUrl}
+                          src={previewUrl}
+                          controls
+                          poster={media.thumbnail_url || undefined}
+                          style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                        />
+                      )}
+                      {!previewUrl && !previewLoading && (
                         <div style={{ textAlign: "center", color: STUDIO_COLORS.textMuted, padding: 20 }}>
                           <div style={{ fontSize: 32, marginBottom: 8 }}>▶</div>
-                          <div style={{ fontSize: 12 }}>Token set — preview after publishing</div>
+                          <div style={{ fontSize: 12 }}>Could not load preview</div>
                         </div>
                       )}
                     </div>

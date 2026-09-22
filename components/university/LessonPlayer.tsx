@@ -89,30 +89,43 @@ export function LessonPlayer({ lessonId, onProgress, onComplete }: Props) {
     );
   }
 
-  // If the token is an iframe-embeddable URL (HeyGen share links)
-  const isEmbed = videoUrl.startsWith("https://app.heygen.com") ||
-                  videoUrl.startsWith("https://share.heygen.com");
+  // HeyGen share links can't be iframed — show a play-in-new-tab card instead
+  const isHeyGen = videoUrl.includes("heygen.com");
 
-  if (isEmbed) {
+  if (isHeyGen) {
     return (
-      <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: 12, overflow: "hidden" }}>
-        <iframe
-          src={videoUrl}
-          allow="autoplay; fullscreen"
-          allowFullScreen
+      <div style={{
+        position: "relative", borderRadius: 12, overflow: "hidden",
+        background: "linear-gradient(145deg, #071a2e, #0d2a48)",
+        aspectRatio: "16/9",
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center", gap: 16,
+      }}>
+        <div style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>
+          HCMG <span style={{ color: "#f58220" }}>U</span>
+        </div>
+        <a
+          href={videoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
-            position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
-            border: "none",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 64, height: 64, borderRadius: "50%",
+            background: "linear-gradient(135deg,#FF9847,#F37021)",
+            textDecoration: "none", fontSize: 22, color: "#fff",
           }}
-          title="Lesson video"
-        />
+        >▶</a>
+        <p style={{ color: "#b9c5d0", fontSize: 13 }}>Opens in HeyGen viewer</p>
       </div>
     );
   }
 
-  // Native video (Supabase storage or direct URL)
+  // Native video (Supabase signed URL or direct MP4)
   return (
-    <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", background: "#000" }}>
+    <div style={{
+      position: "relative", borderRadius: 12, overflow: "hidden",
+      background: "#000", aspectRatio: "16/9",
+    }}>
       {!started && (
         <div
           style={{
@@ -144,7 +157,12 @@ export function LessonPlayer({ lessonId, onProgress, onComplete }: Props) {
         ref={(el) => { if (el && started) { el.play().catch(() => {}); } }}
         src={videoUrl}
         controls
-        style={{ width: "100%", display: "block", maxHeight: 480, opacity: started ? 1 : 0 }}
+        style={{
+          position: "absolute", inset: 0,
+          width: "100%", height: "100%",
+          objectFit: "contain", display: "block",
+          opacity: started ? 1 : 0,
+        }}
         onTimeUpdate={handleTimeUpdate}
       />
     </div>
