@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LessonPlayer } from "@/components/university/LessonPlayer";
+import { TextLessonEngine } from "@/components/university/TextLessonEngine";
 import { QuizBlock } from "@/components/university/QuizBlock";
 import Link from "next/link";
 
@@ -121,80 +122,82 @@ export function LessonPageClient({
           />
         )}
 
-        {/* Audio player */}
+        {/* Audio — wrapped in TextLessonEngine for dwell-time integrity */}
         {lessonType === "audio" && (
-          <div style={{
-            marginBottom: 20, padding: "20px 24px", borderRadius: 12,
-            background: "#f7f8fa", border: "1.5px solid #dfe4e8",
-          }}>
-            <audio
-              controls
-              style={{ width: "100%", display: "block" }}
-              onEnded={() => {
-                if (completionMode !== "quiz_pass") {
-                  setCompleted(true);
-                  saveProgress(100, true);
-                }
-              }}
-            >
-              <source src={`/api/university/video-url?lesson_id=${lessonId}`} />
-              Your browser does not support the audio element.
-            </audio>
-          </div>
-        )}
-
-        {/* Text / reading content — rendered from transcript field */}
-        {lessonType === "text" && transcript && (
-          <div style={{
-            marginBottom: 20, padding: "24px 28px", borderRadius: 12,
-            background: "#f7f8fa", border: "1px solid #dfe4e8",
-            fontSize: 15, color: "#142234", lineHeight: 1.8,
-            whiteSpace: "pre-wrap",
-          }}>
-            {transcript}
-          </div>
-        )}
-        {lessonType === "text" && !transcript && (
-          <div style={{
-            marginBottom: 20, padding: "24px", borderRadius: 12,
-            background: "#f7f8fa", border: "1px solid #dfe4e8",
-            textAlign: "center", color: "#687383", fontSize: 14,
-          }}>
-            No reading content available for this lesson yet.
-          </div>
-        )}
-
-        {/* Assignment */}
-        {lessonType === "assignment" && (
-          <div style={{
-            marginBottom: 20, padding: "20px 24px", borderRadius: 12,
-            background: "rgba(245,130,32,0.04)", border: "1.5px solid rgba(245,130,32,0.2)",
-          }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#071a2e", marginBottom: 8 }}>
-              Field Assignment
-            </div>
-            {transcript ? (
-              <div style={{ fontSize: 14, color: "#142234", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{transcript}</div>
-            ) : (
-              <p style={{ fontSize: 14, color: "#687383", margin: 0 }}>
-                Complete the assignment as described by your instructor, then mark this lesson as complete below.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Auto-complete for text/assignment on first view if no quiz */}
-        {(lessonType === "text" || lessonType === "assignment") && completionMode !== "quiz_pass" && !completed && quizQuestions.length === 0 && (
-          <button
-            onClick={() => { setCompleted(true); saveProgress(100, true); }}
-            style={{
-              marginTop: 8, width: "100%", padding: "13px", borderRadius: 10,
-              background: "rgba(245,130,32,0.08)", border: "1.5px solid rgba(245,130,32,0.3)",
-              fontSize: 14, fontWeight: 700, color: "#f58220", cursor: "pointer",
-            }}
+          <TextLessonEngine
+            lessonId={lessonId}
+            courseId={courseId}
+            onServerComplete={() => setCompleted(true)}
+            onVerifiedProgress={pct => setWatchPct(pct)}
           >
-            ✓ Mark as complete
-          </button>
+            <div style={{
+              marginBottom: 20, padding: "20px 24px", borderRadius: 12,
+              background: "#f7f8fa", border: "1.5px solid #dfe4e8",
+            }}>
+              <audio
+                controls
+                style={{ width: "100%", display: "block" }}
+              >
+                <source src={`/api/university/video-url?lesson_id=${lessonId}`} />
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          </TextLessonEngine>
+        )}
+
+        {/* Text / reading content — wrapped in TextLessonEngine for integrity */}
+        {lessonType === "text" && (
+          <TextLessonEngine
+            lessonId={lessonId}
+            courseId={courseId}
+            onServerComplete={() => setCompleted(true)}
+            onVerifiedProgress={pct => setWatchPct(pct)}
+          >
+            {transcript ? (
+              <div style={{
+                marginBottom: 20, padding: "24px 28px", borderRadius: 12,
+                background: "#f7f8fa", border: "1px solid #dfe4e8",
+                fontSize: 15, color: "#142234", lineHeight: 1.8,
+                whiteSpace: "pre-wrap",
+              }}>
+                {transcript}
+              </div>
+            ) : (
+              <div style={{
+                marginBottom: 20, padding: "24px", borderRadius: 12,
+                background: "#f7f8fa", border: "1px solid #dfe4e8",
+                textAlign: "center", color: "#687383", fontSize: 14,
+              }}>
+                No reading content available for this lesson yet.
+              </div>
+            )}
+          </TextLessonEngine>
+        )}
+
+        {/* Assignment — wrapped in TextLessonEngine for integrity */}
+        {lessonType === "assignment" && (
+          <TextLessonEngine
+            lessonId={lessonId}
+            courseId={courseId}
+            onServerComplete={() => setCompleted(true)}
+            onVerifiedProgress={pct => setWatchPct(pct)}
+          >
+            <div style={{
+              marginBottom: 20, padding: "20px 24px", borderRadius: 12,
+              background: "rgba(245,130,32,0.04)", border: "1.5px solid rgba(245,130,32,0.2)",
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#071a2e", marginBottom: 8 }}>
+                Field Assignment
+              </div>
+              {transcript ? (
+                <div style={{ fontSize: 14, color: "#142234", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{transcript}</div>
+              ) : (
+                <p style={{ fontSize: 14, color: "#687383", margin: 0 }}>
+                  Complete the assignment as described by your instructor, then mark this lesson as complete below.
+                </p>
+              )}
+            </div>
+          </TextLessonEngine>
         )}
 
         {/* Manual completion button */}

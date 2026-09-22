@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
 import { getCurrentProfile, hasUniversityAccess, logUniAudit } from "@/lib/auth";
+import { deriveMinDwellSecs } from "@/app/api/university/lesson/session/heartbeat/route";
 
 // POST /api/university/lesson/session/complete
 //
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
   // ── 1. Load and validate the session ────────────────────────────────────────
   const { data: session } = await sb
     .from("uni_lesson_sessions")
-    .select("id, profile_id, lesson_id, course_id, enrollment_id, verified_secs, video_duration_secs, watch_segments, completed, ended_at, expires_at")
+    .select("id, profile_id, lesson_id, course_id, enrollment_id, verified_secs, video_duration_secs, watch_segments, dwell_secs, scroll_pct, completed, ended_at, expires_at")
     .eq("id", body.session_id)
     .eq("profile_id", profile.id) // Ownership — cannot complete another user's session
     .single();
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
   // ── 2. Load lesson completion rules ─────────────────────────────────────────
   const { data: lesson } = await sb
     .from("uni_lessons")
-    .select("id, lesson_type, completion_mode, completion_threshold_pct")
+    .select("id, lesson_type, completion_mode, completion_threshold_pct, duration_secs")
     .eq("id", session.lesson_id)
     .single();
 
@@ -73,6 +74,27 @@ export async function POST(request: NextRequest) {
           message: `Verified watch time is ${watchPct}% — need at least ${threshold}%.`,
         });
       }
+    }
+  }
+
+  // Check A2: Text/assignment dwell time and scroll threshold met
+  if (lesson.lesson_type === "text" || lesson.lesson_type === "assignment") {
+    const minDwell = deriveMinDwellSecs((lesson as { duration_secs?: number | null }).duration_secs ?? null);
+    const dwellSecs = session.dwell_secs ?? 0;
+    const scrollPct = session.scroll_pct ?? 0;
+    const MIN_SCROLL_PCT = 80; // Must have scrolled at least 80% of the content
+
+    if (dwellSecs < minDwell) {
+      failures.push({
+        code: "INSUFFICIENT_DWELL_TIME",
+        message: `Reading time is ${dwellSecs}s — need at least ${minDwell}s to complete this lesson.`,
+      });
+    }
+    if (scrollPct < MIN_SCROLL_PCT) {
+      failures.push({
+        code: "INSUFFICIENT_SCROLL",
+        message: `You have only scrolled ${scrollPct}% — please read the full lesson before completing.`,
+      });
     }
   }
 
