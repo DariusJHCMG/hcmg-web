@@ -22,7 +22,7 @@ import { useEffect, useRef, useState } from "react";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const UNLOCK_PCT         = 80;   // % of native video that must be watched
-const IFRAME_UNLOCK_SECS = 60;   // seconds of visible dwell for iframe embeds
+const IFRAME_UNLOCK_SECS = 128;  // 2 min 8 sec — matches CEO intro video length
 
 function isIframeUrl(url: string): boolean {
   return (
