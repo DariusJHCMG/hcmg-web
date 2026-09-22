@@ -10,11 +10,10 @@ const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "600", "700", "800"],
   variable: "--font-montserrat",
-  // `swap` prevents invisible text during load (avoids LCP delay from font blocking)
   display: "swap",
-  // Preload only the weights used above the fold, reduces render-blocking font requests
-  preload: true,
-  adjustFontFallback: true,   // Generates a metric-compatible fallback → eliminates CLS from font swap
+  // preload: false — prevents build-time Google Fonts fetch that can fail on Vercel's network
+  preload: false,
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
