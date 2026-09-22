@@ -68,19 +68,18 @@ export function LessonPageClient({
   completionMode = "watch_pct", completionThresholdPct = 80,
 }: Props) {
   const hasQuiz = quizQuestions.length > 0;
-  const isVideoOrPres = !lessonType || lessonType === "video" || lessonType === "presentation";
 
   const [watchPct, setWatchPct]          = useState(initialWatchPct);
   // videoReady: video/text/audio portion is done
   const [videoReady, setVideoReady]      = useState(initialWatchPct >= completionThresholdPct);
   // quizPassed: quiz portion is done (only relevant when hasQuiz)
   const [quizPassed, setQuizPassed]      = useState(initialQuizPassed);
-  // completed: the real gate — true only when ALL required portions are done
-  const completed = hasQuiz && isVideoOrPres
-    ? videoReady && quizPassed   // video lesson WITH quiz: need both
-    : hasQuiz
-      ? quizPassed               // text/etc with quiz: quiz is the gate
-      : videoReady;              // no quiz: video/text completion is the gate
+  // completed: the real gate — true only when required portions are done
+  // If a quiz exists, passing it is sufficient (it proves comprehension).
+  // Only require videoReady alone when there is no quiz.
+  const completed = hasQuiz
+    ? quizPassed       // quiz present (any lesson type): passing the quiz is the gate
+    : videoReady;      // no quiz: video/text/audio watch completion is the gate
 
   const [transcriptOpen, setTransOpen]   = useState(false);
   const [resourceLoading, setResLoading] = useState<string | null>(null);
