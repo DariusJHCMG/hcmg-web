@@ -26,7 +26,7 @@ const SECURITY_HEADERS = [
       "media-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co",
       "font-src 'self' data:",
       "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://challenges.cloudflare.com",
-      "frame-src https://challenges.cloudflare.com",
+      "frame-src https://challenges.cloudflare.com https://app.heygen.com https://share.heygen.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

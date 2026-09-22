@@ -6,14 +6,33 @@ import { useEffect, useRef, useState } from "react";
 // IntroVideoModal
 //
 // Fullscreen overlay shown to every HCMG U member on their first visit.
+//
+// Supports two video modes detected automatically from the URL:
+//   • Native <video> tag  — for direct .mp4 / storage URLs
+//     → tracks timeupdate events; unlocks at UNLOCK_PCT (80%)
+//   • iframe embed        — for HeyGen, Vimeo, YouTube, etc.
+//     → tracks minimum dwell time (IFRAME_UNLOCK_SECS = 60s visible)
+//     → progress bar counts up in real time
+//
 // Rules:
 //   • Blocks the entire UI until dismissed
-//   • Video must reach 80% watched before "I've watched it" button unlocks
+//   • Button stays locked until threshold is met
 //   • On dismiss → POST /api/university/intro-video/complete
 //   • Never shown again after completion (server tracks per-profile)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const UNLOCK_PCT = 80; // % of video that must be watched to unlock dismiss
+const UNLOCK_PCT         = 80;   // % of native video that must be watched
+const IFRAME_UNLOCK_SECS = 60;   // seconds of visible dwell for iframe embeds
+
+function isIframeUrl(url: string): boolean {
+  return (
+    url.includes("heygen.com/embeds") ||
+    url.includes("vimeo.com") ||
+    url.includes("youtube.com/embed") ||
+    url.includes("youtu.be") ||
+    (!url.startsWith("http") === false && !url.endsWith(".mp4") && !url.endsWith(".mov") && !url.endsWith(".webm"))
+  );
+}
 
 interface Props {
   videoUrl: string;
@@ -21,14 +40,25 @@ interface Props {
 }
 
 export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
-  const videoRef       = useRef<HTMLVideoElement>(null);
-  const [watchPct,     setWatchPct]     = useState(0);
-  const [canDismiss,   setCanDismiss]   = useState(false);
-  const [dismissing,   setDismissing]   = useState(false);
-  const [videoError,   setVideoError]   = useState(false);
+  const useIframe = isIframeUrl(videoUrl);
 
-  // Track highest watch percentage as video plays
+  // ── Native video state ──────────────────────────────────────────────────────
+  const videoRef     = useRef<HTMLVideoElement>(null);
+  const [watchPct,   setWatchPct]   = useState(0);
+  const [videoError, setVideoError] = useState(false);
+
+  // ── iframe dwell-time state ─────────────────────────────────────────────────
+  const dwellRef         = useRef(0);               // accumulated visible seconds
+  const dwellIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [dwellSecs,  setDwellSecs]  = useState(0);
+
+  // ── Shared ──────────────────────────────────────────────────────────────────
+  const [canDismiss, setCanDismiss] = useState(false);
+  const [dismissing, setDismissing] = useState(false);
+
+  // ── Native video: track playback progress ───────────────────────────────────
   useEffect(() => {
+    if (useIframe) return;
     const video = videoRef.current;
     if (!video) return;
 
@@ -41,8 +71,7 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
         return next;
       });
     };
-
-    const onEnded = () => setCanDismiss(true);
+    const onEnded = () => { setWatchPct(100); setCanDismiss(true); };
 
     video.addEventListener("timeupdate", onTimeUpdate);
     video.addEventListener("ended",      onEnded);
@@ -50,8 +79,29 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
       video.removeEventListener("timeupdate", onTimeUpdate);
       video.removeEventListener("ended",      onEnded);
     };
-  }, []);
+  }, [useIframe]);
 
+  // ── iframe: count visible dwell seconds ─────────────────────────────────────
+  useEffect(() => {
+    if (!useIframe) return;
+
+    dwellIntervalRef.current = setInterval(() => {
+      if (document.hidden) return; // only credit when tab is visible
+      dwellRef.current += 1;
+      const secs = dwellRef.current;
+      setDwellSecs(secs);
+      if (secs >= IFRAME_UNLOCK_SECS) {
+        setCanDismiss(true);
+        if (dwellIntervalRef.current) clearInterval(dwellIntervalRef.current);
+      }
+    }, 1000);
+
+    return () => {
+      if (dwellIntervalRef.current) clearInterval(dwellIntervalRef.current);
+    };
+  }, [useIframe]);
+
+  // ── Dismiss ─────────────────────────────────────────────────────────────────
   async function handleDismiss() {
     if (!canDismiss || dismissing) return;
     setDismissing(true);
@@ -61,7 +111,24 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
     onDismiss();
   }
 
+  // ── Derived display values ──────────────────────────────────────────────────
+  const progressPct = useIframe
+    ? Math.min(100, Math.round((dwellSecs / IFRAME_UNLOCK_SECS) * 100))
+    : watchPct;
+
   const progressColor = canDismiss ? "#22c55e" : "#f58220";
+
+  const lockLabel = useIframe
+    ? `Watch for ${IFRAME_UNLOCK_SECS - dwellSecs}s more to continue`
+    : `Watch ${UNLOCK_PCT - watchPct}% more to continue`;
+
+  // ── Embed src: normalise HeyGen share URL → embed URL ───────────────────────
+  const embedSrc = videoUrl.includes("app.heygen.com/videos/")
+    ? videoUrl.replace(
+        /app\.heygen\.com\/videos\/welcome-to-hcmg-university-([a-f0-9]+)/,
+        "app.heygen.com/embeds/$1"
+      ).replace(/app\.heygen\.com\/videos\/([a-f0-9]+)/, "app.heygen.com/embeds/$1")
+    : videoUrl;
 
   return (
     <div style={{
@@ -78,7 +145,6 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         marginBottom: 18,
       }}>
-        {/* HCMG U wordmark */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
@@ -90,23 +156,28 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
             Welcome to HCMG U
           </span>
         </div>
-        {/* Small skip label — visible but grayed until unlocked */}
         <span style={{ fontSize: 12, color: canDismiss ? "#94a3b8" : "#3b4a5a" }}>
-          {canDismiss ? "Ready to continue ↓" : `Watch ${UNLOCK_PCT - watchPct}% more to continue`}
+          {canDismiss ? "Ready to continue ↓" : lockLabel}
         </span>
       </div>
 
       {/* Video container */}
       <div style={{
         width: "100%", maxWidth: 820,
-        borderRadius: 14,
-        overflow: "hidden",
-        background: "#000",
-        position: "relative",
+        borderRadius: 14, overflow: "hidden",
+        background: "#000", position: "relative",
         aspectRatio: "16 / 9",
         boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
       }}>
-        {videoError ? (
+        {useIframe ? (
+          <iframe
+            src={embedSrc}
+            title="Welcome to HCMG University"
+            allow="encrypted-media; fullscreen; autoplay"
+            allowFullScreen
+            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+          />
+        ) : videoError ? (
           <div style={{
             position: "absolute", inset: 0,
             display: "flex", flexDirection: "column",
@@ -114,9 +185,9 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
             color: "#94a3b8", gap: 12,
           }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
             <span style={{ fontSize: 13 }}>Video unavailable. Please contact your admin.</span>
             <button
@@ -145,27 +216,20 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
 
       {/* Progress bar */}
       <div style={{ width: "100%", maxWidth: 820, marginTop: 16 }}>
-        <div style={{
-          height: 5, borderRadius: 3,
-          background: "rgba(255,255,255,0.08)",
-          overflow: "hidden",
-        }}>
+        <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
           <div style={{
             height: "100%", borderRadius: 3,
             background: progressColor,
-            width: `${watchPct}%`,
-            transition: "width 0.3s ease, background 0.4s ease",
+            width: `${progressPct}%`,
+            transition: "width 0.5s ease, background 0.4s ease",
           }} />
         </div>
-        <div style={{
-          display: "flex", justifyContent: "space-between",
-          marginTop: 6,
-        }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
           <span style={{ fontSize: 11, color: "#687383" }}>
             Intro — A message from the CEO
           </span>
           <span style={{ fontSize: 11, color: canDismiss ? "#22c55e" : "#687383", fontWeight: canDismiss ? 700 : 400 }}>
-            {canDismiss ? "✓ Complete" : `${watchPct}% watched`}
+            {canDismiss ? "✓ Complete" : useIframe ? `${dwellSecs}s / ${IFRAME_UNLOCK_SECS}s` : `${watchPct}% watched`}
           </span>
         </div>
       </div>
@@ -175,7 +239,7 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
         <button
           onClick={handleDismiss}
           disabled={!canDismiss || dismissing}
-          title={!canDismiss ? `Watch ${UNLOCK_PCT - watchPct}% more to continue` : undefined}
+          title={!canDismiss ? lockLabel : undefined}
           style={{
             width: "100%", padding: "14px", borderRadius: 12, border: "none",
             background: canDismiss
@@ -192,7 +256,7 @@ export function IntroVideoModal({ videoUrl, onDismiss }: Props) {
             ? "Saving…"
             : canDismiss
             ? "✓ I've watched it — Enter HCMG U"
-            : `🔒 Watch ${UNLOCK_PCT - watchPct}% more to continue`}
+            : `🔒 ${lockLabel}`}
         </button>
       </div>
 
