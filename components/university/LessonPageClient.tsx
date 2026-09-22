@@ -4,7 +4,37 @@ import { useState } from "react";
 import { LessonPlayer } from "@/components/university/LessonPlayer";
 import { TextLessonEngine } from "@/components/university/TextLessonEngine";
 import { QuizBlock } from "@/components/university/QuizBlock";
+import { renderMarkdown } from "@/components/university/studio/LessonStudio";
 import Link from "next/link";
+
+// CSS injected once for all md-preview content (headings, tables, callouts, code)
+const MD_STYLES = `
+.md-article h1{font-size:26px;font-weight:800;color:#071a2e;margin:28px 0 10px;letter-spacing:-0.6px;font-family:Manrope,system-ui,sans-serif;line-height:1.25}
+.md-article h2{font-size:20px;font-weight:700;color:#071a2e;margin:24px 0 8px;letter-spacing:-0.3px;padding-bottom:6px;border-bottom:2px solid #f0f2f5}
+.md-article h3{font-size:16px;font-weight:700;color:#142234;margin:18px 0 6px}
+.md-article h4{font-size:14px;font-weight:700;color:#3b4a5a;margin:14px 0 4px}
+.md-article p{margin:0 0 12px;color:#3b4a5a;font-size:15px;line-height:1.75}
+.md-article ul,.md-article ol{padding-left:22px;margin:0 0 12px;color:#3b4a5a}
+.md-article li{margin-bottom:5px;font-size:15px;line-height:1.7}
+.md-article strong{font-weight:700;color:#071a2e}
+.md-article em{font-style:italic;color:#3b4a5a}
+.md-article a{color:#f58220;text-decoration:none}
+.md-article a:hover{text-decoration:underline}
+.md-article blockquote{border-left:4px solid #f58220;margin:16px 0;padding:10px 16px;background:rgba(245,130,32,0.05);border-radius:0 8px 8px 0;font-style:italic;color:#3b4a5a}
+.md-article hr{border:none;border-top:2px solid #f0f2f5;margin:24px 0}
+.md-article code{background:#f0f2f5;padding:2px 6px;border-radius:5px;font-size:13px;font-family:'DM Mono','Fira Code',monospace;color:#c7254e}
+.md-article pre{background:#1e2433;border-radius:10px;padding:18px 20px;margin:16px 0;overflow-x:auto}
+.md-article pre code{background:none;color:#e2e8f0;font-size:13px;padding:0;border-radius:0}
+.md-article img{max-width:100%;border-radius:10px;margin:16px 0;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+.md-article table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.md-article th{background:#f7f8fa;text-align:left;padding:9px 12px;font-weight:700;color:#071a2e;border-bottom:2px solid #e5e7eb}
+.md-article td{padding:9px 12px;border-bottom:1px solid #f0f2f5;color:#3b4a5a;vertical-align:top}
+.md-article tr:last-child td{border-bottom:none}
+.md-callout{padding:12px 16px;border-radius:10px;margin:14px 0;font-size:14px;line-height:1.6}
+.md-callout-tip{background:rgba(59,130,212,0.07);border-left:3px solid #3b82d4;color:#1e3a5f}
+.md-callout-warn{background:rgba(245,130,32,0.07);border-left:3px solid #f58220;color:#6b3000}
+.md-callout-info{background:rgba(34,197,94,0.07);border-left:3px solid #22c55e;color:#14532d}
+`;
 
 interface Resource { label: string; storage_path: string }
 interface QuizQuestion { id: string; question_text: string; options: { label: string }[]; explanation?: string | null; question_type?: string }
@@ -77,6 +107,7 @@ export function LessonPageClient({
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", background: "#fff", minHeight: "100vh" }}>
+      <style>{MD_STYLES}</style>
       {/* Breadcrumb */}
       <div style={{
         background: "#f7f8fa", borderBottom: "1px solid #dfe4e8",
@@ -154,14 +185,9 @@ export function LessonPageClient({
             onVerifiedProgress={pct => setWatchPct(pct)}
           >
             {transcript ? (
-              <div style={{
-                marginBottom: 20, padding: "24px 28px", borderRadius: 12,
-                background: "#f7f8fa", border: "1px solid #dfe4e8",
-                fontSize: 15, color: "#142234", lineHeight: 1.8,
-                whiteSpace: "pre-wrap",
-              }}>
-                {transcript}
-              </div>
+              <div className="md-article" style={{ marginBottom: 20 }}
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(transcript) }}
+              />
             ) : (
               <div style={{
                 marginBottom: 20, padding: "24px", borderRadius: 12,
@@ -190,7 +216,9 @@ export function LessonPageClient({
                 Field Assignment
               </div>
               {transcript ? (
-                <div style={{ fontSize: 14, color: "#142234", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{transcript}</div>
+                <div className="md-article"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(transcript) }}
+                />
               ) : (
                 <p style={{ fontSize: 14, color: "#687383", margin: 0 }}>
                   Complete the assignment as described by your instructor, then mark this lesson as complete below.

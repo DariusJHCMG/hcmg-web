@@ -448,6 +448,82 @@ function TranscriptEditor({ value, onChange }: { value: string; onChange: (v: st
 // ── Text Article Editor ───────────────────────────────────────────────────────
 // A clean inline content editor for Text-type lessons, matching CreatorLMS style.
 
+// ── Markdown renderer (shared between editor preview + learner view export) ───
+export function renderMarkdown(md: string): string {
+  if (!md) return "";
+  let html = md
+    // Escape HTML entities first
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    // Fenced code blocks
+    .replace(/```([a-z]*)\n([\s\S]*?)```/g, (_m, lang, code) =>
+      `<pre data-lang="${lang}"><code>${code.trimEnd()}</code></pre>`)
+    // Inline code
+    .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+    // Callout/tip blocks  ::tip:: text ::
+    .replace(/^:::tip\s+(.*?)$/gm, '<div class="md-callout md-callout-tip">💡 $1</div>')
+    .replace(/^:::warn\s+(.*?)$/gm, '<div class="md-callout md-callout-warn">⚠️ $1</div>')
+    .replace(/^:::info\s+(.*?)$/gm, '<div class="md-callout md-callout-info">ℹ️ $1</div>')
+    // H1–H4
+    .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+    // Blockquote
+    .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
+    // HR
+    .replace(/^---$/gm, "<hr/>")
+    // Image  ![alt](url)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:12px 0;display:block"/>')
+    // Link  [text](url)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    // Bold + italic
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    // Italic
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/_(.+?)_/g, "<em>$1</em>")
+    // Tables — simple: | col | col |
+    // (handled below with multi-line logic)
+    ;
+
+  // Table processing
+  const tableRe = /(\|.+\|\n\|[-| :]+\|\n(?:\|.+\|\n?)+)/g;
+  html = html.replace(tableRe, (block) => {
+    const lines = block.trim().split("\n");
+    const headers = lines[0].split("|").slice(1, -1).map(h => `<th>${h.trim()}</th>`).join("");
+    const rows = lines.slice(2).map(line => {
+      const cells = line.split("|").slice(1, -1).map(c => `<td>${c.trim()}</td>`).join("");
+      return `<tr>${cells}</tr>`;
+    }).join("");
+    return `<table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+  });
+
+  // Unordered lists
+  html = html.replace(/((?:^[-*] .+\n?)+)/gm, (block) => {
+    const items = block.trim().split("\n").map(l => `<li>${l.replace(/^[-*] /, "")}</li>`).join("");
+    return `<ul>${items}</ul>`;
+  });
+  // Ordered lists
+  html = html.replace(/((?:^\d+\. .+\n?)+)/gm, (block) => {
+    const items = block.trim().split("\n").map(l => `<li>${l.replace(/^\d+\. /, "")}</li>`).join("");
+    return `<ol>${items}</ol>`;
+  });
+
+  // Paragraphs — wrap bare lines
+  html = html.replace(/^(?!<[hHpPuUoOlLtTbBhHdD\-!])(.+)$/gm, "<p>$1</p>");
+
+  return html;
+}
+
+// ── TextArticleEditor ─────────────────────────────────────────────────────────
+// Full WYSIWYG-style article editor with:
+//   • Formatting toolbar (H1/H2/H3, Bold, Italic, Quote, Code, Lists, Divider, Image, Callouts)
+//   • Write / Preview / Split view modes
+//   • Live rendered preview (Markdown → HTML)
+//   • Block insert menu
+// ─────────────────────────────────────────────────────────────────────────────
+
 function TextArticleEditor({
   value,
   onChange,
@@ -459,131 +535,318 @@ function TextArticleEditor({
   onSave: () => void;
   saving: boolean;
 }) {
-  const [showAddMenu, setShowAddMenu] = useState(false);
+  type ViewMode = "write" | "preview" | "split";
+  const [viewMode, setViewMode] = React.useState<ViewMode>("split");
+  const [showImageModal, setShowImageModal] = React.useState(false);
+  const [imageUrl, setImageUrl] = React.useState("");
+  const [imageAlt, setImageAlt] = React.useState("");
+  const [showCalloutMenu, setShowCalloutMenu] = React.useState(false);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  function insertBlock(prefix: string) {
+  // ── Insert helpers ────────────────────────────────────────────────────────
+  function insert(before: string, after = "", placeholder = "") {
     const el = textareaRef.current;
     if (!el) return;
-    const start = el.selectionStart;
-    const before = value.slice(0, start);
-    const after  = value.slice(el.selectionEnd);
-    // Add newline before prefix if needed
-    const sep = before.length > 0 && !before.endsWith("\n\n") ? "\n\n" : "";
-    const inserted = `${sep}${prefix}`;
-    const next = before + inserted + after;
+    const s = el.selectionStart, e = el.selectionEnd;
+    const selected = value.slice(s, e) || placeholder;
+    const next = value.slice(0, s) + before + selected + after + value.slice(e);
     onChange(next);
-    setShowAddMenu(false);
-    // Move cursor to end of inserted text
     setTimeout(() => {
       el.focus();
-      el.selectionStart = el.selectionEnd = (before + inserted).length;
+      el.selectionStart = s + before.length;
+      el.selectionEnd = s + before.length + selected.length;
     }, 0);
   }
 
-  const ADD_BLOCKS = [
-    { label: "Paragraph",  action: () => insertBlock("") },
-    { label: "Heading 1",  action: () => insertBlock("# ") },
-    { label: "Heading 2",  action: () => insertBlock("## ") },
-    { label: "Heading 3",  action: () => insertBlock("### ") },
-    { label: "Bullet list",action: () => insertBlock("- ") },
-    { label: "Numbered list", action: () => insertBlock("1. ") },
-    { label: "Quote block",action: () => insertBlock("> ") },
-    { label: "Code block", action: () => insertBlock("```\n\n```") },
-    { label: "Divider",    action: () => insertBlock("---") },
+  function insertLine(prefix: string, placeholder = "") {
+    const el = textareaRef.current;
+    if (!el) return;
+    const s = el.selectionStart;
+    const lineStart = value.lastIndexOf("\n", s - 1) + 1;
+    const lineEnd = value.indexOf("\n", s);
+    const end = lineEnd === -1 ? value.length : lineEnd;
+    const line = value.slice(lineStart, end) || placeholder;
+    const next = value.slice(0, lineStart) + prefix + line + value.slice(end);
+    onChange(next);
+    setTimeout(() => {
+      el.focus();
+      const newPos = lineStart + prefix.length + line.length;
+      el.selectionStart = el.selectionEnd = newPos;
+    }, 0);
+  }
+
+  function insertBlock(text: string) {
+    const el = textareaRef.current;
+    if (!el) return;
+    const s = el.selectionStart;
+    const before = value.slice(0, s);
+    const after = value.slice(s);
+    const sep = before.length > 0 && !before.endsWith("\n\n") ? "\n\n" : "";
+    const sep2 = after.length > 0 && !after.startsWith("\n") ? "\n\n" : "";
+    const next = before + sep + text + sep2 + after;
+    onChange(next);
+    setTimeout(() => {
+      el.focus();
+      const pos = before.length + sep.length + text.length;
+      el.selectionStart = el.selectionEnd = pos;
+    }, 0);
+  }
+
+  function handleImageInsert() {
+    if (!imageUrl.trim()) return;
+    insertBlock(`![${imageAlt || "image"}](${imageUrl.trim()})`);
+    setShowImageModal(false);
+    setImageUrl(""); setImageAlt("");
+  }
+
+  // ── Toolbar buttons config ────────────────────────────────────────────────
+  const TB_SEP = "sep";
+  type TBItem = typeof TB_SEP | {
+    title: string;
+    label: React.ReactNode;
+    action: () => void;
+  };
+
+  const toolbar: TBItem[] = [
+    // Block type selector as individual buttons
+    { title: "Heading 1", label: <span style={{ fontWeight: 900, fontSize: 13 }}>H1</span>, action: () => insertLine("# ", "Heading 1") },
+    { title: "Heading 2", label: <span style={{ fontWeight: 800, fontSize: 12 }}>H2</span>, action: () => insertLine("## ", "Heading 2") },
+    { title: "Heading 3", label: <span style={{ fontWeight: 700, fontSize: 11 }}>H3</span>, action: () => insertLine("### ", "Heading 3") },
+    TB_SEP,
+    { title: "Bold", label: <strong style={{ fontSize: 13 }}>B</strong>, action: () => insert("**", "**", "bold text") },
+    { title: "Italic", label: <em style={{ fontSize: 13 }}>I</em>, action: () => insert("*", "*", "italic text") },
+    { title: "Inline code", label: <code style={{ fontSize: 11, background: "#f0f2f5", padding: "1px 4px", borderRadius: 3 }}>{"`"}</code>, action: () => insert("`", "`", "code") },
+    TB_SEP,
+    { title: "Bullet list", label: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+    ), action: () => insertLine("- ", "List item") },
+    { title: "Numbered list", label: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><line x1="10" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="10" y1="18" x2="20" y2="18"/><text x="2" y="9" fontSize="8" fill="currentColor" stroke="none" fontWeight="700">1.</text><text x="2" y="15" fontSize="8" fill="currentColor" stroke="none" fontWeight="700">2.</text></svg>
+    ), action: () => insertLine("1. ", "List item") },
+    TB_SEP,
+    { title: "Blockquote", label: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+    ), action: () => insertLine("> ", "Quote text") },
+    { title: "Code block", label: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>
+    ), action: () => insertBlock("```\ncode here\n```") },
+    { title: "Horizontal divider", label: <span style={{ fontSize: 13, letterSpacing: 1 }}>—</span>, action: () => insertBlock("---") },
+    TB_SEP,
+    { title: "Insert image", label: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+    ), action: () => setShowImageModal(true) },
+    { title: "Add callout", label: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    ), action: () => setShowCalloutMenu(c => !c) },
   ];
+
+  const tbBtnStyle: React.CSSProperties = {
+    display: "flex", alignItems: "center", justifyContent: "center",
+    width: 30, height: 30, borderRadius: 6, border: "none",
+    background: "transparent", cursor: "pointer",
+    color: STUDIO_COLORS.textMuted,
+    fontSize: 13, flexShrink: 0,
+  };
+
+  const viewBtnStyle = (active: boolean): React.CSSProperties => ({
+    padding: "4px 10px", borderRadius: 6, border: "none",
+    background: active ? STUDIO_COLORS.navy : "transparent",
+    color: active ? "#fff" : STUDIO_COLORS.textMuted,
+    fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+  });
+
+  const previewHtml = React.useMemo(() => renderMarkdown(value), [value]);
 
   return (
     <div style={{
       background: STUDIO_COLORS.white, borderRadius: 12,
       border: `1px solid ${STUDIO_COLORS.border}`,
-      overflow: "visible", position: "relative",
+      overflow: "hidden", position: "relative",
+      display: "flex", flexDirection: "column",
     }}>
-      {/* Toolbar */}
+      {/* ── Top bar ── */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 8, justifyContent: "space-between",
-        padding: "10px 16px", borderBottom: `1px solid ${STUDIO_COLORS.border}`,
-        background: STUDIO_COLORS.surface,
+        display: "flex", alignItems: "center", gap: 6,
+        padding: "8px 14px", borderBottom: `1px solid ${STUDIO_COLORS.border}`,
+        background: STUDIO_COLORS.surface, flexWrap: "wrap",
       }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: STUDIO_COLORS.text }}>Article Content</span>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ position: "relative" }}>
-            <button
-              type="button"
-              onClick={() => setShowAddMenu(m => !m)}
+        <span style={{ fontSize: 12, fontWeight: 700, color: STUDIO_COLORS.text, marginRight: 6 }}>Article</span>
+
+        {/* Toolbar buttons */}
+        {toolbar.map((item, i) =>
+          item === TB_SEP
+            ? <div key={`sep-${i}`} style={{ width: 1, height: 20, background: STUDIO_COLORS.border, margin: "0 2px" }} />
+            : (
+              <button
+                key={item.title}
+                title={item.title}
+                type="button"
+                onClick={item.action}
+                style={tbBtnStyle}
+                onMouseEnter={e => { e.currentTarget.style.background = STUDIO_COLORS.border; e.currentTarget.style.color = STUDIO_COLORS.text; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = STUDIO_COLORS.textMuted; }}
+              >
+                {item.label}
+              </button>
+            )
+        )}
+
+        {/* Callout dropdown */}
+        {showCalloutMenu && (
+          <div style={{
+            position: "absolute", top: 44, left: 14, zIndex: 60,
+            background: STUDIO_COLORS.white, border: `1px solid ${STUDIO_COLORS.border}`,
+            borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", minWidth: 200, overflow: "hidden",
+          }}>
+            {[
+              { label: "💡 Tip", prefix: ":::tip " },
+              { label: "⚠️ Warning", prefix: ":::warn " },
+              { label: "ℹ️ Info", prefix: ":::info " },
+            ].map(c => (
+              <button key={c.label} type="button"
+                onClick={() => { insertBlock(`${c.prefix}Your callout text here`); setShowCalloutMenu(false); }}
+                style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: STUDIO_COLORS.text }}
+                onMouseEnter={e => e.currentTarget.style.background = STUDIO_COLORS.surface}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >{c.label}</button>
+            ))}
+          </div>
+        )}
+
+        <div style={{ flex: 1 }} />
+
+        {/* View mode toggle */}
+        <div style={{ display: "flex", gap: 2, background: STUDIO_COLORS.border, padding: 2, borderRadius: 8 }}>
+          <button type="button" style={viewBtnStyle(viewMode === "write")} onClick={() => setViewMode("write")}>Write</button>
+          <button type="button" style={viewBtnStyle(viewMode === "split")} onClick={() => setViewMode("split")}>Split</button>
+          <button type="button" style={viewBtnStyle(viewMode === "preview")} onClick={() => setViewMode("preview")}>Preview</button>
+        </div>
+
+        <button
+          type="button" onClick={onSave} disabled={saving}
+          style={{
+            padding: "5px 14px", borderRadius: 7, marginLeft: 6,
+            background: "linear-gradient(135deg,#FF9847,#F37021)", color: "#fff",
+            border: "none", cursor: saving ? "not-allowed" : "pointer",
+            fontSize: 12, fontWeight: 700, opacity: saving ? 0.7 : 1,
+          }}
+        >{saving ? "Saving…" : "Save"}</button>
+      </div>
+
+      {/* ── Editor / Preview panes ── */}
+      <div style={{ display: "flex", minHeight: 560, flex: 1 }}>
+        {/* Write pane */}
+        {(viewMode === "write" || viewMode === "split") && (
+          <div style={{
+            flex: 1, display: "flex", flexDirection: "column",
+            borderRight: viewMode === "split" ? `1px solid ${STUDIO_COLORS.border}` : undefined,
+          }}>
+            <div style={{
+              padding: "4px 14px", background: STUDIO_COLORS.surface,
+              borderBottom: `1px solid ${STUDIO_COLORS.border}`,
+              fontSize: 10, fontWeight: 700, color: STUDIO_COLORS.textMuted, letterSpacing: "0.8px", textTransform: "uppercase",
+            }}>Markdown</div>
+            <textarea
+              ref={textareaRef}
+              value={value}
+              onChange={e => onChange(e.target.value)}
+              spellCheck
+              placeholder={`Start writing...\n\n# Heading 1\n## Heading 2\n\n**bold** *italic* \`code\`\n\n- Bullet item\n1. Numbered item\n\n> Blockquote\n\n![alt text](https://image-url)\n\n:::tip Your tip text here\n:::warn Your warning here`}
               style={{
-                display: "flex", alignItems: "center", gap: 5,
-                padding: "5px 12px", borderRadius: 7, border: `1.5px solid ${STUDIO_COLORS.border}`,
-                background: STUDIO_COLORS.white, cursor: "pointer",
-                fontSize: 12, fontWeight: 600, color: STUDIO_COLORS.textMuted,
+                flex: 1, border: "none", outline: "none", resize: "none",
+                padding: "20px 22px",
+                fontSize: 14, lineHeight: 1.8, color: STUDIO_COLORS.text,
+                fontFamily: "'DM Mono', 'Fira Code', 'Consolas', monospace",
+                background: "#fafbfc",
+                tabSize: 2,
               }}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Insert block
-            </button>
-            {showAddMenu && (
+              onKeyDown={e => {
+                // Tab inserts 2 spaces
+                if (e.key === "Tab") {
+                  e.preventDefault();
+                  insert("  ", "");
+                }
+              }}
+            />
+          </div>
+        )}
+
+        {/* Preview pane */}
+        {(viewMode === "preview" || viewMode === "split") && (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+            <div style={{
+              padding: "4px 14px", background: STUDIO_COLORS.surface,
+              borderBottom: `1px solid ${STUDIO_COLORS.border}`,
+              fontSize: 10, fontWeight: 700, color: STUDIO_COLORS.textMuted, letterSpacing: "0.8px", textTransform: "uppercase",
+            }}>Preview</div>
+            {value.trim() ? (
+              <div
+                className="md-preview"
+                dangerouslySetInnerHTML={{ __html: previewHtml }}
+                style={{
+                  flex: 1, overflowY: "auto", padding: "20px 28px",
+                  fontSize: 15, lineHeight: 1.8, color: STUDIO_COLORS.text,
+                  fontFamily: "'DM Sans', system-ui, sans-serif",
+                }}
+              />
+            ) : (
               <div style={{
-                position: "absolute", top: "100%", right: 0, zIndex: 50,
-                marginTop: 4, background: STUDIO_COLORS.white,
-                border: `1px solid ${STUDIO_COLORS.border}`, borderRadius: 10,
-                boxShadow: "0 8px 24px rgba(0,0,0,0.12)", minWidth: 180, overflow: "hidden",
+                flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+                color: STUDIO_COLORS.textMuted, fontSize: 13, flexDirection: "column", gap: 8,
               }}>
-                {ADD_BLOCKS.map(b => (
-                  <button
-                    key={b.label} type="button"
-                    onClick={b.action}
-                    style={{
-                      display: "block", width: "100%", textAlign: "left",
-                      padding: "9px 14px", border: "none", background: "transparent",
-                      cursor: "pointer", fontSize: 13, color: STUDIO_COLORS.text,
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = STUDIO_COLORS.surface)}
-                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                  >
-                    {b.label}
-                  </button>
-                ))}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+                <span>Start writing to see preview</span>
               </div>
             )}
           </div>
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={saving}
-            style={{
-              padding: "5px 14px", borderRadius: 7,
-              background: STUDIO_COLORS.orange, color: "#fff",
-              border: "none", cursor: saving ? "not-allowed" : "pointer",
-              fontSize: 12, fontWeight: 700, opacity: saving ? 0.7 : 1,
-            }}
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
-        </div>
+        )}
       </div>
 
-      {/* Editor area */}
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={"Start writing your lesson content here...\n\nYou can use Markdown:\n# Heading 1\n## Heading 2\n- bullet list\n1. numbered list\n> quote block\n**bold** _italic_"}
-        style={{
-          width: "100%", minHeight: 480, border: "none", outline: "none",
-          padding: "24px 28px", resize: "vertical", boxSizing: "border-box",
-          fontSize: 15, lineHeight: 1.75, color: STUDIO_COLORS.text,
-          fontFamily: "'DM Sans', system-ui, sans-serif",
-          background: "transparent",
-        }}
-      />
+      {/* ── Image insert modal ── */}
+      {showImageModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 200,
+          background: "rgba(6,24,42,0.6)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }} onClick={() => setShowImageModal(false)}>
+          <div style={{
+            background: "#fff", borderRadius: 14, padding: "28px 32px", width: 440,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: STUDIO_COLORS.text, marginBottom: 18 }}>Insert Image</div>
+            <FieldLabel required>Image URL</FieldLabel>
+            <StudioInput
+              value={imageUrl}
+              onChange={e => setImageUrl(e.target.value)}
+              placeholder="https://example.com/image.png"
+              hint="Paste any public image URL. For private images, upload to Media Library first."
+              style={{ marginBottom: 12 }}
+            />
+            <FieldLabel>Alt text (description)</FieldLabel>
+            <StudioInput
+              value={imageAlt}
+              onChange={e => setImageAlt(e.target.value)}
+              placeholder="e.g. HCMG loan process diagram"
+              style={{ marginBottom: 20 }}
+            />
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <StudioButton variant="secondary" onClick={() => setShowImageModal(false)}>Cancel</StudioButton>
+              <StudioButton variant="primary" onClick={handleImageInsert} disabled={!imageUrl.trim()}>Insert Image</StudioButton>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Bottom hint */}
+      {/* ── Bottom status bar ── */}
       <div style={{
-        padding: "8px 16px", borderTop: `1px solid ${STUDIO_COLORS.border}`,
+        padding: "6px 14px", borderTop: `1px solid ${STUDIO_COLORS.border}`,
         background: STUDIO_COLORS.surface, fontSize: 11, color: STUDIO_COLORS.textMuted,
+        display: "flex", gap: 16, alignItems: "center",
       }}>
-        Markdown supported — use # for headings, ** for bold, _ for italic, - for bullets.
-        {value.length > 0 && <span style={{ marginLeft: 12 }}>{value.length.toLocaleString()} characters</span>}
+        <span>Markdown</span>
+        {value.length > 0 && <span>{value.length.toLocaleString()} chars</span>}
+        {value.length > 0 && <span>~{Math.ceil(value.split(/\s+/).filter(Boolean).length / 200)} min read</span>}
+        <span style={{ marginLeft: "auto" }}>H1 H2 H3 | **bold** *italic* `code` | - list | ![img](url) | :::tip text</span>
       </div>
     </div>
   );
