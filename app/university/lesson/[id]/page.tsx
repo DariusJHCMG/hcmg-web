@@ -76,13 +76,28 @@ export default async function LessonPage({ params }: Props) {
     options:       (q.options_json as { label: string; is_correct: boolean }[]).map(o => ({ label: o.label })),
   }));
 
-  // Find linked assessment (for quiz_pass completion mode)
+  // Find assessment linked to this specific lesson (for quiz_pass completion mode)
   const { data: linkedAssessment } = await sb
     .from("uni_assessments")
     .select("id")
     .eq("lesson_id", id)
     .eq("is_active", true)
     .maybeSingle();
+
+  // If this is the last lesson, find the course-level final assessment (lesson_id IS NULL)
+  const finalAssessmentId: string | null = nextId === null
+    ? await (async () => {
+        const { data } = await sb
+          .from("uni_assessments")
+          .select("id")
+          .eq("course_id", course.id)
+          .eq("assessment_type", "final_assessment")
+          .is("lesson_id", null)
+          .eq("is_active", true)
+          .maybeSingle();
+        return data?.id ?? null;
+      })()
+    : null;
 
   // Current progress
   const { data: progress } = await sb
@@ -115,6 +130,7 @@ export default async function LessonPage({ params }: Props) {
       resources={(lesson.resources_json as { label: string; storage_path: string }[]) ?? []}
       quizQuestions={safeQuestions}
       linkedAssessmentId={linkedAssessment?.id ?? null}
+      finalAssessmentId={finalAssessmentId}
       prevLessonId={prevId}
       nextLessonId={nextId}
       initialWatchPct={progress?.watch_pct ?? 0}

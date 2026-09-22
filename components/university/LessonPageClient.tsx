@@ -52,6 +52,8 @@ interface Props {
   quizQuestions: QuizQuestion[];
   /** ID of the assessment linked to this lesson (for knowledge_check completion_mode) */
   linkedAssessmentId: string | null;
+  /** ID of the course-level final assessment — only set on the last lesson */
+  finalAssessmentId: string | null;
   prevLessonId: string | null;
   nextLessonId: string | null;
   initialWatchPct: number;
@@ -63,7 +65,7 @@ interface Props {
 
 export function LessonPageClient({
   lessonId, courseId, courseSlug, courseTitle, lessonTitle, lessonDescription,
-  lessonType, transcript, resources, quizQuestions, linkedAssessmentId,
+  lessonType, transcript, resources, quizQuestions, linkedAssessmentId, finalAssessmentId,
   prevLessonId, nextLessonId, initialWatchPct, initialQuizPassed = false,
   completionMode = "watch_pct", completionThresholdPct = 80,
 }: Props) {
@@ -399,14 +401,25 @@ export function LessonPageClient({
               </div>
             )
           ) : (
+            // Last lesson — route to final assessment or course complete
             completed ? (
-              <Link href={`/university/course/${courseSlug}`} style={{
-                padding: "12px 20px", borderRadius: 10,
-                background: "linear-gradient(135deg,#FF9847,#F37021)",
-                color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none",
-              }}>
-                Back to course ✓
-              </Link>
+              finalAssessmentId ? (
+                <Link href={`/university/assessment/${finalAssessmentId}`} style={{
+                  padding: "12px 24px", borderRadius: 10,
+                  background: "linear-gradient(135deg,#FF9847,#F37021)",
+                  color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none",
+                }}>
+                  Take Final Assessment →
+                </Link>
+              ) : (
+                <Link href={`/university/course/${courseSlug}`} style={{
+                  padding: "12px 24px", borderRadius: 10,
+                  background: "linear-gradient(135deg,#22c55e,#16a34a)",
+                  color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none",
+                }}>
+                  🎉 Course Complete — View Certificate
+                </Link>
+              )
             ) : (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
                 <button disabled style={{
@@ -414,7 +427,7 @@ export function LessonPageClient({
                   background: "#e2e8f0", color: "#9ca3af",
                   fontWeight: 700, fontSize: 13, border: "none", cursor: "not-allowed",
                 }}>
-                  🔒 Back to course
+                  {finalAssessmentId ? "🔒 Take Final Assessment" : "🔒 Complete Course"}
                 </button>
                 <span style={{ fontSize: 11, color: "#9ca3af" }}>
                   {quizQuestions.length > 0
