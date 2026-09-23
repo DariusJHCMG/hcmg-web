@@ -64,6 +64,30 @@ const DEMO_LOANS: Record<string, object> = {
     targetCloseDate:     "2025-11-14",
     lockStatus:          "floating",
   },
+  // ── Starting Now demo loan — pre-fills all referral fields ───────────────────
+  // Use loan number HCMG-SN-TEST in the Starting Now slide-over or wizard
+  // to instantly fill every field and send a live test referral to Starting Now.
+  "HCMG-SN-TEST": {
+    found:               true,
+    borrowerFirstName:   "David",
+    borrowerLastName:    "Thompson",
+    borrowerEmail:       "david.thompson.test@hcmgloans.com",
+    borrowerPhone:       "4105550192",
+    borrowerCity:        "Baltimore",
+    borrowerState:       "Maryland",
+    loanType:            "purchase_fha",
+    loanAmount:          285000,
+    purchasePrice:       300000,
+    propertyAddress:     "1842 North Charles Street",
+    propertyCity:        "Baltimore",
+    propertyState:       "MD",
+    propertyZip:         "21218",
+    targetCloseDate:     "2026-11-30",
+    lockStatus:          "floating",
+    channelType:         "Broker",
+    compensationType:    "Borrower",
+    deepLink:            null,
+  },
 };
 
 // ── Loan number normalisation ────────────────────────────────────────────────
