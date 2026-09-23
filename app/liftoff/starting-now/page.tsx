@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 import type { StartingNowReferral } from "@/lib/database.types";
 import type { Metadata } from "next";
+import { StartingNowSlideOverTrigger } from "@/components/liftoff/StartingNowSlideOverTrigger";
 
 export const metadata: Metadata = { title: "Starting Now Referrals — HCMG Lift Off" };
 export const dynamic = "force-dynamic";
@@ -67,19 +68,14 @@ export default async function StartingNowPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between">
+      {/* Header — button is rendered by the client wrapper */}
+      <StartingNowSlideOverTrigger>
         <div>
           <p className="ok-gradient-text text-xs font-bold uppercase tracking-[0.2em]">Harris Capital Mortgage Group</p>
           <h1 className="mt-1 text-2xl font-extrabold text-ink">Starting Now Referrals</h1>
           <p className="mt-0.5 text-sm text-muted">Credit repair referrals sent to Starting Now Corporation.</p>
         </div>
-        <Link href="/liftoff/new"
-          className="rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 flex-shrink-0"
-          style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
-          + New Referral
-        </Link>
-      </div>
+      </StartingNowSlideOverTrigger>
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-5">
