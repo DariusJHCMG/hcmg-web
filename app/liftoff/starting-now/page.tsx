@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { StartingNowReferral } from "@/lib/database.types";
 import type { Metadata } from "next";
 import { StartingNowSlideOverTrigger } from "@/components/liftoff/StartingNowSlideOverTrigger";
+import { StartingNowAdminSwitcher } from "@/components/liftoff/StartingNowAdminSwitcher";
 
 export const metadata: Metadata = { title: "Starting Now Referrals — HCMG Lift Off" };
 export const dynamic = "force-dynamic";
@@ -40,23 +41,53 @@ function statusLabel(referral: StartingNowReferral): string {
   return referral.current_status ?? "Awaiting Update";
 }
 
-async function getReferrals(profileId: string, isAdmin: boolean): Promise<StartingNowReferral[]> {
-  const sb = createServiceClient();
-  let q = sb
-    .from("starting_now_referrals")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (!isAdmin) q = q.eq("submitter_id", profileId);
-  const { data } = await q;
-  return (data ?? []) as StartingNowReferral[];
-}
-
-export default async function StartingNowPage() {
+export default async function StartingNowPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lo?: string }>;
+}) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/liftoff-login?next=/liftoff/starting-now");
 
   const isAdmin = profile.role === "admin" || profile.role === "developer";
-  const referrals = await getReferrals(profile.id, isAdmin);
+  const sp = await searchParams;
+
+  // ── Determine whose referrals to show ────────────────────────
+  // Non-admins: ALWAYS their own — ignore any ?lo= param entirely
+  // Admins: their own by default, or a specific LO via ?lo=<id>
+  const viewingId: string = isAdmin && sp.lo ? sp.lo : profile.id;
+
+  const sb = createServiceClient();
+
+  // ── Fetch referrals — always scoped to exactly one user ───────
+  // Hard rule: non-admins can NEVER see another user's referrals.
+  // Even if someone manually appends ?lo= to the URL, viewingId
+  // above is forced to profile.id for non-admins.
+  const { data: referralsRaw } = await sb
+    .from("starting_now_referrals")
+    .select("*")
+    .eq("submitter_id", viewingId)
+    .order("created_at", { ascending: false });
+
+  const referrals = (referralsRaw ?? []) as StartingNowReferral[];
+
+  // ── Fetch LO list for admin switcher ─────────────────────────
+  let loList: { id: string; full_name: string }[] = [];
+  if (isAdmin) {
+    const { data: profiles } = await sb
+      .from("profiles")
+      .select("id, full_name")
+      .eq("role", "loan_officer")
+      .eq("is_active", true)
+      .order("full_name");
+    loList = (profiles ?? []) as { id: string; full_name: string }[];
+  }
+
+  // ── Viewing label ─────────────────────────────────────────────
+  const isViewingOwn  = viewingId === profile.id;
+  const viewingName   = isViewingOwn
+    ? null
+    : loList.find(l => l.id === viewingId)?.full_name ?? "Unknown LO";
 
   const stats = {
     total:   referrals.length,
@@ -68,23 +99,41 @@ export default async function StartingNowPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header — button is rendered by the client wrapper */}
+      {/* Header */}
       <StartingNowSlideOverTrigger>
         <div>
           <p className="ok-gradient-text text-xs font-bold uppercase tracking-[0.2em]">Harris Capital Mortgage Group</p>
           <h1 className="mt-1 text-2xl font-extrabold text-ink">Starting Now Referrals</h1>
-          <p className="mt-0.5 text-sm text-muted">Credit repair referrals sent to Starting Now Corporation.</p>
+          <p className="mt-0.5 text-sm text-muted">
+            {isViewingOwn
+              ? "Credit repair referrals you have sent to Starting Now Corporation."
+              : `Viewing referrals submitted by ${viewingName}.`}
+          </p>
         </div>
       </StartingNowSlideOverTrigger>
+
+      {/* Admin LO switcher */}
+      {isAdmin && (
+        <div className="rounded-2xl border border-line bg-white px-5 py-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted/60 mb-3">
+            Admin View Controls
+          </p>
+          <StartingNowAdminSwitcher
+            myId={profile.id}
+            los={loList}
+            currentLoId={isViewingOwn ? null : viewingId}
+          />
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-5">
         {[
-          { label: "Total",       value: stats.total },
-          { label: "Sent",        value: stats.sent },
-          { label: "Active",      value: stats.active },
-          { label: "Goal Reached",value: stats.goal },
-          { label: "Send Failed", value: stats.failed },
+          { label: "Total",        value: stats.total },
+          { label: "Sent",         value: stats.sent },
+          { label: "Active",       value: stats.active },
+          { label: "Goal Reached", value: stats.goal },
+          { label: "Send Failed",  value: stats.failed },
         ].map(s => (
           <div key={s.label} className="rounded-2xl border border-line bg-white p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted/70">{s.label}</p>
@@ -98,7 +147,10 @@ export default async function StartingNowPage() {
         <div className="border-b border-line px-6 py-4 flex items-center justify-between">
           <div>
             <h2 className="font-bold text-ink">Referrals</h2>
-            <p className="text-xs text-muted">{referrals.length} total{isAdmin ? " — all LOs" : ""}</p>
+            <p className="text-xs text-muted">
+              {referrals.length} total
+              {!isViewingOwn && viewingName ? ` — ${viewingName}` : ""}
+            </p>
           </div>
         </div>
 
@@ -107,13 +159,17 @@ export default async function StartingNowPage() {
             <p className="text-4xl mb-3">🛠️</p>
             <p className="font-bold text-ink mb-1">No referrals yet</p>
             <p className="text-sm text-muted mb-6">
-              Submit a Credit Repair Referral request in Lift Off to send a borrower to Starting Now.
+              {isViewingOwn
+                ? "Submit a Credit Repair Referral to send a borrower to Starting Now."
+                : `${viewingName ?? "This LO"} has not submitted any Starting Now referrals yet.`}
             </p>
-            <Link href="/liftoff/new"
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
-              New Referral Request
-            </Link>
+            {isViewingOwn && (
+              <Link href="/liftoff/new"
+                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white"
+                style={{ background: "linear-gradient(135deg,#FF9847,#F37021)" }}>
+                New Referral Request
+              </Link>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -122,7 +178,6 @@ export default async function StartingNowPage() {
                 <tr className="border-b border-line bg-sand text-xs font-semibold uppercase tracking-[0.1em] text-muted/70">
                   <th className="px-5 py-3 text-left">Borrower</th>
                   <th className="px-5 py-3 text-left">ARIVE #</th>
-                  {isAdmin && <th className="px-5 py-3 text-left">LO</th>}
                   <th className="px-5 py-3 text-left">Sent</th>
                   <th className="px-5 py-3 text-left">Status</th>
                   <th className="px-5 py-3 text-left">Credit Scores</th>
@@ -141,9 +196,6 @@ export default async function StartingNowPage() {
                       <td className="px-5 py-3.5 font-mono text-xs text-muted">
                         {r.arive_loan_number ?? "—"}
                       </td>
-                      {isAdmin && (
-                        <td className="px-5 py-3.5 text-xs text-muted">{r.submitter_name}</td>
-                      )}
                       <td className="px-5 py-3.5 text-xs text-muted">
                         {r.sent_at
                           ? new Date(r.sent_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" })
@@ -162,10 +214,10 @@ export default async function StartingNowPage() {
                       <td className="px-5 py-3.5 text-xs text-muted">
                         {hasScores ? (
                           <span className="font-mono">
-                            {r.experian  ? `EX ${r.experian}` : ""}
-                            {r.experian  && (r.equifax || r.transunion) ? " · " : ""}
-                            {r.equifax   ? `EQ ${r.equifax}` : ""}
-                            {r.equifax   && r.transunion ? " · " : ""}
+                            {r.experian   ? `EX ${r.experian}`   : ""}
+                            {r.experian   && (r.equifax || r.transunion) ? " · " : ""}
+                            {r.equifax    ? `EQ ${r.equifax}`    : ""}
+                            {r.equifax    && r.transunion ? " · " : ""}
                             {r.transunion ? `TU ${r.transunion}` : ""}
                           </span>
                         ) : "—"}
@@ -196,9 +248,9 @@ export default async function StartingNowPage() {
       <div className="rounded-xl border border-line bg-sand px-5 py-3">
         <p className="text-xs text-muted">
           <span className="font-semibold text-ink">🔒 Credit Score Privacy:</span>{" "}
-          Experian, Equifax, and TransUnion scores shown above are provided by Starting Now and are
-          visible to the referring loan officer and HCMG administrators only. These scores are never included
-          in email notifications per HCMG NPI handling policy.
+          Experian, Equifax, and TransUnion scores are provided by Starting Now and are visible
+          to the referring loan officer and HCMG administrators only. These scores are never
+          included in email notifications per HCMG NPI handling policy.
         </p>
       </div>
     </div>
