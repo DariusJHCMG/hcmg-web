@@ -1,16 +1,13 @@
 -- ═══════════════════════════════════════════════════════════════
 -- HCMG Test Seed — Starting Now Phase 2 Demo Referral
--- Run this once in the Supabase SQL editor to create a realistic
--- test referral with a full Phase 2 status update payload so you
--- can see every field in the UI.
+-- Run this in the Supabase SQL editor AFTER running the constraint
+-- fix migration (20260920_lift_off_credit_repair_type.sql).
 --
--- Submitter: Darius James (admin — id 736a599a-...)
--- Borrower:  Marcus Washington
--- Status:    Enrolled (active credit repair)
--- Scores:    EX 659 · EQ 640 · TU 647 (real Starting Now sample values)
+-- Creates: Marcus Washington test referral under Darius James
+-- Status:  Enrolled with full 4-step history + credit scores
 -- ═══════════════════════════════════════════════════════════════
 
--- ── Step 1: Lift Off request row ────────────────────────────────
+-- ── Step 1: Lift Off request row ─────────────────────────────────
 INSERT INTO public.lift_off_requests (
   id,
   request_type,
@@ -34,7 +31,7 @@ INSERT INTO public.lift_off_requests (
   'a1b2c3d4-0001-0001-0001-000000000001'::uuid,
   'credit_repair_referral',
   'completed',
-  '736a599a-492a-4585-b845-74b264d0ac9e'::uuid,  -- Darius James
+  '736a599a-492a-4585-b845-74b264d0ac9e'::uuid,
   'Darius James',
   'darius@hcmgloans.com',
   '1918223',
@@ -49,7 +46,7 @@ INSERT INTO public.lift_off_requests (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- ── Step 2: Starting Now referral row — fully populated ─────────
+-- ── Step 2: Starting Now referral row ────────────────────────────
 INSERT INTO public.starting_now_referrals (
   id,
   lift_off_request_id,
@@ -85,7 +82,7 @@ INSERT INTO public.starting_now_referrals (
 ) VALUES (
   'b2c3d4e5-0001-0001-0001-000000000001'::uuid,
   'a1b2c3d4-0001-0001-0001-000000000001'::uuid,
-  '736a599a-492a-4585-b845-74b264d0ac9e'::uuid,  -- Darius James
+  '736a599a-492a-4585-b845-74b264d0ac9e'::uuid,
   'Darius James',
   'darius@hcmgloans.com',
   '1918223',
@@ -98,66 +95,32 @@ INSERT INTO public.starting_now_referrals (
   'Maryland',
   'Referred from VA purchase — borrower needs score improvement before we can lock.',
   now() - interval '3 days',
-  'b2c3d4e5-0001-0001-0001-000000000001',        -- external_crm_contact_id = our id
-  'ENG-98765',                                    -- Starting Now engagement ID
-  now() - interval '3 days',                     -- sent_at
+  'b2c3d4e5-0001-0001-0001-000000000001',
+  'ENG-98765',
+  now() - interval '3 days',
   'sent',
-  null,                                           -- no send error
-  'Enrolled',                                     -- current_status from Starting Now
-  null,                                           -- no follow-up date (enrolled, not follow-up)
-  '659',                                          -- experian
-  '640',                                          -- equifax
-  '647',                                          -- transunion
+  null,
+  'Enrolled',
+  null,
+  '659',
+  '640',
+  '647',
   'Completed initial counseling session. Marcus is enrolled and actively working on removing 3 medical collections from Equifax. Target score 680 within 60 days.',
-  '{}',                                           -- no opt-outs
-  now() - interval '12 hours',                   -- last_update_at
-  -- Full status history — shows the entire journey from Starting Now
+  '{}',
+  now() - interval '12 hours',
   '[
-    {
-      "status": "Attempting Contact",
-      "updated_at": "' || (now() - interval '3 days')::text || '",
-      "experian": null,
-      "equifax": null,
-      "transunion": null,
-      "notes": "Initial outreach sent via email and SMS.",
-      "follow_up_date": null
-    },
-    {
-      "status": "Consultation Scheduled",
-      "updated_at": "' || (now() - interval '2 days')::text || '",
-      "experian": null,
-      "equifax": null,
-      "transunion": null,
-      "notes": "Marcus responded — consultation scheduled for tomorrow at 2PM ET.",
-      "follow_up_date": "' || (now() - interval '1 day')::date::text || '"
-    },
-    {
-      "status": "Evaluation Completed",
-      "updated_at": "' || (now() - interval '1 day')::text || '",
-      "experian": "659",
-      "equifax": "640",
-      "transunion": "647",
-      "notes": "Credit pull complete. Experian 659 / Equifax 640 / TransUnion 647. 3 medical collections on Equifax identified as primary drag. Marcus wants to proceed.",
-      "follow_up_date": null
-    },
-    {
-      "status": "Enrolled",
-      "updated_at": "' || (now() - interval '12 hours')::text || '",
-      "experian": "659",
-      "equifax": "640",
-      "transunion": "647",
-      "notes": "Completed initial counseling session. Marcus is enrolled and actively working on removing 3 medical collections from Equifax. Target score 680 within 60 days.",
-      "follow_up_date": null
-    }
+    {"status":"Attempting Contact","updated_at":"2026-09-17T14:00:00.000Z","experian":null,"equifax":null,"transunion":null,"notes":"Initial outreach sent via email and SMS.","follow_up_date":null},
+    {"status":"Consultation Scheduled","updated_at":"2026-09-18T10:30:00.000Z","experian":null,"equifax":null,"transunion":null,"notes":"Marcus responded — consultation scheduled for tomorrow at 2PM ET.","follow_up_date":"2026-09-19"},
+    {"status":"Evaluation Completed","updated_at":"2026-09-19T18:00:00.000Z","experian":"659","equifax":"640","transunion":"647","notes":"Credit pull complete. Experian 659 / Equifax 640 / TransUnion 647. 3 medical collections on Equifax identified as primary drag. Marcus wants to proceed.","follow_up_date":null},
+    {"status":"Enrolled","updated_at":"2026-09-20T08:00:00.000Z","experian":"659","equifax":"640","transunion":"647","notes":"Completed initial counseling session. Marcus is enrolled and actively working on removing 3 medical collections from Equifax. Target score 680 within 60 days.","follow_up_date":null}
   ]'::jsonb,
   now() - interval '3 days',
   now() - interval '12 hours'
 )
 ON CONFLICT (id) DO NOTHING;
 
--- ── Verification ─────────────────────────────────────────────────
+-- ── Verify ────────────────────────────────────────────────────────
 SELECT
-  snr.id,
   snr.borrower_first_name || ' ' || snr.borrower_last_name AS borrower,
   snr.arive_loan_number,
   snr.send_status,
@@ -166,7 +129,6 @@ SELECT
   snr.equifax,
   snr.transunion,
   snr.startingnow_id,
-  jsonb_array_length(snr.status_history_json) AS history_entries,
-  snr.latest_notes
+  jsonb_array_length(snr.status_history_json) AS history_entries
 FROM public.starting_now_referrals snr
 WHERE snr.id = 'b2c3d4e5-0001-0001-0001-000000000001'::uuid;
