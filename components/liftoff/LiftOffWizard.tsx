@@ -1666,48 +1666,62 @@ function WizardInner() {
             {/* Credit Repair Referral — Starting Now contact info + consent */}
             {isCreditRepair && (
               <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-5">
-                <div>
-                  <h3 className="text-sm font-bold text-ink">🛠️ Starting Now — Borrower Contact Info</h3>
-                  <p className="text-xs text-muted mt-0.5">
-                    Borrower name is auto-filled from ARIVE above. Provide the borrower&apos;s direct contact info
-                    and home city/state so Starting Now can reach them.
-                  </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-ink">🛠️ Starting Now — Borrower Contact Info</h3>
+                    <p className="text-xs text-muted mt-0.5">
+                      All fields are auto-filled from ARIVE. Only Partner Notes can be edited.
+                    </p>
+                  </div>
+                  {ariveFieldsLocked && (
+                    <span className="flex-shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold border bg-green-50 text-green-700 border-green-200">
+                      Auto-filled from ARIVE
+                    </span>
+                  )}
                 </div>
 
-                {/* Row 1: Email + Phone */}
+                {/* Row 1: Email + Phone — read-only once ARIVE lookup succeeds */}
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Borrower Email" required hint="Auto-filled from ARIVE — edit if needed">
+                  <Field label="Borrower Email" required hint="Pulled from ARIVE">
                     <Input
                       type="email"
                       value={snBorrowerEmail}
-                      onChange={e => setSnBorrowerEmail(e.target.value)}
+                      onChange={e => !ariveFieldsLocked && setSnBorrowerEmail(e.target.value)}
                       placeholder="borrower@email.com"
+                      readOnly={ariveFieldsLocked}
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""}
                     />
                   </Field>
-                  <Field label="Borrower Phone" required hint="Auto-filled from ARIVE — digits only">
+                  <Field label="Borrower Phone" required hint="Pulled from ARIVE — digits only">
                     <Input
                       type="tel"
                       value={snBorrowerPhone}
-                      onChange={e => setSnBorrowerPhone(e.target.value)}
+                      onChange={e => !ariveFieldsLocked && setSnBorrowerPhone(e.target.value)}
                       placeholder="e.g. 4101234567"
+                      readOnly={ariveFieldsLocked}
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""}
                     />
                   </Field>
                 </div>
 
-                {/* Row 2: City + State (borrower's home address, auto-filled from ARIVE) */}
+                {/* Row 2: City + State — read-only once ARIVE lookup succeeds */}
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Borrower City" hint="Auto-filled from ARIVE — edit if needed">
+                  <Field label="Borrower City" hint="Pulled from ARIVE">
                     <Input
                       value={snBorrowerCity}
-                      onChange={e => setSnBorrowerCity(e.target.value)}
+                      onChange={e => !ariveFieldsLocked && setSnBorrowerCity(e.target.value)}
                       placeholder="e.g. Baltimore"
+                      readOnly={ariveFieldsLocked}
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""}
                     />
                   </Field>
-                  <Field label="Borrower State" hint="Auto-filled from ARIVE — edit if needed">
+                  <Field label="Borrower State" hint="Pulled from ARIVE">
                     <Input
                       value={snBorrowerState}
-                      onChange={e => setSnBorrowerState(e.target.value)}
+                      onChange={e => !ariveFieldsLocked && setSnBorrowerState(e.target.value)}
                       placeholder="e.g. Maryland"
+                      readOnly={ariveFieldsLocked}
+                      className={ariveFieldsLocked ? "bg-sand text-muted cursor-not-allowed" : ""}
                     />
                   </Field>
                 </div>
