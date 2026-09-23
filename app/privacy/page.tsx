@@ -23,14 +23,20 @@ export default function PrivacyPage() {
         <div className="container-shell max-w-3xl">
           <h1 className="mb-2 text-3xl font-extrabold text-ink">Privacy Policy</h1>
           {/*
-            EFFECTIVE DATE: Updated January 27, 2026 to comply with:
+            EFFECTIVE DATE: Updated June 1, 2026 to comply with:
             - GLBA Safeguards Rule (FTC, 16 CFR Part 314, effective June 2023)
             - CFPB UDAAP guidance on NPI third-party disclosures
             - CCPA (California Consumer Privacy Act)
             - VCDPA (Virginia Consumer Data Protection Act)
             - State mortgage privacy regulations in NV and TX
+            Changes in this update:
+            - Added Starting Now Corporation as a disclosed service provider (credit repair referrals)
+            - Added credit score data (Experian, Equifax, TransUnion) to information we collect (Section 2)
+            - Added credit score retention period to Section 6
+            - Updated GLBA Annual Notice (Section 9) to reflect Starting Now referral sharing
+            - Removed Porchy / Flight Deck CRM — integration discontinued; no further NPI sharing
           */}
-          <p className="mb-8 text-sm text-muted">Effective date: January 27, 2026 · Last updated: January 27, 2026</p>
+          <p className="mb-8 text-sm text-muted">Effective date: January 27, 2026 · Last updated: June 1, 2026</p>
 
           {/* ── 1. Introduction ──────────────────────────────────── */}
           <H2>1. Introduction</H2>
@@ -52,6 +58,7 @@ export default function PrivacyPage() {
             <li><strong>Contact information:</strong> name, email address, phone number, mailing address</li>
             <li><strong>Mortgage-related inputs:</strong> price range, income range, credit range, loan goals, loan purpose, loan amount, purchase price, property address</li>
             <li><strong>Loan transaction data:</strong> ARIVE loan numbers, loan type, lock status, earnest money, seller credits, income notes, asset notes, credit notes (collected from licensed loan officers submitting requests through our internal Liftoff system)</li>
+            <li><strong>Credit scores:</strong> Experian, Equifax, and TransUnion credit score values, received from Starting Now Corporation as part of a credit repair referral status update when a borrower has been referred by their loan officer</li>
             <li><strong>Usage data:</strong> pages visited, time on site, referring URL, funnel interactions</li>
             <li><strong>Device and browser information:</strong> IP address, browser type, operating system</li>
             <li><strong>Gift fund donor information:</strong> name, address, phone, email (when applicable)</li>
@@ -93,8 +100,8 @@ export default function PrivacyPage() {
 
           <p className="mb-3 text-sm font-semibold text-ink">Technology Service Providers</p>
           <P>
-            The following service providers process data on our behalf under confidentiality obligations.
-            Each is bound by their own privacy policy and security certifications as noted:
+            The following service providers process data on our behalf under confidentiality and service provider
+            agreements. Each is bound by their own privacy policy and security certifications as noted:
           </P>
           <div className="mb-6 overflow-hidden rounded-2xl border border-line">
             <table className="w-full text-sm">
@@ -116,7 +123,7 @@ export default function PrivacyPage() {
                 <tr>
                   <td className="px-4 py-3 font-semibold text-ink">Resend, Inc.</td>
                   <td className="px-4 py-3">Transactional email delivery</td>
-                  <td className="px-4 py-3">Borrower first name, ARIVE loan number, loan type, submitter email, included in operational email notifications</td>
+                  <td className="px-4 py-3">Borrower first name, ARIVE loan number, loan type, submitter email, included in operational email notifications. Credit scores are never included in email bodies.</td>
                   <td className="px-4 py-3">SOC 2 Type II</td>
                 </tr>
                 <tr>
@@ -143,6 +150,21 @@ export default function PrivacyPage() {
                   <td className="px-4 py-3">Browser fingerprint data for bot challenge verification on public lead forms</td>
                   <td className="px-4 py-3">ISO 27001, SOC 2</td>
                 </tr>
+                <tr>
+                  <td className="px-4 py-3 font-semibold text-ink">Starting Now Corporation</td>
+                  <td className="px-4 py-3">Credit repair referral services</td>
+                  <td className="px-4 py-3">
+                    Borrower first name, last name, email address, phone number, city, and state — shared only
+                    when a licensed loan officer refers a borrower for credit repair services through our internal
+                    Liftoff platform. Borrower consent is confirmed by the loan officer before any referral is
+                    submitted. Starting Now is bound by a signed Service Provider Agreement requiring them to
+                    protect this information and use it solely for the purpose of delivering credit repair services.
+                    Starting Now may return credit score data (Experian, Equifax, TransUnion) to HCMG as part of
+                    client status updates; these scores are stored securely and are only accessible to the
+                    referring loan officer and HCMG administrators.
+                  </td>
+                  <td className="px-4 py-3">Subject to signed Service Provider Agreement</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -160,6 +182,7 @@ export default function PrivacyPage() {
             <li><strong>Conventional and other loan files:</strong> 7 years post-closing per GLBA and state mortgage regulations</li>
             <li><strong>Marketing and lead inquiry data:</strong> Until you opt out or request deletion, or 7 years from last contact, whichever is earlier</li>
             <li><strong>ARIVE lookup results:</strong> 120 seconds (automatically deleted after use, these are transient lookups only)</li>
+            <li><strong>Credit score data from Starting Now Corporation:</strong> 3 years from the date of the last status update received from Starting Now, then permanently deleted</li>
             <li><strong>Session tokens:</strong> 7 days, then automatically expired</li>
           </ul>
           <P>
@@ -206,13 +229,58 @@ export default function PrivacyPage() {
           <H2>9. GLBA Annual Privacy Notice</H2>
           <P>
             As a mortgage company and covered financial institution under the Gramm-Leach-Bliley Act (15 U.S.C. §§ 6801–6827),
-            we provide this notice of our privacy practices. We do not share your nonpublic personal information with
-            non-affiliated third parties for marketing purposes. We share NPI only as permitted by Regulation P (12 CFR Part 1016):{" "}
-            to process transactions you request, to service your account, and as required by law.
+            we provide this annual notice of our privacy practices as required by Regulation P (12 CFR Part 1016).
           </P>
+
+          <div className="mb-6 overflow-hidden rounded-2xl border border-line">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line bg-sand">
+                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted">What We Share</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted">Does HCMG Share?</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted">Can You Limit?</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line text-muted">
+                <tr>
+                  <td className="px-4 py-3">For our everyday business purposes — processing your loan, maintaining your account, responding to court orders and legal investigations</td>
+                  <td className="px-4 py-3 font-semibold text-ink">Yes</td>
+                  <td className="px-4 py-3">No</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3">For our marketing purposes — to offer our products and services to you</td>
+                  <td className="px-4 py-3 font-semibold text-ink">No</td>
+                  <td className="px-4 py-3">We don&apos;t share</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3">For joint marketing with other financial companies</td>
+                  <td className="px-4 py-3 font-semibold text-ink">No</td>
+                  <td className="px-4 py-3">We don&apos;t share</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3">For non-affiliates to market to you</td>
+                  <td className="px-4 py-3 font-semibold text-ink">No</td>
+                  <td className="px-4 py-3">We don&apos;t share</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3">
+                    For credit repair referral services — sharing your contact information with Starting Now
+                    Corporation when your loan officer refers you for credit repair services
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-ink">Yes — only when referred by your LO with your consent</td>
+                  <td className="px-4 py-3">Yes — tell your loan officer not to submit a referral, or do not consent when asked</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <P>
-            You have the right to opt out of certain data sharing. Because we do not share NPI for marketing purposes,
-            there is nothing to opt out of at this time. If our practices change, we will notify you in advance.
+            <strong>To opt out of credit repair referral sharing:</strong> Inform your loan officer that you do not
+            wish to be referred to Starting Now Corporation. Your loan officer is required to obtain your consent
+            before submitting a referral — you may decline at any time before the referral is sent. Once a referral
+            has been submitted, contact us at{" "}
+            <a href="mailto:privacy@hcmgloans.com" className="text-accent underline">privacy@hcmgloans.com</a>{" "}
+            to request that your information be removed from Starting Now&apos;s system.
           </P>
 
           {/* ── 10. Cookies and Tracking ──────────────────────────── */}

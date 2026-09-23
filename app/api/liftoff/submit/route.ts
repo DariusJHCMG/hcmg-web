@@ -5,7 +5,7 @@
  * Auth: authenticated user (any role with liftoff access).
  */
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentProfile } from "@/lib/auth";
+import { getVerifiedProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import { sendLiftOffNotification, sendLiftOffConfirmation } from "@/lib/liftoff-mailer";
 import type { LiftOffEmailPayload } from "@/lib/liftoff-mailer";
@@ -16,7 +16,7 @@ import { sendPushToQueueUsers } from "@/lib/push";
 
 export async function POST(req: NextRequest) {
   try {
-  const profile = await getCurrentProfile();
+  const profile = await getVerifiedProfile();
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // ── Rate limit: 20 submissions per authenticated user per hour ─────────────

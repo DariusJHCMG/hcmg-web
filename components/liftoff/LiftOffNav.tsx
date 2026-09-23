@@ -35,8 +35,9 @@ export function LiftOffNav({
   const [moreOpen, setMoreOpen] = useState(false);
 
   const navItems: NavItem[] = [
-    { href: "/liftoff",          label: "Dashboard",       icon: "🏠", exact: true },
-    { href: "/liftoff/new",      label: "New Request",      icon: "✨" },
+    { href: "/liftoff",                label: "Dashboard",       icon: "🏠", exact: true },
+    { href: "/liftoff/new",            label: "New Request",      icon: "✨" },
+    { href: "/liftoff/starting-now",   label: "Starting Now",     icon: "🛠️" },
     ...(isQueueUser     ? [{ href: "/liftoff/queue",    label: "Ops Queue",       icon: "📥" }] : []),
     ...(isHelpDeskUser  ? [{ href: "/liftoff/helpdesk", label: "Help Desk Queue", icon: "🛎" }] : []),
     ...(isLockDeskUser  ? [{ href: "/liftoff/lockdesk", label: "Lock Desk Queue", icon: "🔒" }] : []),

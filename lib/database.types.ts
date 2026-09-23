@@ -370,7 +370,8 @@ export type LiftOffRequestType =
   | "disclosure_only"
   | "submission"
   | "loan_help_desk"
-  | "lock_request";
+  | "lock_request"
+  | "credit_repair_referral";
 
 export type LiftOffRequestStatus =
   | "pending"
@@ -574,6 +575,54 @@ export interface LiftOffRequest {
   compensation_type: string | null;  // "Borrower Paid" | "Lender Paid" etc. — brokered only
 }
 
+// ── Starting Now Integration Types ───────────────────────────────────────────
+
+export type StartingNowSendStatus = "pending" | "sent" | "failed";
+
+export interface StartingNowStatusHistoryEntry {
+  status: string;
+  updated_at: string;
+  experian: string | null;
+  equifax: string | null;
+  transunion: string | null;
+  notes: string | null;
+  follow_up_date: string | null;
+}
+
+export interface StartingNowReferral {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  lift_off_request_id: string | null;
+  submitter_id: string;
+  submitter_name: string;
+  submitter_email: string | null;
+  submitter_nmls: string | null;
+  arive_loan_number: string | null;
+  borrower_first_name: string;
+  borrower_last_name: string;
+  borrower_email: string | null;
+  borrower_phone: string | null;
+  borrower_city: string | null;
+  borrower_state: string | null;
+  partner_notes: string | null;
+  borrower_consent_confirmed_at: string | null;
+  startingnow_id: string | null;
+  external_crm_contact_id: string | null;
+  sent_at: string | null;
+  send_status: StartingNowSendStatus;
+  send_error: string | null;
+  send_response_raw: Record<string, unknown> | null;
+  current_status: string | null;
+  follow_up_date: string | null;
+  experian: string | null;
+  equifax: string | null;
+  transunion: string | null;
+  latest_notes: string | null;
+  opt_out: string[] | null;
+  last_update_at: string | null;
+  status_history_json: StartingNowStatusHistoryEntry[] | null;
+}
 
 /** SLICE-specific role — more granular than the portal Role */
 export type SliceRole = "super_admin" | "clo" | "executive" | "branch_manager" | "loan_officer";

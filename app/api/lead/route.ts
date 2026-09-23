@@ -564,24 +564,7 @@ export async function POST(request: NextRequest) {
     source:  lead.source,
   }, undefined, undefined, ip ?? undefined);
 
-  // ── 2. Fire-and-forget: Porchy Flight Deck CRM ───────────────────────────
-  const flightDeckUrl = process.env.FLIGHT_DECK_LEADS_URL;
-  const flightDeckKey = process.env.FLIGHT_DECK_API_KEY;
-  if (flightDeckUrl && flightDeckKey) {
-    fetch(flightDeckUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${flightDeckKey}` },
-      body: JSON.stringify({
-        ...lead,
-        source_app:       "orange-key-web",
-        assigned_lo_slug: lead.loSlug ?? null,
-        assigned_lo_name: lead.loName ?? null,
-        assigned_lo_nmls: lead.loNmls ?? null,
-      }),
-    }).catch(() => {});
-  }
-
-  // ── 3. Resolve LO profile ─────────────────────────────────────────────────
+  // ── 2. Resolve LO profile ─────────────────────────────────────────────────
   let loNotifyEmail:    string | null = null;
   let loNmls:           string | null = null;
   let loPhone:          string | null = null;
@@ -614,7 +597,7 @@ export async function POST(request: NextRequest) {
     }).then(() => {});
   }
 
-  // ── 3b. Resolve co-branded page data (if applicable) ─────────────────────
+  // ── 2b. Resolve co-branded page data (if applicable) ─────────────────────
   let coBrandedPageData: {
     realtor_name: string; realtor_company: string;
     realtor_phone: string | null; realtor_email: string | null;
@@ -632,7 +615,7 @@ export async function POST(request: NextRequest) {
     if (cbRow) coBrandedPageData = cbRow;
   }
 
-  // ── 4. Send emails ────────────────────────────────────────────────────────
+  // ── 3. Send emails ────────────────────────────────────────────────────────
   const resend = getResend();
   if (resend) {
     // Parse DSCR notes into key/value map (pipe-separated "Key: Value | Key: Value")

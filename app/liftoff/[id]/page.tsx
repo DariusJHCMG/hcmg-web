@@ -2,17 +2,33 @@ import { redirect, notFound } from "next/navigation";
 import { getCurrentProfile, canAccessLiftOffQueue } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
-import type { LiftOffRequest } from "@/lib/database.types";
+import type { LiftOffRequest, StartingNowReferral } from "@/lib/database.types";
 import { LiftOffResubmitPanel } from "@/components/liftoff/LiftOffResubmitPanel";
 
 export const dynamic = "force-dynamic";
 
 const TYPE_LABELS: Record<string, string> = {
-  register_disclosure: "Register + Disclosure",
-  disclosure_only:     "Disclosure Only",
-  submission:          "Submission",
-  loan_help_desk:      "Loan Help Desk",
-  lock_request:        "Lock Desk Request",
+  register_disclosure:   "Register + Disclosure",
+  disclosure_only:       "Disclosure Only",
+  submission:            "Submission",
+  loan_help_desk:        "Loan Help Desk",
+  lock_request:          "Lock Desk Request",
+  credit_repair_referral: "Credit Repair Referral — Starting Now",
+};
+
+// ── Starting Now status badge styles ─────────────────────────
+const SN_STATUS_STYLES: Record<string, string> = {
+  "Attempting Contact":   "bg-yellow-50 text-yellow-700 border-yellow-200",
+  "Follow Up":            "bg-blue-50 text-blue-700 border-blue-200",
+  "Enrolled":             "bg-green-50 text-green-700 border-green-200",
+  "Milestone Reached":    "bg-green-50 text-green-700 border-green-200",
+  "Goal Reached":         "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "On Hold":              "bg-orange-50 text-orange-700 border-orange-200",
+  "Evaluation Completed": "bg-purple-50 text-purple-700 border-purple-200",
+  "Not Interested":       "bg-gray-50 text-gray-500 border-gray-200",
+  "Consumer Unreachable": "bg-gray-50 text-gray-500 border-gray-200",
+  "Invalid Number":       "bg-gray-50 text-gray-500 border-gray-200",
+  "Closed":               "bg-gray-50 text-gray-500 border-gray-200",
 };
 
 const PROPERTY_TYPE_LABELS: Record<string, string> = {
@@ -93,7 +109,7 @@ export default async function LiftOffDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ submitted?: string }>;
+  searchParams: Promise<{ submitted?: string; sn?: string }>;
 }) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
@@ -101,11 +117,24 @@ export default async function LiftOffDetailPage({
   const { id } = await params;
   const sp = await searchParams;
   const justSubmitted = sp.submitted === "1";
+  const snSendResult  = sp.sn; // "sent" | "failed" | undefined
   const isAdmin   = profile.role === "admin" || profile.role === "developer";
   const isOpsUser = !isAdmin && canAccessLiftOffQueue(profile);
 
   const request = await getRequest(id, profile.id, isAdmin, isOpsUser);
   if (!request) notFound();
+
+  // ── Starting Now referral — fetch if credit repair request ────
+  let snReferral: StartingNowReferral | null = null;
+  if (request.request_type === "credit_repair_referral") {
+    const sb = createServiceClient();
+    const { data } = await sb
+      .from("starting_now_referrals")
+      .select("*")
+      .eq("lift_off_request_id", id)
+      .maybeSingle();
+    snReferral = data as StartingNowReferral | null;
+  }
 
   // Calendar dates (date-only DB fields — no time needed)
   const fmt = (d: string | null) =>
@@ -131,6 +160,32 @@ export default async function LiftOffDetailPage({
           <div>
             <p className="font-bold text-green-800">Lift Off request submitted!</p>
             <p className="text-sm text-green-700">The HCMG ops team has been notified and will pick this up shortly.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Starting Now send result banner (shown once on redirect from wizard) */}
+      {justSubmitted && snSendResult === "sent" && (
+        <div className="rounded-2xl border border-green-200 bg-green-50 px-6 py-4 flex items-center gap-3">
+          <span className="text-2xl">✅</span>
+          <div>
+            <p className="font-bold text-green-800">Sent to Starting Now!</p>
+            <p className="text-sm text-green-700">
+              The borrower referral has been delivered to Starting Now Corporation. Track status updates on the{" "}
+              <Link href="/liftoff/starting-now" className="underline font-bold">Starting Now tab</Link>.
+            </p>
+          </div>
+        </div>
+      )}
+      {justSubmitted && snSendResult === "failed" && (
+        <div className="rounded-2xl border border-orange-300 bg-orange-50 px-6 py-4 flex items-center gap-3">
+          <span className="text-2xl">⚠️</span>
+          <div>
+            <p className="font-bold text-orange-800">Starting Now send failed</p>
+            <p className="text-sm text-orange-700">
+              The referral was saved locally but could not be delivered to Starting Now. View details on the{" "}
+              <Link href="/liftoff/starting-now" className="underline font-bold">Starting Now tab</Link>.
+            </p>
           </div>
         </div>
       )}
@@ -439,6 +494,93 @@ export default async function LiftOffDetailPage({
                 : null
             } />
           </div>
+        </div>
+      )}
+
+      {/* Starting Now Credit Repair Status Card */}
+      {request.request_type === "credit_repair_referral" && (
+        <div className="rounded-2xl border-2 border-[#142850]/20 overflow-hidden">
+          <div className="border-b border-[#142850]/20 bg-[#142850] px-6 py-4 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/50">Starting Now Corporation</p>
+              <h2 className="font-bold text-white text-sm mt-0.5">🛠️ Credit Repair Referral Status</h2>
+            </div>
+            <Link href="/liftoff/starting-now" className="text-xs font-bold text-white/70 hover:text-white">
+              All referrals →
+            </Link>
+          </div>
+
+          {!snReferral ? (
+            <div className="px-6 py-8 bg-white text-center">
+              <p className="text-sm text-muted">Starting Now referral record not found for this request.</p>
+            </div>
+          ) : (
+            <div className="bg-white px-6 py-4 space-y-4">
+              {/* Send status + credit status row */}
+              <div className="flex flex-wrap gap-3 items-center">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Send Status</p>
+                  {snReferral.send_status === "sent" ? (
+                    <span className="rounded-full px-2.5 py-1 text-[10px] font-bold border bg-green-50 text-green-700 border-green-200">✅ Sent</span>
+                  ) : snReferral.send_status === "failed" ? (
+                    <span className="rounded-full px-2.5 py-1 text-[10px] font-bold border bg-red-50 text-red-700 border-red-200">⚠️ Send Failed</span>
+                  ) : (
+                    <span className="rounded-full px-2.5 py-1 text-[10px] font-bold border bg-yellow-50 text-yellow-700 border-yellow-200">Pending</span>
+                  )}
+                </div>
+                {snReferral.current_status && (
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Credit Repair Status</p>
+                    <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold border ${SN_STATUS_STYLES[snReferral.current_status] ?? "bg-gray-50 text-gray-600 border-gray-200"}`}>
+                      {snReferral.current_status}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Credit scores — NPI, authenticated UI only */}
+              {(snReferral.experian || snReferral.equifax || snReferral.transunion) && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-2">Credit Scores (from Starting Now)</p>
+                  <div className="flex gap-4 text-sm">
+                    {snReferral.experian  && <span className="font-mono"><span className="text-muted text-xs">EX</span> <span className="font-bold text-ink">{snReferral.experian}</span></span>}
+                    {snReferral.equifax   && <span className="font-mono"><span className="text-muted text-xs">EQ</span> <span className="font-bold text-ink">{snReferral.equifax}</span></span>}
+                    {snReferral.transunion && <span className="font-mono"><span className="text-muted text-xs">TU</span> <span className="font-bold text-ink">{snReferral.transunion}</span></span>}
+                  </div>
+                </div>
+              )}
+
+              {/* Notes */}
+              {snReferral.latest_notes && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Latest Notes</p>
+                  <p className="text-sm text-ink">{snReferral.latest_notes}</p>
+                </div>
+              )}
+
+              {/* Follow-up date */}
+              {snReferral.follow_up_date && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Follow-up Date</p>
+                  <p className="text-sm font-semibold text-ink">
+                    {new Date(snReferral.follow_up_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}
+                  </p>
+                </div>
+              )}
+
+              {/* Send error */}
+              {snReferral.send_status === "failed" && snReferral.send_error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                  <p className="text-xs font-bold text-red-700 mb-0.5">Send Error</p>
+                  <p className="text-xs text-red-600">{snReferral.send_error}</p>
+                  <p className="text-xs text-red-500 mt-1">
+                    Contact the ops team or retry from the{" "}
+                    <Link href="/liftoff/starting-now" className="underline font-bold">Starting Now tab</Link>.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

@@ -47,15 +47,17 @@ const DOC_CHECKLISTS: Record<LiftOffRequestType, DocItem[]> = {
   submission: [],
   loan_help_desk: [],
   lock_request: [],
+  credit_repair_referral: [],
 };
 
 // ── File status pipeline per request type ────────────────────
 const FILE_STATUS_STEPS: Record<LiftOffRequestType, string[]> = {
-  register_disclosure:  ["Request Submitted", "Pre-Process Review", "Registered in ARIVE", "Disclosure Sent"],
-  disclosure_only:      ["Request Submitted", "Pre-Process Review", "Disclosure Sent"],
-  submission:           ["Request Submitted", "Pre-Process Review", "Registered in ARIVE", "Disclosure Sent", "Processor Assigned"],
-  loan_help_desk:       ["Request Submitted", "Help Desk Review", "Ops Response", "Resolved"],
-  lock_request:         ["Request Submitted", "Lock Desk Review", "Locked in Portal", "LO Notified"],
+  register_disclosure:    ["Request Submitted", "Pre-Process Review", "Registered in ARIVE", "Disclosure Sent"],
+  disclosure_only:        ["Request Submitted", "Pre-Process Review", "Disclosure Sent"],
+  submission:             ["Request Submitted", "Pre-Process Review", "Registered in ARIVE", "Disclosure Sent", "Processor Assigned"],
+  loan_help_desk:         ["Request Submitted", "Help Desk Review", "Ops Response", "Resolved"],
+  lock_request:           ["Request Submitted", "Lock Desk Review", "Locked in Portal", "LO Notified"],
+  credit_repair_referral: ["Request Submitted", "Sent to Starting Now", "Starting Now Attempting Contact", "Enrolled in Program"],
 };
 
 // ── Demo data ─────────────────────────────────────────────────
@@ -129,6 +131,13 @@ const REQUEST_TYPES: {
     tags: ["LOCK", "RATE", "PRICING"],
     icon: "🔒",
   },
+  {
+    id: "credit_repair_referral",
+    label: "Credit Repair Referral — Starting Now",
+    description: "Refer a borrower to Starting Now Corporation for credit repair services. Borrower info auto-fills from ARIVE and is sent directly to Starting Now after you confirm consent.",
+    tags: ["CREDIT REPAIR", "STARTING NOW", "REFERRAL"],
+    icon: "🛠️",
+  },
 ];
 
 // ── ARIVE lookup shape ────────────────────────────────────────
@@ -166,7 +175,12 @@ function StepBar({ step, requestType, onChangeType }: {
   onChangeType: () => void;
 }) {
   const isTwoStep = requestType !== "submission";
-  const steps = requestType === "lock_request"
+  const steps = requestType === "credit_repair_referral"
+    ? [
+        { n: 1, label: "Pick request type", sub: "Choose what kind of lift off" },
+        { n: 2, label: "Referral & Submit",  sub: "ARIVE #, borrower contact, consent" },
+      ]
+    : requestType === "lock_request"
     ? [
         { n: 1, label: "Pick request type", sub: "Choose what kind of lift off" },
         { n: 2, label: "Pricing & Submit",   sub: "Borrower, pricing, certify" },
@@ -569,11 +583,21 @@ function WizardInner() {
   const [lockChkArive, setLockChkArive]       = useState(false);
   const [lockChkLos, setLockChkLos]           = useState(false);
 
-  const selectedType   = REQUEST_TYPES.find(t => t.id === requestType);
-  const lockRequired   = selectedType?.lockRequired ?? false;
-  const isHelpDesk     = requestType === "loan_help_desk";
-  const isLockRequest  = requestType === "lock_request";
-  const isSubmission   = requestType === "submission";
+  // ── Starting Now referral state ───────────────────────────────
+  const [snBorrowerEmail, setSnBorrowerEmail]   = useState("");
+  const [snBorrowerPhone, setSnBorrowerPhone]   = useState("");
+  const [snPartnerNotes, setSnPartnerNotes]     = useState("");
+  const [snConsent, setSnConsent]               = useState(false);
+  const [snSendResult, setSnSendResult]         = useState<"idle"|"sending"|"sent"|"failed">("idle");
+  const [snReferralId, setSnReferralId]         = useState<string | null>(null);
+  const [snSendError, setSnSendError]           = useState("");
+
+  const selectedType        = REQUEST_TYPES.find(t => t.id === requestType);
+  const lockRequired        = selectedType?.lockRequired ?? false;
+  const isHelpDesk          = requestType === "loan_help_desk";
+  const isLockRequest       = requestType === "lock_request";
+  const isSubmission        = requestType === "submission";
+  const isCreditRepair      = requestType === "credit_repair_referral";
   const docItems       = isSubmission && selfEmployed !== null ? buildSubmissionDocs(selfEmployed) : (requestType ? DOC_CHECKLISTS[requestType] ?? [] : []);
   const resolvedCount  = isDemo ? docItems.length : docItems.filter(d => docChecked[d.id]?.checked || (docChecked[d.id]?.na && docChecked[d.id]?.naNote)).length;
   const pendingDocs    = docItems.length - resolvedCount;
@@ -722,7 +746,11 @@ function WizardInner() {
       if (!isDemo && ariveLookupStatus !== "found") {
         setError("Please look up the ARIVE loan number before continuing."); return;
       }
-      if (isLockRequest) {
+      if (isCreditRepair) {
+        if (!snBorrowerEmail.trim()) { setError("Borrower email is required."); return; }
+        if (!snBorrowerPhone.trim()) { setError("Borrower phone is required."); return; }
+        if (!snConsent)              { setError("You must confirm borrower consent before sending to Starting Now."); return; }
+      } else if (isLockRequest) {
         if (!lockRate.trim())       { setError("Rate is required for a lock request."); return; }
         if (!lockPrice.trim())      { setError("Price / points is required for a lock request."); return; }
         if (lockFeeInPrice === null) { setError("Please answer: Is the lender fee included in the price?"); return; }
@@ -757,6 +785,11 @@ function WizardInner() {
       if (lockFeeInPrice === null)        { setError("Please answer: Is the lender fee included in the price?"); return; }
       if (!isDemo && !lockChkArive)       { setError("Please confirm you have run pricing in ARIVE within the last 20 minutes."); return; }
       if (!isDemo && !lockChkLos)         { setError("Please confirm the pricing in the LOS (ARIVE) matches what you want to lock."); return; }
+    }
+    if (isCreditRepair && !isDemo) {
+      if (!snBorrowerEmail.trim()) { setError("Borrower email is required."); return; }
+      if (!snBorrowerPhone.trim()) { setError("Borrower phone is required."); return; }
+      if (!snConsent)              { setError("You must confirm borrower consent before sending to Starting Now."); return; }
     }
     if (!isDemo && isSubmission) {
       if (!incomeNote.trim())   { setError("IPAC — Income note is required."); return; }
@@ -876,6 +909,41 @@ function WizardInner() {
       if (!res.ok) { setError(data.error as string ?? `Server error ${res.status}. Please try again.`); setSubmitting(false); return; }
       // Rotate key so a future re-use of the same wizard instance gets a fresh key
       submissionKeyRef.current = crypto.randomUUID();
+
+      // ── Credit Repair Referral — fire Starting Now send before redirecting ──
+      if (isCreditRepair) {
+        setSnSendResult("sending");
+        try {
+          const snRes = await fetch("/api/liftoff/starting-now/send", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              lift_off_request_id:          data.id,
+              borrower_email:               snBorrowerEmail.trim(),
+              borrower_phone:               snBorrowerPhone.trim(),
+              borrower_city:                propCity  || null,
+              borrower_state:               propState || null,
+              partner_notes:                snPartnerNotes.trim() || null,
+              borrower_consent_confirmed_at: new Date().toISOString(),
+            }),
+          });
+          const snData = await snRes.json() as { referral_id?: string; sent?: boolean; error?: string };
+          setSnReferralId(snData.referral_id ?? null);
+          if (snData.sent) {
+            setSnSendResult("sent");
+          } else {
+            setSnSendResult("failed");
+            setSnSendError(snData.error ?? "Starting Now send failed");
+          }
+          router.push(`/liftoff/${data.id}?submitted=1&sn=${snData.sent ? "sent" : "failed"}`);
+        } catch {
+          setSnSendResult("failed");
+          setSnSendError("Network error — referral was saved, send failed");
+          router.push(`/liftoff/${data.id}?submitted=1&sn=failed`);
+        }
+        return;
+      }
+
       router.push(`/liftoff/${data.id}?submitted=1`);
     } catch (err) {
       setError(`Network error: ${err instanceof Error ? err.message : "Please try again."}`);
@@ -1320,7 +1388,7 @@ function WizardInner() {
                 </Field>
               </div>
 
-              {!isHelpDesk && !isLockRequest && (
+              {!isHelpDesk && !isLockRequest && !isCreditRepair && (
                 <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-line mt-2">
                   <Field label="Property Address" className="sm:col-span-2">
                     <Input value={propAddress} readOnly
@@ -1371,8 +1439,8 @@ function WizardInner() {
               )}
             </div>}
 
-            {/* Loan details — hidden for lock requests (pricing already captured above) */}
-            {!isLockRequest && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
+            {/* Loan details — hidden for lock requests and credit repair referrals */}
+            {!isLockRequest && !isCreditRepair && <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-muted/70">Loan Information</h3>
                 {ariveLookupStatus === "found" && (
@@ -1584,6 +1652,83 @@ function WizardInner() {
               </div>
             )}
 
+            {/* Credit Repair Referral — Starting Now contact info + consent */}
+            {isCreditRepair && (
+              <div className="rounded-2xl border-2 border-[#142850] bg-white p-6 space-y-5">
+                <div>
+                  <h3 className="text-sm font-bold text-ink">🛠️ Starting Now — Borrower Contact Info</h3>
+                  <p className="text-xs text-muted mt-0.5">
+                    Borrower name and city/state are auto-filled from ARIVE above. Provide the borrower&apos;s direct
+                    contact info so Starting Now can reach them.
+                  </p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Borrower Email" required>
+                    <Input
+                      type="email"
+                      value={snBorrowerEmail}
+                      onChange={e => setSnBorrowerEmail(e.target.value)}
+                      placeholder="borrower@email.com"
+                    />
+                  </Field>
+                  <Field label="Borrower Phone" required hint="Digits only recommended">
+                    <Input
+                      type="tel"
+                      value={snBorrowerPhone}
+                      onChange={e => setSnBorrowerPhone(e.target.value)}
+                      placeholder="e.g. 4101234567"
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Partner Notes" hint="Optional — defaults to ARIVE loan number if left blank">
+                  <Textarea
+                    value={snPartnerNotes}
+                    onChange={e => setSnPartnerNotes(e.target.value)}
+                    rows={2}
+                    placeholder="Any context for the Starting Now team about this borrower..."
+                  />
+                </Field>
+
+                {/* GLBA Reg P Consent — required before send */}
+                <div className="rounded-xl border-2 border-orange-200 bg-orange-50 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-orange-700">
+                    Borrower Consent Required <span className="text-red-500">*</span>
+                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={snConsent} onChange={e => setSnConsent(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded accent-orange-500 flex-shrink-0" />
+                    <span className="text-sm text-ink leading-relaxed">
+                      I confirm that I have informed the borrower their contact information will be shared with
+                      Starting Now Corporation for credit repair services, and the borrower has consented to
+                      this referral. <span className="font-bold text-orange-700">(GLBA Reg P — required)</span>
+                    </span>
+                  </label>
+                </div>
+
+                {/* Certification */}
+                <div className="rounded-xl border-2 border-orange-200 bg-orange-50 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Certification</p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={certified} onChange={e => setCertified(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded accent-orange-500 flex-shrink-0" />
+                    <span className="text-sm text-ink leading-relaxed">
+                      I certify that the information above is accurate and I am authorized to submit this referral on behalf of the borrower.
+                    </span>
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="NMLS #" required>
+                      <Input value={certNmls} onChange={e => setCertNmls(e.target.value)} placeholder="e.g. 1234567" />
+                    </Field>
+                    <Field label="LO Name">
+                      <Input value={certLoName} onChange={e => setCertLoName(e.target.value)} placeholder="Your full name" />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Self-Employed / 1099 */}
             {isSubmission && (
               <div className="rounded-2xl border border-line bg-white p-6 space-y-4">
@@ -1618,8 +1763,8 @@ function WizardInner() {
               </div>
             )}
 
-            {/* Lock / Float Preference */}
-            {!isHelpDesk && !isLockRequest && (
+            {/* Lock / Float Preference — not shown for credit repair referrals */}
+            {!isHelpDesk && !isLockRequest && !isCreditRepair && (
               <div className="rounded-2xl border border-line bg-white p-6">
                 <LockPreferenceField
                   value={lockPref}
@@ -1648,7 +1793,7 @@ function WizardInner() {
             )}
 
             {/* Certification — inline for register_disclosure and disclosure_only (no Step 3) */}
-            {!isLockRequest && !isHelpDesk && !isSubmission && (
+            {!isLockRequest && !isHelpDesk && !isSubmission && !isCreditRepair && (
               <div className="rounded-2xl border-2 border-orange-200 bg-orange-50 p-6 space-y-3">
                 <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted/70">Certification</p>
                 <label className="flex items-start gap-3 cursor-pointer">

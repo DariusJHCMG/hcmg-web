@@ -30,15 +30,16 @@ interface FilterState {
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const REQUEST_TYPE_LABELS: Record<LiftOffRequestType, string> = {
-  lock_request:        "Lock Request",
-  register_disclosure: "Register & Disclose",
-  disclosure_only:     "Disclosure Only",
-  loan_help_desk:      "Loan Help Desk",
-  submission:          "Submission",
+  lock_request:           "Lock Request",
+  register_disclosure:    "Register & Disclose",
+  disclosure_only:        "Disclosure Only",
+  loan_help_desk:         "Loan Help Desk",
+  submission:             "Submission",
+  credit_repair_referral: "Credit Repair Referral",
 };
 
 const ALL_TYPES: LiftOffRequestType[] = [
-  "lock_request", "register_disclosure", "disclosure_only", "loan_help_desk", "submission",
+  "lock_request", "register_disclosure", "disclosure_only", "loan_help_desk", "submission", "credit_repair_referral",
 ];
 
 const STATUS_CHIPS: Record<string, string> = {

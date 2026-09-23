@@ -2,11 +2,14 @@
  * POST /api/liftoff/arive-result — Zapier callback that delivers an Arive lookup result.
  * Zapier calls Arive, then POSTs the result here.
  * Updates the arive_lookup_results row so the polling browser receives the data.
- * No auth — the requestId is a UUID that ties this to a specific lookup session.
+ * Auth: uses the existing ZAPIER_WEBHOOK_SECRET (x-zapier-secret header) — same
+ * secret already configured in Zapier for all other HCMG webhook callbacks.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase";
+
+const RESULT_SECRET = process.env.ZAPIER_WEBHOOK_SECRET ?? "";
 
 // ── POST /api/liftoff/arive-result ───────────────────────────────────────────
 // Zapier POSTs loan data here after fetching from ARIVE.
@@ -66,6 +69,18 @@ function mapLoanType(loanPurpose: string, mortgageType: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // ── Auth — validate shared secret sent by Zapier ─────────────────────────
+  if (RESULT_SECRET) {
+    const incoming =
+      req.headers.get("x-zapier-secret") ??
+      req.headers.get("x-webhook-secret") ??
+      req.headers.get("authorization")?.replace(/^Bearer /i, "") ??
+      "";
+    if (incoming !== RESULT_SECRET) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();

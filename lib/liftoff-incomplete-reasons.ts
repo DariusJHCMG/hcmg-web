@@ -47,6 +47,13 @@ export const INCOMPLETE_REASONS: Record<LiftOffRequestType, string[]> = {
     "Duplicate lock request already exists",
     "Pricing mismatch — lock request pricing does not match lender pricing reprice in ARIVE",
   ],
+  credit_repair_referral: [
+    "Borrower email address missing or invalid",
+    "Borrower phone number missing or invalid",
+    "Borrower consent not confirmed",
+    "ARIVE loan number not found",
+    "Duplicate referral already submitted for this borrower",
+  ],
 };
 
 export function getIncompleteReasons(requestType: LiftOffRequestType): string[] {
