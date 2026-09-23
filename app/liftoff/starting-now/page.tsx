@@ -180,14 +180,12 @@ export default async function StartingNowPage({
                   <th className="px-5 py-3 text-left">ARIVE #</th>
                   <th className="px-5 py-3 text-left">Sent</th>
                   <th className="px-5 py-3 text-left">Status</th>
-                  <th className="px-5 py-3 text-left">Credit Scores</th>
                   <th className="px-5 py-3 text-left">Follow-up</th>
                   <th className="px-5 py-3 text-left"></th>
                 </tr>
               </thead>
               <tbody>
                 {referrals.map(r => {
-                  const hasScores = r.experian || r.equifax || r.transunion;
                   return (
                     <tr key={r.id} className="border-b border-line last:border-0 hover:bg-sand/50 transition-colors">
                       <td className="px-5 py-3.5 font-semibold text-ink">
@@ -210,17 +208,6 @@ export default async function StartingNowPage({
                             {r.send_error}
                           </p>
                         )}
-                      </td>
-                      <td className="px-5 py-3.5 text-xs text-muted">
-                        {hasScores ? (
-                          <span className="font-mono">
-                            {r.experian   ? `EX ${r.experian}`   : ""}
-                            {r.experian   && (r.equifax || r.transunion) ? " · " : ""}
-                            {r.equifax    ? `EQ ${r.equifax}`    : ""}
-                            {r.equifax    && r.transunion ? " · " : ""}
-                            {r.transunion ? `TU ${r.transunion}` : ""}
-                          </span>
-                        ) : "—"}
                       </td>
                       <td className="px-5 py-3.5 text-xs text-muted">
                         {r.follow_up_date
