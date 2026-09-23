@@ -86,6 +86,29 @@ const DEMO_LOANS: Record<string, object> = {
     compensationType:    "Borrower",
     deepLink:            null,
   },
+  // ── Starting Now live send demo — use HCMG-SN-SEND to demo Phase 1 submission
+  // Fresh borrower — no pre-seeded referral row — use this to do a live send to Starting Now
+  "HCMG-SN-SEND": {
+    found:               true,
+    borrowerFirstName:   "Andre",
+    borrowerLastName:    "Mitchell",
+    borrowerEmail:       "andre.mitchell.test@hcmgloans.com",
+    borrowerPhone:       "4435550317",
+    borrowerCity:        "Columbia",
+    borrowerState:       "Maryland",
+    loanType:            "purchase_fha",
+    loanAmount:          275000,
+    purchasePrice:       290000,
+    propertyAddress:     "3321 Cedar Lane",
+    propertyCity:        "Columbia",
+    propertyState:       "MD",
+    propertyZip:         "21044",
+    targetCloseDate:     "2026-12-01",
+    lockStatus:          "floating",
+    channelType:         "Broker",
+    compensationType:    "Borrower",
+    deepLink:            null,
+  },
   // ── Starting Now test loan 2 — use HCMG-SN-TEST2 to demo a second referral
   "HCMG-SN-TEST2": {
     found:               true,
