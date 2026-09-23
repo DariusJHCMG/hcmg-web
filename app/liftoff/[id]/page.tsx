@@ -515,13 +515,14 @@ export default async function LiftOffDetailPage({
               <p className="text-sm text-muted">Starting Now referral record not found for this request.</p>
             </div>
           ) : (
-            <div className="bg-white px-6 py-4 space-y-4">
-              {/* Send status + credit status row */}
-              <div className="flex flex-wrap gap-3 items-center">
+            <div className="bg-white px-6 py-5 space-y-5">
+
+              {/* ── Row 1: Send status + Credit repair status ── */}
+              <div className="flex flex-wrap gap-4 items-start">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Send Status</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1.5">Send Status</p>
                   {snReferral.send_status === "sent" ? (
-                    <span className="rounded-full px-2.5 py-1 text-[10px] font-bold border bg-green-50 text-green-700 border-green-200">✅ Sent</span>
+                    <span className="rounded-full px-2.5 py-1 text-[10px] font-bold border bg-green-50 text-green-700 border-green-200">✅ Sent to Starting Now</span>
                   ) : snReferral.send_status === "failed" ? (
                     <span className="rounded-full px-2.5 py-1 text-[10px] font-bold border bg-red-50 text-red-700 border-red-200">⚠️ Send Failed</span>
                   ) : (
@@ -530,45 +531,123 @@ export default async function LiftOffDetailPage({
                 </div>
                 {snReferral.current_status && (
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Credit Repair Status</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1.5">Credit Repair Status</p>
                     <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold border ${SN_STATUS_STYLES[snReferral.current_status] ?? "bg-gray-50 text-gray-600 border-gray-200"}`}>
                       {snReferral.current_status}
                     </span>
                   </div>
                 )}
+                {snReferral.startingnow_id && (
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1.5">Starting Now ID</p>
+                    <span className="font-mono text-xs text-muted bg-sand border border-line rounded-lg px-2.5 py-1">{snReferral.startingnow_id}</span>
+                  </div>
+                )}
               </div>
 
-              {/* Credit scores — NPI, authenticated UI only */}
+              {/* ── Row 2: Credit scores ── */}
               {(snReferral.experian || snReferral.equifax || snReferral.transunion) && (
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-2">Credit Scores (from Starting Now)</p>
-                  <div className="flex gap-4 text-sm">
-                    {snReferral.experian  && <span className="font-mono"><span className="text-muted text-xs">EX</span> <span className="font-bold text-ink">{snReferral.experian}</span></span>}
-                    {snReferral.equifax   && <span className="font-mono"><span className="text-muted text-xs">EQ</span> <span className="font-bold text-ink">{snReferral.equifax}</span></span>}
-                    {snReferral.transunion && <span className="font-mono"><span className="text-muted text-xs">TU</span> <span className="font-bold text-ink">{snReferral.transunion}</span></span>}
+                <div className="rounded-xl border border-line bg-sand px-4 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-2">Credit Scores — from Starting Now</p>
+                  <div className="flex gap-6">
+                    <div className="text-center">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-0.5">Experian</p>
+                      <p className="text-2xl font-extrabold text-ink">{snReferral.experian ?? "—"}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-0.5">Equifax</p>
+                      <p className="text-2xl font-extrabold text-ink">{snReferral.equifax ?? "—"}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-0.5">TransUnion</p>
+                      <p className="text-2xl font-extrabold text-ink">{snReferral.transunion ?? "—"}</p>
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Notes */}
+              {/* ── Row 3: Latest notes ── */}
               {snReferral.latest_notes && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Latest Notes</p>
-                  <p className="text-sm text-ink">{snReferral.latest_notes}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Latest Notes from Starting Now</p>
+                  <p className="text-sm text-ink leading-relaxed bg-sand border border-line rounded-xl px-4 py-3">{snReferral.latest_notes}</p>
                 </div>
               )}
 
-              {/* Follow-up date */}
+              {/* ── Row 4: Follow-up date ── */}
               {snReferral.follow_up_date && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Follow-up Date</p>
-                  <p className="text-sm font-semibold text-ink">
-                    {new Date(snReferral.follow_up_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-1">Next Follow-up</p>
+                  <p className="text-sm font-bold text-ink">
+                    📅 {new Date(snReferral.follow_up_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}
                   </p>
                 </div>
               )}
 
-              {/* Send error */}
+              {/* ── Row 5: Opt-out channels ── */}
+              {snReferral.opt_out && snReferral.opt_out.length > 0 && (
+                <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-orange-700 mb-1.5">⚠️ Borrower Opt-Outs (from Starting Now)</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {snReferral.opt_out.map(ch => (
+                      <span key={ch} className="rounded-full border border-orange-300 bg-white px-2.5 py-0.5 text-xs font-bold text-orange-700">
+                        {ch}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Row 6: Status history timeline ── */}
+              {Array.isArray(snReferral.status_history_json) && snReferral.status_history_json.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted/60 mb-3">Status History</p>
+                  <div className="space-y-0">
+                    {[...snReferral.status_history_json].reverse().map((entry, i) => (
+                      <div key={i} className="flex gap-3">
+                        {/* Timeline spine */}
+                        <div className="flex flex-col items-center flex-shrink-0 w-4">
+                          <div className="w-2.5 h-2.5 rounded-full bg-orange-400 border-2 border-white ring-1 ring-orange-300 flex-shrink-0 mt-1" />
+                          {i < snReferral.status_history_json!.length - 1 && (
+                            <div className="w-px flex-1 bg-line min-h-[20px]" />
+                          )}
+                        </div>
+                        {/* Entry content */}
+                        <div className="pb-4 min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold border ${SN_STATUS_STYLES[entry.status] ?? "bg-gray-50 text-gray-600 border-gray-200"}`}>
+                              {entry.status}
+                            </span>
+                            <span className="text-[10px] text-muted">
+                              {new Date(entry.updated_at).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" })} ET
+                            </span>
+                          </div>
+                          {/* Scores in history entry */}
+                          {(entry.experian || entry.equifax || entry.transunion) && (
+                            <p className="text-[11px] font-mono text-muted mt-1">
+                              {entry.experian  ? `EX ${entry.experian}`  : ""}
+                              {entry.experian  && (entry.equifax || entry.transunion) ? " · " : ""}
+                              {entry.equifax   ? `EQ ${entry.equifax}`   : ""}
+                              {entry.equifax   && entry.transunion ? " · " : ""}
+                              {entry.transunion ? `TU ${entry.transunion}` : ""}
+                            </p>
+                          )}
+                          {entry.notes && (
+                            <p className="text-xs text-muted mt-0.5 leading-relaxed">{entry.notes}</p>
+                          )}
+                          {entry.follow_up_date && (
+                            <p className="text-[11px] text-blue-600 mt-0.5 font-semibold">
+                              📅 Follow-up: {new Date(entry.follow_up_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Send error ── */}
               {snReferral.send_status === "failed" && snReferral.send_error && (
                 <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
                   <p className="text-xs font-bold text-red-700 mb-0.5">Send Error</p>
