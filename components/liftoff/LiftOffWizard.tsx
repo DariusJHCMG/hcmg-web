@@ -586,6 +586,8 @@ function WizardInner() {
   // ── Starting Now referral state ───────────────────────────────
   const [snBorrowerEmail, setSnBorrowerEmail]   = useState("");
   const [snBorrowerPhone, setSnBorrowerPhone]   = useState("");
+  const [snBorrowerCity,  setSnBorrowerCity]    = useState("");
+  const [snBorrowerState, setSnBorrowerState]   = useState("");
   const [snPartnerNotes, setSnPartnerNotes]     = useState("");
   const [snConsent, setSnConsent]               = useState(false);
   const [snSendResult, setSnSendResult]         = useState<"idle"|"sending"|"sent"|"failed">("idle");
@@ -921,8 +923,8 @@ function WizardInner() {
               lift_off_request_id:          data.id,
               borrower_email:               snBorrowerEmail.trim(),
               borrower_phone:               snBorrowerPhone.trim(),
-              borrower_city:                propCity  || null,
-              borrower_state:               propState || null,
+              borrower_city:                snBorrowerCity.trim()  || null,
+              borrower_state:               snBorrowerState.trim() || null,
               partner_notes:                snPartnerNotes.trim() || null,
               borrower_consent_confirmed_at: new Date().toISOString(),
             }),
@@ -1658,11 +1660,12 @@ function WizardInner() {
                 <div>
                   <h3 className="text-sm font-bold text-ink">🛠️ Starting Now — Borrower Contact Info</h3>
                   <p className="text-xs text-muted mt-0.5">
-                    Borrower name and city/state are auto-filled from ARIVE above. Provide the borrower&apos;s direct
-                    contact info so Starting Now can reach them.
+                    Borrower name is auto-filled from ARIVE above. Provide the borrower&apos;s direct contact info
+                    and home city/state so Starting Now can reach them.
                   </p>
                 </div>
 
+                {/* Row 1: Email + Phone */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Borrower Email" required>
                     <Input
@@ -1678,6 +1681,24 @@ function WizardInner() {
                       value={snBorrowerPhone}
                       onChange={e => setSnBorrowerPhone(e.target.value)}
                       placeholder="e.g. 4101234567"
+                    />
+                  </Field>
+                </div>
+
+                {/* Row 2: City + State (borrower's home address, not property) */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Borrower City" hint="Borrower's home city">
+                    <Input
+                      value={snBorrowerCity}
+                      onChange={e => setSnBorrowerCity(e.target.value)}
+                      placeholder="e.g. Baltimore"
+                    />
+                  </Field>
+                  <Field label="Borrower State" hint="Borrower's home state">
+                    <Input
+                      value={snBorrowerState}
+                      onChange={e => setSnBorrowerState(e.target.value)}
+                      placeholder="e.g. Maryland"
                     />
                   </Field>
                 </div>
