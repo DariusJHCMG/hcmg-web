@@ -582,11 +582,11 @@ export type StartingNowSendStatus = "pending" | "sent" | "failed";
 export interface StartingNowStatusHistoryEntry {
   status: string;
   updated_at: string;
-  experian: string | null;
-  equifax: string | null;
-  transunion: string | null;
-  notes: string | null;
-  follow_up_date: string | null;
+  experian?: string | null;
+  equifax?: string | null;
+  transunion?: string | null;
+  notes?: string | null;
+  follow_up_date?: string | null;
 }
 
 export interface StartingNowReferral {

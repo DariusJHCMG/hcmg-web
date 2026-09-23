@@ -95,14 +95,16 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Append to status history ──────────────────────────────────────────────
+  // Only store fields that have actual values — omit undefined/null to keep
+  // the history JSON compact and avoid misleading explicit nulls.
   const historyEntry: StartingNowStatusHistoryEntry = {
-    status:         payload.status,
-    updated_at:     new Date().toISOString(),
-    experian:       payload.experian       ?? null,
-    equifax:        payload.equifax        ?? null,
-    transunion:     payload.transunion     ?? null,
-    notes:          payload.notes          ?? null,
-    follow_up_date: payload.follow_up_date ?? null,
+    status:     payload.status,
+    updated_at: new Date().toISOString(),
+    ...(payload.experian       != null && { experian:       payload.experian }),
+    ...(payload.equifax        != null && { equifax:        payload.equifax }),
+    ...(payload.transunion     != null && { transunion:     payload.transunion }),
+    ...(payload.notes          != null && { notes:          payload.notes }),
+    ...(payload.follow_up_date != null && { follow_up_date: payload.follow_up_date }),
   };
 
   const existingHistory: StartingNowStatusHistoryEntry[] =
@@ -128,6 +130,8 @@ export async function POST(req: NextRequest) {
   // ── GLBA / TCPA: propagate SMS opt-out back to leads table ───────────────
   // If Starting Now reports the borrower opted out of SMS, honour it in our leads
   // table so HCMG doesn't continue sending SMS to an opted-out consumer.
+  // NOTE: must use .eq() (exact case-insensitive is fine via DB collation) — NOT
+  // .ilike() — to avoid unintended partial-string matches across multiple rows.
   const optOutChannels = (payload.opt_out ?? []).map(c => c.toLowerCase());
   if (optOutChannels.includes("sms")) {
     const emailToMatch = payload.email ?? referral.borrower_email;
@@ -135,7 +139,7 @@ export async function POST(req: NextRequest) {
       await sb
         .from("leads")
         .update({ sms_consent: false })
-        .ilike("email", emailToMatch);
+        .eq("email", emailToMatch);
     }
   }
 

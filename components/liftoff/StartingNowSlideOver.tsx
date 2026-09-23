@@ -259,16 +259,18 @@ export function StartingNowSlideOver({ open, onClose, onSubmitted }: StartingNow
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 bg-white">
 
-          {/* Success state */}
+          {/* Success / failure state */}
           {successMsg && (
             <div className={`rounded-2xl border px-5 py-4 text-sm font-semibold ${
               successMsg.startsWith("✅")
                 ? "border-green-200 bg-green-50 text-green-800"
-                : "border-orange-200 bg-orange-50 text-orange-800"
+                : "border-red-200 bg-red-50 text-red-800"
             }`}>
               {successMsg}
               <p className="mt-2 text-xs font-normal">
-                You can close this panel — the tracker below has been updated.
+                {successMsg.startsWith("✅")
+                  ? "You can close this panel — the tracker below has been updated."
+                  : "The referral is saved in the tracker. Retry or contact ops if Starting Now continues to reject the send."}
               </p>
             </div>
           )}
@@ -340,8 +342,13 @@ export function StartingNowSlideOver({ open, onClose, onSubmitted }: StartingNow
                   </div>
 
                   {/* Borrower Contact */}
+                  {ariveLookupStatus === "found" && (
+                    <p className="text-[11px] text-muted/70 bg-sand rounded-lg border border-line px-3 py-2">
+                      ✏️ Fields below were auto-filled from ARIVE. You can still edit any field before submitting.
+                    </p>
+                  )}
                   <div className="grid gap-3 grid-cols-2">
-                    <Field label="Borrower Email" required hint="Auto-filled from ARIVE">
+                    <Field label="Borrower Email" required>
                       <Input
                         type="email"
                         value={borrowerEmail}
@@ -349,7 +356,7 @@ export function StartingNowSlideOver({ open, onClose, onSubmitted }: StartingNow
                         placeholder="borrower@email.com"
                       />
                     </Field>
-                    <Field label="Borrower Phone" required hint="Auto-filled from ARIVE">
+                    <Field label="Borrower Phone" required>
                       <Input
                         type="tel"
                         value={borrowerPhone}
@@ -361,14 +368,14 @@ export function StartingNowSlideOver({ open, onClose, onSubmitted }: StartingNow
 
                   {/* Borrower City + State */}
                   <div className="grid gap-3 grid-cols-2">
-                    <Field label="Borrower City" hint="Auto-filled from ARIVE">
+                    <Field label="Borrower City">
                       <Input
                         value={borrowerCity}
                         onChange={e => setBorrowerCity(e.target.value)}
                         placeholder="e.g. Baltimore"
                       />
                     </Field>
-                    <Field label="Borrower State" hint="Auto-filled from ARIVE">
+                    <Field label="Borrower State">
                       <Input
                         value={borrowerState}
                         onChange={e => setBorrowerState(e.target.value)}
