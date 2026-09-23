@@ -145,6 +145,10 @@ interface AriveLoanData {
   found?: boolean;
   borrowerFirstName?: string;
   borrowerLastName?: string;
+  borrowerEmail?: string;
+  borrowerPhone?: string;
+  borrowerCity?: string;
+  borrowerState?: string;
   coBorrowerFirstName?: string;
   coBorrowerLastName?: string;
   loanType?: string;
@@ -695,6 +699,11 @@ function WizardInner() {
     if (data.borrowerLastName)    setBorrowerLast(data.borrowerLastName     as string);
     if (data.coBorrowerFirstName) setCoBorrowerFirst(data.coBorrowerFirstName as string);
     if (data.coBorrowerLastName)  setCoBorrowerLast(data.coBorrowerLastName  as string);
+    // Auto-fill Starting Now borrower contact fields from ARIVE
+    if (data.borrowerEmail) setSnBorrowerEmail(data.borrowerEmail as string);
+    if (data.borrowerPhone) setSnBorrowerPhone(data.borrowerPhone as string);
+    if (data.borrowerCity)  setSnBorrowerCity(data.borrowerCity   as string);
+    if (data.borrowerState) setSnBorrowerState(data.borrowerState as string);
     if (data.propertyType)        setPropertyType(data.propertyType          as string);
     if (data.occupancyType)       setOccupancyType(data.occupancyType        as string);
     if (data.loanType) {
@@ -1667,7 +1676,7 @@ function WizardInner() {
 
                 {/* Row 1: Email + Phone */}
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Borrower Email" required>
+                  <Field label="Borrower Email" required hint="Auto-filled from ARIVE — edit if needed">
                     <Input
                       type="email"
                       value={snBorrowerEmail}
@@ -1675,7 +1684,7 @@ function WizardInner() {
                       placeholder="borrower@email.com"
                     />
                   </Field>
-                  <Field label="Borrower Phone" required hint="Digits only recommended">
+                  <Field label="Borrower Phone" required hint="Auto-filled from ARIVE — digits only">
                     <Input
                       type="tel"
                       value={snBorrowerPhone}
@@ -1685,16 +1694,16 @@ function WizardInner() {
                   </Field>
                 </div>
 
-                {/* Row 2: City + State (borrower's home address, not property) */}
+                {/* Row 2: City + State (borrower's home address, auto-filled from ARIVE) */}
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Borrower City" hint="Borrower's home city">
+                  <Field label="Borrower City" hint="Auto-filled from ARIVE — edit if needed">
                     <Input
                       value={snBorrowerCity}
                       onChange={e => setSnBorrowerCity(e.target.value)}
                       placeholder="e.g. Baltimore"
                     />
                   </Field>
-                  <Field label="Borrower State" hint="Borrower's home state">
+                  <Field label="Borrower State" hint="Auto-filled from ARIVE — edit if needed">
                     <Input
                       value={snBorrowerState}
                       onChange={e => setSnBorrowerState(e.target.value)}

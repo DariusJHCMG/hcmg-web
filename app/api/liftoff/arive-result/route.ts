@@ -21,6 +21,10 @@ const RESULT_SECRET = process.env.ZAPIER_WEBHOOK_SECRET ?? "";
 //   requestId        string   — echoed from the original lookup request
 //   found            "true"
 //   borrowerFirstName, borrowerLastName
+//   borrowerEmail    string   ← ARIVE borrower email
+//   borrowerPhone    string   ← ARIVE borrower phone
+//   borrowerCity     string   ← ARIVE borrower mailing city
+//   borrowerState    string   ← ARIVE borrower mailing state
 //   loanPurpose      "Purchase" | "Refinance"   ← ARIVE "Loan Purpose"
 //   mortgageType     "Conventional"|"FHA"|"VA"|"NonQM"|...  ← ARIVE "Mortgage Type"
 //   loanAmount       number
@@ -130,6 +134,10 @@ export async function POST(req: NextRequest) {
     found:               true as const,
     borrowerFirstName:   (body.borrowerFirstName   as string) || null,
     borrowerLastName:    (body.borrowerLastName    as string) || null,
+    borrowerEmail:       (body.borrowerEmail       as string) || null,
+    borrowerPhone:       (body.borrowerPhone       as string) || null,
+    borrowerCity:        (body.borrowerCity        as string) || null,
+    borrowerState:       (body.borrowerState       as string) || null,
     coBorrowerFirstName: (body.coBorrowerFirstName as string) || null,
     coBorrowerLastName:  (body.coBorrowerLastName  as string) || null,
     propertyType,
