@@ -12,9 +12,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedProfile } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase";
 
-const STARTING_NOW_URL =
+const SN_BASE_URL =
   `https://www.zohoapis.com/crm/v7/functions/referral_partner_webhook/actions/execute` +
-  `?auth_type=apikey&zapikey=${process.env.STARTING_NOW_API_KEY ?? ""}`;
+  `?auth_type=apikey&zapikey=`;
+
+/** Strip all non-digit characters from a phone number before sending. */
+function normalizePhone(raw: string): string {
+  return raw.replace(/\D/g, "");
+}
+
+/** Basic email format check — must contain @ and a dot after it. */
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 export async function POST(req: NextRequest) {
   const profile = await getVerifiedProfile();
@@ -38,10 +48,15 @@ export async function POST(req: NextRequest) {
   if (!body.lift_off_request_id) {
     return NextResponse.json({ error: "lift_off_request_id is required" }, { status: 400 });
   }
-  if (!body.borrower_email?.trim()) {
+  const email = body.borrower_email?.trim() ?? "";
+  if (!email) {
     return NextResponse.json({ error: "borrower_email is required" }, { status: 400 });
   }
-  if (!body.borrower_phone?.trim()) {
+  if (!isValidEmail(email)) {
+    return NextResponse.json({ error: "borrower_email is not a valid email address" }, { status: 400 });
+  }
+  const phone = normalizePhone(body.borrower_phone?.trim() ?? "");
+  if (!phone) {
     return NextResponse.json({ error: "borrower_phone is required" }, { status: 400 });
   }
   if (!body.borrower_consent_confirmed_at) {
@@ -65,25 +80,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // ── Duplicate guard — one referral per lift_off_request ──────────────────
+  const { data: existing } = await sb
+    .from("starting_now_referrals")
+    .select("id, send_status")
+    .eq("lift_off_request_id", body.lift_off_request_id)
+    .maybeSingle();
+  if (existing) {
+    // Return the existing row — idempotent response
+    return NextResponse.json({ referral_id: existing.id, sent: existing.send_status === "sent", duplicate: true });
+  }
+
   // ── Insert referral row with send_status = pending ────────────────────────
   const { data: referral, error: insertErr } = await sb
     .from("starting_now_referrals")
     .insert({
-      lift_off_request_id:          body.lift_off_request_id,
-      submitter_id:                 profile.id,
-      submitter_name:               profile.full_name,
-      submitter_email:              profile.email ?? null,
-      submitter_nmls:               profile.nmls  ?? null,
-      arive_loan_number:            liftOffRow.arive_loan_number ?? null,
-      borrower_first_name:          liftOffRow.borrower_first_name,
-      borrower_last_name:           liftOffRow.borrower_last_name,
-      borrower_email:               body.borrower_email.trim(),
-      borrower_phone:               body.borrower_phone.trim(),
-      borrower_city:                body.borrower_city  ?? null,
-      borrower_state:               body.borrower_state ?? null,
-      partner_notes:                body.partner_notes  ?? null,
+      lift_off_request_id:           body.lift_off_request_id,
+      submitter_id:                  profile.id,
+      submitter_name:                profile.full_name,
+      submitter_email:               profile.email ?? null,
+      submitter_nmls:                profile.nmls  ?? null,
+      arive_loan_number:             liftOffRow.arive_loan_number ?? null,
+      borrower_first_name:           liftOffRow.borrower_first_name,
+      borrower_last_name:            liftOffRow.borrower_last_name,
+      borrower_email:                email,
+      borrower_phone:                phone,
+      borrower_city:                 body.borrower_city  ?? null,
+      borrower_state:                body.borrower_state ?? null,
+      partner_notes:                 body.partner_notes  ?? null,
       borrower_consent_confirmed_at: body.borrower_consent_confirmed_at,
-      send_status:                  "pending",
+      send_status:                   "pending",
     })
     .select("id")
     .single();
@@ -94,30 +120,27 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Build Starting Now payload ────────────────────────────────────────────
-  // external_crm_contact_id = our referral row id so inbound updates can match back
   const nameParts = profile.full_name.trim().split(/\s+/);
   const partnerFirstName = nameParts[0] ?? "";
   const partnerLastName  = nameParts.slice(1).join(" ") ?? "";
 
   const snPayload = {
-    First_Name:         liftOffRow.borrower_first_name,
-    Last_Name:          liftOffRow.borrower_last_name,
-    Email:              body.borrower_email.trim(),
-    Phone:              body.borrower_phone.trim(),
-    Mobile:             body.borrower_phone.trim(),
-    City:               body.borrower_city  ?? "",
-    State:              body.borrower_state ?? "",
-    Partner_First_Name: partnerFirstName,
-    Partner_Last_Name:  partnerLastName,
-    Partner_Email:      profile.email ?? "",
-    Partner_Number:     profile.nmls  ?? "",
-    // Default notes to ARIVE loan number so Starting Now always has the file reference
-    Partner_Notes:      body.partner_notes?.trim() ||
-                        (liftOffRow.arive_loan_number
-                          ? `ARIVE: ${liftOffRow.arive_loan_number}`
-                          : ""),
-    Source:             "HCMG",
-    // Our row ID so Starting Now can echo it back in status updates
+    First_Name:              liftOffRow.borrower_first_name,
+    Last_Name:               liftOffRow.borrower_last_name,
+    Email:                   email,
+    Phone:                   phone,
+    Mobile:                  phone,
+    City:                    body.borrower_city  ?? "",
+    State:                   body.borrower_state ?? "",
+    Partner_First_Name:      partnerFirstName,
+    Partner_Last_Name:       partnerLastName,
+    Partner_Email:           profile.email ?? "",
+    Partner_Number:          profile.nmls  ?? "",
+    Partner_Notes:           body.partner_notes?.trim() ||
+                             (liftOffRow.arive_loan_number
+                               ? `ARIVE: ${liftOffRow.arive_loan_number}`
+                               : ""),
+    Source:                  "HCMG",
     External_CRM_Contact_ID: referral.id,
   };
 
@@ -126,11 +149,13 @@ export async function POST(req: NextRequest) {
   let sendError: string | null = null;
   let sendResponseRaw: Record<string, unknown> | null = null;
 
-  if (!process.env.STARTING_NOW_API_KEY) {
-    sendError = "STARTING_NOW_API_KEY is not configured";
+  const apiKey = process.env.STARTING_NOW_API_KEY;
+  if (!apiKey) {
+    sendError = "STARTING_NOW_API_KEY is not configured — contact ops to set this in Vercel";
+    console.error("[starting-now/send] STARTING_NOW_API_KEY missing — referral saved but not sent");
   } else {
     try {
-      const snRes = await fetch(STARTING_NOW_URL, {
+      const snRes = await fetch(SN_BASE_URL + apiKey, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify(snPayload),
@@ -144,9 +169,11 @@ export async function POST(req: NextRequest) {
         sent = true;
       } else {
         sendError = `Starting Now returned HTTP ${snRes.status}`;
+        console.error("[starting-now/send] Starting Now rejected payload", { status: snRes.status, response: rawJson });
       }
     } catch (e) {
       sendError = e instanceof Error ? e.message : "Network error reaching Starting Now";
+      console.error("[starting-now/send] fetch failed", sendError);
     }
   }
 

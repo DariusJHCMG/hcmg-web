@@ -64,9 +64,7 @@ const DEMO_LOANS: Record<string, object> = {
     targetCloseDate:     "2025-11-14",
     lockStatus:          "floating",
   },
-  // ── Starting Now demo loan — pre-fills all referral fields ───────────────────
-  // Use loan number HCMG-SN-TEST in the Starting Now slide-over or wizard
-  // to instantly fill every field and send a live test referral to Starting Now.
+  // ── Starting Now test loan — use HCMG-SN-TEST to demo a credit repair referral
   "HCMG-SN-TEST": {
     found:               true,
     borrowerFirstName:   "David",

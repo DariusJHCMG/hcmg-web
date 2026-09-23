@@ -34,14 +34,21 @@ interface StartingNowPayload {
 
 export async function POST(req: NextRequest) {
   // ── Auth ──────────────────────────────────────────────────────────────────
-  if (WEBHOOK_SECRET) {
-    const incoming =
-      req.headers.get("authorization")?.replace(/^Bearer /i, "") ??
-      req.headers.get("x-webhook-secret") ??
-      "";
-    if (incoming !== WEBHOOK_SECRET) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  // In production the secret MUST be set — an empty secret means open access.
+  // We enforce this strictly: if secret is not configured, reject ALL requests.
+  if (!WEBHOOK_SECRET) {
+    console.error("[starting-now/webhook] STARTING_NOW_WEBHOOK_SECRET is not set — rejecting all inbound requests");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
+  }
+  const incoming =
+    req.headers.get("authorization")?.replace(/^Bearer /i, "") ??
+    req.headers.get("x-webhook-secret") ??
+    "";
+  if (incoming !== WEBHOOK_SECRET) {
+    console.warn("[starting-now/webhook] auth failed — invalid secret", {
+      ip: req.headers.get("x-forwarded-for") ?? "unknown",
+    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let payload: StartingNowPayload;
