@@ -232,6 +232,37 @@ export default async function StartingNowPage({
       </div>
 
       {/* Credit score privacy notice */}
+      {/* Status legend */}
+      <div className="rounded-2xl border border-line bg-white overflow-hidden">
+        <div className="border-b border-line px-6 py-4">
+          <h2 className="font-bold text-ink text-sm">Starting Now Status Guide</h2>
+          <p className="text-xs text-muted mt-0.5">What each status from Starting Now means for your borrower.</p>
+        </div>
+        <div className="divide-y divide-line">
+          {[
+            { status: "Attempting Contact",   style: "bg-yellow-50 text-yellow-700 border-yellow-200",   desc: "Starting Now is actively reaching out via email, text, and phone." },
+            { status: "Follow Up",            style: "bg-blue-50 text-blue-700 border-blue-200",         desc: "Consumer cannot talk now, missed an appointment, or a consultation has been scheduled." },
+            { status: "Evaluation Completed", style: "bg-purple-50 text-purple-700 border-purple-200",   desc: "Consultation done — borrower may need time to decide, or was found not eligible for credit or debt services." },
+            { status: "Enrolled",             style: "bg-green-50 text-green-700 border-green-200",      desc: "Borrower is enrolled and their action plan is in progress." },
+            { status: "Milestone Reached",    style: "bg-green-50 text-green-700 border-green-200",      desc: "An important credit milestone has been reached." },
+            { status: "Goal Reached",         style: "bg-emerald-50 text-emerald-700 border-emerald-200",desc: "Borrower has reached their credit goal. 🎉" },
+            { status: "On Hold",              style: "bg-orange-50 text-orange-700 border-orange-200",   desc: "Payment declined or payment is pending." },
+            { status: "Not Interested",       style: "bg-gray-50 text-gray-500 border-gray-200",         desc: "Borrower wants to DIY, cannot afford services, or declined." },
+            { status: "Invalid Number",       style: "bg-gray-50 text-gray-500 border-gray-200",         desc: "Phone number is disconnected or no longer in service." },
+            { status: "Consumer Unreachable", style: "bg-gray-50 text-gray-500 border-gray-200",         desc: "Maximum contact attempts exhausted with no response." },
+            { status: "Closed",               style: "bg-gray-50 text-gray-500 border-gray-200",         desc: "Consumer canceled service." },
+          ].map(({ status, style, desc }) => (
+            <div key={status} className="flex items-start gap-4 px-6 py-3">
+              <span className={`flex-shrink-0 mt-0.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${style}`}>
+                {status}
+              </span>
+              <p className="text-xs text-muted leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Credit score privacy notice */}
       <div className="rounded-xl border border-line bg-sand px-5 py-3">
         <p className="text-xs text-muted">
           <span className="font-semibold text-ink">🔒 Credit Score Privacy:</span>{" "}
