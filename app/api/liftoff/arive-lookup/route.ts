@@ -64,7 +64,7 @@ const DEMO_LOANS: Record<string, object> = {
     targetCloseDate:     "2025-11-14",
     lockStatus:          "floating",
   },
-  // ── Starting Now test loan — use HCMG-SN-TEST to demo a credit repair referral
+  // ── Starting Now test loan 1 — credit repair referral demo (David Thompson)
   "HCMG-SN-TEST": {
     found:               true,
     borrowerFirstName:   "David",
@@ -84,6 +84,28 @@ const DEMO_LOANS: Record<string, object> = {
     lockStatus:          "floating",
     channelType:         "Broker",
     compensationType:    "Borrower",
+    deepLink:            null,
+  },
+  // ── Starting Now test loan 2 — use HCMG-SN-TEST2 to demo a second referral
+  "HCMG-SN-TEST2": {
+    found:               true,
+    borrowerFirstName:   "Jasmine",
+    borrowerLastName:    "Carter",
+    borrowerEmail:       "jasmine.carter.test@hcmgloans.com",
+    borrowerPhone:       "4435550284",
+    borrowerCity:        "Owings Mills",
+    borrowerState:       "Maryland",
+    loanType:            "purchase_conventional",
+    loanAmount:          320000,
+    purchasePrice:       340000,
+    propertyAddress:     "507 Garrison Forest Road",
+    propertyCity:        "Owings Mills",
+    propertyState:       "MD",
+    propertyZip:         "21117",
+    targetCloseDate:     "2026-12-15",
+    lockStatus:          "floating",
+    channelType:         "Retail",
+    compensationType:    "Lender",
     deepLink:            null,
   },
 };
