@@ -509,6 +509,8 @@ INSERT INTO uni_quiz_questions (lesson_id, course_id, question_text, question_ty
  10);
 
 
+END $$;
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- SUMMARY CHECK
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -521,5 +523,3 @@ FROM uni_courses c
 LEFT JOIN uni_lessons l ON l.course_id = c.id
 WHERE c.slug = 'lo-compensation-epo'
 GROUP BY c.id, c.title, c.slug, c.is_published;
-
-END $$;
