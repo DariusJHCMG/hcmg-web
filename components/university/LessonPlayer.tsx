@@ -16,6 +16,223 @@ const HEARTBEAT_INTERVAL_MS = 5000;
 // Inactivity timeout — warn after this many ms with no interaction (ms)
 const INACTIVITY_WARN_MS    = 5 * 60 * 1000; // 5 min
 
+// ─────────────────────────────────────────────────────────────────────────────
+// HeyGenPlayer
+//
+// HeyGen iframes are cross-origin — no playback events reach the parent page.
+// This component starts a server session immediately on mount, sends heartbeats
+// on a timer (crediting wall-clock time while the tab is visible + focused),
+// and auto-calls /session/complete once the server watch_pct reaches the
+// lesson's threshold. Falls back to a "Mark as watched" button if the session
+// cannot be established after 30s.
+// ─────────────────────────────────────────────────────────────────────────────
+function HeyGenPlayer({
+  src,
+  lessonId,
+  courseId,
+  onVerifiedProgress,
+  onServerComplete,
+}: {
+  src: string;
+  lessonId: string;
+  courseId: string;
+  onVerifiedProgress?: (pct: number) => void;
+  onServerComplete?: () => void;
+}) {
+  const sessionIdRef      = useRef<string | null>(null);
+  const sessionStartedRef = useRef(false);
+  const completedRef      = useRef(false);
+  const isVisibleRef      = useRef(true);
+  const isFocusedRef      = useRef(true);
+  const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Simulated playback position — advances at 1s/s while visible+focused
+  const positionRef       = useRef(0);
+  const durationRef       = useRef(0);
+
+  const [watchPct,      setWatchPct]      = useState(0);
+  const [sessionError,  setSessionError]  = useState(false);
+  const [fallbackReady, setFallbackReady] = useState(false);
+  const [completed,     setCompleted]     = useState(false);
+
+  // Start session on mount
+  useEffect(() => {
+    if (sessionStartedRef.current) return;
+    sessionStartedRef.current = true;
+
+    // Show fallback "Mark as watched" after 30s if session never establishes
+    const fallbackTimeout = setTimeout(() => {
+      if (!sessionIdRef.current) setFallbackReady(true);
+    }, 30_000);
+
+    fetch("/api/university/lesson/session/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lesson_id: lessonId, course_id: courseId }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        clearTimeout(fallbackTimeout);
+        if (data.session_id) {
+          sessionIdRef.current = data.session_id;
+          // Seed duration from server if available (used for segment math)
+          if (typeof data.duration_secs === "number" && data.duration_secs > 0) {
+            durationRef.current = data.duration_secs;
+          }
+        } else {
+          setSessionError(true);
+          setFallbackReady(true);
+        }
+      })
+      .catch(() => {
+        clearTimeout(fallbackTimeout);
+        setSessionError(true);
+        setFallbackReady(true);
+      });
+
+    return () => clearTimeout(fallbackTimeout);
+  }, [lessonId, courseId]);
+
+  // Visibility / focus tracking
+  useEffect(() => {
+    const onVis   = () => { isVisibleRef.current = !document.hidden; };
+    const onFocus = () => { isFocusedRef.current = true; };
+    const onBlur  = () => { isFocusedRef.current = false; };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("blur",  onBlur);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("blur",  onBlur);
+    };
+  }, []);
+
+  // Heartbeat loop — treat the video as "playing" whenever tab is visible & focused
+  const requestCompletion = useCallback(async () => {
+    const sid = sessionIdRef.current;
+    if (!sid || completedRef.current) return;
+    try {
+      const res  = await fetch("/api/university/lesson/session/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sid }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        completedRef.current = true;
+        if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
+        setCompleted(true);
+        onServerComplete?.();
+      }
+    } catch { /* will retry on next heartbeat */ }
+  }, [onServerComplete]);
+
+  useEffect(() => {
+    heartbeatTimerRef.current = setInterval(async () => {
+      const sid = sessionIdRef.current;
+      if (!sid || completedRef.current) return;
+
+      try {
+        const isPlaying = isVisibleRef.current && isFocusedRef.current;
+        // Advance simulated position while "playing"
+        if (isPlaying) {
+          positionRef.current = positionRef.current + (HEARTBEAT_INTERVAL_MS / 1000);
+        }
+
+        const res  = await fetch("/api/university/lesson/session/heartbeat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id:    sid,
+            position_secs: Math.round(positionRef.current),
+            duration_secs: durationRef.current > 0 ? durationRef.current : undefined,
+            is_playing:    isPlaying,
+            is_visible:    isVisibleRef.current,
+            is_focused:    isFocusedRef.current,
+            playback_rate: 1.0,
+            seeked:        false,
+          }),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (typeof data.watch_pct === "number") {
+          setWatchPct(data.watch_pct);
+          onVerifiedProgress?.(data.watch_pct);
+          // Once the server is satisfied, request completion
+          if (data.watch_pct >= 80 && !completedRef.current) {
+            requestCompletion();
+          }
+        }
+      } catch { /* network blip */ }
+    }, HEARTBEAT_INTERVAL_MS);
+
+    return () => {
+      if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
+    };
+  }, [onVerifiedProgress, requestCompletion]);
+
+  return (
+    <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", background: "#000", aspectRatio: "16/9" }}>
+      <iframe
+        src={src}
+        title="Lesson video"
+        allow="encrypted-media; fullscreen; autoplay"
+        allowFullScreen
+        style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+      />
+
+      {/* Verified progress bar along the bottom */}
+      {watchPct > 0 && !completed && (
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, zIndex: 5,
+          height: 3, width: `${watchPct}%`,
+          background: "linear-gradient(90deg,#FF9847,#F37021)",
+          transition: "width 0.5s ease",
+          pointerEvents: "none",
+        }} />
+      )}
+
+      {/* Completed badge */}
+      {completed && (
+        <div style={{
+          position: "absolute", top: 12, right: 12, zIndex: 5,
+          background: "rgba(52,211,153,0.92)", borderRadius: 6,
+          padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#fff",
+        }}>
+          ✓ Completed
+        </div>
+      )}
+
+      {/* Fallback button — shown if session failed or after 30s with no session */}
+      {fallbackReady && !completed && (
+        <div style={{
+          position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)",
+          zIndex: 10,
+        }}>
+          <button
+            onClick={async () => {
+              // If session established by now, try complete; otherwise just unlock
+              if (sessionIdRef.current) {
+                await requestCompletion();
+              } else {
+                onServerComplete?.();
+              }
+            }}
+            style={{
+              padding: "9px 20px", borderRadius: 8, border: "none",
+              background: "linear-gradient(135deg,#FF9847,#F37021)",
+              color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
+            }}
+          >
+            {sessionError ? "Mark as watched" : "I've finished watching →"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LessonPlayer({
   lessonId,
   courseId,
@@ -288,38 +505,35 @@ export function LessonPlayer({
     );
   }
 
-  // HeyGen embed URL — render as iframe directly in the player
+  // HeyGen embed URL — render with full session/heartbeat/completion tracking
   if (videoUrl.includes("heygen.com/embeds")) {
     return (
-      <div style={{ borderRadius: 12, overflow: "hidden", background: "#000", aspectRatio: "16/9" }}>
-        <iframe
-          src={videoUrl}
-          title="Lesson video"
-          allow="encrypted-media; fullscreen; autoplay"
-          allowFullScreen
-          style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-        />
-      </div>
+      <HeyGenPlayer
+        src={videoUrl}
+        lessonId={lessonId}
+        courseId={courseId}
+        onVerifiedProgress={onVerifiedProgress}
+        onServerComplete={onServerComplete}
+      />
     );
   }
 
-  // HeyGen share/videos URL (not yet converted to embed) — show link fallback
+  // HeyGen share/videos URL — convert to embed format if possible
   if (videoUrl.includes("heygen.com")) {
     const embedId = videoUrl.match(/([a-f0-9]{32})/)?.[1];
     const embedSrc = embedId ? `https://app.heygen.com/embeds/${embedId}` : null;
     if (embedSrc) {
       return (
-        <div style={{ borderRadius: 12, overflow: "hidden", background: "#000", aspectRatio: "16/9" }}>
-          <iframe
-            src={embedSrc}
-            title="Lesson video"
-            allow="encrypted-media; fullscreen; autoplay"
-            allowFullScreen
-            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-          />
-        </div>
+        <HeyGenPlayer
+          src={embedSrc}
+          lessonId={lessonId}
+          courseId={courseId}
+          onVerifiedProgress={onVerifiedProgress}
+          onServerComplete={onServerComplete}
+        />
       );
     }
+    // Cannot extract embed ID — show open-in-new-tab fallback
     return (
       <div style={{
         borderRadius: 12, background: "linear-gradient(145deg,#071a2e,#0d2a48)",

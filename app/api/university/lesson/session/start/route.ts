@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   // Verify lesson belongs to the stated course and is published
   const { data: lesson } = await sb
     .from("uni_lessons")
-    .select("id, course_id, is_published")
+    .select("id, course_id, is_published, duration_secs")
     .eq("id", lesson_id)
     .eq("is_published", true)
     .single();
@@ -89,8 +89,9 @@ export async function POST(request: NextRequest) {
   });
 
   return NextResponse.json({
-    session_id: session.id,
-    started_at: session.started_at,
-    expires_at: session.expires_at,
+    session_id:   session.id,
+    started_at:   session.started_at,
+    expires_at:   session.expires_at,
+    duration_secs: lesson.duration_secs ?? null,
   });
 }

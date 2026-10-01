@@ -42,6 +42,7 @@ export function TextLessonEngine({ lessonId, courseId, children, onServerComplet
   const contentRef         = useRef<HTMLDivElement>(null);
 
   const [watchPct,       setWatchPct]       = useState(0);
+  const [dwellSecs,      setDwellSecs]      = useState(0);
   const [sessionError,   setSessionError]   = useState<string | null>(null);
   const [completing,     setCompleting]     = useState(false);
   const [completeError,  setCompleteError]  = useState<string | null>(null);
@@ -96,6 +97,10 @@ export function TextLessonEngine({ lessonId, courseId, children, onServerComplet
       if (typeof data.watch_pct === "number") {
         setWatchPct(data.watch_pct);
         onVerifiedProgress?.(data.watch_pct);
+      }
+      // verified_secs == dwell_secs for text lessons (set by heartbeat route)
+      if (typeof data.verified_secs === "number") {
+        setDwellSecs(data.verified_secs);
       }
     } catch { /* network blip — skip */ }
   }, [onVerifiedProgress]);
@@ -203,11 +208,13 @@ export function TextLessonEngine({ lessonId, courseId, children, onServerComplet
     }
   }
 
-  const canComplete = watchPct >= COMPLETE_THRESHOLD;
+  // Mirror the server's completion logic exactly:
+  // - If scrolled >= 80%: only 60s dwell required (fast reader path)
+  // - Otherwise: need the full watch_pct threshold (dwell-heavy path)
+  const scrolledEnough = scrollPctRef.current >= 80;
+  const canComplete    = scrolledEnough ? dwellSecs >= 60 : watchPct >= COMPLETE_THRESHOLD;
 
   // ── Requirement checklist items ─────────────────────────────────────────────
-  // We derive visual states from watch_pct (a weighted blend from heartbeat)
-  // The real gate is the server, but showing progress helps learners know what's needed.
   const dwellProgress  = Math.min(100, Math.round(watchPct / 0.7));   // ~70% weight
   const scrollProgress = Math.min(100, scrollPctRef.current);
 
@@ -274,7 +281,7 @@ export function TextLessonEngine({ lessonId, courseId, children, onServerComplet
 
         {/* Dwell progress row */}
         <RequirementRow
-          label="Reading time"
+          label={scrolledEnough ? "Reading time (60s min)" : "Reading time"}
           pct={Math.min(100, Math.round((dwellProgress / 100) * 100))}
           done={watchPct >= COMPLETE_THRESHOLD}
         />
@@ -317,7 +324,11 @@ export function TextLessonEngine({ lessonId, courseId, children, onServerComplet
         <button
           onClick={handleComplete}
           disabled={!canComplete || completing || !sessionIdRef.current}
-          title={!canComplete ? `Keep reading — ${COMPLETE_THRESHOLD - watchPct}% more progress needed` : undefined}
+          title={!canComplete
+            ? scrolledEnough
+              ? `Keep reading — ${Math.max(0, 60 - dwellSecs)}s more needed`
+              : `Keep reading — ${COMPLETE_THRESHOLD - watchPct}% more progress needed`
+            : undefined}
           style={{
             width: "100%", padding: "13px", borderRadius: 10, border: "none",
             background: canComplete
@@ -329,7 +340,10 @@ export function TextLessonEngine({ lessonId, courseId, children, onServerComplet
             transition: "background 0.3s, color 0.3s",
           }}
         >
-          {completing ? "Completing…" : canComplete ? "✓ Mark as complete" : `🔒 Keep reading (${watchPct}% / ${COMPLETE_THRESHOLD}%)`}
+          {completing ? "Completing…" : canComplete ? "✓ Mark as complete"
+            : scrolledEnough
+              ? `🔒 Almost done — ${Math.max(0, 60 - dwellSecs)}s more`
+              : `🔒 Keep reading (${watchPct}% / ${COMPLETE_THRESHOLD}%)`}
         </button>
       </div>
     </div>

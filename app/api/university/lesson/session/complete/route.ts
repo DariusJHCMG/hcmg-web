@@ -79,21 +79,28 @@ export async function POST(request: NextRequest) {
 
   // Check A2: Text/assignment dwell time and scroll threshold met
   if (lesson.lesson_type === "text" || lesson.lesson_type === "assignment") {
-    const minDwell = deriveMinDwellSecs((lesson as { duration_secs?: number | null }).duration_secs ?? null);
-    const dwellSecs = session.dwell_secs ?? 0;
-    const scrollPct = session.scroll_pct ?? 0;
-    const MIN_SCROLL_PCT = 80; // Must have scrolled at least 80% of the content
+    const fullMinDwell  = deriveMinDwellSecs((lesson as { duration_secs?: number | null }).duration_secs ?? null);
+    const dwellSecs     = session.dwell_secs ?? 0;
+    const scrollPct     = session.scroll_pct ?? 0;
+    const MIN_SCROLL_PCT = 80;
 
-    if (dwellSecs < minDwell) {
+    // If the learner has fully scrolled the content (scroll_pct >= 80), only
+    // require a short minimum dwell (60s) — enough to prove they opened the
+    // page but not a penalty for reading faster than the estimated duration.
+    // If they haven't finished scrolling, keep the full dwell requirement so
+    // they can't complete by sitting idle without reading.
+    const requiredDwell = scrollPct >= MIN_SCROLL_PCT ? 60 : fullMinDwell;
+
+    if (dwellSecs < requiredDwell) {
       failures.push({
         code: "INSUFFICIENT_DWELL_TIME",
-        message: `Reading time is ${dwellSecs}s — need at least ${minDwell}s to complete this lesson.`,
+        message: `Reading time is ${dwellSecs}s — need at least ${requiredDwell}s to complete this lesson.`,
       });
     }
     if (scrollPct < MIN_SCROLL_PCT) {
       failures.push({
         code: "INSUFFICIENT_SCROLL",
-        message: `You have only scrolled ${scrollPct}% — please read the full lesson before completing.`,
+        message: `You have only scrolled ${scrollPct}% — please scroll through the full lesson before completing.`,
       });
     }
   }
