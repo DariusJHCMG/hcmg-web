@@ -32,6 +32,11 @@ function getResend() {
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://hcmgloans.com").replace(/\/$/, "");
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
+// Comma-separated allowlist of hostnames that siteverify may return. Must be set
+// in production. Without it, hostname validation is skipped (safe for local dev).
+const TURNSTILE_HOSTNAMES: Set<string> = new Set(
+  (process.env.TURNSTILE_HOSTNAMES ?? "").split(",").map(h => h.trim()).filter(Boolean)
+);
 const ALLOWED_SOURCES = new Set(["funnel", "get-started", "team", "seo", "product", "home-calculator", "contact", "employment", "co-brand", "co-branded", "real-estate-agent", "corporate-benefits", "dscr-landing"]);
 const NAME_RE = /^[\p{L}][\p{L}\p{M}' .-]{0,49}$/u;
 
@@ -81,20 +86,40 @@ function clientIp(request: NextRequest) {
 }
 
 function suspiciousName(value: string) {
-  return value.length > 20 && !/[ '\-.]/.test(value);
+  if (value.length > 20 && !/[ '\-.]/.test(value)) return true;
+  // Reject names that are implausibly consonant-heavy (typical bot gibberish).
+  // A real name almost always has at least 1 vowel per 4 characters.
+  const vowels = (value.match(/[aeiou]/gi) ?? []).length;
+  if (value.replace(/[^a-z]/gi, "").length >= 5 && vowels === 0) return true;
+  const letters = value.replace(/[^a-z]/gi, "");
+  if (letters.length >= 6 && vowels / letters.length < 0.12) return true;
+  return false;
 }
 
 async function verifyTurnstile(token: string | undefined, ip: string | null) {
   if (!TURNSTILE_SECRET) return true;
   if (!token) return false;
-  const form = new FormData();
-  form.set("secret", TURNSTILE_SECRET);
-  form.set("response", token);
-  if (ip) form.set("remoteip", ip);
-  const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
-  if (!response.ok) return false;
-  const result = await response.json() as { success?: boolean };
-  return result.success === true;
+  const params = new URLSearchParams({ secret: TURNSTILE_SECRET, response: token });
+  if (ip) params.set("remoteip", ip);
+  let result: { success?: boolean; action?: string; hostname?: string };
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: AbortSignal.timeout(10_000),
+      body: params,
+    });
+    if (!response.ok) return false;
+    result = await response.json() as { success?: boolean; action?: string; hostname?: string };
+  } catch {
+    return false;
+  }
+  if (!result.success) return false;
+  // Validate action — all lead submissions use the "lead" action.
+  if (result.action && result.action !== "lead") return false;
+  // Validate hostname when the allowlist is configured.
+  if (TURNSTILE_HOSTNAMES.size > 0 && result.hostname && !TURNSTILE_HOSTNAMES.has(result.hostname)) return false;
+  return true;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

@@ -88,6 +88,7 @@ async function getTurnstileToken(): Promise<string | undefined> {
     const timer = window.setTimeout(() => { cleanup(); reject(new Error("Bot verification timed out.")); }, 12000);
     widgetId = window.turnstile!.render(container, {
       sitekey: siteKey,
+      action: "lead",
       size: "invisible",
       execution: "execute",
       callback: (token: string) => { window.clearTimeout(timer); cleanup(); resolve(token); },

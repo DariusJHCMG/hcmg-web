@@ -43,9 +43,11 @@ function HeyGenPlayer({
   const sessionStartedRef = useRef(false);
   const completedRef      = useRef(false);
   const isVisibleRef      = useRef(true);
-  const isFocusedRef      = useRef(true);
+  // NOTE: intentionally no isFocusedRef — clicking into an iframe fires window
+  // blur on the parent, making every heartbeat look "unfocused". For HeyGen we
+  // only gate on tab visibility (document.hidden), not window focus.
   const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Simulated playback position — advances at 1s/s while visible+focused
+  // Simulated playback position — advances at 1s/s while tab is visible
   const positionRef       = useRef(0);
   const durationRef       = useRef(0);
 
@@ -92,19 +94,13 @@ function HeyGenPlayer({
     return () => clearTimeout(fallbackTimeout);
   }, [lessonId, courseId]);
 
-  // Visibility / focus tracking
+  // Tab visibility tracking only — no window focus/blur.
+  // Clicking into the iframe steals window focus (blur fires on parent) but
+  // the user is still actively watching, so we must not penalise that.
   useEffect(() => {
-    const onVis   = () => { isVisibleRef.current = !document.hidden; };
-    const onFocus = () => { isFocusedRef.current = true; };
-    const onBlur  = () => { isFocusedRef.current = false; };
+    const onVis = () => { isVisibleRef.current = !document.hidden; };
     document.addEventListener("visibilitychange", onVis);
-    window.addEventListener("focus", onFocus);
-    window.addEventListener("blur",  onBlur);
-    return () => {
-      document.removeEventListener("visibilitychange", onVis);
-      window.removeEventListener("focus", onFocus);
-      window.removeEventListener("blur",  onBlur);
-    };
+    return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
   // Heartbeat loop — treat the video as "playing" whenever tab is visible & focused
@@ -133,9 +129,10 @@ function HeyGenPlayer({
       if (!sid || completedRef.current) return;
 
       try {
-        const isPlaying = isVisibleRef.current && isFocusedRef.current;
-        // Advance simulated position while "playing"
-        if (isPlaying) {
+        // Credit time whenever the tab is visible — don't gate on window focus
+        // because the iframe will have stolen it.
+        const isVisible = isVisibleRef.current;
+        if (isVisible) {
           positionRef.current = positionRef.current + (HEARTBEAT_INTERVAL_MS / 1000);
         }
 
@@ -146,9 +143,9 @@ function HeyGenPlayer({
             session_id:    sid,
             position_secs: Math.round(positionRef.current),
             duration_secs: durationRef.current > 0 ? durationRef.current : undefined,
-            is_playing:    isPlaying,
-            is_visible:    isVisibleRef.current,
-            is_focused:    isFocusedRef.current,
+            is_playing:    isVisible,   // visible tab = "playing" for HeyGen
+            is_visible:    isVisible,
+            is_focused:    true,        // always true — iframe owns focus, parent loses it
             playback_rate: 1.0,
             seeked:        false,
           }),

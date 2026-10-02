@@ -18,11 +18,24 @@ funnels that use the shared helper.
 
 ## Turnstile setup
 
-Create an **Invisible** Turnstile widget in Cloudflare for every production
-hostname. Add `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` to the
-deployment environment, then redeploy. Never expose the secret key in a
-`NEXT_PUBLIC_` variable.
+The widget (`0x4AAAAAAFMLT04JwKFyOkJX`) is already created in Cloudflare Turnstile
+as an Invisible widget for `hcmgloans.com`.
 
-The API deliberately enables Turnstile only when the secret is present, so local
-development works without Cloudflare credentials. Production should always have
-both keys configured.
+Three environment variables must be set in Vercel (Settings → Environment Variables):
+
+| Variable | Where | Value |
+|---|---|---|
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Vercel + `.env.local` | `0x4AAAAAAFMLT04JwKFyOkJX` |
+| `TURNSTILE_SECRET_KEY` | Vercel only (secret) | from Cloudflare dashboard |
+| `TURNSTILE_HOSTNAMES` | Vercel + `.env.local` | `hcmgloans.com` (prod) / `localhost,127.0.0.1` (local) |
+
+**Important:** The frontend key must be named `NEXT_PUBLIC_TURNSTILE_SITE_KEY` —
+not `TURNSTILE_SITE_KEY`. The `NEXT_PUBLIC_` prefix is required for Next.js to
+expose the variable to the browser bundle.
+
+The API enables Turnstile only when `TURNSTILE_SECRET_KEY` is present, so local
+development works without it. Production must have all three values set.
+
+Every token is stamped with `action: "lead"` on the frontend and validated against
+that same action on the backend. The backend also validates the token's `hostname`
+against the `TURNSTILE_HOSTNAMES` allowlist when that list is non-empty.
