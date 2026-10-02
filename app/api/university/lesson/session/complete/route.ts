@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   // ── 2. Load lesson completion rules ─────────────────────────────────────────
   const { data: lesson } = await sb
     .from("uni_lessons")
-    .select("id, lesson_type, completion_mode, completion_threshold_pct, duration_secs")
+    .select("id, lesson_type, completion_mode, completion_threshold_pct, duration_secs, video_token")
     .eq("id", session.lesson_id)
     .single();
 
@@ -57,15 +57,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
   }
 
+  // Detect iframe-based video (HeyGen, YouTube, Vimeo, Loom) — these can't
+  // report real playback position, so we use dwell time instead of segments.
+  const videoToken    = (lesson as { video_token?: string | null }).video_token ?? "";
+  const isIframeVideo = (lesson.lesson_type === "video") &&
+    (videoToken.includes("heygen.com") || videoToken.includes("youtube.com") ||
+     videoToken.includes("vimeo.com")  || videoToken.includes("loom.com"));
+
   // ── 3. CanCompleteLesson checks ──────────────────────────────────────────────
   type FailReason = { code: string; message: string };
   const failures: FailReason[] = [];
 
   const threshold = lesson.completion_threshold_pct ?? 80;
-  const duration  = session.video_duration_secs ?? 0;
 
-  // Check A: Video watch threshold met
-  if (lesson.lesson_type === "video" || lesson.lesson_type === "audio") {
+  // Check A: Native video/audio — segment-based watch percentage
+  if ((lesson.lesson_type === "video" || lesson.lesson_type === "audio") && !isIframeVideo) {
+    const duration = session.video_duration_secs ?? 0;
     if (duration > 0) {
       const watchPct = Math.round((session.verified_secs / duration) * 100);
       if (watchPct < threshold) {
@@ -75,20 +82,40 @@ export async function POST(request: NextRequest) {
         });
       }
     }
+    // If duration is unknown, let it pass — we can't verify without a duration.
   }
 
-  // Check A2: Text/assignment dwell time and scroll threshold met
+  // Check A2: Iframe video (HeyGen etc.) — dwell-time based
+  // The learner must have the tab open and visible for at least threshold% of
+  // the lesson's stated duration. Duration values for iframe videos may be
+  // admin estimates, so we cap the requirement at 120s to prevent extreme waits
+  // when an estimate is wrong. Minimum is always 30s.
+  if (isIframeVideo) {
+    const lessonDuration = lesson.duration_secs ?? 0;
+    const dwellSecs      = session.dwell_secs ?? 0;
+    const rawRequired    = lessonDuration > 0
+      ? Math.round(lessonDuration * (threshold / 100))
+      : 45;
+    // Cap: never require more than 120s dwell for an iframe video, no matter
+    // how large the admin-entered duration estimate is.
+    const requiredDwell  = Math.max(30, Math.min(rawRequired, 120));
+
+    if (dwellSecs < requiredDwell) {
+      failures.push({
+        code: "INSUFFICIENT_WATCH_TIME",
+        message: `Video viewing time is ${dwellSecs}s — need at least ${requiredDwell}s to complete this lesson.`,
+      });
+    }
+  }
+
+  // Check A3: Text/assignment dwell time and scroll threshold met
   if (lesson.lesson_type === "text" || lesson.lesson_type === "assignment") {
     const fullMinDwell  = deriveMinDwellSecs((lesson as { duration_secs?: number | null }).duration_secs ?? null);
     const dwellSecs     = session.dwell_secs ?? 0;
     const scrollPct     = session.scroll_pct ?? 0;
     const MIN_SCROLL_PCT = 80;
 
-    // If the learner has fully scrolled the content (scroll_pct >= 80), only
-    // require a short minimum dwell (60s) — enough to prove they opened the
-    // page but not a penalty for reading faster than the estimated duration.
-    // If they haven't finished scrolling, keep the full dwell requirement so
-    // they can't complete by sitting idle without reading.
+    // Fast-reader path: fully scrolled content only needs 60s dwell minimum.
     const requiredDwell = scrollPct >= MIN_SCROLL_PCT ? 60 : fullMinDwell;
 
     if (dwellSecs < requiredDwell) {
@@ -154,9 +181,10 @@ export async function POST(request: NextRequest) {
   }
 
   const now = new Date().toISOString();
-  const watchPct = duration > 0
-    ? Math.min(100, Math.round((session.verified_secs / duration) * 100))
-    : 100; // Non-video lesson
+  const nativeDuration = session.video_duration_secs ?? 0;
+  const watchPct = nativeDuration > 0
+    ? Math.min(100, Math.round((session.verified_secs / nativeDuration) * 100))
+    : 100; // Non-native-video lesson — no segment duration to compute from
 
   // Mark session complete
   await sb

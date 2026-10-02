@@ -169,7 +169,7 @@ export function FunnelFlow({
   function next(choiceLabel?: string) {
     const duration = Date.now() - stepStartRef.current;
     stepStartRef.current = Date.now();
-    if (typeof step === "number" && choiceLabel) trackFunnelStep(stepIdx + 1, choiceLabel, duration);
+    if (typeof step === "number") trackFunnelStep(stepIdx + 1, choiceLabel ?? "—", duration);
     const nextIdx = stepIdx + 1;
     if (nextIdx < activeSteps.length) go(activeSteps[nextIdx], 1);
   }
@@ -240,6 +240,7 @@ export function FunnelFlow({
     });
 
     if (result.success) {
+      trackFunnelStep(6, state.firstName.trim() ? "submitted" : "—");
       identifyLead(meta.sessionId, {
         email: state.email.trim(),
         name: state.firstName.trim(),
@@ -338,7 +339,7 @@ export function FunnelFlow({
             <StepShell
               title={stepTitle(1, "What are you trying to do?")}
               sub={stepSub(1, "Start with your goal and we'll show you the right numbers.")}
-              onContinue={() => state.goal && next()}
+              onContinue={() => state.goal && next(state.goal)}
               disabled={!state.goal}
               ctaLabel="Continue →"
             >
@@ -366,7 +367,7 @@ export function FunnelFlow({
               sub={stepSub(2, state.goal === "refinance"
                 ? "This helps us calculate your equity and loan options."
                 : "A quick range helps us build a realistic payment estimate.")}
-              onContinue={() => state.priceBand && next()}
+              onContinue={() => state.priceBand && next(state.priceBand)}
               disabled={!state.priceBand}
               ctaLabel={cfg.overrides?.[2]?.ctaLabel ?? "Show my estimate →"}
             >
@@ -396,7 +397,7 @@ export function FunnelFlow({
             <StepShell
               title={stepTitle(3, "Where does your credit likely fall today?")}
               sub={stepSub(3, "A ballpark is all we need. This won't affect your score.")}
-              onContinue={() => state.creditBand && next()}
+              onContinue={() => state.creditBand && next(state.creditBand)}
               disabled={!state.creditBand}
               ctaLabel={cfg.overrides?.[3]?.ctaLabel ?? "Continue →"}
             >
@@ -425,7 +426,7 @@ export function FunnelFlow({
             <StepShell
               title={stepTitle(4, "What's your approximate household income?")}
               sub={stepSub(4, "We use this to shape your estimate, not to make decisions.")}
-              onContinue={() => state.incomeBand && next()}
+              onContinue={() => state.incomeBand && next(state.incomeBand)}
               disabled={!state.incomeBand}
               ctaLabel={cfg.overrides?.[4]?.ctaLabel ?? "See my payment range →"}
             >
@@ -495,7 +496,7 @@ export function FunnelFlow({
                     <p className="text-sm font-extrabold text-ink">Your results are locked</p>
                     <p className="mt-1 text-xs text-muted">Enter your contact info to unlock your personalized numbers.</p>
                   </div>
-                  <button onClick={() => next()} className="primary-button w-full justify-center !py-3.5">
+                  <button onClick={() => next("unlocked")} className="primary-button w-full justify-center !py-3.5">
                     {unlockLabel}
                   </button>
                   <button onClick={() => go(activeSteps[0], -1)} className="ghost-button w-full justify-center !py-2.5 !text-xs">
@@ -712,7 +713,14 @@ export function FunnelFlow({
               (step === 3 && !state.creditBand) ||
               (step === 4 && !state.incomeBand)
             }
-            onClick={() => next()}
+            onClick={() => {
+              const choice =
+                step === 1 ? (state.goal ?? undefined) :
+                step === 2 ? (state.priceBand ?? undefined) :
+                step === 3 ? (state.creditBand ?? undefined) :
+                step === 4 ? (state.incomeBand ?? undefined) : undefined;
+              next(choice);
+            }}
             className="mobile-sticky-primary disabled:opacity-40"
           >
             Continue →

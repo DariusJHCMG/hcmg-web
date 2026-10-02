@@ -337,9 +337,23 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                       <div className="p-5 space-y-3">
                         {[1, 2, 3, 4, 5, 6].map((stepNum) => {
                           const ev = funnelSteps.find((e) => (e.data as any)?.step === stepNum);
-                          const choice = (ev?.data as any)?.choice as string | undefined;
-                          const dur    = (ev?.data as any)?.duration_ms as number | undefined;
-                          const completed = !!ev;
+                          const trackedChoice = (ev?.data as any)?.choice as string | undefined;
+                          const dur = (ev?.data as any)?.duration_ms as number | undefined;
+
+                          // Fall back to lead record for steps 1–4 when no tracked event exists
+                          const leadAnswer: string | null | undefined =
+                            stepNum === 1 ? lead.goal :
+                            stepNum === 2 ? lead.price_range :
+                            stepNum === 3 ? lead.credit_range :
+                            stepNum === 4 ? lead.income_range :
+                            undefined;
+
+                          const choice = trackedChoice ?? (leadAnswer || undefined);
+                          // A step is "completed" if we have a tracked event OR a saved lead answer
+                          const completed = !!ev || !!leadAnswer;
+                          // A step was tracked live vs inferred from the lead record
+                          const fromLead = !ev && !!leadAnswer;
+
                           return (
                             <div
                               key={stepNum}
@@ -362,6 +376,9 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                                 </p>
                                 {choice && (
                                   <p className="mt-0.5 text-sm font-semibold text-ink">{choice}</p>
+                                )}
+                                {fromLead && (
+                                  <p className="mt-0.5 text-[10px] text-muted/60">from submission</p>
                                 )}
                                 {!completed && (
                                   <p className="mt-0.5 text-xs text-muted">Not reached</p>

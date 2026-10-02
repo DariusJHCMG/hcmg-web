@@ -43,28 +43,17 @@ function HeyGenPlayer({
   const sessionStartedRef = useRef(false);
   const completedRef      = useRef(false);
   const isVisibleRef      = useRef(true);
-  // NOTE: intentionally no isFocusedRef — clicking into an iframe fires window
-  // blur on the parent, making every heartbeat look "unfocused". For HeyGen we
-  // only gate on tab visibility (document.hidden), not window focus.
+  // No window focus tracking — clicking into the iframe fires blur on the parent.
+  // The server handles this: for iframe videos, it credits time on visibility alone.
   const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Simulated playback position — advances at 1s/s while tab is visible
-  const positionRef       = useRef(0);
-  const durationRef       = useRef(0);
 
-  const [watchPct,      setWatchPct]      = useState(0);
-  const [sessionError,  setSessionError]  = useState(false);
-  const [fallbackReady, setFallbackReady] = useState(false);
-  const [completed,     setCompleted]     = useState(false);
+  const [watchPct,  setWatchPct]  = useState(0);
+  const [completed, setCompleted] = useState(false);
 
   // Start session on mount
   useEffect(() => {
     if (sessionStartedRef.current) return;
     sessionStartedRef.current = true;
-
-    // Show fallback "Mark as watched" after 30s if session never establishes
-    const fallbackTimeout = setTimeout(() => {
-      if (!sessionIdRef.current) setFallbackReady(true);
-    }, 30_000);
 
     fetch("/api/university/lesson/session/start", {
       method: "POST",
@@ -72,38 +61,18 @@ function HeyGenPlayer({
       body: JSON.stringify({ lesson_id: lessonId, course_id: courseId }),
     })
       .then(r => r.json())
-      .then(data => {
-        clearTimeout(fallbackTimeout);
-        if (data.session_id) {
-          sessionIdRef.current = data.session_id;
-          // Seed duration from server if available (used for segment math)
-          if (typeof data.duration_secs === "number" && data.duration_secs > 0) {
-            durationRef.current = data.duration_secs;
-          }
-        } else {
-          setSessionError(true);
-          setFallbackReady(true);
-        }
-      })
-      .catch(() => {
-        clearTimeout(fallbackTimeout);
-        setSessionError(true);
-        setFallbackReady(true);
-      });
-
-    return () => clearTimeout(fallbackTimeout);
+      .then(data => { if (data.session_id) sessionIdRef.current = data.session_id; })
+      .catch(() => {});
   }, [lessonId, courseId]);
 
-  // Tab visibility tracking only — no window focus/blur.
-  // Clicking into the iframe steals window focus (blur fires on parent) but
-  // the user is still actively watching, so we must not penalise that.
+  // Tab visibility only — iframe owns window focus
   useEffect(() => {
     const onVis = () => { isVisibleRef.current = !document.hidden; };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
-  // Heartbeat loop — treat the video as "playing" whenever tab is visible & focused
+  // Try to complete the session with the server
   const requestCompletion = useCallback(async () => {
     const sid = sessionIdRef.current;
     if (!sid || completedRef.current) return;
@@ -120,34 +89,26 @@ function HeyGenPlayer({
         setCompleted(true);
         onServerComplete?.();
       }
-    } catch { /* will retry on next heartbeat */ }
+      // If 422: not enough dwell time yet — keep heartbeating, will retry next tick
+    } catch { /* network blip — retry next tick */ }
   }, [onServerComplete]);
 
+  // Heartbeat loop — sends pure dwell signal (no fake position/duration).
+  // Server accumulates dwell_secs and computes watch_pct against lesson duration.
   useEffect(() => {
     heartbeatTimerRef.current = setInterval(async () => {
       const sid = sessionIdRef.current;
       if (!sid || completedRef.current) return;
 
       try {
-        // Credit time whenever the tab is visible — don't gate on window focus
-        // because the iframe will have stolen it.
         const isVisible = isVisibleRef.current;
-        if (isVisible) {
-          positionRef.current = positionRef.current + (HEARTBEAT_INTERVAL_MS / 1000);
-        }
-
-        const res  = await fetch("/api/university/lesson/session/heartbeat", {
+        const res = await fetch("/api/university/lesson/session/heartbeat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            session_id:    sid,
-            position_secs: Math.round(positionRef.current),
-            duration_secs: durationRef.current > 0 ? durationRef.current : undefined,
-            is_playing:    isVisible,   // visible tab = "playing" for HeyGen
-            is_visible:    isVisible,
-            is_focused:    true,        // always true — iframe owns focus, parent loses it
-            playback_rate: 1.0,
-            seeked:        false,
+            session_id: sid,
+            is_visible: isVisible,
+            is_focused: true, // always true — iframe owns window focus
           }),
         });
         if (!res.ok) return;
@@ -155,7 +116,7 @@ function HeyGenPlayer({
         if (typeof data.watch_pct === "number") {
           setWatchPct(data.watch_pct);
           onVerifiedProgress?.(data.watch_pct);
-          // Once the server is satisfied, request completion
+          // Server says enough time has passed — request completion
           if (data.watch_pct >= 80 && !completedRef.current) {
             requestCompletion();
           }
@@ -200,32 +161,6 @@ function HeyGenPlayer({
         </div>
       )}
 
-      {/* Fallback button — shown if session failed or after 30s with no session */}
-      {fallbackReady && !completed && (
-        <div style={{
-          position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)",
-          zIndex: 10,
-        }}>
-          <button
-            onClick={async () => {
-              // If session established by now, try complete; otherwise just unlock
-              if (sessionIdRef.current) {
-                await requestCompletion();
-              } else {
-                onServerComplete?.();
-              }
-            }}
-            style={{
-              padding: "9px 20px", borderRadius: 8, border: "none",
-              background: "linear-gradient(135deg,#FF9847,#F37021)",
-              color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
-            }}
-          >
-            {sessionError ? "Mark as watched" : "I've finished watching →"}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
