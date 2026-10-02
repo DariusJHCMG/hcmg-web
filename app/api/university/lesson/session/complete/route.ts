@@ -96,9 +96,10 @@ export async function POST(request: NextRequest) {
     const rawRequired    = lessonDuration > 0
       ? Math.round(lessonDuration * (threshold / 100))
       : 45;
-    // Cap: never require more than 120s dwell for an iframe video, no matter
-    // how large the admin-entered duration estimate is.
-    const requiredDwell  = Math.max(30, Math.min(rawRequired, 120));
+    // Cap: never require more than 60s dwell for an iframe video, no matter
+    // how large the admin-entered duration estimate is. Most HeyGen lessons
+    // are 1-3 minutes — 60s proves the user watched without over-penalising.
+    const requiredDwell  = Math.max(20, Math.min(rawRequired, 60));
 
     if (dwellSecs < requiredDwell) {
       failures.push({

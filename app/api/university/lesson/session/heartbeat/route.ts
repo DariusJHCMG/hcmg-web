@@ -133,8 +133,8 @@ export async function POST(request: NextRequest) {
     const rawRequired = lessonDuration > 0
       ? Math.round(lessonDuration * (completionThreshold / 100))
       : 45;
-    // Same cap as complete route: max 120s, min 30s
-    const requiredDwell = Math.max(30, Math.min(rawRequired, 120));
+    // Same cap as complete route: max 60s, min 20s
+    const requiredDwell = Math.max(20, Math.min(rawRequired, 60));
 
     watchPct        = Math.min(100, Math.round((newDwellSecs / requiredDwell) * 100));
     newVerifiedSecs = newDwellSecs;
