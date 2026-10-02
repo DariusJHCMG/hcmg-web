@@ -52,10 +52,12 @@ export function LeadsClient({
   initialLeads,
   adminLoSlug,
   adminName,
+  allLOs,
 }: {
   initialLeads: Lead[];
   adminLoSlug: string | null;
   adminName: string | null;
+  allLOs: { slug: string; name: string }[];
 }) {
   const [leads]                         = useState<Lead[]>(initialLeads);
   // "my-leads" = admin's own LO pipeline; "company" = full company view
@@ -65,15 +67,6 @@ export function LeadsClient({
   const [loFilter, setLoFilter]         = useState<"all" | "company" | "contact" | "employment" | "lo" | "dscr">("all");
   // LO spotlight: filter company view to a specific LO slug
   const [loSpotlight, setLoSpotlight]   = useState<string>("");
-
-  // All unique LOs in the dataset (for the LO filter dropdown)
-  const allLOs = Array.from(
-    new Map(
-      leads
-        .filter((l) => l.lo_slug && l.lo_name)
-        .map((l) => [l.lo_slug!, l.lo_name!])
-    ).entries()
-  ).sort((a, b) => a[1].localeCompare(b[1]));
 
   function exportCSV() {
     const cols: (keyof Lead)[] = ["first_name","last_name","email","phone","source","lo_name","status","goal","price_range","credit_range","utm_source","utm_medium","utm_campaign","created_at"];
@@ -284,7 +277,7 @@ export function LeadsClient({
             className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink focus:border-accent focus:outline-none transition"
           >
             <option value="">All LOs</option>
-            {allLOs.map(([slug, name]) => (
+            {allLOs.map(({ slug, name }) => (
               <option key={slug} value={slug}>{name}</option>
             ))}
           </select>
