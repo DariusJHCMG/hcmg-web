@@ -130,15 +130,16 @@ export default async function PortalPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-line bg-sand text-xs font-semibold uppercase tracking-[0.1em] text-muted/70">
-                  <th className="px-5 py-3 text-left">Name</th>
-                  <th className="px-5 py-3 text-left">Contact</th>
-                  <th className="px-5 py-3 text-left">Source</th>
-                  <th className="px-5 py-3 text-left">LO</th>
-                  <th className="px-5 py-3 text-left">Goal</th>
-                  <th className="px-5 py-3 text-left">Status</th>
-                  <th className="px-5 py-3 text-left">When</th>
-                  <th className="px-5 py-3 text-left"></th>
-                </tr>
+                    <th className="px-5 py-3 text-left">Name</th>
+                    <th className="px-5 py-3 text-left">Contact</th>
+                    <th className="px-5 py-3 text-left">Source</th>
+                    <th className="px-5 py-3 text-left">LO</th>
+                    <th className="px-5 py-3 text-left">Goal</th>
+                    <th className="px-5 py-3 text-left">State</th>
+                    <th className="px-5 py-3 text-left">Status</th>
+                    <th className="px-5 py-3 text-left">When</th>
+                    <th className="px-5 py-3 text-left"></th>
+                  </tr>
               </thead>
               <tbody>
                 {leads.map((lead) => (

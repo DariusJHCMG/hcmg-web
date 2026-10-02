@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Lead, LeadEvent, LeadStatus } from "@/lib/database.types";
 import { SessionReplay } from "./SessionReplay";
+import { FUNNEL_CONFIGS } from "@/lib/funnel-config";
 
 // ── Helpers ───────────────────────────────────────────────────────
 
@@ -42,7 +43,7 @@ function duration(ms: unknown): string {
   return `${Math.floor(ms / 60000)}m ${Math.round((ms % 60000) / 1000)}s`;
 }
 
-const FUNNEL_STEPS: Record<number, string> = {
+const DEFAULT_STEP_LABELS: Record<number, string> = {
   1: "Goal",
   2: "Price range",
   3: "Credit range",
@@ -50,6 +51,49 @@ const FUNNEL_STEPS: Record<number, string> = {
   5: "Saw estimate",
   6: "Contact info",
 };
+
+// Sources that go through the buyer funnel
+const BUYER_SOURCES = new Set([
+  "get-started", "team", "seo", "co-brand", "co-branded",
+  "product", "home-calculator", "funnel",
+]);
+
+function isBuyerFunnel(source: string): boolean {
+  return BUYER_SOURCES.has(source) || source.startsWith("funnel:");
+}
+
+/** Resolve the funnel config for a lead — checks funnel_type first, then source slug. */
+function getFunnelConfig(lead: Lead) {
+  const slug = lead.funnel_type
+    ?? (lead.source.startsWith("funnel:") ? lead.source.slice(7) : null);
+  return slug ? (FUNNEL_CONFIGS[slug] ?? null) : null;
+}
+
+/** Get the active steps for a lead's funnel. Falls back to all 6. */
+function getActiveSteps(lead: Lead): number[] {
+  return getFunnelConfig(lead)?.steps ?? [1, 2, 3, 4, 5, 6];
+}
+
+/** Get the display label for a step, respecting funnel config overrides. */
+function getStepLabel(lead: Lead, stepNum: number): string {
+  const cfg = getFunnelConfig(lead);
+  const overrideTitle = cfg?.overrides?.[stepNum]?.title;
+  if (overrideTitle) {
+    // Strip trailing question mark / punctuation for use as a short label
+    return overrideTitle.replace(/[?.]$/, "").trim();
+  }
+  return DEFAULT_STEP_LABELS[stepNum] ?? `Step ${stepNum}`;
+}
+
+// Parse recruiting notes (newline-separated "Key: value" lines)
+function parseRecruitingNotes(notes: string | null): Record<string, string> {
+  if (!notes) return {};
+  return Object.fromEntries(
+    notes.split("\n")
+      .map(line => { const i = line.indexOf(":"); return i > -1 ? [line.slice(0, i).trim(), line.slice(i + 1).trim()] : null; })
+      .filter((e): e is [string, string] => e !== null && e[1].length > 0)
+  );
+}
 
 const DEVICE_ICONS: Record<string, string> = {
   mobile: "📱", tablet: "📲", desktop: "💻",
@@ -95,7 +139,7 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
   const [open, setOpen]           = useState(false);
   const [events, setEvents]       = useState<LeadEvent[]>([]);
   const [loading, setLoading]     = useState(false);
-  const [tab, setTab]             = useState<"journey" | "funnel" | "replay">("journey");
+  const [tab, setTab]             = useState<"journey" | "funnel" | "details" | "replay">("journey");
   const [status, setStatus]       = useState<LeadStatus>(lead.status);
   const [statusSaving, setStatusSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState<"ok" | "err" | null>(null);
@@ -200,6 +244,16 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
         )}
         {/* Goal */}
         <td className="px-5 py-3.5 text-sm text-muted">{lead.goal ?? "—"}</td>
+        {/* State */}
+        <td className="px-5 py-3.5">
+          {lead.property_state ? (
+            <span className="inline-flex items-center rounded-lg border border-line bg-sand px-2.5 py-1 text-xs font-bold text-ink">
+              {lead.property_state}
+            </span>
+          ) : (
+            <span className="text-xs text-muted/40">—</span>
+          )}
+        </td>
         {/* Status */}
         <td className="px-5 py-3.5">
           <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ${STATUS_COLORS[status]}`}>
@@ -215,7 +269,7 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
       {/* Intelligence drawer */}
       {open && (
         <tr>
-          <td colSpan={8} className="p-0 bg-sand border-b border-line">
+          <td colSpan={9} className="p-0 bg-sand border-b border-line">
             <div className="px-6 py-5 space-y-5">
 
               {/* ── Header row ── */}
@@ -260,7 +314,7 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
 
               {/* ── Tabs ── */}
               <div className="flex gap-1 border-b border-line pb-0">
-                {(["journey", "funnel", "replay"] as const).map((t) => (
+                {(["journey", "funnel", "details", "replay"] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setTab(t)}
@@ -271,7 +325,8 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                     }`}
                   >
                     {t === "journey" && `Pages (${pageViews.length})`}
-                    {t === "funnel"  && `Funnel (${funnelSteps.length}/6)`}
+                    {t === "funnel"  && (isBuyerFunnel(lead.source) ? `Funnel (${funnelSteps.length}/${getActiveSteps(lead).length})` : "Funnel")}
+                    {t === "details" && "Lead Details"}
                     {t === "replay"  && "Session Replay"}
                   </button>
                 ))}
@@ -335,63 +390,319 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                     {/* FUNNEL TAB */}
                     {tab === "funnel" && (
                       <div className="p-5 space-y-3">
-                        {[1, 2, 3, 4, 5, 6].map((stepNum) => {
-                          const ev = funnelSteps.find((e) => (e.data as any)?.step === stepNum);
-                          const trackedChoice = (ev?.data as any)?.choice as string | undefined;
-                          const dur = (ev?.data as any)?.duration_ms as number | undefined;
 
-                          // Fall back to lead record for steps 1–4 when no tracked event exists
-                          const leadAnswer: string | null | undefined =
-                            stepNum === 1 ? lead.goal :
-                            stepNum === 2 ? lead.price_range :
-                            stepNum === 3 ? lead.credit_range :
-                            stepNum === 4 ? lead.income_range :
-                            undefined;
+                        {/* ── Buyer funnel (get-started / team / seo / co-brand / product / all 107 catalog funnels) ── */}
+                        {isBuyerFunnel(lead.source) && (
+                          <>
+                            {getActiveSteps(lead).map((stepNum, idx) => {
+                              const ev = funnelSteps.find((e) => (e.data as any)?.step === stepNum);
+                              const trackedChoice = (ev?.data as any)?.choice as string | undefined;
+                              const dur = (ev?.data as any)?.duration_ms as number | undefined;
+                              const leadAnswer: string | null | undefined =
+                                stepNum === 1 ? lead.goal :
+                                stepNum === 2 ? lead.price_range :
+                                stepNum === 3 ? lead.credit_range :
+                                stepNum === 4 ? lead.income_range :
+                                undefined;
+                              const choice = trackedChoice ?? (leadAnswer || undefined);
+                              const completed = !!ev || !!leadAnswer;
+                              const fromLead = !ev && !!leadAnswer;
+                              return (
+                                <div key={stepNum} className={`flex items-center gap-4 rounded-xl border p-3.5 transition ${completed ? "border-green-200 bg-green-50" : "border-line bg-sand"}`}>
+                                  <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${completed ? "bg-green-600 text-white" : "border border-line text-muted"}`}>
+                                    {completed ? "✓" : idx + 1}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
+                                      Step {idx + 1} — {getStepLabel(lead, stepNum)}
+                                    </p>
+                                    {choice && <p className="mt-0.5 text-sm font-semibold text-ink">{choice}</p>}
+                                    {fromLead && <p className="mt-0.5 text-[10px] text-muted/60">from submission</p>}
+                                    {!completed && <p className="mt-0.5 text-xs text-muted">Not reached</p>}
+                                  </div>
+                                  {dur && dur > 0 && (
+                                    <span className="flex-shrink-0 text-[11px] font-semibold text-muted">{duration(dur)}</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            {/* Buying power / estimate summary if available */}
+                            {(lead.estimated_buying_power_high || lead.estimated_monthly_payment || lead.recommended_loan_type) && (
+                              <div className="mt-2 rounded-xl border border-accent/20 bg-accent/5 p-4 space-y-1.5">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-accent">Estimate generated</p>
+                                {lead.estimated_buying_power_low && lead.estimated_buying_power_high && (
+                                  <div className="flex justify-between text-sm"><span className="text-muted">Buying power</span><span className="font-semibold text-ink">${lead.estimated_buying_power_low.toLocaleString()} – ${lead.estimated_buying_power_high.toLocaleString()}</span></div>
+                                )}
+                                {lead.estimated_monthly_payment && (
+                                  <div className="flex justify-between text-sm"><span className="text-muted">Est. monthly</span><span className="font-semibold text-ink">${lead.estimated_monthly_payment.toLocaleString()}/mo</span></div>
+                                )}
+                                {lead.recommended_loan_type && (
+                                  <div className="flex justify-between text-sm"><span className="text-muted">Loan path</span><span className="font-semibold text-ink">{lead.recommended_loan_type}</span></div>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        )}
 
-                          const choice = trackedChoice ?? (leadAnswer || undefined);
-                          // A step is "completed" if we have a tracked event OR a saved lead answer
-                          const completed = !!ev || !!leadAnswer;
-                          // A step was tracked live vs inferred from the lead record
-                          const fromLead = !ev && !!leadAnswer;
-
+                        {/* ── Recruiting / Employment ── */}
+                        {lead.source === "employment" && (() => {
+                          const fields = parseRecruitingNotes(lead.notes);
+                          const rows: { label: string; value: string | null | undefined }[] = [
+                            { label: "NMLS ID",         value: fields["NMLS"] },
+                            { label: "Current company", value: fields["Current company"] },
+                            { label: "States licensed", value: fields["States licensed"] },
+                            { label: "Monthly volume",  value: fields["Monthly volume"] },
+                            { label: "Message",         value: fields["Message"] },
+                          ];
                           return (
-                            <div
-                              key={stepNum}
-                              className={`flex items-center gap-4 rounded-xl border p-3.5 transition ${
-                                completed
-                                  ? "border-green-200 bg-green-50"
-                                  : "border-line bg-sand"
-                              }`}
-                            >
-                              <div
-                                className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                                  completed ? "bg-green-600 text-white" : "border border-line text-muted"
-                                }`}
-                              >
-                                {completed ? "✓" : stepNum}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
-                                  Step {stepNum} — {FUNNEL_STEPS[stepNum]}
-                                </p>
-                                {choice && (
-                                  <p className="mt-0.5 text-sm font-semibold text-ink">{choice}</p>
-                                )}
-                                {fromLead && (
-                                  <p className="mt-0.5 text-[10px] text-muted/60">from submission</p>
-                                )}
-                                {!completed && (
-                                  <p className="mt-0.5 text-xs text-muted">Not reached</p>
-                                )}
-                              </div>
-                              {dur && dur > 0 && (
-                                <span className="flex-shrink-0 text-[11px] font-semibold text-muted">
-                                  {duration(dur)}
-                                </span>
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted px-1">Recruiting inquiry details</p>
+                              {rows.filter(r => r.value).map(r => (
+                                <div key={r.label} className="flex items-start gap-4 rounded-xl border border-line bg-sand p-3.5">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">{r.label}</p>
+                                    <p className="mt-0.5 text-sm font-semibold text-ink">{r.value}</p>
+                                  </div>
+                                </div>
+                              ))}
+                              {rows.every(r => !r.value) && (
+                                <p className="text-sm text-muted px-1">No additional details submitted.</p>
                               )}
                             </div>
                           );
-                        })}
+                        })()}
+
+                        {/* ── Contact form ── */}
+                        {lead.source === "contact" && (
+                          <div className="rounded-xl border border-line bg-sand p-4 space-y-1">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Contact inquiry</p>
+                            {lead.notes ? (
+                              <p className="text-sm text-ink whitespace-pre-wrap">{lead.notes}</p>
+                            ) : (
+                              <p className="text-sm text-muted">No message submitted.</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* ── Corporate benefits / Agent / other non-funnel sources ── */}
+                        {(lead.source === "corporate-benefits" || lead.source === "real-estate-agent") && (
+                          <div className="rounded-xl border border-line bg-sand p-4 space-y-2">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+                              {lead.source === "corporate-benefits" ? "Corporate benefits inquiry" : "Agent partner inquiry"}
+                            </p>
+                            {lead.notes && <p className="text-sm text-ink whitespace-pre-wrap">{lead.notes}</p>}
+                            {lead.property_state && (
+                              <div className="flex justify-between text-sm"><span className="text-muted">Property state</span><span className="font-semibold text-ink">{lead.property_state}</span></div>
+                            )}
+                            {!lead.notes && !lead.property_state && (
+                              <p className="text-sm text-muted">No additional details submitted.</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* ── DSCR (handled by dscrData prop, shown below panel) ── */}
+                        {lead.source === "dscr-landing" && (
+                          <div className="rounded-xl border border-line bg-sand p-4">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">DSCR inquiry</p>
+                            <p className="mt-1 text-sm text-muted">See DSCR Loan Details section below.</p>
+                          </div>
+                        )}
+
+                      </div>
+                    )}
+
+                    {/* LEAD DETAILS TAB */}
+                    {tab === "details" && (
+                      <div className="divide-y divide-line">
+
+                        {/* Contact info */}
+                        <div className="p-5 space-y-3">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Contact Information</p>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Full name</span>
+                              <span className="text-sm font-semibold text-ink">{lead.first_name}{lead.last_name ? ` ${lead.last_name}` : ""}</span>
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Email</span>
+                              <a href={`mailto:${lead.email}`} className="text-sm font-semibold text-accent hover:underline">{lead.email}</a>
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Phone</span>
+                              <a href={`tel:${lead.phone.replace(/\D/g, "")}`} className="text-sm font-semibold text-accent hover:underline">{lead.phone}</a>
+                            </div>
+                            {lead.property_state && (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Property state</span>
+                                <span className="text-sm font-semibold text-ink">{lead.property_state}</span>
+                              </div>
+                            )}
+                          </div>
+                          {/* Quick action buttons */}
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            <a href={`tel:${lead.phone.replace(/\D/g, "")}`}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-[#F37021] px-4 py-2 text-xs font-bold text-white transition hover:opacity-90">
+                              📞 Call {lead.first_name}
+                            </a>
+                            <a href={`mailto:${lead.email}`}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-4 py-2 text-xs font-bold text-ink transition hover:border-accent hover:text-accent">
+                              ✉️ Email
+                            </a>
+                            <a href={`sms:${lead.phone.replace(/\D/g, "")}`}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-4 py-2 text-xs font-bold text-ink transition hover:border-accent hover:text-accent">
+                              💬 Text
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* Mortgage / funnel answers — only for buyer leads */}
+                        {isBuyerFunnel(lead.source) && (lead.goal || lead.price_range || lead.credit_range || lead.income_range || lead.recommended_loan_type || lead.estimated_buying_power_high || lead.estimated_monthly_payment) && (
+                          <div className="p-5 space-y-3">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Mortgage Details</p>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                              {lead.goal && (
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Goal</span>
+                                  <span className="text-sm font-semibold text-ink capitalize">{lead.goal === "buy" ? "Purchase a home" : lead.goal === "refinance" ? "Refinance" : lead.goal === "compare" ? "Compare options" : lead.goal}</span>
+                                </div>
+                              )}
+                              {lead.price_range && (
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Price range</span>
+                                  <span className="text-sm font-semibold text-ink">{lead.price_range}</span>
+                                </div>
+                              )}
+                              {lead.credit_range && (
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Credit range</span>
+                                  <span className="text-sm font-semibold text-ink">{lead.credit_range}</span>
+                                </div>
+                              )}
+                              {lead.income_range && (
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Income range</span>
+                                  <span className="text-sm font-semibold text-ink">{lead.income_range}</span>
+                                </div>
+                              )}
+                              {lead.recommended_loan_type && (
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Recommended loan path</span>
+                                  <span className="text-sm font-semibold text-ink">{lead.recommended_loan_type}</span>
+                                </div>
+                              )}
+                              {lead.funnel_type && (
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Funnel</span>
+                                  <span className="text-sm font-semibold text-ink">{lead.funnel_type.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</span>
+                                </div>
+                              )}
+                            </div>
+                            {(lead.estimated_buying_power_high || lead.estimated_monthly_payment) && (
+                              <div className="mt-1 rounded-xl border border-accent/20 bg-accent/5 p-3 space-y-1.5">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-accent">Estimate generated</p>
+                                {lead.estimated_buying_power_low && lead.estimated_buying_power_high && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Buying power</span>
+                                    <span className="font-semibold text-ink">${lead.estimated_buying_power_low.toLocaleString()} – ${lead.estimated_buying_power_high.toLocaleString()}</span>
+                                  </div>
+                                )}
+                                {lead.estimated_monthly_payment && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Est. monthly</span>
+                                    <span className="font-semibold text-ink">${lead.estimated_monthly_payment.toLocaleString()}/mo</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Recruiting details */}
+                        {lead.source === "employment" && lead.notes && (
+                          <div className="p-5 space-y-3">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Recruiting Details</p>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                              {Object.entries(parseRecruitingNotes(lead.notes)).map(([k, v]) => (
+                                <div key={k} className="flex flex-col gap-0.5">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">{k}</span>
+                                  <span className="text-sm font-semibold text-ink">{v}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Notes / message for contact / corporate / agent */}
+                        {(lead.source === "contact" || lead.source === "corporate-benefits" || lead.source === "real-estate-agent") && lead.notes && (
+                          <div className="p-5 space-y-2">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Message</p>
+                            <p className="text-sm text-ink whitespace-pre-wrap">{lead.notes}</p>
+                          </div>
+                        )}
+
+                        {/* DSCR answers */}
+                        {dscrData && Object.keys(dscrData).length > 0 && (
+                          <div className="p-5 space-y-3">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">DSCR Loan Details</p>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                              {Object.entries(dscrData).map(([k, v]) => (
+                                <div key={k} className="flex flex-col gap-0.5">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">{k}</span>
+                                  <span className="text-sm font-semibold text-ink">{v}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Attribution */}
+                        {(lead.utm_source || lead.utm_medium || lead.utm_campaign || lead.utm_content || lead.utm_term) && (
+                          <div className="p-5 space-y-3">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Attribution</p>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                              {lead.utm_source   && <div className="flex flex-col gap-0.5"><span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Source</span><span className="text-sm font-semibold text-ink">{lead.utm_source}</span></div>}
+                              {lead.utm_medium   && <div className="flex flex-col gap-0.5"><span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Medium</span><span className="text-sm font-semibold text-ink">{lead.utm_medium}</span></div>}
+                              {lead.utm_campaign && <div className="flex flex-col gap-0.5"><span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Campaign</span><span className="text-sm font-semibold text-ink">{lead.utm_campaign}</span></div>}
+                              {lead.utm_content  && <div className="flex flex-col gap-0.5"><span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Content</span><span className="text-sm font-semibold text-ink">{lead.utm_content}</span></div>}
+                              {lead.utm_term     && <div className="flex flex-col gap-0.5"><span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Term</span><span className="text-sm font-semibold text-ink">{lead.utm_term}</span></div>}
+                              {lead.referrer     && <div className="flex flex-col gap-0.5"><span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Referrer</span><span className="text-sm font-semibold text-ink">{lead.referrer}</span></div>}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Submission meta */}
+                        <div className="p-5 space-y-3">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Submission</p>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Submitted</span>
+                              <span className="text-sm font-semibold text-ink">{new Date(lead.created_at).toLocaleString()}</span>
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Source</span>
+                              <span className="text-sm font-semibold text-ink capitalize">{lead.source}</span>
+                            </div>
+                            {lead.device && (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Device</span>
+                                <span className="text-sm font-semibold text-ink capitalize">{lead.device}</span>
+                              </div>
+                            )}
+                            {lead.entry_page && (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">Entry page</span>
+                                <span className="text-sm font-semibold text-ink font-mono text-xs">{lead.entry_page}</span>
+                              </div>
+                            )}
+                            {lead.sms_consent && (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">SMS consent</span>
+                                <span className="text-sm font-semibold text-green-700">✓ Granted{lead.sms_consent_timestamp ? ` · ${new Date(lead.sms_consent_timestamp).toLocaleString()}` : ""}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
                       </div>
                     )}
 

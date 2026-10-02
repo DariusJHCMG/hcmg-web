@@ -48,11 +48,32 @@ const CONTACT_SOURCES    = new Set(["contact"]);
 const DSCR_SOURCES       = new Set(["dscr-landing"]);
 const COMPANY_SOURCES    = new Set(["get-started", "team", "seo", "calculator", "funnel"]);
 
-export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
-  const [leads, setLeads]               = useState<Lead[]>(initialLeads);
+export function LeadsClient({
+  initialLeads,
+  adminLoSlug,
+  adminName,
+}: {
+  initialLeads: Lead[];
+  adminLoSlug: string | null;
+  adminName: string | null;
+}) {
+  const [leads]                         = useState<Lead[]>(initialLeads);
+  // "my-leads" = admin's own LO pipeline; "company" = full company view
+  const [view, setView]                 = useState<"my-leads" | "company">("my-leads");
   const [search, setSearch]             = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">("");
   const [loFilter, setLoFilter]         = useState<"all" | "company" | "contact" | "employment" | "lo" | "dscr">("all");
+  // LO spotlight: filter company view to a specific LO slug
+  const [loSpotlight, setLoSpotlight]   = useState<string>("");
+
+  // All unique LOs in the dataset (for the LO filter dropdown)
+  const allLOs = Array.from(
+    new Map(
+      leads
+        .filter((l) => l.lo_slug && l.lo_name)
+        .map((l) => [l.lo_slug!, l.lo_name!])
+    ).entries()
+  ).sort((a, b) => a[1].localeCompare(b[1]));
 
   function exportCSV() {
     const cols: (keyof Lead)[] = ["first_name","last_name","email","phone","source","lo_name","status","goal","price_range","credit_range","utm_source","utm_medium","utm_campaign","created_at"];
@@ -80,21 +101,30 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
   const allFiltered = applySearch(applyStatus(leads));
 
-  // Split by source type
-  const dscrLeads       = allFiltered.filter((l) => DSCR_SOURCES.has(l.source ?? ""));
-  const employmentLeads = allFiltered.filter((l) => !l.lo_slug && EMPLOYMENT_SOURCES.has(l.source ?? ""));
-  const contactLeads    = allFiltered.filter((l) => !l.lo_slug && CONTACT_SOURCES.has(l.source ?? ""));
-  const companyLeads    = allFiltered.filter((l) => !l.lo_slug && !EMPLOYMENT_SOURCES.has(l.source ?? "") && !CONTACT_SOURCES.has(l.source ?? "") && !DSCR_SOURCES.has(l.source ?? ""));
-  const loLeads         = allFiltered.filter((l) => !!l.lo_slug && !DSCR_SOURCES.has(l.source ?? ""));
+  // My Leads: admin's own LO pipeline
+  const myLeads = allFiltered.filter((l) => adminLoSlug && l.lo_slug === adminLoSlug);
+
+  // Company view: apply loSpotlight if set
+  const companyFiltered = loSpotlight
+    ? allFiltered.filter((l) => l.lo_slug === loSpotlight)
+    : allFiltered;
+
+  // Split by source type (company view)
+  const dscrLeads       = companyFiltered.filter((l) => DSCR_SOURCES.has(l.source ?? ""));
+  const employmentLeads = companyFiltered.filter((l) => !l.lo_slug && EMPLOYMENT_SOURCES.has(l.source ?? ""));
+  const contactLeads    = companyFiltered.filter((l) => !l.lo_slug && CONTACT_SOURCES.has(l.source ?? ""));
+  const companyLeads    = companyFiltered.filter((l) => !l.lo_slug && !EMPLOYMENT_SOURCES.has(l.source ?? "") && !CONTACT_SOURCES.has(l.source ?? "") && !DSCR_SOURCES.has(l.source ?? ""));
+  const loLeads         = companyFiltered.filter((l) => !!l.lo_slug && !DSCR_SOURCES.has(l.source ?? ""));
 
   const newDscrCount       = leads.filter((l) => DSCR_SOURCES.has(l.source ?? "") && l.status === "new").length;
   const newCompanyCount    = leads.filter((l) => !l.lo_slug && COMPANY_SOURCES.has(l.source ?? "") && l.status === "new").length;
   const newContactCount    = leads.filter((l) => !l.lo_slug && CONTACT_SOURCES.has(l.source ?? "") && l.status === "new").length;
   const newEmploymentCount = leads.filter((l) => !l.lo_slug && EMPLOYMENT_SOURCES.has(l.source ?? "") && l.status === "new").length;
+  const myNewCount         = leads.filter((l) => adminLoSlug && l.lo_slug === adminLoSlug && l.status === "new").length;
 
   return (
     <div className="space-y-5">
-      {/* Header */}
+      {/* ── Header + View Switcher ── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-ink">Leads</h1>
@@ -122,10 +152,112 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               )}
           </p>
         </div>
-        <button onClick={exportCSV} className="secondary-button !py-2 !px-4 !text-sm">
-          ↓ Export CSV
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={exportCSV} className="secondary-button !py-2 !px-4 !text-sm">
+            ↓ Export CSV
+          </button>
+        </div>
       </div>
+
+      {/* ── View Switcher ── */}
+      {adminLoSlug && (
+        <div className="flex items-center gap-2 rounded-2xl border border-line bg-white p-1.5 w-fit">
+          <button
+            onClick={() => setView("my-leads")}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-colors ${
+              view === "my-leads" ? "bg-accent text-white shadow-sm" : "text-muted hover:text-ink"
+            }`}
+          >
+            My Leads
+            {myNewCount > 0 && (
+              <span className={`inline-flex items-center justify-center h-5 min-w-5 rounded-full text-[10px] font-black px-1 ${view === "my-leads" ? "bg-white text-accent" : "bg-accent text-white"}`}>
+                {myNewCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setView("company")}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-colors ${
+              view === "company" ? "bg-ink text-white shadow-sm" : "text-muted hover:text-ink"
+            }`}
+          >
+            Company View
+            {(newCompanyCount + newContactCount + newEmploymentCount) > 0 && (
+              <span className={`inline-flex items-center justify-center h-5 min-w-5 rounded-full text-[10px] font-black px-1 ${view === "company" ? "bg-white text-ink" : "bg-muted/20 text-ink"}`}>
+                {newCompanyCount + newContactCount + newEmploymentCount}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* ── MY LEADS VIEW ── */}
+      {view === "my-leads" && adminLoSlug && (
+        <div className="space-y-4">
+          {/* Search + Status filters */}
+          <div className="flex flex-wrap gap-3">
+            <input
+              type="text"
+              placeholder="Search name, email, phone…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink placeholder-muted/50 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition w-64"
+            />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as LeadStatus | "")}
+              className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink focus:border-accent focus:outline-none transition"
+            >
+              <option value="">All statuses</option>
+              {ALL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="rounded-2xl border border-line bg-white overflow-hidden">
+            <div className="border-b border-line bg-sand/60 px-5 py-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-ink">My Leads{adminName ? ` — ${adminName}` : ""}</p>
+                <p className="text-xs text-muted">{myLeads.length} total · click any row to expand</p>
+              </div>
+              {myNewCount > 0 && (
+                <span className="inline-flex items-center rounded-full bg-accent/10 border border-accent/20 px-3 py-1 text-xs font-bold text-accent">
+                  {myNewCount} new
+                </span>
+              )}
+            </div>
+            {myLeads.length === 0 ? (
+              <p className="px-6 py-10 text-center text-sm text-muted/60">
+                {search || statusFilter ? "No leads match your filters." : "No leads assigned to you yet."}
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-line bg-sand text-xs font-semibold uppercase tracking-[0.1em] text-muted/70">
+                      <th className="px-5 py-3 text-left">Name</th>
+                      <th className="px-5 py-3 text-left">Contact</th>
+                      <th className="px-5 py-3 text-left">Source</th>
+                      <th className="px-5 py-3 text-left">Goal</th>
+                      <th className="px-5 py-3 text-left">State</th>
+                      <th className="px-5 py-3 text-left">Status</th>
+                      <th className="px-5 py-3 text-left">Date</th>
+                      <th className="px-5 py-3 text-left"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myLeads.map((lead) => (
+                      <LeadIntelPanel key={lead.id} lead={lead} hideLoColumn />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── COMPANY VIEW ── */}
+      {(view === "company" || !adminLoSlug) && (
+      <div className="space-y-5">
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
@@ -144,7 +276,20 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
           <option value="">All statuses</option>
           {ALL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        {/* View filter toggle */}
+        {/* LO spotlight filter */}
+        {allLOs.length > 0 && (
+          <select
+            value={loSpotlight}
+            onChange={(e) => setLoSpotlight(e.target.value)}
+            className="rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink focus:border-accent focus:outline-none transition"
+          >
+            <option value="">All LOs</option>
+            {allLOs.map(([slug, name]) => (
+              <option key={slug} value={slug}>{name}</option>
+            ))}
+          </select>
+        )}
+        {/* Section filter toggle */}
         <div className="flex rounded-xl border border-line bg-white overflow-hidden text-sm font-semibold">
           {(["all", "dscr", "company", "contact", "employment", "lo"] as const).map((v) => (
             <button
@@ -257,14 +402,15 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-orange-200 text-xs font-semibold uppercase tracking-[0.1em] text-orange-800/70">
-                  <th className="px-5 py-3 text-left">Name</th>
-                  <th className="px-5 py-3 text-left">Contact</th>
-                  <th className="px-5 py-3 text-left">Source</th>
-                  <th className="px-5 py-3 text-left">Message</th>
-                  <th className="px-5 py-3 text-left">Status</th>
-                  <th className="px-5 py-3 text-left">Date</th>
-                  <th className="px-5 py-3 text-left"></th>
-                </tr>
+                    <th className="px-5 py-3 text-left">Name</th>
+                    <th className="px-5 py-3 text-left">Contact</th>
+                    <th className="px-5 py-3 text-left">Source</th>
+                    <th className="px-5 py-3 text-left">Message</th>
+                    <th className="px-5 py-3 text-left">State</th>
+                    <th className="px-5 py-3 text-left">Status</th>
+                    <th className="px-5 py-3 text-left">Date</th>
+                    <th className="px-5 py-3 text-left"></th>
+                  </tr>
               </thead>
               <tbody>
                 {contactLeads.map((lead) => (
@@ -297,6 +443,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   <th className="px-5 py-3 text-left">Contact</th>
                   <th className="px-5 py-3 text-left">Source</th>
                   <th className="px-5 py-3 text-left">Notes / Details</th>
+                  <th className="px-5 py-3 text-left">State</th>
                   <th className="px-5 py-3 text-left">Status</th>
                   <th className="px-5 py-3 text-left">Date</th>
                   <th className="px-5 py-3 text-left"></th>
@@ -333,6 +480,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   <th className="px-5 py-3 text-left">Contact</th>
                   <th className="px-5 py-3 text-left">Funnel / Source</th>
                   <th className="px-5 py-3 text-left">Goal</th>
+                  <th className="px-5 py-3 text-left">State</th>
                   <th className="px-5 py-3 text-left">Status</th>
                   <th className="px-5 py-3 text-left">Date</th>
                   <th className="px-5 py-3 text-left"></th>
@@ -365,6 +513,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   <th className="px-5 py-3 text-left">Source</th>
                   <th className="px-5 py-3 text-left">LO Assigned</th>
                   <th className="px-5 py-3 text-left">Goal</th>
+                  <th className="px-5 py-3 text-left">State</th>
                   <th className="px-5 py-3 text-left">Status</th>
                   <th className="px-5 py-3 text-left">Date</th>
                   <th className="px-5 py-3 text-left"></th>
@@ -399,6 +548,10 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
           No company leads found.
         </div>
       )}
+
+      </div>
+      )}
+
     </div>
   );
 }

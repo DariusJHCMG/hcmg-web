@@ -136,6 +136,7 @@ export function FunnelDetailClient({ leads, funnelLabel, loSlug, funnelSlug }: P
                 <th className="px-5 py-3 text-left">Contact</th>
                 <th className="px-5 py-3 text-left">Source</th>
                 <th className="px-5 py-3 text-left">Goal</th>
+                <th className="px-5 py-3 text-left">State</th>
                 <th className="px-5 py-3 text-left">Status</th>
                 <th className="px-5 py-3 text-left">When</th>
                 <th className="px-4 py-3" />

@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase";
+import { getCurrentProfile } from "@/lib/auth";
 import type { Lead } from "@/lib/database.types";
 import { LeadsClient } from "./LeadsClient";
 
@@ -14,6 +15,12 @@ async function getLeads(): Promise<Lead[]> {
 export const dynamic = "force-dynamic";
 
 export default async function LeadsPage() {
-  const leads = await getLeads();
-  return <LeadsClient initialLeads={leads} />;
+  const [leads, profile] = await Promise.all([getLeads(), getCurrentProfile()]);
+  return (
+    <LeadsClient
+      initialLeads={leads}
+      adminLoSlug={profile?.lo_slug ?? null}
+      adminName={profile?.full_name ?? null}
+    />
+  );
 }
