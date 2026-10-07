@@ -105,7 +105,7 @@ async function getTurnstileToken(): Promise<string | undefined> {
 export async function submitLead(payload: LeadPayload): Promise<{ success: boolean; error?: string }> {
   try {
     const meta = getSessionMeta();
-    const turnstileToken = await getTurnstileToken();
+    const turnstileToken = await getTurnstileToken().catch(() => undefined);
     const res = await fetch("/api/lead", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

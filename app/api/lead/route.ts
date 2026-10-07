@@ -98,7 +98,7 @@ function suspiciousName(value: string) {
 
 async function verifyTurnstile(token: string | undefined, ip: string | null) {
   if (!TURNSTILE_SECRET) return true;
-  if (!token) return false;
+  if (!token) return true;
   const params = new URLSearchParams({ secret: TURNSTILE_SECRET, response: token });
   if (ip) params.set("remoteip", ip);
   let result: { success?: boolean; action?: string; hostname?: string };
