@@ -18,6 +18,7 @@ const NAV = [
 const TOOLS = [
   { label: "SLICE",     href: "/slice",        icon: "🎯" },
   { label: "Lift Off",  href: "/liftoff-login", icon: "🚀" },
+  { label: "HCMG U",   href: "/university",    icon: "🎓" },
 ];
 
 function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {

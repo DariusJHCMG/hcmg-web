@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { isAdmin } from "@/lib/auth";
 import { AdminLayoutClient } from "@/components/admin/AdminLayoutClient";
+import { AdminViewToggle } from "@/components/admin/AdminViewToggle";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -24,6 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const topBar = (
     <div className="flex items-center gap-3">
+      <AdminViewToggle />
       <span className="hidden text-xs text-muted/60 sm:block">
         Signed in as{" "}
         <span className="font-semibold text-ink">{profile.full_name}</span>

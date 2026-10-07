@@ -15,6 +15,7 @@ const NAV_LINKS = [
 const TOOL_LINKS = [
   { label: "🎯 SLICE",     href: "/slice" },
   { label: "🚀 Lift Off",  href: "/liftoff-login" },
+  { label: "🎓 HCMG U",   href: "/university" },
 ];
 
 export function PortalMobileNav({ fullName }: { fullName: string }) {
