@@ -101,9 +101,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
-        {/* Resource hints for LCP image, ensures hero image fetch starts as early as possible */}
-        <link rel="preload" as="image" href="/hcmg-social.png" fetchPriority="high" />
-
         {/* Viewport width, prevents horizontal-scroll CLS on mobile */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
