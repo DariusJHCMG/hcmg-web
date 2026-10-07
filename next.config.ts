@@ -19,13 +19,12 @@ const SECURITY_HEADERS = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://us.i.posthog.com https://challenges.cloudflare.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://us.i.posthog.com https://us-assets.i.posthog.com https://challenges.cloudflare.com https://www.googletagmanager.com",
       "style-src 'self' 'unsafe-inline'",
-      // Tightened: no wildcard https: — explicit domains only
-      "img-src 'self' data: https://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
+      "img-src 'self' data: https://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://www.googletagmanager.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
       "media-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co",
       "font-src 'self' data:",
-      "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://challenges.cloudflare.com",
+      "connect-src 'self' https://iryqfwktlwcqqlmvtngx.supabase.co wss://iryqfwktlwcqqlmvtngx.supabase.co https://us.i.posthog.com https://us-assets.i.posthog.com https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com",
       "frame-src https://challenges.cloudflare.com https://app.heygen.com https://share.heygen.com",
       "object-src 'none'",
       "base-uri 'self'",
