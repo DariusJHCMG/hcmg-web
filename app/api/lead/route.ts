@@ -42,7 +42,7 @@ const NAME_RE = /^[\p{L}][\p{L}\p{M}' .-]{0,49}$/u;
 
 const LeadSchema = z.object({
   firstName:               z.string().trim().min(1).max(50).regex(NAME_RE),
-  lastName:                z.string().trim().min(1).max(50).regex(NAME_RE).optional(),
+  lastName:                z.string().trim().min(1).max(50).regex(NAME_RE),
   email:                   z.string().trim().email().max(254).transform(v => v.toLowerCase()),
   phone:                   z.string().trim().min(10).max(30).refine(v => { const n = v.replace(/\D/g, ""); return n.length === 10 || (n.length === 11 && n.startsWith("1")); }).transform(v => { const n = v.replace(/\D/g, ""); return n.length === 11 ? n.slice(1) : n; }),
   smsConsent:              z.boolean(),

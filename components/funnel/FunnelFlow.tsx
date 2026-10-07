@@ -26,6 +26,7 @@ interface FunnelState {
   creditBand: CreditBand | null;
   incomeBand: IncomeBand | null;
   firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   propertyState: string;
@@ -122,7 +123,7 @@ export function FunnelFlow({
   const [state, setState] = useState<FunnelState>({
     goal: cfg.goalPreset ?? null,
     priceBand: null, creditBand: null, incomeBand: null,
-    firstName: "", email: "", phone: "", propertyState: "", smsConsent: false,
+    firstName: "", lastName: "", email: "", phone: "", propertyState: "", smsConsent: false,
   });
 
   // Keep goal in sync if config changes (e.g. client navigation)
@@ -149,7 +150,7 @@ export function FunnelFlow({
 
   const [step, setStep] = useState<Step>(activeSteps[0] ?? 1);
   const [dir, setDir] = useState<1 | -1>(1);
-  const [errors, setErrors] = useState<Partial<Record<"firstName" | "email" | "phone" | "propertyState" | "smsConsent", string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<"firstName" | "lastName" | "email" | "phone" | "propertyState" | "smsConsent", string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -195,6 +196,7 @@ export function FunnelFlow({
   function validate() {
     const e: typeof errors = {};
     if (!state.firstName.trim()) e.firstName = "Enter your first name.";
+    if (!state.lastName.trim()) e.lastName = "Enter your last name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email.trim())) e.email = "Enter a valid email address.";
     if (state.phone.replace(/\D/g, "").length < 10) e.phone = "Enter a 10-digit phone number.";
     if (!state.propertyState) e.propertyState = "Select the state for your property.";
@@ -211,6 +213,7 @@ export function FunnelFlow({
     const meta = getSessionMeta();
     const result = await submitLead({
       firstName: state.firstName.trim(),
+      lastName: state.lastName.trim(),
       email: state.email.trim(),
       phone: state.phone,
       smsConsent: true,
@@ -529,7 +532,10 @@ export function FunnelFlow({
               )}
 
               <div className="space-y-4">
-                <TextField label="First name *" placeholder="First name" value={state.firstName} onChange={(v) => set("firstName", v)} error={errors.firstName} />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <TextField label="First name *" placeholder="First name" value={state.firstName} onChange={(v) => set("firstName", v)} error={errors.firstName} />
+                  <TextField label="Last name *" placeholder="Last name" value={state.lastName} onChange={(v) => set("lastName", v)} error={errors.lastName} />
+                </div>
                 <TextField label="Email address *" type="email" placeholder="email@example.com" value={state.email} onChange={(v) => set("email", v)} error={errors.email} />
                 <TextField
                   label="Phone number *" type="tel" placeholder="(555) 000-0000"

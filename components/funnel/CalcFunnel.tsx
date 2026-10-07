@@ -700,11 +700,12 @@ export function CalcFunnel({
 
   // Contact form state
   const [firstName, setFirstName]       = useState("");
+  const [lastName,  setLastName]        = useState("");
   const [email, setEmail]               = useState("");
   const [phone, setPhone]               = useState("");
   const [propertyState, setPropertyState] = useState("");
   const [smsConsent, setSmsConsent]     = useState(false);
-  const [errors, setErrors]             = useState<Partial<Record<"firstName" | "email" | "phone" | "propertyState" | "smsConsent", string>>>({});
+  const [errors, setErrors]             = useState<Partial<Record<"firstName" | "lastName" | "email" | "phone" | "propertyState" | "smsConsent", string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -718,6 +719,7 @@ export function CalcFunnel({
   function validate() {
     const e: typeof errors = {};
     if (!firstName.trim()) e.firstName = "Enter your first name.";
+    if (!lastName.trim()) e.lastName = "Enter your last name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Enter a valid email address.";
     if (phone.replace(/\D/g, "").length < 10) e.phone = "Enter a 10-digit phone number.";
     if (!propertyState) e.propertyState = "Select the state for your property.";
@@ -733,6 +735,7 @@ export function CalcFunnel({
     const meta = getSessionMeta();
     const result = await submitLead({
       firstName: firstName.trim(),
+      lastName: lastName.trim(),
       email: email.trim(),
       phone,
       smsConsent: true,
@@ -941,7 +944,10 @@ export function CalcFunnel({
               </div>
 
               <div className="space-y-4">
-                <TextField label="First name *" placeholder="First name" value={firstName} onChange={setFirstName} error={errors.firstName} />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <TextField label="First name *" placeholder="First name" value={firstName} onChange={setFirstName} error={errors.firstName} />
+                  <TextField label="Last name *" placeholder="Last name" value={lastName} onChange={setLastName} error={errors.lastName} />
+                </div>
                 <TextField label="Email address *" type="email" placeholder="email@example.com" value={email} onChange={setEmail} error={errors.email} />
                 <TextField
                   label="Phone number *" type="tel" placeholder="(555) 000-0000"

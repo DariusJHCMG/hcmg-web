@@ -45,11 +45,12 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
   // Gate state
   const [unlocked,       setUnlocked]       = useState(false);
   const [firstName,      setFirstName]      = useState("");
+  const [lastName,       setLastName]       = useState("");
   const [email,          setEmail]          = useState("");
   const [phone,          setPhone]          = useState("");
   const [propertyState,  setPropertyState]  = useState("");
   const [smsConsent,     setSmsConsent]     = useState(false);
-  const [errors,         setErrors]         = useState<Partial<Record<"firstName"|"email"|"phone"|"propertyState"|"smsConsent", string>>>({});
+  const [errors,         setErrors]         = useState<Partial<Record<"firstName"|"lastName"|"email"|"phone"|"propertyState"|"smsConsent", string>>>({});
   const [submitting,     setSubmitting]     = useState(false);
   const [submitError,    setSubmitError]    = useState("");
 
@@ -81,6 +82,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
   function validate() {
     const e: typeof errors = {};
     if (!firstName.trim()) e.firstName = "Enter your first name.";
+    if (!lastName.trim()) e.lastName = "Enter your last name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Enter a valid email.";
     if (phone.replace(/\D/g, "").length < 10) e.phone = "Enter a 10-digit phone number.";
     if (!propertyState) e.propertyState = "Select your property state.";
@@ -96,6 +98,7 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
     const meta = getSessionMeta();
     const result = await submitLead({
       firstName: firstName.trim(),
+      lastName: lastName.trim(),
       email: email.trim(),
       phone,
       smsConsent: true,
@@ -365,10 +368,13 @@ export function Calculator({ heading, subheading, seoSlug }: { heading?: string;
 
                 <div className="space-y-3">
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <GateInput placeholder="First name"    value={firstName} onChange={setFirstName} error={errors.firstName} />
-                    <GateInput type="email" placeholder="Email address" value={email} onChange={setEmail} error={errors.email} />
+                    <GateInput placeholder="First name" value={firstName} onChange={setFirstName} error={errors.firstName} />
+                    <GateInput placeholder="Last name"  value={lastName}  onChange={setLastName}  error={errors.lastName} />
                   </div>
-                  <GateInput type="tel" placeholder="Phone number" value={phone} onChange={(v) => setPhone(formatPhone(v))} error={errors.phone} />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <GateInput type="email" placeholder="Email address" value={email} onChange={setEmail} error={errors.email} />
+                    <GateInput type="tel" placeholder="Phone number" value={phone} onChange={(v) => setPhone(formatPhone(v))} error={errors.phone} />
+                  </div>
 
                   <div>
                     <select
