@@ -45,67 +45,10 @@ export interface LeadPayload {
   turnstileToken?: string;
 }
 
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (container: HTMLElement, options: Record<string, unknown>) => string;
-      execute: (widgetId: string) => void;
-      remove: (widgetId: string) => void;
-    };
-  }
-}
-
-let turnstileScript: Promise<void> | null = null;
-
-async function getTurnstileToken(): Promise<string | undefined> {
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  if (!siteKey || typeof window === "undefined") return undefined;
-
-  if (!turnstileScript) {
-    turnstileScript = new Promise((resolve, reject) => {
-      if (window.turnstile) return resolve();
-      const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error("Bot verification could not load."));
-      document.head.appendChild(script);
-    });
-  }
-  await turnstileScript;
-
-  return new Promise<string>((resolve, reject) => {
-    const container = document.createElement("div");
-    container.style.position = "fixed";
-    container.style.top = "-9999px";
-    container.style.left = "-9999px";
-    container.style.width = "300px";
-    container.style.height = "65px";
-    document.body.appendChild(container);
-    let widgetId = "";
-    const cleanup = () => {
-      if (widgetId) window.turnstile?.remove(widgetId);
-      container.remove();
-    };
-    const timer = window.setTimeout(() => { cleanup(); reject(new Error("Bot verification timed out.")); }, 12000);
-    widgetId = window.turnstile!.render(container, {
-      sitekey: siteKey,
-      action: "lead",
-      size: "normal",
-      execution: "execute",
-      callback: (token: string) => { window.clearTimeout(timer); cleanup(); resolve(token); },
-      "error-callback": () => { window.clearTimeout(timer); cleanup(); reject(new Error("Bot verification failed.")); },
-      "expired-callback": () => { window.clearTimeout(timer); cleanup(); reject(new Error("Bot verification expired.")); },
-    });
-    window.turnstile!.execute(widgetId);
-  });
-}
-
 export async function submitLead(payload: LeadPayload): Promise<{ success: boolean; error?: string }> {
   try {
     const meta = getSessionMeta();
-    const turnstileToken = await getTurnstileToken().catch(() => undefined);
+    const turnstileToken = undefined;
     const res = await fetch("/api/lead", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
