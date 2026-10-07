@@ -78,7 +78,10 @@ async function getTurnstileToken(): Promise<string | undefined> {
   return new Promise<string>((resolve, reject) => {
     const container = document.createElement("div");
     container.style.position = "fixed";
+    container.style.top = "-9999px";
     container.style.left = "-9999px";
+    container.style.width = "300px";
+    container.style.height = "65px";
     document.body.appendChild(container);
     let widgetId = "";
     const cleanup = () => {
@@ -89,7 +92,7 @@ async function getTurnstileToken(): Promise<string | undefined> {
     widgetId = window.turnstile!.render(container, {
       sitekey: siteKey,
       action: "lead",
-      size: "flexible",
+      size: "normal",
       execution: "execute",
       callback: (token: string) => { window.clearTimeout(timer); cleanup(); resolve(token); },
       "error-callback": () => { window.clearTimeout(timer); cleanup(); reject(new Error("Bot verification failed.")); },
