@@ -57,6 +57,8 @@ interface Props {
   prevLessonId: string | null;
   nextLessonId: string | null;
   initialWatchPct: number;
+  /** True if uni_progress.completed is already true for this lesson (server-confirmed) */
+  initialCompleted?: boolean;
   /** True if the user has already passed the quiz for this lesson in a previous visit */
   initialQuizPassed?: boolean;
   completionMode?: string;
@@ -66,16 +68,18 @@ interface Props {
 export function LessonPageClient({
   lessonId, courseId, courseSlug, courseTitle, lessonTitle, lessonDescription,
   lessonType, transcript, resources, quizQuestions, linkedAssessmentId, finalAssessmentId,
-  prevLessonId, nextLessonId, initialWatchPct, initialQuizPassed = false,
+  prevLessonId, nextLessonId, initialWatchPct, initialCompleted = false,
+  initialQuizPassed = false,
   completionMode = "watch_pct", completionThresholdPct = 80,
 }: Props) {
   const hasQuiz = quizQuestions.length > 0;
 
   const [watchPct, setWatchPct]          = useState(initialWatchPct);
-  // videoReady: video/text/audio portion is done
-  const [videoReady, setVideoReady]      = useState(initialWatchPct >= completionThresholdPct);
+  // videoReady: video/text/audio portion is done.
+  // Use server-confirmed completed flag first; fall back to watch_pct threshold inference.
+  const [videoReady, setVideoReady]      = useState(initialCompleted || initialWatchPct >= completionThresholdPct);
   // quizPassed: quiz portion is done (only relevant when hasQuiz)
-  const [quizPassed, setQuizPassed]      = useState(initialQuizPassed);
+  const [quizPassed, setQuizPassed]      = useState(initialQuizPassed || initialCompleted);
   // completed: the real gate — true only when required portions are done
   // If a quiz exists, passing it is sufficient (it proves comprehension).
   // Only require videoReady alone when there is no quiz.
@@ -214,6 +218,21 @@ export function LessonPageClient({
               </div>
             )}
           </TextLessonEngine>
+        )}
+
+        {/* Knowledge check — no media content; quiz below is the only gate */}
+        {lessonType === "knowledge_check" && !completed && (
+          <div style={{
+            marginBottom: 20, padding: "16px 18px", borderRadius: 10,
+            background: "rgba(245,130,32,0.06)", border: "1.5px solid rgba(245,130,32,0.25)",
+          }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#071a2e", marginBottom: 6 }}>
+              Knowledge Check
+            </div>
+            <p style={{ fontSize: 13, color: "#687383", margin: 0 }}>
+              Answer all questions below to complete this lesson.
+            </p>
+          </div>
         )}
 
         {/* Assignment — wrapped in TextLessonEngine for integrity */}

@@ -102,7 +102,7 @@ export default async function LessonPage({ params }: Props) {
   // Current progress
   const { data: progress } = await sb
     .from("uni_progress")
-    .select("watch_pct")
+    .select("watch_pct, completed")
     .eq("profile_id", profile.id)
     .eq("lesson_id", id)
     .maybeSingle();
@@ -134,6 +134,7 @@ export default async function LessonPage({ params }: Props) {
       prevLessonId={prevId}
       nextLessonId={nextId}
       initialWatchPct={progress?.watch_pct ?? 0}
+      initialCompleted={progress?.completed ?? false}
       initialQuizPassed={!!passingAttempt}
       completionMode={lesson.completion_mode ?? "watch_pct"}
       completionThresholdPct={lesson.completion_threshold_pct ?? 80}
