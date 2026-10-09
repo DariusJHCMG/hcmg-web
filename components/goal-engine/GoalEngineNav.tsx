@@ -160,12 +160,12 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
           </Link>
           <NotificationCenter />
         </div>
-        <a href="/portal" style={{
+        <a href={isAdmin ? "/admin" : "/portal"} style={{
           display: "inline-flex", alignItems: "center", gap: 4,
           marginTop: 10, fontSize: 11, fontWeight: 700, color: C.orange,
           textDecoration: "none", opacity: 0.8,
         }}>
-          ← Back to Portal
+          ← {isAdmin ? "Back to Admin" : "Back to Portal"}
         </a>
       </div>
 
@@ -250,11 +250,11 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <NotificationCenter />
-          <a href="/portal" style={{
+          <a href={isAdmin ? "/admin" : "/portal"} style={{
             fontSize: 11, fontWeight: 700, color: C.orange,
             textDecoration: "none", display: "flex", alignItems: "center", gap: 3,
           }}>
-            ← Portal
+            ← {isAdmin ? "Admin" : "Portal"}
           </a>
         </div>
       </div>
@@ -354,13 +354,13 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
 
             {/* Actions */}
             <div style={{ padding: "4px 12px 0", borderTop: `1px solid ${C.line}`, marginTop: 4 }}>
-              <a href="/portal" style={{
+              <a href={isAdmin ? "/admin" : "/portal"} style={{
                 display: "flex", alignItems: "center", gap: 14,
                 padding: "12px 10px", borderRadius: 12, textDecoration: "none",
                 color: C.orange, fontWeight: 700, fontSize: 14,
               }}>
                 <span style={{ fontSize: 18, width: 24, textAlign: "center" }}>←</span>
-                Back to Portal
+                {isAdmin ? "Back to Admin" : "Back to Portal"}
               </a>
               <button onClick={signOut} style={{
                 display: "flex", alignItems: "center", gap: 14,

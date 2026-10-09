@@ -79,7 +79,7 @@ export default async function PortalLayout({ children }: { children: React.React
   );
 
   return (
-    <PortalLayoutClient topBar={topBar}>
+    <PortalLayoutClient topBar={topBar} isAdmin={adminPreview}>
       <PortalPing />
       <PwaInit />
       <PushPermission />

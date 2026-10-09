@@ -11,6 +11,7 @@ interface Props {
   profileName: string;
   profileAvatar: string | null;
   universityRole: UniversityRole;
+  isAdmin: boolean;
 }
 
 function derivePageTitle(pathname: string): string {
@@ -43,7 +44,7 @@ function derivePageTitle(pathname: string): string {
   return "HCMG U";
 }
 
-export function UniversityLayoutClient({ children, profileName, profileAvatar, universityRole }: Props) {
+export function UniversityLayoutClient({ children, profileName, profileAvatar, universityRole, isAdmin }: Props) {
   const pathname = usePathname();
   const pageTitle = derivePageTitle(pathname);
   const [mobileOpen, setMobileOpen]   = useState(false);
@@ -124,12 +125,13 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
       )}
 
       {/* Desktop sidebar */}
-      <UniversitySidebar universityRole={universityRole} />
+      <UniversitySidebar universityRole={universityRole} isAdmin={isAdmin} />
 
       {/* Mobile drawer */}
       {mobileOpen && (
         <UniversityMobileDrawer
           universityRole={universityRole}
+          isAdmin={isAdmin}
           onClose={() => setMobileOpen(false)}
         />
       )}

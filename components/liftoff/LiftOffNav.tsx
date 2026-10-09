@@ -78,13 +78,8 @@ export function LiftOffNav({
           <div className="px-5 py-4 border-b border-line">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">🔑</span>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] ok-gradient-text leading-none">
-                    Lift Off
-                  </p>
-                  <p className="text-[10px] text-muted/60 mt-0.5 leading-none">HCMG</p>
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/liftoff-logo.png" alt="Lift Off" style={{ height: 32, width: "auto", display: "block" }} />
               </div>
               <NotificationCenter align="sidebar" />
             </div>
@@ -155,13 +150,8 @@ export function LiftOffNav({
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 20 }}>🔑</span>
-          <div>
-            <p style={{ margin: 0, fontSize: 11, fontWeight: 900, color: "#F37021", textTransform: "uppercase", letterSpacing: ".15em", lineHeight: 1 }}>
-              Lift Off
-            </p>
-            <p style={{ margin: "2px 0 0", fontSize: 9, color: "#64748B", lineHeight: 1 }}>HCMG</p>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/liftoff-logo.png" alt="Lift Off" style={{ height: 28, width: "auto", display: "block" }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <NotificationCenter />

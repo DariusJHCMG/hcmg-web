@@ -6,18 +6,19 @@ import { PortalSidebar, PortalMobileDrawer } from "@/components/portal/PortalSid
 interface Props {
   children: React.ReactNode;
   topBar: React.ReactNode;
+  isAdmin?: boolean;
 }
 
-export function PortalLayoutClient({ children, topBar }: Props) {
+export function PortalLayoutClient({ children, topBar, isAdmin }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-sand">
       {/* Desktop sidebar */}
-      <PortalSidebar />
+      <PortalSidebar isAdmin={isAdmin} />
 
       {/* Mobile drawer */}
-      {mobileOpen && <PortalMobileDrawer onClose={() => setMobileOpen(false)} />}
+      {mobileOpen && <PortalMobileDrawer onClose={() => setMobileOpen(false)} isAdmin={isAdmin} />}
 
       {/* Right column */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">

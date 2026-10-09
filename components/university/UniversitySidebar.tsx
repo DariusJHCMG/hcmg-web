@@ -65,10 +65,11 @@ const ADMIN_NAV = [
 
 interface Props {
   universityRole: UniversityRole;
+  isAdmin?: boolean;
   onNavClick?: () => void;
 }
 
-function SidebarContent({ universityRole, onNavClick }: Props) {
+function SidebarContent({ universityRole, isAdmin: isPortalAdmin = false, onNavClick }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
@@ -202,7 +203,7 @@ function SidebarContent({ universityRole, onNavClick }: Props) {
       {/* Bottom */}
       <div style={{ padding: "10px 10px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 2 }}>
         <Link
-          href="/portal"
+          href={isPortalAdmin ? "/admin" : "/portal"}
           onClick={onNavClick}
           style={{
             display: "flex", alignItems: "center", gap: 10,
@@ -212,7 +213,7 @@ function SidebarContent({ universityRole, onNavClick }: Props) {
           }}
         >
           <Ico><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg></Ico>
-          Back to Portal
+          {isPortalAdmin ? "Back to Admin" : "Back to Portal"}
         </Link>
         <button
           onClick={signOut}
@@ -236,7 +237,7 @@ function SidebarContent({ universityRole, onNavClick }: Props) {
   );
 }
 
-export function UniversitySidebar({ universityRole }: { universityRole: UniversityRole }) {
+export function UniversitySidebar({ universityRole, isAdmin }: { universityRole: UniversityRole; isAdmin?: boolean }) {
   return (
     <>
       <style>{`
@@ -254,13 +255,13 @@ export function UniversitySidebar({ universityRole }: { universityRole: Universi
           display: "none",
         }}
       >
-        <SidebarContent universityRole={universityRole} />
+        <SidebarContent universityRole={universityRole} isAdmin={isAdmin} />
       </aside>
     </>
   );
 }
 
-export function UniversityMobileDrawer({ universityRole, onClose }: { universityRole: UniversityRole; onClose: () => void }) {
+export function UniversityMobileDrawer({ universityRole, isAdmin, onClose }: { universityRole: UniversityRole; isAdmin?: boolean; onClose: () => void }) {
   return (
     <>
       <div
@@ -276,7 +277,7 @@ export function UniversityMobileDrawer({ universityRole, onClose }: { university
         borderRight: "1px solid rgba(255,255,255,0.08)",
         overflowY: "auto",
       }}>
-        <SidebarContent universityRole={universityRole} onNavClick={onClose} />
+        <SidebarContent universityRole={universityRole} isAdmin={isAdmin} onNavClick={onClose} />
       </aside>
     </>
   );

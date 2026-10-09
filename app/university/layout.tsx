@@ -94,6 +94,7 @@ export default async function UniversityLayout({ children }: { children: React.R
       profileName={profile.full_name}
       profileAvatar={profile.avatar_url}
       universityRole={profile.university_role}
+      isAdmin={profile.role === "admin" || profile.role === "developer"}
     >
       {children}
     </UniversityLayoutClient>

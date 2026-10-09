@@ -122,30 +122,8 @@ function LoginForm() {
 
         {/* Top — logo */}
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-              background: "linear-gradient(135deg,#FF9847 0%,#F37021 50%,#C45213 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "-1px",
-            }}>H</div>
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: ".02em" }}>HCMG</div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: "#F37021", letterSpacing: ".2em", textTransform: "uppercase", marginTop: 2 }}>
-                Harris Capital Mortgage Group
-              </div>
-            </div>
-          </div>
-
-          {/* Lift Off badge */}
-          <div style={{ marginTop: 40, display: "inline-flex", alignItems: "center", gap: 10,
-            background: "rgba(243,112,33,0.15)", border: "1px solid rgba(243,112,33,0.3)",
-            borderRadius: 50, padding: "8px 18px" }}>
-            <span style={{ fontSize: 18 }}>🚀</span>
-            <span style={{ fontSize: 13, fontWeight: 800, color: "#FF9847", letterSpacing: ".1em", textTransform: "uppercase" }}>
-              Lift Off
-            </span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/liftoff-logo.png" alt="Lift Off" style={{ height: 48, width: "auto", display: "block" }} />
         </div>
 
         {/* Middle — headline */}
@@ -208,19 +186,9 @@ function LoginForm() {
         </a>
 
         {/* Mobile logo */}
-        <div style={{ marginBottom: 36, textAlign: "center" }} className="lg:hidden">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12 }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 10,
-              background: "linear-gradient(135deg,#FF9847,#F37021)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 18, fontWeight: 900, color: "#fff",
-            }}>H</div>
-            <span style={{ fontSize: 18, fontWeight: 800, color: "#1A2B42" }}>HCMG</span>
-          </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#F37021", letterSpacing: ".15em", textTransform: "uppercase" }}>
-            🚀 Lift Off
-          </span>
+        <div style={{ marginBottom: 36, textAlign: "center", display: "flex", justifyContent: "center" }} className="lg:hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/liftoff-logo.png" alt="Lift Off" style={{ height: 36, width: "auto", display: "block" }} />
         </div>
 
         <div style={{ width: "100%", maxWidth: 420 }}>

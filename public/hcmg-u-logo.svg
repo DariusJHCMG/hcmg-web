@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" role="img" aria-label="HCMG U — Team Learning">
+  <title>HCMG U — Team Learning</title>
+  <!-- Orange hexagon badge -->
+  <polygon points="32,4 57,18 57,46 32,60 7,46 7,18" fill="#F58220"/>
+  <!-- H letter inside hexagon -->
+  <text x="32" y="41" font-family="Montserrat,system-ui,sans-serif" font-weight="900" font-size="30" fill="#ffffff" text-anchor="middle">H</text>
+  <!-- HCMG text -->
+  <text x="72" y="36" font-family="Montserrat,system-ui,sans-serif" font-weight="800" font-size="24" fill="#142850" letter-spacing="-0.5">HCMG</text>
+  <!-- U in orange -->
+  <text x="162" y="36" font-family="Montserrat,system-ui,sans-serif" font-weight="800" font-size="24" fill="#F58220"> U</text>
+  <!-- Subtitle -->
+  <text x="72" y="51" font-family="Montserrat,system-ui,sans-serif" font-weight="700" font-size="8" fill="#687383" letter-spacing="1.8">TEAM LEARNING</text>
+</svg>

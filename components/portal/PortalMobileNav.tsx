@@ -4,12 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 
 const NAV_LINKS = [
-  { label: "Dashboard",    href: "/portal" },
-  { label: "Analytics",   href: "/portal/analytics" },
-  { label: "My Funnels",  href: "/portal/funnels" },
-  { label: "Co-Branded",  href: "/portal/co-branded" },
-  { label: "My Profile",  href: "/portal/profile" },
-  { label: "Mobile App",  href: "/portal/mobile-app" },
+  { label: "Dashboard",      href: "/portal" },
+  { label: "My Leads",       href: "/portal/leads" },
+  { label: "Agent Partners", href: "/portal/agent-partners" },
+  { label: "Reviews",        href: "/portal/reviews" },
+  { label: "Analytics",      href: "/portal/analytics" },
+  { label: "My Funnels",     href: "/portal/funnels" },
+  { label: "Co-Branded",     href: "/portal/co-branded" },
+  { label: "My Profile",     href: "/portal/profile" },
+  { label: "Mobile App",     href: "/portal/mobile-app" },
 ];
 
 const TOOL_LINKS = [

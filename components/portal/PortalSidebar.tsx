@@ -7,12 +7,15 @@ import { createBrowserClient } from "@/lib/supabase-browser";
 import { OrangeKeyLogo } from "@/components/ui/OrangeKeyLogo";
 
 const NAV = [
-  { label: "Dashboard",   href: "/portal",             icon: "⊞" },
-  { label: "Analytics",   href: "/portal/analytics",   icon: "📊" },
-  { label: "My Funnels",  href: "/portal/funnels",     icon: "🔗" },
-  { label: "Co-Branded",  href: "/portal/co-branded",  icon: "🤝" },
-  { label: "My Profile",  href: "/portal/profile",     icon: "👤" },
-  { label: "Mobile App",  href: "/portal/mobile-app",  icon: "📱" },
+  { label: "Dashboard",       href: "/portal",                    icon: "⊞" },
+  { label: "My Leads",        href: "/portal/leads",              icon: "✉" },
+  { label: "Agent Partners",  href: "/portal/agent-partners",     icon: "🤝" },
+  { label: "Reviews",         href: "/portal/reviews",            icon: "⭐" },
+  { label: "Analytics",       href: "/portal/analytics",          icon: "📊" },
+  { label: "My Funnels",      href: "/portal/funnels",            icon: "🔗" },
+  { label: "Co-Branded",      href: "/portal/co-branded",         icon: "🤝" },
+  { label: "My Profile",      href: "/portal/profile",            icon: "👤" },
+  { label: "Mobile App",      href: "/portal/mobile-app",         icon: "📱" },
 ];
 
 const TOOLS = [
@@ -21,7 +24,7 @@ const TOOLS = [
   { label: "HCMG U",   href: "/university",    icon: "🎓" },
 ];
 
-function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
+function SidebarContent({ onNavClick, isAdmin }: { onNavClick?: () => void; isAdmin?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
@@ -90,6 +93,15 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
 
       {/* Bottom */}
       <div className="border-t border-line px-3 py-4 space-y-1">
+        {isAdmin && (
+          <Link
+            href="/admin"
+            onClick={onNavClick}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink bg-amber-50 hover:bg-amber-100 transition-colors border border-amber-200"
+          >
+            <span className="text-base">⚙</span> Back to Admin
+          </Link>
+        )}
         <button
           onClick={signOut}
           disabled={signingOut}
@@ -103,16 +115,16 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
 }
 
 /** Desktop-only sidebar */
-export function PortalSidebar() {
+export function PortalSidebar({ isAdmin }: { isAdmin?: boolean }) {
   return (
     <aside className="hidden h-screen w-56 flex-shrink-0 flex-col border-r border-line bg-white lg:flex">
-      <SidebarContent />
+      <SidebarContent isAdmin={isAdmin} />
     </aside>
   );
 }
 
 /** Mobile overlay drawer */
-export function PortalMobileDrawer({ onClose }: { onClose: () => void }) {
+export function PortalMobileDrawer({ onClose, isAdmin }: { onClose: () => void; isAdmin?: boolean }) {
   return (
     <>
       <div
@@ -120,7 +132,7 @@ export function PortalMobileDrawer({ onClose }: { onClose: () => void }) {
         onClick={onClose}
       />
       <aside className="fixed inset-y-0 left-0 z-50 w-64 border-r border-line bg-white shadow-xl lg:hidden">
-        <SidebarContent onNavClick={onClose} />
+        <SidebarContent onNavClick={onClose} isAdmin={isAdmin} />
       </aside>
     </>
   );
