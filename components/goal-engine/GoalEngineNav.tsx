@@ -50,14 +50,15 @@ const ADMIN_NAV = [
 ];
 
 const ADMIN_SECTION_BASE = [
-  { label: "Manage Goals",    href: "/goal-engine/admin",              icon: "🎯" },
-  { label: "Manager View",    href: "/goal-engine/admin/dashboard",    icon: "📊" },
-  { label: "Forecast Center", href: "/goal-engine/forecast",          icon: "📡" },
-  { label: "Coaching Notes",  href: "/goal-engine/admin/coaching",    icon: "📝" },
-  { label: "Production",      href: "/goal-engine/admin/production",  icon: "🔧" },
-  { label: "Email Log",       href: "/goal-engine/admin/email-log",   icon: "📧" },
-  { label: "Webhook Log",     href: "/goal-engine/admin/webhook-log", icon: "🛰️" },
-  { label: "Team Members",    href: "/goal-engine/admin/users",        icon: "👥" },
+  { label: "Manage Goals",      href: "/goal-engine/admin",              icon: "🎯" },
+  { label: "Manager View",      href: "/goal-engine/admin/dashboard",    icon: "📊" },
+  { label: "Forecast Center",   href: "/goal-engine/forecast",           icon: "📡" },
+  { label: "Coaching Notes",    href: "/goal-engine/admin/coaching",     icon: "📝" },
+  { label: "Production",        href: "/goal-engine/admin/production",   icon: "🔧" },
+  { label: "Awards Locker Room",href: "/goal-engine/admin/awards",       icon: "🏆" },
+  { label: "Email Log",         href: "/goal-engine/admin/email-log",    icon: "📧" },
+  { label: "Webhook Log",       href: "/goal-engine/admin/webhook-log",  icon: "🛰️" },
+  { label: "Team Members",      href: "/goal-engine/admin/users",        icon: "👥" },
 ];
 
 const DARIUS_ONLY = [
