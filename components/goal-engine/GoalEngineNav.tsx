@@ -73,9 +73,10 @@ function Initials({ name }: { name: string }) {
   return <>{name.trim().split(/\s+/).map(n => n[0]).slice(0, 2).join("").toUpperCase()}</>;
 }
 
-function NavItem({ href, icon, label, active }: { href: string; icon: string; label: string; active: boolean }) {
+function NavItem({ href, icon, label, active, loView }: { href: string; icon: string; label: string; active: boolean; loView?: boolean }) {
+  const dest = loView ? `${href}${href.includes("?") ? "&" : "?"}lo_view=1` : href;
   return (
-    <Link href={href} style={{ textDecoration: "none" }}>
+    <Link href={dest} style={{ textDecoration: "none" }}>
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
         padding: "9px 14px", borderRadius: 10,
@@ -193,7 +194,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
             Navigation
           </p>
           {navLinks.map(l => (
-            <NavItem key={l.href} {...l} active={isActive(l.href)} />
+            <NavItem key={l.href} {...l} active={isActive(l.href)} loView={loView} />
           ))}
         </div>
 
@@ -291,8 +292,9 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
       }}>
         {primaryTabs.map(tab => {
           const active = isActive(tab.href);
+          const tabDest = loView ? `${tab.href}${tab.href.includes("?") ? "&" : "?"}lo_view=1` : tab.href;
           return (
-            <Link key={tab.href} href={tab.href} style={{
+            <Link key={tab.href} href={tabDest} style={{
               flex: 1, display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center",
               padding: "8px 4px 6px", textDecoration: "none",
@@ -361,8 +363,9 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
 
             {/* More links */}
             <div style={{ padding: "8px 12px" }}>
-              {moreLinks.map(l => (
-                <Link key={l.href} href={l.href} onClick={() => setMoreOpen(false)} style={{
+              {moreLinks.map(l => {
+                const mDest = loView ? `${l.href}${l.href.includes("?") ? "&" : "?"}lo_view=1` : l.href;
+                return <Link key={l.href} href={mDest} onClick={() => setMoreOpen(false)} style={{
                   display: "flex", alignItems: "center", gap: 14,
                   padding: "12px 10px", borderRadius: 12, textDecoration: "none",
                   color: isActive(l.href) ? C.orange : C.ink,
@@ -371,8 +374,8 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
                 }}>
                   <span style={{ fontSize: 18, width: 24, textAlign: "center" }}>{l.icon}</span>
                   {l.label}
-                </Link>
-              ))}
+                </Link>;
+              })}
             </div>
 
             {/* Actions */}

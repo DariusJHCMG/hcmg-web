@@ -123,6 +123,28 @@ function SidebarContent({ universityRole, isAdmin: isPortalAdmin = false, loView
         <p style={{ fontSize: 9, letterSpacing: "1.5px", color: "#687383", marginTop: 4, textTransform: "uppercase", paddingLeft: 42 }}>
           TEAM LEARNING
         </p>
+        {/* Admin view toggle — shown under logo */}
+        {isPortalAdmin && (
+          <div style={{ marginTop: 10 }}>
+            <Suspense fallback={null}>
+              <ToolViewToggle />
+            </Suspense>
+          </div>
+        )}
+        {/* LO back-to-portal link */}
+        {!isPortalAdmin && (
+          <Link
+            href="/portal"
+            onClick={onNavClick}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 4,
+              marginTop: 10, fontSize: 11, fontWeight: 700, color: "#f58220",
+              textDecoration: "none", opacity: 0.8,
+            }}
+          >
+            ← Back to Portal
+          </Link>
+        )}
       </div>
 
       {/* Nav */}
@@ -207,27 +229,6 @@ function SidebarContent({ universityRole, isAdmin: isPortalAdmin = false, loView
 
       {/* Bottom */}
       <div style={{ padding: "10px 10px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 2 }}>
-        {isPortalAdmin ? (
-          <div style={{ padding: "4px 12px" }}>
-            <Suspense fallback={null}>
-              <ToolViewToggle />
-            </Suspense>
-          </div>
-        ) : (
-          <Link
-            href="/portal"
-            onClick={onNavClick}
-            style={{
-              display: "flex", alignItems: "center", gap: 10,
-              padding: "9px 12px", borderRadius: 10, textDecoration: "none",
-              fontSize: 13, fontWeight: 600, color: "#687383",
-              transition: "color 0.15s",
-            }}
-          >
-            <Ico><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg></Ico>
-            Back to Portal
-          </Link>
-        )}
         <button
           onClick={signOut}
           disabled={signingOut}
