@@ -96,18 +96,34 @@ async function findGoalMonth(
   return data?.id ?? null;
 }
 
-/** Fallback: currently active goal (draft or published) */
+/**
+ * Fallback goal month when no date-range match exists.
+ * 1. Try the currently active month (today inside start–end).
+ * 2. If in a gap between months, use the nearest UPCOMING published goal
+ *    so loans landing during a rollover gap are never left with null goal_month_id.
+ * 3. If still nothing, return null.
+ */
 async function currentGoalMonth(
   sb: ReturnType<typeof createServiceClient>,
 ): Promise<string | null> {
   const today = new Date().toISOString().slice(0, 10);
-  const { data } = await sb
+  // Active today
+  const { data: active } = await sb
     .from("goal_months")
     .select("id")
     .lte("start_date", today)
     .gte("end_date", today)
     .maybeSingle();
-  return data?.id ?? null;
+  if (active) return active.id;
+  // Nearest upcoming month (handles gap between month rollover)
+  const { data: upcoming } = await sb
+    .from("goal_months")
+    .select("id")
+    .gte("start_date", today)
+    .order("start_date", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  return upcoming?.id ?? null;
 }
 
 export async function POST(req: NextRequest) {

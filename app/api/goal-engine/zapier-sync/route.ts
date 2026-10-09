@@ -163,8 +163,15 @@ export async function POST(req: NextRequest) {
   }
   if (!goalMonthId) {
     const today = new Date().toISOString().slice(0, 10);
-    const { data } = await sb.from("goal_months").select("id").lte("start_date", today).gte("end_date", today).maybeSingle();
-    goalMonthId = data?.id ?? null;
+    // Active today
+    const { data: active } = await sb.from("goal_months").select("id").lte("start_date", today).gte("end_date", today).maybeSingle();
+    goalMonthId = active?.id ?? null;
+  }
+  if (!goalMonthId) {
+    // Gap period — use nearest upcoming month so loan is never orphaned with null goal_month_id
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: upcoming } = await sb.from("goal_months").select("id").gte("start_date", today).order("start_date", { ascending: true }).limit(1).maybeSingle();
+    goalMonthId = upcoming?.id ?? null;
   }
   let goalLabel: string | null = null;
   if (goalMonthId) {

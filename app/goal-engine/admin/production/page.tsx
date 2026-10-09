@@ -53,6 +53,33 @@ const INPUT: React.CSSProperties = {
   boxSizing: "border-box" as const,
 };
 
+function RepairOrphansButton() {
+  const [busy, setBusy]   = useState(false);
+  const [msg,  setMsg]    = useState<string | null>(null);
+  const [ok,   setOk]     = useState(true);
+  async function run() {
+    if (!confirm("Scan all production rows and reassign any with a missing or wrong goal month based on their funded/app date. Safe to run any time.")) return;
+    setBusy(true); setMsg(null);
+    const res  = await fetch("/api/goal-engine/repair-orphans", { method: "POST" });
+    const data = await res.json();
+    setOk(res.ok);
+    setMsg(res.ok ? `✅ ${data.message}` : `❌ ${data.error ?? "Failed"}`);
+    setBusy(false);
+  }
+  return (
+    <div>
+      <button onClick={run} disabled={busy} style={{
+        padding: "11px 22px", borderRadius: 12, border: `1.5px solid ${C.line}`,
+        background: C.white, color: C.ink, fontSize: 13, fontWeight: 800,
+        cursor: busy ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: busy ? 0.6 : 1,
+      }}>
+        {busy ? "Scanning…" : "🔧 Repair Orphaned Rows"}
+      </button>
+      {msg && <p style={{ margin: "6px 0 0", fontSize: 11, color: ok ? "#16a34a" : "#dc2626", fontWeight: 700 }}>{msg}</p>}
+    </div>
+  );
+}
+
 const TYPE_META: Record<string, { label: string; color: string; icon: string; description: string }> = {
   manual_add: { label: "Manual Add",  color: "#3b82f6", icon: "➕", description: "Manually create a new production event for an LO" },
   correction: { label: "Correction",  color: C.yellow,  icon: "✏️", description: "Correct values on an existing production event" },
@@ -245,19 +272,22 @@ export default function ProductionCorrectionsPage() {
             </div>
           </div>
         </div>
-        <button
-          onClick={() => openForm("manual_add")}
-          style={{
-            padding: "11px 22px", borderRadius: 12,
-            background: `linear-gradient(135deg, #FF9847, ${C.orange})`,
-            color: "#fff", border: "none",
-            fontSize: 13, fontWeight: 800, cursor: "pointer",
-            fontFamily: "inherit",
-            boxShadow: "0 4px 14px rgba(243,112,33,0.35)",
-          }}
-        >
-          + New Production Event
-        </button>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <RepairOrphansButton />
+          <button
+            onClick={() => openForm("manual_add")}
+            style={{
+              padding: "11px 22px", borderRadius: 12,
+              background: `linear-gradient(135deg, #FF9847, ${C.orange})`,
+              color: "#fff", border: "none",
+              fontSize: 13, fontWeight: 800, cursor: "pointer",
+              fontFamily: "inherit",
+              boxShadow: "0 4px 14px rgba(243,112,33,0.35)",
+            }}
+          >
+            + New Production Event
+          </button>
+        </div>
       </div>
 
       {/* ── Correction type legend ── */}
