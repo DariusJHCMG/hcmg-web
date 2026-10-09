@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { canAccessLiftOffQueue, canAccessHelpDeskQueue, canAccessLockDeskQueue } from "@/lib/auth";
@@ -33,7 +34,11 @@ function getInitials(name: string): string {
   return init.toUpperCase();
 }
 
-export default async function LiftOffLayout({ children }: { children: React.ReactNode }) {
+export default async function LiftOffLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login?next=/liftoff");
 
@@ -45,16 +50,18 @@ export default async function LiftOffLayout({ children }: { children: React.Reac
   return (
     <div className="min-h-screen bg-sand">
       {/* Left sidebar */}
-      <LiftOffNav
-        isAdmin={isAdmin}
-        isQueueUser={isQueueUser}
-        isHelpDeskUser={isHelpDeskUser}
-        isLockDeskUser={isLockDeskUser}
-        firstName={profile.full_name.split(" ")[0]}
-        initials={getInitials(profile.full_name)}
-        avatarUrl={profile.avatar_url ?? null}
-        portalHref={isAdmin ? "/admin" : "/portal"}
-      />
+      <Suspense>
+        <LiftOffNav
+          isAdmin={isAdmin}
+          isQueueUser={isQueueUser}
+          isHelpDeskUser={isHelpDeskUser}
+          isLockDeskUser={isLockDeskUser}
+          firstName={profile.full_name.split(" ")[0]}
+          initials={getInitials(profile.full_name)}
+          avatarUrl={profile.avatar_url ?? null}
+          portalHref={isAdmin ? "/admin" : "/portal"}
+        />
+      </Suspense>
 
       <PwaInit />
       <PushPermission />

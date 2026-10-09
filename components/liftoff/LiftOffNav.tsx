@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { NotificationCenter } from "@/components/NotificationCenter";
+import { ToolViewToggle } from "@/components/admin/ToolViewToggle";
 
 interface NavItem {
   href: string;
@@ -31,18 +32,21 @@ export function LiftOffNav({
   avatarUrl:      string | null;
   portalHref:     string;
 }) {
-  const pathname = usePathname();
+  const pathname     = usePathname();
+  const searchParams = useSearchParams();
   const [moreOpen, setMoreOpen] = useState(false);
+  // When admin views as LO, hide admin-only nav items
+  const showAsLO  = isAdmin && searchParams.get("lo_view") === "1";
 
   const navItems: NavItem[] = [
     { href: "/liftoff",                label: "Dashboard",       icon: "🏠", exact: true },
     { href: "/liftoff/new",            label: "New Request",      icon: "✨" },
     { href: "/liftoff/starting-now",   label: "Starting Now",     icon: "🛠️" },
-    ...(isQueueUser     ? [{ href: "/liftoff/queue",    label: "Ops Queue",       icon: "📥" }] : []),
-    ...(isHelpDeskUser  ? [{ href: "/liftoff/helpdesk", label: "Help Desk Queue", icon: "🛎" }] : []),
-    ...(isLockDeskUser  ? [{ href: "/liftoff/lockdesk", label: "Lock Desk Queue", icon: "🔒" }] : []),
-    ...(isQueueUser     ? [{ href: "/liftoff/pipeline", label: "Pipeline",        icon: "📊" }] : []),
-    ...(isAdmin         ? [{ href: "/liftoff/users",    label: "Team & Roles",    icon: "👥" }] : []),
+    ...(!showAsLO && isQueueUser    ? [{ href: "/liftoff/queue",    label: "Ops Queue",       icon: "📥" }] : []),
+    ...(!showAsLO && isHelpDeskUser ? [{ href: "/liftoff/helpdesk", label: "Help Desk Queue", icon: "🛎" }] : []),
+    ...(!showAsLO && isLockDeskUser ? [{ href: "/liftoff/lockdesk", label: "Lock Desk Queue", icon: "🔒" }] : []),
+    ...(!showAsLO && isQueueUser    ? [{ href: "/liftoff/pipeline", label: "Pipeline",        icon: "📊" }] : []),
+    ...(!showAsLO && isAdmin        ? [{ href: "/liftoff/users",    label: "Team & Roles",    icon: "👥" }] : []),
   ];
 
   function isActive(item: NavItem) {
@@ -84,10 +88,9 @@ export function LiftOffNav({
               <NotificationCenter align="sidebar" />
             </div>
             {isAdmin ? (
-              <Link href="/admin"
-                className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-colors hover:bg-sand">
-                ← Back to Admin
-              </Link>
+              <div className="mt-2.5">
+                <Suspense><ToolViewToggle /></Suspense>
+              </div>
             ) : (
               <Link href="/portal"
                 className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:opacity-80 transition-opacity">
@@ -163,16 +166,7 @@ export function LiftOffNav({
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <NotificationCenter />
           {isAdmin ? (
-            <a href="/admin" style={{
-              display: "inline-flex", alignItems: "center", gap: 5,
-              border: "1px solid #E2E8F0", background: "#fff",
-              padding: "4px 10px", borderRadius: 7,
-              fontSize: 11, fontWeight: 600, color: "#1f2328",
-              boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
-              textDecoration: "none",
-            }}>
-              ← Admin
-            </a>
+            <Suspense><ToolViewToggle /></Suspense>
           ) : (
             <a href="/portal" style={{
               fontSize: 11, fontWeight: 700, color: "#F37021",

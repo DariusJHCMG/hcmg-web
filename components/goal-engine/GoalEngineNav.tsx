@@ -4,12 +4,13 @@
  * GoalEngineNav — Left dock sidebar (desktop) + top bar / bottom tabs (mobile)
  */
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import type { Role } from "@/lib/database.types";
 import { NotificationCenter } from "@/components/NotificationCenter";
+import { ToolViewToggle } from "@/components/admin/ToolViewToggle";
 
 interface Props {
   fullName:  string;
@@ -96,11 +97,15 @@ function NavItem({ href, icon, label, active }: { href: string; icon: string; la
 }
 
 export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
-  const pathname    = usePathname();
+  const pathname     = usePathname();
+  const searchParams = useSearchParams();
   const [moreOpen, setMoreOpen] = useState(false);
   const isAdmin    = role === "admin" || role === "developer";
-  const navLinks   = isAdmin ? ADMIN_NAV : LO_NAV;
-  const adminLinks = isAdmin
+  const loView     = isAdmin && searchParams.get("lo_view") === "1";
+  // When admin is viewing as LO, use LO nav only
+  const showAsLO   = loView;
+  const navLinks   = showAsLO ? LO_NAV : (isAdmin ? ADMIN_NAV : LO_NAV);
+  const adminLinks = (!showAsLO && isAdmin)
     ? [...ADMIN_SECTION_BASE, ...(profileId === DARIUS_ID ? DARIUS_ONLY : [])]
     : [];
 
@@ -123,7 +128,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
     { label: "Board",   href: "/goal-engine/leaderboard",  icon: "🏅" },
     { label: "Awards",  href: "/goal-engine/awards",       icon: "🏆" },
   ];
-  if (isAdmin) {
+  if (isAdmin && !showAsLO) {
     primaryTabs.splice(3, 0, { label: "Admin", href: "/goal-engine/admin", icon: "🎯" });
   }
 
@@ -131,7 +136,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
   const moreLinks = [
     { label: "The Pie",    href: "/goal-engine/slice-visualization", icon: "🥧" },
     { label: "History",    href: "/goal-engine/history",             icon: "🗓" },
-    ...(isAdmin ? [
+    ...(!showAsLO && isAdmin ? [
       { label: "Forecast",   href: "/goal-engine/forecast",          icon: "📈" },
       { label: "THE SLICE",  href: "/goal-engine/the-slice",         icon: "📺" },
       ...adminLinks,
@@ -149,7 +154,7 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
       position: "sticky", top: 0,
       overflowY: "auto",
     }}>
-      {/* Logo + back link */}
+      {/* Logo + toggle */}
       <div style={{ padding: "20px 16px 14px", borderBottom: `1px solid ${C.line}` }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/goal-engine/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
@@ -161,19 +166,16 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
           </Link>
           <NotificationCenter />
         </div>
-        {isAdmin ? (
-          <a href="/admin" style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            marginTop: 10,
-            border: `1px solid ${C.line}`, background: C.white,
-            padding: "4px 10px", borderRadius: 7,
-            fontSize: 11, fontWeight: 600, color: C.ink,
-            boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
-            textDecoration: "none",
-          }}>
-            ← Back to Admin
-          </a>
-        ) : (
+        {/* Admin-only view toggle */}
+        {isAdmin && (
+          <div style={{ marginTop: 10 }}>
+            <Suspense>
+              <ToolViewToggle />
+            </Suspense>
+          </div>
+        )}
+        {/* LO back-to-portal link */}
+        {!isAdmin && (
           <a href="/portal" style={{
             display: "inline-flex", alignItems: "center", gap: 4,
             marginTop: 10, fontSize: 11, fontWeight: 700, color: C.orange,
@@ -266,16 +268,9 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <NotificationCenter />
           {isAdmin ? (
-            <a href="/admin" style={{
-              display: "inline-flex", alignItems: "center", gap: 5,
-              border: "1px solid #E2E8F0", background: "#fff",
-              padding: "4px 10px", borderRadius: 7,
-              fontSize: 11, fontWeight: 600, color: C.ink,
-              boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
-              textDecoration: "none",
-            }}>
-              ← Admin
-            </a>
+            <Suspense>
+              <ToolViewToggle />
+            </Suspense>
           ) : (
             <a href="/portal" style={{
               fontSize: 11, fontWeight: 700, color: C.orange,

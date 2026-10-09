@@ -3,6 +3,7 @@
  * Left dock sidebar + main content area
  */
 
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { GoalEngineNav } from "@/components/goal-engine/GoalEngineNav";
@@ -29,7 +30,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function GoalEngineLayout({ children }: { children: React.ReactNode }) {
+export default async function GoalEngineLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/goal-engine-login");
 
@@ -37,12 +42,14 @@ export default async function GoalEngineLayout({ children }: { children: React.R
     <div style={{ display: "flex", minHeight: "100vh", background: "#F8FAFC", overflowX: "hidden" }}>
       <PwaInit />
       <PushPermission />
-      <GoalEngineNav
-        fullName={profile.full_name}
-        role={profile.role}
-        avatarUrl={profile.avatar_url}
-        profileId={profile.id}
-      />
+      <Suspense>
+        <GoalEngineNav
+          fullName={profile.full_name}
+          role={profile.role}
+          avatarUrl={profile.avatar_url}
+          profileId={profile.id}
+        />
+      </Suspense>
       <main style={{ flex: 1, minWidth: 0, overflowX: "hidden" }} className="ge-main">
         {children}
       </main>
