@@ -88,6 +88,15 @@ function PaceBadge({ pct }: { pct: number }) {
   );
 }
 
+const MONTH_NAMES_LONG = ["January","February","March","April","May","June",
+  "July","August","September","October","November","December"];
+
+/** Current calendar month label e.g. "October 2026" — always correct regardless of goal. */
+function currentMonthLabel(): string {
+  const now = new Date();
+  return `${MONTH_NAMES_LONG[now.getMonth()]} ${now.getFullYear()}`;
+}
+
 export default async function GoalEngineDashboard() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/goal-engine-login");
@@ -113,6 +122,7 @@ export default async function GoalEngineDashboard() {
   const reqPct     = goal ? requiredPace(goal.start_date, goal.end_date) : 0;
   const compPct    = summary?.volumePct ?? 0;
   const medals     = ["🥇","🥈","🥉"];
+  const monthLabel = goal?.month_label ?? currentMonthLabel();
 
   return (
     <div style={{ fontFamily:"Montserrat,system-ui,sans-serif", color: C.ink, maxWidth:1200, margin:"0 auto", padding:"20px 16px 80px" }}>
@@ -124,7 +134,7 @@ export default async function GoalEngineDashboard() {
             Hi, {profile.full_name.split(" ")[0]} 👋
           </h1>
           <p style={{ margin:"4px 0 0", fontSize:13, color: C.muted }}>
-            {goal ? `${goal.month_label} · ${days} days remaining` : "No active goal this month"}
+            {goal ? `${monthLabel} · ${days} days remaining` : `${monthLabel} · Goal not set yet`}
           </p>
         </div>
         {goal && !commitment && (
@@ -144,8 +154,8 @@ export default async function GoalEngineDashboard() {
       {!goal && (
         <Card style={{ padding:"64px 32px", textAlign:"center" }}>
           <div style={{ fontSize:56, marginBottom:16 }}>🎯</div>
-          <h2 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color: C.ink }}>No Active Goal This Month</h2>
-          <p style={{ margin:0, fontSize:14, color: C.muted }}>Leadership will announce the next monthly goal soon.</p>
+          <h2 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color: C.ink }}>{monthLabel} — Goal Coming Soon</h2>
+          <p style={{ margin:0, fontSize:14, color: C.muted }}>Leadership is finalising the monthly goal. Check back shortly!</p>
         </Card>
       )}
 

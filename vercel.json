@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/goal-engine/end-of-month",
-      "schedule": "0 6 1 * *"
+      "schedule": "5 5 1 * *"
     },
     {
       "path": "/api/goal-engine/arive-pull-cron",

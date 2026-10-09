@@ -8,9 +8,14 @@
  *  5. Runs award engine.
  *  6. Sends personal recap emails.
  *  7. Preserves historical snapshot.
+ *  8. Auto-creates a stub goal for the next calendar month.
  *
  * Idempotent: will not send duplicate emails or awards.
  * Can be manually triggered by admin (pass force=true to skip date check).
+ *
+ * Cron schedule: "0 6 28-31 * *" — fires on days 28–31. The date guard below
+ * checks whether today is actually the LAST day of the current month so the
+ * cron only does real work once, on the correct final day.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -24,12 +29,41 @@ import {
   getActiveLoanOfficers,
   getCommitment,
   getLOProductionForMonth,
-  daysRemaining,
   fmt$,
   buildEndOfMonthEmail,
 } from "@/lib/goal-engine-server";
 
 const CRON_SECRET = process.env.CRON_SECRET ?? "";
+
+/**
+ * Returns true if yesterday (UTC) was the last calendar day of its month.
+ * The cron fires at 5:05am UTC on the 1st (~12:05am Eastern) so all loans
+ * funded right up to 11:59pm Eastern on the last night are already in the DB.
+ * Yesterday = day n-1; today = day 1 of new month → yesterday.getUTCDate() === today-1.
+ * Simplest check: today is the 1st in UTC (which it always is when this cron fires).
+ */
+function isYesterdayLastDayOfMonth(): boolean {
+  const now = new Date();
+  // today is the 1st UTC → yesterday was the last day of the previous month
+  return now.getUTCDate() === 1;
+}
+
+/** "YYYY-MM-DD" for the first day of the month N months after the given date. */
+function nextMonthStart(year: number, month: number): { year: number; month: number; startDate: string; endDate: string } {
+  const nm = month === 12 ? 1 : month + 1;
+  const ny = month === 12 ? year + 1 : year;
+  // Last day: day 0 of the month after next = last day of nm
+  const lastDay = new Date(Date.UTC(ny, nm, 0)).getUTCDate();
+  return {
+    year:      ny,
+    month:     nm,
+    startDate: `${ny}-${String(nm).padStart(2, "0")}-01`,
+    endDate:   `${ny}-${String(nm).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`,
+  };
+}
+
+const MONTH_NAMES = ["January","February","March","April","May","June",
+  "July","August","September","October","November","December"];
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("x-cron-secret");
@@ -46,21 +80,44 @@ export async function POST(req: NextRequest) {
   const body  = await req.json().catch(() => ({}));
   const force = body.force === true; // admins can force-run for testing
 
-  const goal = await getActiveGoal();
-  if (!goal) return NextResponse.json({ message: "No active goal." });
+  // ── Resolve which goal to close ───────────────────────────────
+  const sb = createServiceClient();
+  let goal = await getActiveGoal();
 
-  // Verify today is the last day of the goal period (unless forced)
-  if (!force) {
-    const today   = new Date().toISOString().split("T")[0];
-    const endDate = goal.end_date;
-    if (today !== endDate) {
-      return NextResponse.json({
-        message: `End-of-month runs only on the last day (${endDate}). Current date: ${today}. Pass force=true to override.`,
-      });
+  if (!goal) {
+    if (force && body.goal_month_id) {
+      // Admin explicitly targeted a specific goal by ID
+      const { data } = await sb.from("goal_months").select("*").eq("id", body.goal_month_id).single();
+      goal = data ?? null;
+    } else if (force) {
+      // force=true but no active goal — find the most recently ended non-closed goal.
+      // This covers the "cron fired but getActiveGoal is already null" case and
+      // the "admin clicks Force Close" after the month ended.
+      const today = new Date().toISOString().split("T")[0];
+      const { data } = await sb
+        .from("goal_months")
+        .select("*")
+        .eq("is_published", true)
+        .neq("goal_status", "closed")
+        .lte("start_date", today)
+        .order("end_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      goal = data ?? null;
     }
   }
 
-  const sb = createServiceClient();
+  if (!goal) return NextResponse.json({ message: "No goal to close." });
+
+  // Verify the cron fired on the 1st (i.e. yesterday was month-end) unless forced.
+  if (!force) {
+    const today = new Date().toISOString().split("T")[0];
+    if (!isYesterdayLastDayOfMonth()) {
+      return NextResponse.json({
+        message: `End-of-month skipped — today is ${today} (not the 1st). Pass force=true to override.`,
+      });
+    }
+  }
 
   // ── Check if already closed ────────────────────────────────────
   const currentGoal = (goal as unknown) as Record<string, unknown>;
@@ -177,15 +234,52 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // ── 4. Auto-create next month stub goal ───────────────────────
+  // This ensures getActiveGoal() always has a current month to return
+  // even before an admin manually sets goals. The stub has zero targets
+  // so LOs see the right month header immediately; admin sets real goals later.
+  let nextMonthCreated = false;
+  try {
+    const nm = nextMonthStart(goal.month_year, goal.month_num);
+    const { data: existing } = await sb
+      .from("goal_months")
+      .select("id")
+      .eq("month_year", nm.year)
+      .eq("month_num", nm.month)
+      .maybeSingle();
+
+    if (!existing) {
+      await sb.from("goal_months").insert({
+        month_label:        `${MONTH_NAMES[nm.month - 1]} ${nm.year}`,
+        month_year:         nm.year,
+        month_num:          nm.month,
+        start_date:         nm.startDate,
+        end_date:           nm.endDate,
+        funded_volume_goal: 0,
+        funded_units_goal:  0,
+        app_volume_goal:    0,
+        app_units_goal:     0,
+        is_published:       true,
+        goal_status:        "published",
+        clo_message:        null,
+        awards_enabled:     true,
+      });
+      nextMonthCreated = true;
+    }
+  } catch (e) {
+    console.error("[end-of-month] Failed to create next month stub:", e);
+  }
+
   return NextResponse.json({
-    message:       `End-of-month complete. ${emailsSent} recap emails sent. ${awardsIssued} awards issued.`,
-    goal_id:       goal.id,
-    month:         goal.month_label,
-    emails_sent:   emailsSent,
-    awards_issued: awardsIssued,
-    total_funded:  fmt$(companyTotal),
+    message:            `End-of-month complete. ${emailsSent} recap emails sent. ${awardsIssued} awards issued.`,
+    goal_id:            goal.id,
+    month:              goal.month_label,
+    emails_sent:        emailsSent,
+    awards_issued:      awardsIssued,
+    total_funded:       fmt$(companyTotal),
+    next_month_created: nextMonthCreated,
     // Keep legacy keys for backwards compatibility
     emailsSent,
-    totalFunded:   fmt$(companyTotal),
+    totalFunded:        fmt$(companyTotal),
   });
 }

@@ -98,7 +98,10 @@ export async function GET() {
 
   const goal = await getActiveGoal();
   if (!goal) {
-    return NextResponse.json({ forecast: null, lo_forecasts: [], message: "No active goal." });
+    const now = new Date();
+    const mnms = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const currentMonthLabel = `${mnms[now.getMonth()]} ${now.getFullYear()}`;
+    return NextResponse.json({ forecast: null, lo_forecasts: [], currentMonthLabel, message: `${currentMonthLabel} — Goal not set yet.` });
   }
 
   const [board, summary] = await Promise.all([

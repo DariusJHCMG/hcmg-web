@@ -26,11 +26,12 @@ const C = {
 const REFRESH_SEC = 60;
 
 type SliceData = {
-  goal:          Record<string, number | string | boolean | null> | null;
-  summary:       Record<string, number> | null;
-  leaderboard:   Array<Record<string, number | string | null>>;
-  todayActivity: { funded: number; fundedUnits: number; apps: number; appUnits: number };
-  topProducers:  Array<{ full_name: string; funded: number; funded_units: number }>;
+  goal:               Record<string, number | string | boolean | null> | null;
+  currentMonthLabel?: string;
+  summary:            Record<string, number> | null;
+  leaderboard:        Array<Record<string, number | string | null>>;
+  todayActivity:      { funded: number; fundedUnits: number; apps: number; appUnits: number };
+  topProducers:       Array<{ full_name: string; funded: number; funded_units: number }>;
 };
 
 function fmt$(n: number): string {
@@ -116,8 +117,9 @@ export default function TheSlicePage() {
     };
   }, []);
 
-  const goal    = data?.goal;
-  const summary = data?.summary;
+  const goal       = data?.goal;
+  const monthLabel = String(goal?.month_label ?? data?.currentMonthLabel ?? "");
+  const summary    = data?.summary;
   const board   = data?.leaderboard ?? [];
   const today   = data?.todayActivity ?? { funded:0, fundedUnits:0, apps:0, appUnits:0 };
 
@@ -185,9 +187,9 @@ export default function TheSlicePage() {
           </div>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:20 }}>
-          {goal && (
+          {monthLabel && (
             <span style={{ fontSize:13, fontWeight:700, color:C.muted }}>
-              {String(goal.month_label ?? "")}
+              {monthLabel}
             </span>
           )}
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -234,8 +236,8 @@ export default function TheSlicePage() {
         <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center" }}>
           <div style={{ textAlign:"center" }}>
             <div style={{ fontSize:56, marginBottom:16 }}>🎯</div>
-            <h2 style={{ margin:"0 0 8px", fontSize:24, fontWeight:900, color:C.navy }}>No Active Goal</h2>
-            <p style={{ margin:0, fontSize:15, color:C.muted }}>Leadership will set the next monthly goal soon.</p>
+            <h2 style={{ margin:"0 0 8px", fontSize:24, fontWeight:900, color:C.navy }}>{monthLabel || "Goal Coming Soon"}</h2>
+            <p style={{ margin:0, fontSize:15, color:C.muted }}>Leadership is finalising the monthly goal. Check back shortly!</p>
           </div>
         </div>
       ) : (
@@ -250,7 +252,7 @@ export default function TheSlicePage() {
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:24 }}>
               <div>
                 <p style={{ margin:"0 0 4px", fontSize:10, fontWeight:800, letterSpacing:".18em", textTransform:"uppercase", color:C.orange }}>
-                  Company Goal · {String(goal.month_label ?? "")}
+                  Company Goal · {monthLabel}
                 </p>
                 <h2 style={{ margin:0, fontSize:28, fontWeight:900, color:C.navy }}>
                   {fmt$(goalVol)} Target
@@ -419,7 +421,7 @@ export default function TheSlicePage() {
             <div style={{ padding:"20px 28px", borderBottom:`1px solid ${C.line}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               <div>
                 <p style={{ margin:0, fontSize:16, fontWeight:900, color:C.navy }}>🏆 Leaderboard</p>
-                <p style={{ margin:"2px 0 0", fontSize:12, color:C.muted }}>Funded volume · {String(goal.month_label ?? "")}</p>
+                <p style={{ margin:"2px 0 0", fontSize:12, color:C.muted }}>Funded volume · {monthLabel}</p>
               </div>
               {last && <span style={{ fontSize:11, color:C.muted }}>Updated {last}</span>}
             </div>

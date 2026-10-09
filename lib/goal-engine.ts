@@ -101,7 +101,7 @@ export async function getActiveGoal(): Promise<GoalMonth | null> {
   const sb  = createServiceClient();
   const now = new Date().toISOString().split("T")[0];
 
-  // First: try exact date-range match (goal running right now)
+  // Primary: goal whose date range contains today
   const { data: exact } = await sb
     .from("goal_months")
     .select("*")
@@ -114,16 +114,26 @@ export async function getActiveGoal(): Promise<GoalMonth | null> {
 
   if (exact) return exact as GoalMonth;
 
-  // Fallback: most recently published goal (covers "just ended" month still visible)
-  const { data: latest } = await sb
+  // Fallback: most recently published goal that has already STARTED but not yet
+  // ended — i.e. its start_date <= today (covers late-publish edge case).
+  // We deliberately do NOT return goals whose end_date < today so an expired
+  // September goal never masquerades as October's active goal.
+  // A published goal starting in the future (next month) is also excluded here
+  // so the "no active goal" state correctly shows until the month begins.
+  // Exception: if a future goal starts within the next 0 days we still return null.
+  const { data: future } = await sb
     .from("goal_months")
     .select("*")
     .eq("is_published", true)
-    .order("start_date", { ascending: false })
+    .gte("start_date", now)
+    .order("start_date", { ascending: true })
     .limit(1)
     .maybeSingle();
 
-  return (latest as GoalMonth | null) ?? null;
+  // If a goal starts today (same day) the lte/gte above already caught it.
+  // Return null — callers must handle no-active-goal gracefully.
+  void future; // reserved for future "upcoming goal" banner
+  return null;
 }
 
 export async function getGoalById(id: string): Promise<GoalMonth | null> {

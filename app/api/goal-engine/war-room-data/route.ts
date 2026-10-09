@@ -10,13 +10,20 @@ import { getActiveGoal, computeGoalSummary } from "@/lib/goal-engine";
 
 export const dynamic = "force-dynamic";
 
+const MONTH_NAMES_WR = ["January","February","March","April","May","June",
+  "July","August","September","October","November","December"];
+
 export async function GET() {
   const sb   = createServiceClient();
   const goal = await getActiveGoal();
+  const now  = new Date();
+  const fallbackMonthLabel = `${MONTH_NAMES_WR[now.getMonth()]} ${now.getFullYear()}`;
 
   if (!goal) {
     return NextResponse.json({
-      goal: null, summary: null,
+      goal: null,
+      currentMonthLabel: fallbackMonthLabel,
+      summary: null,
       leaderboard: [], todayActivity: { funded:0, fundedUnits:0, apps:0, appUnits:0 },
     });
   }

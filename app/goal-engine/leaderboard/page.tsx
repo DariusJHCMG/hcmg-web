@@ -34,6 +34,13 @@ function PaceTag({ pct }: { pct: number }) {
   );
 }
 
+const MONTH_NAMES_LB = ["January","February","March","April","May","June",
+  "July","August","September","October","November","December"];
+function currentMonthLabel() {
+  const n = new Date();
+  return `${MONTH_NAMES_LB[n.getMonth()]} ${n.getFullYear()}`;
+}
+
 export default async function GoalEngineLeaderboard() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/goal-engine-login");
@@ -43,8 +50,9 @@ export default async function GoalEngineLeaderboard() {
     goal ? getLeaderboard(goal.id) : [],
     goal ? computeGoalSummary(goal) : null,
   ]);
-  const days    = goal ? daysRemaining(goal.end_date) : 0;
-  const medals  = ["🥇","🥈","🥉"];
+  const days       = goal ? daysRemaining(goal.end_date) : 0;
+  const medals     = ["🥇","🥈","🥉"];
+  const monthLabel = goal?.month_label ?? currentMonthLabel();
 
   // ── Option C split ───────────────────────────────────────────────
   // Active:    has any production (app or funded volume > 0)
@@ -72,14 +80,16 @@ export default async function GoalEngineLeaderboard() {
       <div style={{ marginBottom:32 }}>
         <Link href="/goal-engine/dashboard" style={{ fontSize:13, fontWeight:700, color: C.muted, textDecoration:"none" }}>← Dashboard</Link>
         <h1 style={{ margin:"14px 0 0", fontSize:30, fontWeight:900, color: C.ink }}>Leaderboard</h1>
-        {goal && <p style={{ margin:"4px 0 0", fontSize:14, color: C.muted }}>{goal.month_label} · {days} days remaining</p>}
+        <p style={{ margin:"4px 0 0", fontSize:14, color: C.muted }}>
+          {goal ? `${monthLabel} · ${days} days remaining` : `${monthLabel} · Goal not set yet`}
+        </p>
       </div>
 
       {!goal && (
         <div style={{ background:C.white, borderRadius:20, border:`1px solid ${C.line}`, padding:"64px 32px", textAlign:"center", boxShadow:"0 2px 12px rgba(15,23,42,0.06)" }}>
           <div style={{ fontSize:52, marginBottom:16 }}>🏆</div>
-          <h2 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color: C.ink }}>No Active Goal</h2>
-          <p style={{ margin:0, fontSize:14, color: C.muted }}>Leaderboard populates once a goal is active.</p>
+          <h2 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color: C.ink }}>{monthLabel} — Goal Coming Soon</h2>
+          <p style={{ margin:0, fontSize:14, color: C.muted }}>Leaderboard will populate once the monthly goal is set.</p>
         </div>
       )}
 

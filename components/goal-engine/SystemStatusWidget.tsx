@@ -163,7 +163,7 @@ export function SystemStatusWidget() {
             {[
               { path: "/api/goal-engine/weekly-email",       schedule: "Every Monday 1pm UTC",  note: "Weekly progress email to all committed LOs" },
               { path: "/api/goal-engine/commitment-reminder", schedule: "Daily 2pm UTC",         note: "Reminder to LOs who haven't committed yet" },
-              { path: "/api/goal-engine/end-of-month",       schedule: "1st of month 6am UTC",  note: "Close previous month, issue awards, send recaps" },
+              { path: "/api/goal-engine/end-of-month",       schedule: "1st of month 5:05am UTC (~12:05am Eastern)", note: "Close month, issue awards, send recaps, auto-create next month stub" },
             ].map(c => (
               <div key={c.path} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 14px", borderRadius: 10, background: C.sand, border: `1px solid ${C.line}` }}>
                 <span style={{ fontSize: 12 }}>🕐</span>
