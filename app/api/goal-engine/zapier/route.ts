@@ -190,16 +190,32 @@ export async function POST(req: NextRequest) {
 
   if (!lo) {
     await writeLog(sb, body, startMs, ip, {
-      action: "error", error_message: "LO not found",
+      action: "staged", error_message: "LO not found — stored in unmatched_production",
       loan_id: loanId, lo_nmls: loNmls || null, lo_email_raw: loEmail || null,
       event_type: isFundedEvent ? "funded" : "application",
       amount: fundedVol ?? appVol, event_date: fundedDate ?? appDate,
     });
+    // Store for later matching instead of dropping
+    const { storeUnmatched } = await import("@/lib/unmatched-production");
+    await storeUnmatched({
+      lo_nmls:      loNmls    || null,
+      lo_email:     loEmail   || null,
+      lo_name:      loName    || null,
+      lo_arive_id:  loAriveId || null,
+      loan_id:      loanId,
+      source:       "zapier",
+      event_type:   isFundedEvent ? "funded" : "application",
+      funded_date:  fundedDate,
+      funded_volume:fundedVol,
+      app_date:     appDate,
+      app_volume:   appVol,
+      raw_payload:  body,
+    });
     return NextResponse.json({
-      error: "Loan Officer not found in SLICE.",
+      status:  "staged",
+      message: "Loan Officer not found in SLICE — production event saved for later matching.",
       attempted: { loAriveId: loAriveId || null, loNmls: loNmls || null, loEmail: loEmail || null, loName: loName || null },
-      tip: "Verify NMLS, email, or full name matches a SLICE profile.",
-    }, { status: 404 });
+    }, { status: 202 });
   }
 
   // ── 4a. Write-back arive_lo_id if we matched via a different field ──
@@ -221,14 +237,18 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
     goalMonthId = data?.id ?? null;
   }
-  // Fallback to currently active goal
+  // Fallback: active today, then nearest upcoming (handles month-end gap)
   if (!goalMonthId) {
     const today = new Date().toISOString().slice(0, 10);
-    const { data } = await sb.from("goal_months").select("id")
-      .lte("start_date", today)
-      .gte("end_date", today)
-      .maybeSingle();
-    goalMonthId = data?.id ?? null;
+    const { data: active } = await sb.from("goal_months").select("id")
+      .lte("start_date", today).gte("end_date", today).maybeSingle();
+    goalMonthId = active?.id ?? null;
+  }
+  if (!goalMonthId) {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: upcoming } = await sb.from("goal_months").select("id")
+      .gte("start_date", today).order("start_date", { ascending: true }).limit(1).maybeSingle();
+    goalMonthId = upcoming?.id ?? null;
   }
 
   // Goal month label for log

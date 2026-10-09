@@ -67,6 +67,14 @@ export default async function GoalEngineAdmin() {
           }}>
             📊 Manager View
           </Link>
+          <Link href="/goal-engine/admin/awards" style={{
+            padding:"10px 20px", borderRadius:12, textDecoration:"none",
+            background:C.white, border:`1.5px solid ${C.line}`,
+            color:C.ink, fontSize:13, fontWeight:700,
+            boxShadow:"0 1px 4px rgba(15,23,42,0.06)",
+          }}>
+            🏆 Awards Locker Room
+          </Link>
         </div>
       </div>
 

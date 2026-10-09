@@ -218,8 +218,8 @@ export async function POST(req: NextRequest) {
 
   if (!lo) {
     await writeLog({
-      action:        "error",
-      error_message: "LO not found",
+      action:        "staged",
+      error_message: "LO not found — stored in unmatched_production",
       loan_id:       loanId,
       lo_nmls:       loNmls || null,
       lo_email_raw:  loEmail || null,
@@ -227,11 +227,25 @@ export async function POST(req: NextRequest) {
       amount,
       event_date:    isFunded ? fundedDt : appDt,
     });
+    const { storeUnmatched } = await import("@/lib/unmatched-production");
+    await storeUnmatched({
+      lo_nmls:      loNmls    || null,
+      lo_email:     loEmail   || null,
+      lo_arive_id:  ariveId   || null,
+      loan_id:      loanId,
+      source:       "arive_native",
+      event_type:   isFunded ? "funded" : "application",
+      funded_date:  fundedDt,
+      funded_volume:isFunded ? amount : null,
+      app_date:     appDt,
+      app_volume:   !isFunded ? amount : null,
+      raw_payload:  body,
+    });
     return NextResponse.json({
-      error: "Loan Officer not found. Check NMLS or email matches a SLICE profile.",
+      status:  "staged",
+      message: "Loan Officer not found — production event saved for later matching.",
       attempted: { loNmls: loNmls || null, loEmail: loEmail || null, ariveId: ariveId || null },
-      tip: "Visit /goal-engine/admin/users to verify each LO's NMLS and email.",
-    }, { status: 404 });
+    }, { status: 202 });
   }
 
   // ── 6. Find goal month ───────────────────────────────────────

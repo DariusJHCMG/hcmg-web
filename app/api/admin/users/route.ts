@@ -215,6 +215,12 @@ export async function POST(request: NextRequest) {
 
   await logAudit("user.created", { email, role, lo_slug, nmls }, caller.id, caller.email);
 
+  // ── 4. Promote any staged unmatched production rows ──────────
+  // Fire-and-forget — never block the user creation response
+  import("@/lib/unmatched-production").then(({ promoteUnmatched }) => {
+    promoteUnmatched(uid, email, nmls ?? null, null).catch(() => {});
+  });
+
   // Welcome email is NOT sent automatically — admin clicks "Send Invite" in the UI
   return NextResponse.json({ ok: true, id: uid, lo_slug, restored });
 }
