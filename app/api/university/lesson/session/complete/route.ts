@@ -159,20 +159,52 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Check C: Already completed via a previous session (idempotent guard)
-  const { data: existingProgress } = await sb
-    .from("uni_progress")
-    .select("completed")
-    .eq("profile_id", profile.id)
-    .eq("lesson_id", session.lesson_id)
-    .maybeSingle();
+  // Check C: Already completed via a previous session (idempotent guard).
+  // Also handles the case where uni_lesson_sessions got completed=true but
+  // uni_progress never got written (e.g. a prior upsert failed silently).
+  // We check both: (a) uni_progress.completed=true, or (b) a prior completed session.
+  const [{ data: existingProgress }, { data: priorCompletedSession }] = await Promise.all([
+    sb.from("uni_progress")
+      .select("completed")
+      .eq("profile_id", profile.id)
+      .eq("lesson_id", session.lesson_id)
+      .maybeSingle(),
+    sb.from("uni_lesson_sessions")
+      .select("id, verified_secs, video_duration_secs, course_id")
+      .eq("profile_id", profile.id)
+      .eq("lesson_id", session.lesson_id)
+      .eq("completed", true)
+      .neq("id", session.id) // not the current session
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-  if (existingProgress?.completed) {
-    // Already completed — close session and return success
-    await sb
-      .from("uni_lesson_sessions")
-      .update({ completed: true, ended_at: new Date().toISOString() })
-      .eq("id", session.id);
+  if (existingProgress?.completed || priorCompletedSession) {
+    // Already completed — ensure uni_progress reflects it (heals any prior silent failure)
+    const refSession = priorCompletedSession ?? session;
+    const nDur = refSession.video_duration_secs ?? 0;
+    const healedWatchPct = nDur > 0
+      ? Math.min(100, Math.round(((refSession as typeof session).verified_secs / nDur) * 100))
+      : 100;
+    const healNow = new Date().toISOString();
+    await Promise.all([
+      sb.from("uni_lesson_sessions")
+        .update({ completed: true, ended_at: healNow })
+        .eq("id", session.id),
+      // Always upsert progress — heals rows that were never written
+      sb.from("uni_progress").upsert(
+        {
+          profile_id:      profile.id,
+          lesson_id:       session.lesson_id,
+          course_id:       session.course_id,
+          watch_pct:       healedWatchPct,
+          completed:       true,
+          completed_at:    healNow,
+          last_watched_at: healNow,
+        },
+        { onConflict: "profile_id,lesson_id" }
+      ),
+    ]);
     return NextResponse.json({ ok: true, already_completed: true });
   }
 
