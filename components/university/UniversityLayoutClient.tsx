@@ -261,8 +261,24 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
 
           <div style={{ flex: 1 }} />
 
-          {/* Right: notification bell + user chip */}
+          {/* Right: admin back button + notification bell + user chip */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {isAdmin && (
+              <a
+                href="/admin"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  border: "1px solid #e5e7eb", background: "#fff",
+                  padding: "5px 12px", borderRadius: 8,
+                  fontSize: 12, fontWeight: 600, color: "#1f2328",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                  textDecoration: "none",
+                  transition: "background 0.15s",
+                }}
+              >
+                <span>←</span> Back to Admin
+              </a>
+            )}
             {/* Bell */}
             <button
               onClick={() => setBellOpen(prev => !prev)}

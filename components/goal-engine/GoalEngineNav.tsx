@@ -160,13 +160,27 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
           </Link>
           <NotificationCenter />
         </div>
-        <a href={isAdmin ? "/admin" : "/portal"} style={{
-          display: "inline-flex", alignItems: "center", gap: 4,
-          marginTop: 10, fontSize: 11, fontWeight: 700, color: C.orange,
-          textDecoration: "none", opacity: 0.8,
-        }}>
-          ← {isAdmin ? "Back to Admin" : "Back to Portal"}
-        </a>
+        {isAdmin ? (
+          <a href="/admin" style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            marginTop: 10,
+            border: `1px solid ${C.line}`, background: C.white,
+            padding: "4px 10px", borderRadius: 7,
+            fontSize: 11, fontWeight: 600, color: C.ink,
+            boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+            textDecoration: "none",
+          }}>
+            ← Back to Admin
+          </a>
+        ) : (
+          <a href="/portal" style={{
+            display: "inline-flex", alignItems: "center", gap: 4,
+            marginTop: 10, fontSize: 11, fontWeight: 700, color: C.orange,
+            textDecoration: "none", opacity: 0.8,
+          }}>
+            ← Back to Portal
+          </a>
+        )}
       </div>
 
       {/* Main nav */}
@@ -248,14 +262,27 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
           <img src="/SLICE.png" alt="SLICE" style={{ height: 30, width: "auto" }} />
           <img src="/hcmg-wordmark-on-light.svg" alt="HCMG" style={{ height: 9, width: "auto" }} />
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <NotificationCenter />
-          <a href={isAdmin ? "/admin" : "/portal"} style={{
-            fontSize: 11, fontWeight: 700, color: C.orange,
-            textDecoration: "none", display: "flex", alignItems: "center", gap: 3,
-          }}>
-            ← {isAdmin ? "Admin" : "Portal"}
-          </a>
+          {isAdmin ? (
+            <a href="/admin" style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              border: "1px solid #E2E8F0", background: "#fff",
+              padding: "4px 10px", borderRadius: 7,
+              fontSize: 11, fontWeight: 600, color: C.ink,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+              textDecoration: "none",
+            }}>
+              ← Admin
+            </a>
+          ) : (
+            <a href="/portal" style={{
+              fontSize: 11, fontWeight: 700, color: C.orange,
+              textDecoration: "none", display: "flex", alignItems: "center", gap: 3,
+            }}>
+              ← Portal
+            </a>
+          )}
         </div>
       </div>
 
@@ -357,7 +384,11 @@ export function GoalEngineNav({ fullName, role, avatarUrl, profileId }: Props) {
               <a href={isAdmin ? "/admin" : "/portal"} style={{
                 display: "flex", alignItems: "center", gap: 14,
                 padding: "12px 10px", borderRadius: 12, textDecoration: "none",
-                color: C.orange, fontWeight: 700, fontSize: 14,
+                color: isAdmin ? C.ink : C.orange, fontWeight: 700, fontSize: 14,
+                ...(isAdmin ? {
+                  border: `1px solid ${C.line}`, background: C.white,
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.06)", margin: "0 0 4px",
+                } : {}),
               }}>
                 <span style={{ fontSize: 18, width: 24, textAlign: "center" }}>←</span>
                 {isAdmin ? "Back to Admin" : "Back to Portal"}

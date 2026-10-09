@@ -83,10 +83,17 @@ export function LiftOffNav({
               </div>
               <NotificationCenter align="sidebar" />
             </div>
-            <Link href={portalHref}
-              className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:opacity-80 transition-opacity">
-              ← Back to Portal
-            </Link>
+            {isAdmin ? (
+              <Link href="/admin"
+                className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink shadow-sm transition-colors hover:bg-sand">
+                ← Back to Admin
+              </Link>
+            ) : (
+              <Link href="/portal"
+                className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:opacity-80 transition-opacity">
+                ← Back to Portal
+              </Link>
+            )}
           </div>
 
         {/* Nav links */}
@@ -155,12 +162,25 @@ export function LiftOffNav({
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <NotificationCenter />
-          <a href={portalHref} style={{
-            fontSize: 11, fontWeight: 700, color: "#F37021",
-            textDecoration: "none", display: "flex", alignItems: "center", gap: 3,
-          }}>
-            ← Portal
-          </a>
+          {isAdmin ? (
+            <a href="/admin" style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              border: "1px solid #E2E8F0", background: "#fff",
+              padding: "4px 10px", borderRadius: 7,
+              fontSize: 11, fontWeight: 600, color: "#1f2328",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+              textDecoration: "none",
+            }}>
+              ← Admin
+            </a>
+          ) : (
+            <a href="/portal" style={{
+              fontSize: 11, fontWeight: 700, color: "#F37021",
+              textDecoration: "none", display: "flex", alignItems: "center", gap: 3,
+            }}>
+              ← Portal
+            </a>
+          )}
         </div>
       </div>
 
