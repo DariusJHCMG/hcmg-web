@@ -238,7 +238,7 @@ export function LeadsClient({
                   </thead>
                   <tbody>
                     {myLeads.map((lead) => (
-                      <LeadIntelPanel key={lead.id} lead={lead} hideLoColumn />
+                      <LeadIntelPanel key={lead.id} lead={lead} hideLoColumn allLOs={allLOs} />
                     ))}
                   </tbody>
                 </table>
@@ -361,16 +361,17 @@ export function LeadsClient({
                 </thead>
                 <tbody>
                   {dscrLeads.map((lead) => {
-                    const dscr = parseDscrNotes(lead.notes);
-                    return (
-                      <LeadIntelPanel
-                        key={lead.id}
-                        lead={lead}
-                        sourceLabel="DSCR Landing Page"
-                        dscrData={dscr}
-                      />
-                    );
-                  })}
+                   const dscr = parseDscrNotes(lead.notes);
+                   return (
+                     <LeadIntelPanel
+                       key={lead.id}
+                       lead={lead}
+                       sourceLabel="DSCR Landing Page"
+                       dscrData={dscr}
+                       allLOs={allLOs}
+                     />
+                   );
+                 })}
                 </tbody>
               </table>
             </div>
@@ -407,7 +408,7 @@ export function LeadsClient({
               </thead>
               <tbody>
                 {contactLeads.map((lead) => (
-                  <LeadIntelPanel key={lead.id} lead={lead} sourceLabel="Contact Form" hideLoColumn />
+                  <LeadIntelPanel key={lead.id} lead={lead} sourceLabel="Contact Form" hideLoColumn allLOs={allLOs} />
                 ))}
               </tbody>
             </table>
@@ -444,7 +445,7 @@ export function LeadsClient({
               </thead>
               <tbody>
                 {employmentLeads.map((lead) => (
-                  <LeadIntelPanel key={lead.id} lead={lead} sourceLabel="Recruiting / Employment" hideLoColumn />
+                  <LeadIntelPanel key={lead.id} lead={lead} sourceLabel="Recruiting / Employment" hideLoColumn allLOs={allLOs} />
                 ))}
               </tbody>
             </table>
@@ -481,7 +482,7 @@ export function LeadsClient({
               </thead>
               <tbody>
                 {companyLeads.map((lead) => (
-                  <LeadIntelPanel key={lead.id} lead={lead} sourceLabel={sourceLabel(lead.source)} hideLoColumn />
+                  <LeadIntelPanel key={lead.id} lead={lead} sourceLabel={sourceLabel(lead.source)} hideLoColumn allLOs={allLOs} />
                 ))}
               </tbody>
             </table>
@@ -517,7 +518,7 @@ export function LeadsClient({
                   <tr><td colSpan={8} className="px-6 py-10 text-center text-sm text-muted/60">No LO-assigned leads.</td></tr>
                 )}
                 {loLeads.map((lead) => (
-                  <LeadIntelPanel key={lead.id} lead={lead} />
+                  <LeadIntelPanel key={lead.id} lead={lead} allLOs={allLOs} />
                 ))}
               </tbody>
             </table>

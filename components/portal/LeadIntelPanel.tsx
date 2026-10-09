@@ -132,9 +132,10 @@ interface Props {
   hideLoColumn?: boolean;
   patchEndpoint?: "admin" | "portal";
   dscrData?: Record<string, string>;
+  allLOs?: { slug: string; name: string }[];
 }
 
-export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint = "admin", dscrData }: Props) {
+export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint = "admin", dscrData, allLOs }: Props) {
   // sourceLabel already contains "via <RealtorName>" when set from co-branded
   const [open, setOpen]           = useState(false);
   const [events, setEvents]       = useState<LeadEvent[]>([]);
@@ -143,6 +144,11 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
   const [status, setStatus]       = useState<LeadStatus>(lead.status);
   const [statusSaving, setStatusSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState<"ok" | "err" | null>(null);
+  // Assignment
+  const [assignSlug, setAssignSlug]   = useState<string>(lead.lo_slug ?? "");
+  const [assignName, setAssignName]   = useState<string>(lead.lo_name ?? "");
+  const [assignSaving, setAssignSaving] = useState(false);
+  const [assignMsg, setAssignMsg]     = useState<"ok" | "err" | null>(null);
 
   async function updateStatus(next: LeadStatus) {
     if (next === status) return;
@@ -168,6 +174,26 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
       setStatusMsg("err");
     }
     setStatusSaving(false);
+  }
+
+  async function saveAssignment() {
+    setAssignSaving(true);
+    setAssignMsg(null);
+    try {
+      const res = await fetch(`/api/admin/leads/${lead.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lo_slug: assignSlug || null,
+          lo_name: assignSlug ? assignName : null,
+        }),
+      });
+      setAssignMsg(res.ok ? "ok" : "err");
+      setTimeout(() => setAssignMsg(null), 3000);
+    } catch {
+      setAssignMsg("err");
+    }
+    setAssignSaving(false);
   }
 
   const fetchEvents = useCallback(async () => {
@@ -729,6 +755,44 @@ export function LeadIntelPanel({ lead, sourceLabel, hideLoColumn, patchEndpoint 
                   </>
                 )}
               </div>
+
+              {/* ── Assign / Reassign LO (admin only) ── */}
+              {allLOs && allLOs.length > 0 && (
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white px-4 py-3">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted whitespace-nowrap">
+                    Assigned LO
+                  </span>
+                  <select
+                    value={assignSlug}
+                    onChange={(e) => {
+                      const slug = e.target.value;
+                      const lo   = allLOs.find((l) => l.slug === slug);
+                      setAssignSlug(slug);
+                      setAssignName(lo?.name ?? "");
+                    }}
+                    disabled={assignSaving}
+                    className="flex-1 min-w-[180px] rounded-lg border border-line bg-sand px-3 py-1.5 text-sm text-ink focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition disabled:opacity-50"
+                  >
+                    <option value="">— Unassigned —</option>
+                    {allLOs.map(({ slug, name }) => (
+                      <option key={slug} value={slug}>{name}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={saveAssignment}
+                    disabled={assignSaving}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-1.5 text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-40"
+                  >
+                    {assignSaving ? "Saving…" : (lead.lo_slug ? "Reassign" : "Assign")}
+                  </button>
+                  {assignMsg === "ok" && (
+                    <span className="text-[11px] font-semibold text-green-600">✓ Saved</span>
+                  )}
+                  {assignMsg === "err" && (
+                    <span className="text-[11px] font-semibold text-red-500">Failed to save</span>
+                  )}
+                </div>
+              )}
 
               {/* ── Status change ── */}
               <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white px-4 py-3">

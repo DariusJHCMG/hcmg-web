@@ -4,7 +4,9 @@ import { getCurrentProfile, isAdmin, logAudit } from "@/lib/auth";
 import { z } from "zod";
 
 const PatchSchema = z.object({
-  status: z.enum(["new", "contacted", "qualified", "closed", "lost"]).optional(),
+  status:  z.enum(["new", "contacted", "qualified", "closed", "lost"]).optional(),
+  lo_slug: z.string().nullable().optional(),
+  lo_name: z.string().nullable().optional(),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -22,6 +24,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   if (parsed.data.status) {
     logAudit("lead.status_changed", { lead_id: id, status: parsed.data.status }, caller.id, caller.email);
+  }
+  if ("lo_slug" in parsed.data) {
+    logAudit("lead.reassigned", { lead_id: id, lo_slug: parsed.data.lo_slug, lo_name: parsed.data.lo_name }, caller.id, caller.email);
   }
 
   return NextResponse.json({ ok: true });
