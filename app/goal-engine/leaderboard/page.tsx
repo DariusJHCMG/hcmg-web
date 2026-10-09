@@ -5,6 +5,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { getActiveGoal, getLeaderboard, computeGoalSummary, fmt$, fmtPct, daysRemaining } from "@/lib/goal-engine";
+import { createServiceClient } from "@/lib/supabase";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -46,32 +47,100 @@ export default async function GoalEngineLeaderboard() {
   if (!profile) redirect("/goal-engine-login");
 
   const goal = await getActiveGoal();
+  const sb = createServiceClient();
+
   const [board, summary] = await Promise.all([
     goal ? getLeaderboard(goal.id) : [],
     goal ? computeGoalSummary(goal) : null,
   ]);
+
+  // ── Pull ANY LO with production this month, even if not in leaderboard view ──
+  // The leaderboard view only includes LOs with a commitment OR assignment.
+  // We supplement it with direct production rows so uncommitted producers show up.
+  type ProdRow = {
+    profile_id: string;
+    funded_volume_actual: number;
+    funded_units_actual: number;
+    app_volume_actual: number;
+    app_units_actual: number;
+    full_name: string;
+    avatar_url: string | null;
+    nmls: string | null;
+    funded_volume_commitment: number;
+    funded_units_commitment: number;
+    submitted_at: string | null;
+  };
+
+  let mergedBoard: ProdRow[] = (board as ProdRow[]);
+
+  if (goal) {
+    const { data: rawProd } = await sb
+      .from("goal_production")
+      .select("profile_id, funded_volume, funded_unit, app_volume, app_unit, event_type, profiles(full_name, avatar_url, nmls)")
+      .eq("goal_month_id", goal.id)
+      .eq("is_excluded", false);
+
+    if (rawProd && rawProd.length > 0) {
+      // Aggregate by profile
+      const map = new Map<string, ProdRow>();
+      for (const r of rawProd) {
+        const pid = r.profile_id;
+        const p = (r.profiles as unknown) as { full_name: string; avatar_url: string | null; nmls: string | null } | null;
+        if (!map.has(pid)) {
+          map.set(pid, {
+            profile_id: pid,
+            funded_volume_actual: 0, funded_units_actual: 0,
+            app_volume_actual: 0,   app_units_actual: 0,
+            full_name: p?.full_name ?? "Unknown",
+            avatar_url: p?.avatar_url ?? null,
+            nmls: p?.nmls ?? null,
+            funded_volume_commitment: 0, funded_units_commitment: 0,
+            submitted_at: null,
+          });
+        }
+        const entry = map.get(pid)!;
+        if (r.event_type === "funded" || r.event_type === "correction") {
+          entry.funded_volume_actual  += Number(r.funded_volume ?? 0);
+          entry.funded_units_actual   += Number(r.funded_unit  ?? 0);
+        }
+        if (r.event_type === "application" || r.event_type === "funded") {
+          entry.app_volume_actual += Number(r.app_volume ?? 0);
+          entry.app_units_actual  += Number(r.app_unit  ?? 0);
+        }
+      }
+      // Overlay commitment data from the leaderboard view rows
+      for (const row of board as ProdRow[]) {
+        if (map.has(row.profile_id)) {
+          const entry = map.get(row.profile_id)!;
+          entry.funded_volume_commitment = row.funded_volume_commitment;
+          entry.funded_units_commitment  = row.funded_units_commitment;
+          entry.submitted_at             = row.submitted_at;
+        }
+      }
+      mergedBoard = [...map.values()];
+    }
+  }
+
   const days       = goal ? daysRemaining(goal.end_date) : 0;
   const medals     = ["🥇","🥈","🥉"];
   const monthLabel = goal?.month_label ?? currentMonthLabel();
 
-  // ── Option C split ───────────────────────────────────────────────
-  // Active:    has any production (app or funded volume > 0)
-  // Waiting:   committed but zero production yet
-  // Hidden:    no commitment AND no production — not shown
-  const activeBoard = board
+  // Active: any funded or app volume
+  // Waiting: committed but no production yet
+  const activeBoard = mergedBoard
     .filter(r => r.app_volume_actual > 0 || r.funded_volume_actual > 0)
     .sort((a, b) => {
-      // 1. Funded volume — highest first
       if (b.funded_volume_actual !== a.funded_volume_actual)
         return b.funded_volume_actual - a.funded_volume_actual;
-      // 2. Committed beats uncommitted (tiebreaker when funded is equal)
-      const aCommitted = a.funded_volume_commitment > 0 ? 1 : 0;
-      const bCommitted = b.funded_volume_commitment > 0 ? 1 : 0;
-      if (bCommitted !== aCommitted) return bCommitted - aCommitted;
-      // 3. App volume — highest first (within same commitment status)
+      // Committed beats uncommitted at same funded volume
+      const aC = a.funded_volume_commitment > 0 ? 1 : 0;
+      const bC = b.funded_volume_commitment > 0 ? 1 : 0;
+      if (bC !== aC) return bC - aC;
       return b.app_volume_actual - a.app_volume_actual;
     });
-  const waitingBoard  = board.filter(r => r.app_volume_actual === 0 && r.funded_volume_actual === 0 && r.funded_volume_commitment > 0);
+  const waitingBoard = mergedBoard.filter(r =>
+    r.app_volume_actual === 0 && r.funded_volume_actual === 0 && r.funded_volume_commitment > 0
+  );
 
   return (
     <div style={{ fontFamily:"Montserrat,system-ui,sans-serif", color: C.ink, maxWidth:1200, margin:"0 auto", padding:"28px 24px 56px" }}>

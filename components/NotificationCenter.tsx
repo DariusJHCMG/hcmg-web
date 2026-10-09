@@ -111,17 +111,17 @@ export function NotificationCenter({ initialNotifications = [], align = "right" 
             onClick={() => setOpen(false)}
           />
 
-          {/* Dropdown */}
+          {/* Dropdown — always fixed so it's never clipped by the sidebar overflow */}
           <div style={{
-            position: align === "sidebar" ? "fixed" : "absolute",
+            position: "fixed",
             ...(align === "sidebar"
-              ? { left: 224, top: 8 }
-              : { right: 0,  top: 44 }),
-            zIndex: 50,
-            width: 340, maxHeight: "80vh",
+              ? { left: 184, top: 12 }
+              : { right: 16,  top: 60 }),
+            zIndex: 9999,
+            width: 360, maxHeight: "calc(100vh - 80px)",
             background: "#fff", borderRadius: 16,
             border: "1px solid #E2E8F0",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
             overflow: "hidden",
             display: "flex", flexDirection: "column",
             fontFamily: "-apple-system, 'Segoe UI', system-ui, sans-serif",
