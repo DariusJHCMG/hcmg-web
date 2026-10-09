@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { UniversitySidebar, UniversityMobileDrawer } from "@/components/university/UniversitySidebar";
 import { IntroVideoModal } from "@/components/university/IntroVideoModal";
+import { ToolViewToggle } from "@/components/admin/ToolViewToggle";
 import type { UniversityRole } from "@/lib/database.types";
 
 interface Props {
@@ -45,7 +46,9 @@ function derivePageTitle(pathname: string): string {
 }
 
 export function UniversityLayoutClient({ children, profileName, profileAvatar, universityRole, isAdmin }: Props) {
-  const pathname = usePathname();
+  const pathname     = usePathname();
+  const searchParams = useSearchParams();
+  const loView       = isAdmin && searchParams.get("lo_view") === "1";
   const pageTitle = derivePageTitle(pathname);
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -125,13 +128,14 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
       )}
 
       {/* Desktop sidebar */}
-      <UniversitySidebar universityRole={universityRole} isAdmin={isAdmin} />
+      <UniversitySidebar universityRole={universityRole} isAdmin={isAdmin} loView={loView} />
 
       {/* Mobile drawer */}
       {mobileOpen && (
         <UniversityMobileDrawer
           universityRole={universityRole}
           isAdmin={isAdmin}
+          loView={loView}
           onClose={() => setMobileOpen(false)}
         />
       )}
@@ -261,23 +265,12 @@ export function UniversityLayoutClient({ children, profileName, profileAvatar, u
 
           <div style={{ flex: 1 }} />
 
-          {/* Right: admin back button + notification bell + user chip */}
+          {/* Right: admin view toggle + notification bell + user chip */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {isAdmin && (
-              <a
-                href="/admin"
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  border: "1px solid #e5e7eb", background: "#fff",
-                  padding: "5px 12px", borderRadius: 8,
-                  fontSize: 12, fontWeight: 600, color: "#1f2328",
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
-                  textDecoration: "none",
-                  transition: "background 0.15s",
-                }}
-              >
-                <span>←</span> Back to Admin
-              </a>
+              <Suspense fallback={null}>
+                <ToolViewToggle />
+              </Suspense>
             )}
             {/* Bell */}
             <button

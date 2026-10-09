@@ -89,12 +89,16 @@ export default async function UniversityLayout({ children }: { children: React.R
     );
   }
 
+  const isAdmin = profile.role === "admin" || profile.role === "developer";
+
+  // searchParams is not available in layout.tsx for app router without extra wiring
+  // Instead we read it in the client component via useSearchParams
   return (
     <UniversityLayoutClient
       profileName={profile.full_name}
       profileAvatar={profile.avatar_url}
       universityRole={profile.university_role}
-      isAdmin={profile.role === "admin" || profile.role === "developer"}
+      isAdmin={isAdmin}
     >
       {children}
     </UniversityLayoutClient>

@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import type { UniversityRole } from "@/lib/database.types";
+import { ToolViewToggle } from "@/components/admin/ToolViewToggle";
 
 // ── SVG icon helpers ─────────────────────────────────────────────────────────
 
@@ -66,16 +67,20 @@ const ADMIN_NAV = [
 interface Props {
   universityRole: UniversityRole;
   isAdmin?: boolean;
+  loView?: boolean;
   onNavClick?: () => void;
 }
 
-function SidebarContent({ universityRole, isAdmin: isPortalAdmin = false, onNavClick }: Props) {
+function SidebarContent({ universityRole, isAdmin: isPortalAdmin = false, loView = false, onNavClick }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
 
   const isAdmin   = universityRole === "university_admin" || universityRole === "trainer";
   const isManager = universityRole === "manager" || universityRole === "university_admin";
+  // When portal admin views as LO, suppress all admin/manager sections
+  const showAdminNav   = isAdmin   && !loView;
+  const showManagerNav = isManager && !isAdmin && !loView;
 
   async function signOut() {
     setSigningOut(true);
@@ -143,7 +148,7 @@ function SidebarContent({ universityRole, isAdmin: isPortalAdmin = false, onNavC
           ))}
         </div>
 
-        {isManager && !isAdmin && (
+        {showManagerNav && (
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "1.4px", color: "#687383", textTransform: "uppercase", padding: "0 12px 8px" }}>
               Manager
@@ -171,7 +176,7 @@ function SidebarContent({ universityRole, isAdmin: isPortalAdmin = false, onNavC
           </div>
         )}
 
-        {isAdmin && (
+        {showAdminNav && (
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "1.4px", color: "#687383", textTransform: "uppercase", padding: "0 12px 8px" }}>
               Admin
@@ -202,19 +207,27 @@ function SidebarContent({ universityRole, isAdmin: isPortalAdmin = false, onNavC
 
       {/* Bottom */}
       <div style={{ padding: "10px 10px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 2 }}>
-        <Link
-          href={isPortalAdmin ? "/admin" : "/portal"}
-          onClick={onNavClick}
-          style={{
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "9px 12px", borderRadius: 10, textDecoration: "none",
-            fontSize: 13, fontWeight: 600, color: "#687383",
-            transition: "color 0.15s",
-          }}
-        >
-          <Ico><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg></Ico>
-          {isPortalAdmin ? "Back to Admin" : "Back to Portal"}
-        </Link>
+        {isPortalAdmin ? (
+          <div style={{ padding: "4px 12px" }}>
+            <Suspense fallback={null}>
+              <ToolViewToggle />
+            </Suspense>
+          </div>
+        ) : (
+          <Link
+            href="/portal"
+            onClick={onNavClick}
+            style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "9px 12px", borderRadius: 10, textDecoration: "none",
+              fontSize: 13, fontWeight: 600, color: "#687383",
+              transition: "color 0.15s",
+            }}
+          >
+            <Ico><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg></Ico>
+            Back to Portal
+          </Link>
+        )}
         <button
           onClick={signOut}
           disabled={signingOut}
@@ -237,7 +250,7 @@ function SidebarContent({ universityRole, isAdmin: isPortalAdmin = false, onNavC
   );
 }
 
-export function UniversitySidebar({ universityRole, isAdmin }: { universityRole: UniversityRole; isAdmin?: boolean }) {
+export function UniversitySidebar({ universityRole, isAdmin, loView }: { universityRole: UniversityRole; isAdmin?: boolean; loView?: boolean }) {
   return (
     <>
       <style>{`
@@ -255,13 +268,13 @@ export function UniversitySidebar({ universityRole, isAdmin }: { universityRole:
           display: "none",
         }}
       >
-        <SidebarContent universityRole={universityRole} isAdmin={isAdmin} />
+        <SidebarContent universityRole={universityRole} isAdmin={isAdmin} loView={loView} />
       </aside>
     </>
   );
 }
 
-export function UniversityMobileDrawer({ universityRole, isAdmin, onClose }: { universityRole: UniversityRole; isAdmin?: boolean; onClose: () => void }) {
+export function UniversityMobileDrawer({ universityRole, isAdmin, loView, onClose }: { universityRole: UniversityRole; isAdmin?: boolean; loView?: boolean; onClose: () => void }) {
   return (
     <>
       <div
@@ -277,7 +290,7 @@ export function UniversityMobileDrawer({ universityRole, isAdmin, onClose }: { u
         borderRight: "1px solid rgba(255,255,255,0.08)",
         overflowY: "auto",
       }}>
-        <SidebarContent universityRole={universityRole} isAdmin={isAdmin} onNavClick={onClose} />
+        <SidebarContent universityRole={universityRole} isAdmin={isAdmin} loView={loView} onNavClick={onClose} />
       </aside>
     </>
   );
