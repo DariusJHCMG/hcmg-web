@@ -23,11 +23,28 @@ function ResetForm() {
   const [status, setStatus]     = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage]   = useState("");
 
-  // If Supabase redirects back with a hash/code, switch to "update" mode
+  // Exchange the one-time code for a live session, then show the update form.
+  // Supabase PKCE reset links land here with ?code=<otp>.
+  // Implicit-flow links land with #access_token=...&type=recovery in the hash,
+  // which @supabase/ssr picks up automatically on the next getSession() call.
   useEffect(() => {
     const code = searchParams.get("code");
     const type = searchParams.get("type");
-    if (code || type === "recovery") {
+
+    if (code) {
+      // PKCE flow: exchange the code for a real session cookie, then enter update mode.
+      const supabase = createBrowserClient();
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          setStatus("error");
+          setMessage("Reset link is invalid or has expired. Please request a new one.");
+        } else {
+          setMode("update");
+        }
+      });
+    } else if (type === "recovery") {
+      // Implicit/hash flow: @supabase/ssr already restored the session from the
+      // hash fragment — just switch to update mode.
       setMode("update");
     }
   }, [searchParams]);
